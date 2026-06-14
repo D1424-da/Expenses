@@ -23,6 +23,7 @@ import {
   where,
   orderBy,
   onSnapshot,
+  getDocs,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -150,10 +151,14 @@ function bindEvents() {
   $("logout").onclick = () => signOut(auth);
   $("prev-month").onclick = () => shiftMonth(-1);
   $("next-month").onclick = () => shiftMonth(1);
-  $("file-input").onchange = handleFile;
+  $("file-input").onchange = handleFiles;
   $("expense-form").onsubmit = handleSubmit;
   $("reset-btn").onclick = resetForm;
+  $("skip-btn").onclick = skipCurrent;
   $("filter-category").onchange = renderList;
+  $("compare-btn").onclick = openCompare;
+  $("compare-close").onclick = () => ($("compare-modal").hidden = true);
+  $("compare-search").oninput = renderCompare;
 }
 
 function shiftMonth(delta) {
@@ -203,15 +208,65 @@ function subscribeMonth() {
   );
 }
 
-// ---- OCR 取り込み ----------------------------------------------------------
-async function handleFile(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+// ---- OCR 取り込み（複数枚対応） --------------------------------------------
+let ocrQueue = []; // これから処理する画像
+let ocrTotal = 0; // 今回選んだ合計枚数
+
+function handleFiles(e) {
+  const files = [...e.target.files];
+  e.target.value = ""; // 同じファイルを再選択できるように
+  if (!files.length) return;
+  ocrQueue = files;
+  ocrTotal = files.length;
+  processNext();
+}
+
+function queuePrefix() {
+  // 「(2/5枚目)」のような表示。1枚だけなら空。
+  if (ocrTotal <= 1) return "";
+  const idx = ocrTotal - ocrQueue.length; // 現在処理中の番号
+  return `(${idx}/${ocrTotal}枚目) `;
+}
+
+function processNext() {
+  if (ocrQueue.length === 0) {
+    ocrTotal = 0;
+    $("skip-btn").hidden = true;
+    return;
+  }
+  const file = ocrQueue.shift();
+  $("skip-btn").hidden = ocrTotal <= 1; // 複数枚のときだけ「スキップ」を出す
+  ocrAndShow(file);
+}
+
+// 保存/スキップ後に次の画像へ進む。なければ片付け。
+function advanceQueue() {
+  if (ocrQueue.length > 0) {
+    processNext();
+    return true;
+  }
+  if (ocrTotal > 1) {
+    const status = $("ocr-status");
+    status.hidden = false;
+    status.className = "status ok";
+    status.textContent = `✅ ${ocrTotal}枚すべて処理しました。`;
+  }
+  ocrTotal = 0;
+  $("skip-btn").hidden = true;
+  return false;
+}
+
+function skipCurrent() {
+  resetForm();
+  if (!advanceQueue()) $("ocr-status").hidden = true;
+}
+
+async function ocrAndShow(file) {
   log("OCR開始:", file.name, file.type, `${Math.round(file.size / 1024)}KB`, OCR_API_BASE ? "(バックエンド)" : USE_CLOUD_VISION ? "(クラウドVision)" : "(ブラウザ内Tesseract)");
   const status = $("ocr-status");
   status.hidden = false;
   status.className = "status loading";
-  status.textContent = "📤 読み取り中… (数秒かかります)";
+  status.textContent = `📤 ${queuePrefix()}読み取り中… (数秒かかります)`;
 
   try {
     let data;
@@ -255,14 +310,15 @@ async function handleFile(e) {
     // 画像は保存しないが、確認用にその場でプレビュー表示する
     fillForm(data, URL.createObjectURL(file));
     status.className = "status ok";
-    status.textContent = "✅ 読み取りました。内容を確認して保存してください。";
+    status.textContent =
+      `✅ ${queuePrefix()}読み取りました。内容を確認して保存してください。` +
+      (ocrTotal > 1 ? "（保存すると次の画像へ進みます）" : "");
     $("form-card").scrollIntoView({ behavior: "smooth" });
   } catch (err) {
     logErr("OCRエラー:", err.message || err, err);
     status.className = "status error";
-    status.textContent = "⚠️ " + (err.message || err);
-  } finally {
-    e.target.value = ""; // 同じファイルを再選択できるように
+    status.textContent = `⚠️ ${queuePrefix()}` + (err.message || err) +
+      (ocrTotal > 1 ? "（「スキップ」で次へ進めます）" : "");
   }
 }
 
@@ -467,7 +523,8 @@ async function handleSubmit(e) {
       subscribeMonth();
     }
     resetForm();
-    $("ocr-status").hidden = true;
+    // 複数枚取り込み中なら次の画像へ。なければステータスを消す。
+    if (!advanceQueue()) $("ocr-status").hidden = true;
   } catch (err) {
     logErr("保存エラー:", err.code, err.message, err);
     alert("保存に失敗しました: " + err.message);
@@ -551,6 +608,97 @@ async function deleteExpense(id) {
     await deleteDoc(doc(db, "users", currentUser.uid, "expenses", id));
   } catch (err) {
     alert("削除に失敗しました: " + err.message);
+  }
+}
+
+// ---- 商品の最安値比較 ------------------------------------------------------
+let compareData = []; // [{name, price, store, date}] 全明細をフラット化
+
+async function openCompare() {
+  const modal = $("compare-modal");
+  modal.hidden = false;
+  const list = $("compare-list");
+  list.innerHTML = "<p class='empty'>読み込み中…</p>";
+  try {
+    // 全期間の支出を取得して、明細を商品ごとに集計する
+    const snap = await getDocs(expensesCol());
+    compareData = [];
+    snap.forEach((d) => {
+      const e = d.data();
+      (e.items || []).forEach((it) => {
+        if (it && it.name && it.price > 0) {
+          compareData.push({
+            name: String(it.name),
+            price: Number(it.price),
+            store: e.store || "(店名なし)",
+            date: e.date || "",
+          });
+        }
+      });
+    });
+    log("最安値比較: 明細", compareData.length, "件");
+    renderCompare();
+  } catch (err) {
+    logErr("最安値比較の読み込み失敗:", err.code, err.message, err);
+    list.innerHTML = "<p class='empty'>読み込みに失敗しました。</p>";
+  }
+}
+
+// 比較用に商品名をゆるく正規化（空白・記号除去、小文字化）
+function normName(name) {
+  return name.toLowerCase().replace(/[\s　,.\-_*()（）]/g, "");
+}
+
+function renderCompare() {
+  const q = normName($("compare-search").value.trim());
+  const list = $("compare-list");
+
+  // 商品名（正規化）でグルーピング
+  const groups = new Map();
+  for (const it of compareData) {
+    const key = normName(it.name);
+    if (!key) continue;
+    if (q && !key.includes(q)) continue;
+    if (!groups.has(key)) groups.set(key, { label: it.name, entries: [] });
+    groups.get(key).entries.push(it);
+  }
+
+  if (groups.size === 0) {
+    list.innerHTML = "<p class='empty'>該当する商品がありません。明細付きで保存するとここに集計されます。</p>";
+    return;
+  }
+
+  // 「最安と最高の差が大きい商品」を上に（比較の価値が高い順）
+  const rows = [...groups.values()].map((g) => {
+    const prices = g.entries.map((e) => e.price);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    return { ...g, min, max, spread: max - min };
+  });
+  rows.sort((a, b) => b.spread - a.spread || b.entries.length - a.entries.length);
+
+  list.innerHTML = "";
+  for (const g of rows) {
+    const byStore = [...g.entries].sort((a, b) => a.price - b.price);
+    const cheapest = byStore[0];
+    const rowsHtml = byStore
+      .map((e) => {
+        const isMin = e.price === g.min;
+        return `<div class="cmp-store ${isMin ? "cmp-min" : ""}">
+            <span>${escapeHtml(e.store)}${e.date ? ` <span class="cmp-date">${escapeHtml(e.date)}</span>` : ""}</span>
+            <span>${yen(e.price)}${isMin ? " 🏆" : ""}</span>
+          </div>`;
+      })
+      .join("");
+    const card = document.createElement("div");
+    card.className = "cmp-item";
+    card.innerHTML = `
+      <div class="cmp-head">
+        <span class="cmp-name">${escapeHtml(g.label)}</span>
+        <span class="cmp-best">最安 ${yen(g.min)}${g.spread > 0 ? `（最大${yen(g.max)}）` : ""}</span>
+      </div>
+      <div class="cmp-stores">${rowsHtml}</div>`;
+    list.appendChild(card);
   }
 }
 
