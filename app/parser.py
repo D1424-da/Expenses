@@ -13,6 +13,12 @@ from typing import Any
 _TOTAL_KEYWORDS = ["合計", "合 計", "総合計", "お買上", "お買い上げ", "計", "total", "ﾄｰﾀﾙ"]
 # 合計と紛らわしいので金額抽出から除外したい行
 _EXCLUDE_KEYWORDS = ["小計", "お預り", "お預かり", "お釣", "釣り", "おつり", "預り", "現金", "クレジット", "ポイント", "残高", "課税", "消費税", "内税", "外税"]
+# レシートのヘッダ/フッタの定型ラベル（明細ではない）。商品名として拾わない。
+_RECEIPT_META_KEYWORDS = [
+    "お会計券", "会計券", "登録番号", "精算機", "精算", "責任者", "担当", "レジ",
+    "取引番号", "伝票", "バーコード", "軽減税率", "対象商品", "営業時間",
+    "買上点数", "点数", "買上", "番号", "顧客", "累計", "有効期限", "領収",
+]
 
 # カテゴリ推定用キーワード
 _CATEGORY_KEYWORDS: dict[str, list[str]] = {
@@ -23,7 +29,7 @@ _CATEGORY_KEYWORDS: dict[str, list[str]] = {
     "通信費": ["docomo", "au", "softbank", "携帯", "通信", "wifi", "インターネット"],
     "衣服": ["ユニクロ", "uniqlo", "gu", "しまむら", "衣料", "アパレル", "zara"],
     "日用品": ["ドラッグ", "薬局", "ホームセンター", "カインズ", "ニトリ", "100円", "ダイソー", "セリア", "雑貨"],
-    "食費": ["スーパー", "イオン", "西友", "ライフ", "マルエツ", "業務スーパー", "コンビニ", "セブン", "ローソン", "ファミリーマート", "ファミマ", "青果", "精肉", "鮮魚"],
+    "食費": ["スーパー", "イオン", "西友", "ライフ", "マルエツ", "業務スーパー", "コンビニ", "セブン", "ローソン", "ファミリーマート", "ファミマ", "青果", "精肉", "鮮魚", "タイヨー", "問屋", "生鮮"],
 }
 
 
@@ -48,6 +54,12 @@ def _is_noise_line(line: str) -> bool:
     if re.search(r"\d{2,4}-\d{2,4}-\d{3,4}", line):  # 電話番号
         return True
     if re.search(r"\d{1,4}\s*[年/\-.]\s*\d{1,2}\s*[月/\-.]\s*\d{1,2}", line):  # 日付
+        return True
+    # 時刻（17:18 など）。「お会計券 #000002 R1068 17:18」を価格18と誤読しない。
+    if re.search(r"\d{1,2}\s*[:：]\s*\d{2}", line):
+        return True
+    # 「甲突店26」「○○店 12」等の店舗・レジ番号行
+    if re.search(r"店\s*\d{1,6}\s*$", line):
         return True
     return False
 
@@ -146,21 +158,46 @@ def parse_store(text: str) -> str:
         # 電話番号や住所っぽい行は除外
         if re.search(r"(tel|電話|〒|\d{2,4}-\d{2,4}-\d{3,4})", line, re.IGNORECASE):
             continue
+        # 「毎日! 新鮮! 激安!」のような宣伝スローガン（!が複数）は店名にしない
+        if len(re.findall(r"[!！]", line)) >= 2:
+            continue
         return line[:50]
     return ""
+
+
+def _clean_item_name(s: str) -> str:
+    # 「外8 0104」「内8 5401」「外85416」等の軽減税率印＋商品コードを除去。
+    # これがあると別店舗の同一商品が比較でグルーピングできない。
+    s = re.sub(r"^\s*[内外]税?\s*8?\s*\d{3,6}\s+", "", s)
+    return s.strip(" 　:：-_*¥￥")[:60]
+
+
+def _is_valid_item_name(name: str) -> bool:
+    """コード・記号だけの「商品名らしくない」文字列を弾く。
+
+    「R」「T834…」等のレジ/登録コードや店舗番号を商品として保存しないため。
+    """
+    if not name:
+        return False
+    if re.search(r"店\s*\d*$", name) and len(re.sub(r"[\s　\d]", "", name)) <= 4:
+        return False
+    has_ja = re.search(r"[一-龥぀-ゟ゠-ヿー々]", name) is not None  # 漢字・かな・カナ
+    latin = len(re.findall(r"[A-Za-z]", name))
+    return has_ja or latin >= 2
 
 
 def parse_items(text: str) -> list[dict[str, Any]]:
     """品目と価格の組を推定する（行末に金額がある行を拾う）。"""
     items: list[dict[str, Any]] = []
+    stop_words = _TOTAL_KEYWORDS + _EXCLUDE_KEYWORDS + _RECEIPT_META_KEYWORDS
     for line in text.splitlines():
         line = line.strip()
         if not line:
             continue
         low = line.lower()
-        if any(kw.lower() in low for kw in _TOTAL_KEYWORDS + _EXCLUDE_KEYWORDS):
+        if any(kw.lower() in low for kw in stop_words):
             continue
-        # 電話番号・郵便番号・日付など、品目でない行は除外
+        # 電話番号・郵便番号・日付・時刻・店舗番号など、品目でない行は除外
         if _is_noise_line(line):
             continue
         # 行末の金額（¥1,280 / 1280 / 1,280円 など）
@@ -168,9 +205,9 @@ def parse_items(text: str) -> list[dict[str, Any]]:
         if not m:
             continue
         price = _normalize_amount(m.group(1))
-        name = line[: m.start()].strip(" 　:：-_*")
-        if name and price and 0 < price < 1_000_000 and len(name) >= 1:
-            items.append({"name": name[:60], "price": price})
+        name = _clean_item_name(line[: m.start()])
+        if _is_valid_item_name(name) and price and 0 < price < 1_000_000:
+            items.append({"name": name, "price": price})
     return items[:50]
 
 
