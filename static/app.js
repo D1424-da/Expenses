@@ -9,6 +9,10 @@ import {
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
+  getFunctions,
+  httpsCallable,
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
+import {
   getFirestore,
   collection,
   doc,
@@ -22,7 +26,12 @@ import {
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-import { firebaseConfig, OCR_API_BASE, CATEGORIES } from "./firebase-config.js";
+import {
+  firebaseConfig,
+  OCR_API_BASE,
+  USE_CLOUD_VISION,
+  CATEGORIES,
+} from "./firebase-config.js";
 import { parseReceipt } from "./parser.js";
 
 // ---- デバッグログ ----------------------------------------------------------
@@ -42,6 +51,9 @@ const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 const provider = new GoogleAuthProvider();
+// 高精度OCR用の Cloud Functions（東京リージョン）
+const functions = getFunctions(fbApp, "asia-northeast1");
+const cloudOcr = httpsCallable(functions, "ocrReceipt");
 log("Firebase初期化完了", {
   projectId: firebaseConfig.projectId,
   authDomain: firebaseConfig.authDomain,
@@ -213,8 +225,26 @@ async function handleFile(e) {
         throw new Error(err.detail || "読み取りに失敗しました");
       }
       data = await res.json();
+    } else if (USE_CLOUD_VISION) {
+      // 高精度: Google Cloud Vision（Cloud Functions経由）。失敗時はブラウザ内OCRへ。
+      let text;
+      try {
+        status.textContent = "🔍 クラウドOCRで読み取り中…";
+        const imageBase64 = await fileToBase64(file, 1600);
+        const res = await cloudOcr({ imageBase64 });
+        text = (res.data && res.data.text) || "";
+        log("クラウドOCR成功");
+      } catch (err) {
+        logErr("クラウドOCR失敗、ブラウザ内OCRに切替:", err.code, err.message, err);
+        status.textContent = "🔍 文字を読み取り中…（ブラウザ内OCR）";
+        const canvas = await preprocessImage(file);
+        text = await runClientOcr(canvas, (p) => {
+          status.textContent = `🔍 文字を読み取り中… ${Math.round(p * 100)}%`;
+        });
+      }
+      data = parseReceipt(text);
     } else {
-      // 既定: ブラウザ内で Tesseract.js を使って OCR（サーバー不要）
+      // ブラウザ内で Tesseract.js を使って OCR（サーバー不要）
       const canvas = await preprocessImage(file);
       const text = await runClientOcr(canvas, (p) => {
         status.textContent = `🔍 文字を読み取り中… ${Math.round(p * 100)}%`;
@@ -234,6 +264,20 @@ async function handleFile(e) {
   } finally {
     e.target.value = ""; // 同じファイルを再選択できるように
   }
+}
+
+// クラウドOCR送信用: 画像を縮小してJPEGのbase64文字列にする（通信量削減）。
+async function fileToBase64(file, maxW = 1600) {
+  const img = await createImageBitmap(file);
+  const scale = img.width > maxW ? maxW / img.width : 1;
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(img.width * scale);
+  canvas.height = Math.round(img.height * scale);
+  const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+  return dataUrl.split(",")[1]; // "data:image/jpeg;base64," を除去
 }
 
 // レシートは細い印字が多いので、拡大＋グレースケール＋コントラスト補正＋
