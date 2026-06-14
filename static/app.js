@@ -207,7 +207,7 @@ function subscribeMonth() {
 async function handleFile(e) {
   const file = e.target.files[0];
   if (!file) return;
-  log("OCR開始:", file.name, file.type, `${Math.round(file.size / 1024)}KB`, OCR_API_BASE ? "(バックエンド)" : "(ブラウザ内Tesseract)");
+  log("OCR開始:", file.name, file.type, `${Math.round(file.size / 1024)}KB`, OCR_API_BASE ? "(バックエンド)" : USE_CLOUD_VISION ? "(クラウドVision)" : "(ブラウザ内Tesseract)");
   const status = $("ocr-status");
   status.hidden = false;
   status.className = "status loading";
