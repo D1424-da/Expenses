@@ -25,12 +25,29 @@ import {
 import { firebaseConfig, OCR_API_BASE, CATEGORIES } from "./firebase-config.js";
 import { parseReceipt } from "./parser.js";
 
+// ---- デバッグログ ----------------------------------------------------------
+// 問題の切り分け用。安定したら DEBUG = false にする。
+const DEBUG = true;
+const log = (...a) => DEBUG && console.log("%c[家計簿]", "color:#2f855a;font-weight:bold", ...a);
+const logErr = (...a) => DEBUG && console.error("[家計簿]", ...a);
+
+// 想定外の例外も全部拾う
+window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
+window.addEventListener("unhandledrejection", (e) => logErr("未処理のPromise拒否:", e.reason));
+log("app.js 読み込み開始", "Tesseract利用可能:", !!window.Tesseract);
+
 // ---- Firebase 初期化 -------------------------------------------------------
 // レシート画像は保存しない（Cloud Storage 不要 = 無料の Spark プランで動く）。
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 const provider = new GoogleAuthProvider();
+log("Firebase初期化完了", {
+  projectId: firebaseConfig.projectId,
+  authDomain: firebaseConfig.authDomain,
+  origin: location.origin,
+  href: location.href,
+});
 
 // ---- 状態 ------------------------------------------------------------------
 let currentUser = null;
@@ -52,6 +69,7 @@ const todayStr = () => {
 // ポップアップ方式は COOP（Cross-Origin-Opener-Policy）で弾かれる環境があるため、
 // リダイレクト方式でログインする。
 onAuthStateChanged(auth, (user) => {
+  log("認証状態の変化:", user ? `ログイン中 (${user.email})` : "未ログイン");
   currentUser = user;
   if (user) {
     $("login-screen").hidden = true;
@@ -64,20 +82,33 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// リダイレクトから戻ってきた際のエラーを拾って表示する
-getRedirectResult(auth).catch((err) => {
-  const el = $("login-error");
-  el.textContent = "ログインに失敗しました: " + (err.message || err.code);
-  el.hidden = false;
-});
+// リダイレクトから戻ってきた結果を確認（成功/失敗をログに出す）
+log("リダイレクト結果を確認中…");
+getRedirectResult(auth)
+  .then((result) => {
+    if (result && result.user) {
+      log("リダイレクトログイン成功:", result.user.email);
+    } else {
+      log("リダイレクト結果なし（通常のページ読み込み、または未ログイン）");
+    }
+  })
+  .catch((err) => {
+    logErr("リダイレクト結果でエラー:", err.code, err.message, err);
+    const el = $("login-error");
+    el.textContent = "ログインに失敗しました: " + (err.code || err.message);
+    el.hidden = false;
+  });
 
 $("google-login").onclick = async () => {
+  log("ログインボタン押下 → signInWithRedirect 開始");
   $("login-error").hidden = true;
   try {
     await signInWithRedirect(auth, provider);
+    log("signInWithRedirect 呼び出し完了（Googleへ遷移するはず）");
   } catch (err) {
+    logErr("signInWithRedirect でエラー:", err.code, err.message, err);
     const el = $("login-error");
-    el.textContent = "ログインに失敗しました: " + (err.message || err.code);
+    el.textContent = "ログインに失敗しました: " + (err.code || err.message);
     el.hidden = false;
   }
 };
@@ -141,15 +172,17 @@ function subscribeMonth() {
     where("date", "<", end),
     orderBy("date", "desc")
   );
+  log("Firestore購読開始:", monthKey(currentMonth), "uid:", currentUser.uid);
   unsubscribe = onSnapshot(
     q,
     (snap) => {
       currentExpenses = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      log("Firestore更新:", currentExpenses.length, "件");
       renderList();
       renderSummary();
     },
     (err) => {
-      console.error(err);
+      logErr("Firestore購読エラー:", err.code, err.message, err);
       $("ocr-status").hidden = false;
       $("ocr-status").className = "status error";
       $("ocr-status").textContent =
@@ -162,6 +195,7 @@ function subscribeMonth() {
 async function handleFile(e) {
   const file = e.target.files[0];
   if (!file) return;
+  log("OCR開始:", file.name, file.type, `${Math.round(file.size / 1024)}KB`, OCR_API_BASE ? "(バックエンド)" : "(ブラウザ内Tesseract)");
   const status = $("ocr-status");
   status.hidden = false;
   status.className = "status loading";
@@ -187,13 +221,14 @@ async function handleFile(e) {
       });
       data = parseReceipt(text);
     }
+    log("OCR完了。抽出結果:", data);
     // 画像は保存しないが、確認用にその場でプレビュー表示する
     fillForm(data, URL.createObjectURL(file));
     status.className = "status ok";
     status.textContent = "✅ 読み取りました。内容を確認して保存してください。";
     $("form-card").scrollIntoView({ behavior: "smooth" });
   } catch (err) {
-    console.error(err);
+    logErr("OCRエラー:", err.message || err, err);
     status.className = "status error";
     status.textContent = "⚠️ " + (err.message || err);
   } finally {
@@ -326,6 +361,7 @@ async function handleSubmit(e) {
       items: collectItems(),
     };
 
+    log(id ? "更新:" : "新規保存:", payload);
     if (id) {
       // 更新
       await updateDoc(doc(db, "users", currentUser.uid, "expenses", id), payload);
@@ -337,6 +373,7 @@ async function handleSubmit(e) {
         createdAt: serverTimestamp(),
       });
     }
+    log("保存成功");
 
     // 保存した支出の月へ移動
     const savedMonth = new Date($("f-date").value + "T00:00:00");
@@ -348,7 +385,7 @@ async function handleSubmit(e) {
     resetForm();
     $("ocr-status").hidden = true;
   } catch (err) {
-    console.error(err);
+    logErr("保存エラー:", err.code, err.message, err);
     alert("保存に失敗しました: " + err.message);
   } finally {
     saveBtn.disabled = false;
