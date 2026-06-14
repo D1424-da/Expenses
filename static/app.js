@@ -649,18 +649,40 @@ function normName(name) {
   return name.toLowerCase().replace(/[\s　,.\-_*()（）]/g, "");
 }
 
-// 同一商品を同じ店舗で複数回買ったときの重複をまとめる。
-// 各店舗につき1行（最新の日付の価格。同日なら安い方）にして「今その店でいくらか」を示す。
-function dedupeByStore(entries) {
-  const byStore = new Map();
+function median(nums) {
+  const s = [...nums].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+// 同一商品を店舗ごとに集計する。各店舗について「現在価格（最新）」と
+// 「その店の過去最安（セール時の値）」を出し、一時的なセールを見分けられるようにする。
+// 平常価格はセール1回に引っ張られにくいよう中央値で見積もる。
+function summarizeByStore(entries) {
+  const map = new Map();
   for (const e of entries) {
-    const cur = byStore.get(e.store);
-    const newer = !cur ||
-      (e.date || "") > (cur.date || "") ||
-      ((e.date || "") === (cur.date || "") && e.price < cur.price);
-    if (newer) byStore.set(e.store, e);
+    if (!map.has(e.store)) map.set(e.store, []);
+    map.get(e.store).push(e);
   }
-  return [...byStore.values()];
+  const out = [];
+  for (const [store, list] of map) {
+    list.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+    const latest = list[list.length - 1]; // 最新の記録 = 現在価格
+    let low = list[0];
+    for (const e of list) if (e.price < low.price) low = e; // その店の過去最安
+    const regular = median(list.map((e) => e.price)); // 平常価格の目安
+    out.push({
+      store,
+      current: latest.price,
+      currentDate: latest.date,
+      low: low.price,
+      lowDate: low.date,
+      hasLow: low.price < latest.price, // 今より安く買えた履歴がある
+      saleNow: list.length >= 2 && latest.price <= regular * 0.9, // 今セール中
+      isSaleLow: list.length >= 2 && low.price <= regular * 0.9, // 過去最安はセール価格
+    });
+  }
+  return out;
 }
 
 function renderCompare() {
@@ -682,35 +704,47 @@ function renderCompare() {
     return;
   }
 
-  // 「最安と最高の差が大きい商品」を上に（比較の価値が高い順）
+  // 「現在価格の差が大きい商品」を上に（比較の価値が高い順）
   const rows = [...groups.values()].map((g) => {
-    const entries = dedupeByStore(g.entries); // 同一店舗の重複をまとめる
-    const prices = entries.map((e) => e.price);
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
-    return { ...g, entries, min, max, spread: max - min };
+    const stores = summarizeByStore(g.entries); // 店舗ごとに現在価格＋過去最安を集計
+    const currents = stores.map((s) => s.current);
+    const min = Math.min(...currents);
+    const max = Math.max(...currents);
+    let bestEver = stores[0]; // 全店通しての過去最安（セール最安）
+    for (const s of stores) if (s.low < bestEver.low) bestEver = s;
+    return { ...g, stores, min, max, spread: max - min, bestEver };
   });
-  rows.sort((a, b) => b.spread - a.spread || b.entries.length - a.entries.length);
+  rows.sort((a, b) => b.spread - a.spread || b.stores.length - a.stores.length);
 
   list.innerHTML = "";
   for (const g of rows) {
-    const byStore = [...g.entries].sort((a, b) => a.price - b.price);
-    const cheapest = byStore[0];
-    const rowsHtml = byStore
-      .map((e) => {
-        const isMin = e.price === g.min;
-        return `<div class="cmp-store ${isMin ? "cmp-min" : ""}">
-            <span>${escapeHtml(e.store)}${e.date ? ` <span class="cmp-date">${escapeHtml(e.date)}</span>` : ""}</span>
-            <span>${yen(e.price)}${isMin ? " 🏆" : ""}</span>
+    // 現在価格が安い順。同額なら過去最安が安い順。
+    const stores = [...g.stores].sort((a, b) => a.current - b.current || a.low - b.low);
+    const rowsHtml = stores
+      .map((s) => {
+        const isMin = s.current === g.min;
+        const lowHtml = s.hasLow
+          ? `<div class="cmp-low">📉 過去最安 ${yen(s.low)}${s.lowDate ? ` <span class="cmp-date">${escapeHtml(s.lowDate)}</span>` : ""}${s.isSaleLow ? ' <span class="cmp-tag">セール</span>' : ""}</div>`
+          : "";
+        return `<div class="cmp-row">
+            <div class="cmp-store ${isMin ? "cmp-min" : ""}">
+              <span>${escapeHtml(s.store)}${s.currentDate ? ` <span class="cmp-date">${escapeHtml(s.currentDate)}</span>` : ""}${s.saleNow ? ' <span class="cmp-tag">セール中</span>' : ""}</span>
+              <span>${yen(s.current)}${isMin ? " 🏆" : ""}</span>
+            </div>
+            ${lowHtml}
           </div>`;
       })
       .join("");
+    // 過去最安が現在の最安より安ければ「セール最安」を見出しに添える
+    const saleBest = g.bestEver.low < g.min
+      ? ` <span class="cmp-sale">🔥セール最安 ${yen(g.bestEver.low)}</span>`
+      : "";
     const card = document.createElement("div");
     card.className = "cmp-item";
     card.innerHTML = `
       <div class="cmp-head">
         <span class="cmp-name">${escapeHtml(g.label)}</span>
-        <span class="cmp-best">最安 ${yen(g.min)}${g.spread > 0 ? `（最大${yen(g.max)}）` : ""}</span>
+        <span class="cmp-best">今の最安 ${yen(g.min)}${g.spread > 0 ? `（最大${yen(g.max)}）` : ""}${saleBest}</span>
       </div>
       <div class="cmp-stores">${rowsHtml}</div>`;
     list.appendChild(card);
