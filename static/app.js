@@ -236,21 +236,56 @@ async function handleFile(e) {
   }
 }
 
-// レシートは細い印字が多いので、拡大＋グレースケール化して読み取りやすくする。
+// レシートは細い印字が多いので、拡大＋グレースケール＋コントラスト補正＋
+// 二値化（大津の手法）で読み取りやすくする。
 async function preprocessImage(file) {
   const img = await createImageBitmap(file);
-  const targetW = 1500;
+  const targetW = 2000; // 高解像度化すると細かい文字が認識されやすい
   const scale = img.width < targetW ? targetW / img.width : 1;
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(img.width * scale);
   canvas.height = Math.round(img.height * scale);
   const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingQuality = "high";
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const d = imageData.data;
-  for (let i = 0; i < d.length; i += 4) {
-    const g = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-    d[i] = d[i + 1] = d[i + 2] = g;
+
+  // 1) グレースケール化 + ヒストグラム作成
+  const hist = new Array(256).fill(0);
+  const gray = new Uint8ClampedArray(d.length / 4);
+  for (let i = 0, j = 0; i < d.length; i += 4, j++) {
+    const g = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) | 0;
+    gray[j] = g;
+    hist[g]++;
+  }
+
+  // 2) 大津の手法でしきい値を自動決定
+  const total = gray.length;
+  let sum = 0;
+  for (let t = 0; t < 256; t++) sum += t * hist[t];
+  let sumB = 0, wB = 0, maxVar = -1, threshold = 127;
+  for (let t = 0; t < 256; t++) {
+    wB += hist[t];
+    if (wB === 0) continue;
+    const wF = total - wB;
+    if (wF === 0) break;
+    sumB += t * hist[t];
+    const mB = sumB / wB;
+    const mF = (sum - sumB) / wF;
+    const between = wB * wF * (mB - mF) * (mB - mF);
+    if (between > maxVar) {
+      maxVar = between;
+      threshold = t;
+    }
+  }
+
+  // 3) 二値化（白背景・黒文字）。少し甘めにして文字を太らせる
+  const thr = threshold + 10;
+  for (let i = 0, j = 0; i < d.length; i += 4, j++) {
+    const v = gray[j] > thr ? 255 : 0;
+    d[i] = d[i + 1] = d[i + 2] = v;
   }
   ctx.putImageData(imageData, 0, 0);
   return canvas;
@@ -267,6 +302,11 @@ async function runClientOcr(image, onProgress) {
     },
   });
   try {
+    // レシート向け: 単一の縦並びテキストとして扱い、単語間スペースを保持
+    await worker.setParameters({
+      tessedit_pageseg_mode: "6",
+      preserve_interword_spaces: "1",
+    });
     const { data } = await worker.recognize(image);
     return data.text;
   } finally {
