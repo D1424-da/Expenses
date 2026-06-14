@@ -649,6 +649,20 @@ function normName(name) {
   return name.toLowerCase().replace(/[\s　,.\-_*()（）]/g, "");
 }
 
+// 同一商品を同じ店舗で複数回買ったときの重複をまとめる。
+// 各店舗につき1行（最新の日付の価格。同日なら安い方）にして「今その店でいくらか」を示す。
+function dedupeByStore(entries) {
+  const byStore = new Map();
+  for (const e of entries) {
+    const cur = byStore.get(e.store);
+    const newer = !cur ||
+      (e.date || "") > (cur.date || "") ||
+      ((e.date || "") === (cur.date || "") && e.price < cur.price);
+    if (newer) byStore.set(e.store, e);
+  }
+  return [...byStore.values()];
+}
+
 function renderCompare() {
   const q = normName($("compare-search").value.trim());
   const list = $("compare-list");
@@ -670,10 +684,11 @@ function renderCompare() {
 
   // 「最安と最高の差が大きい商品」を上に（比較の価値が高い順）
   const rows = [...groups.values()].map((g) => {
-    const prices = g.entries.map((e) => e.price);
+    const entries = dedupeByStore(g.entries); // 同一店舗の重複をまとめる
+    const prices = entries.map((e) => e.price);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
-    return { ...g, min, max, spread: max - min };
+    return { ...g, entries, min, max, spread: max - min };
   });
   rows.sort((a, b) => b.spread - a.spread || b.entries.length - a.entries.length);
 
