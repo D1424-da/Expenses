@@ -245,6 +245,40 @@ button.primary:hover { filter: brightness(1.05); }
 }
 .logout-btn:hover { background: rgba(255, 255, 255, 0.35); }
 
+/* 最安値比較モーダル */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  z-index: 50;
+  overflow-y: auto;
+}
+.modal-box {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 18px;
+  width: 100%;
+  max-width: 560px;
+  margin-top: 24px;
+}
+.modal-head { display: flex; align-items: center; justify-content: space-between; }
+.modal-head h2 { margin: 0; font-size: 1.1rem; }
+.modal-head button { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted); }
+#compare-search { margin: 10px 0; }
+.compare-list { display: flex; flex-direction: column; gap: 10px; }
+.cmp-item { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.cmp-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.cmp-name { font-weight: 600; }
+.cmp-best { color: var(--accent); font-weight: 700; white-space: nowrap; font-size: 0.9rem; }
+.cmp-stores { display: flex; flex-direction: column; gap: 3px; }
+.cmp-store { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); }
+.cmp-store.cmp-min { color: var(--ink); font-weight: 700; }
+.cmp-date { color: var(--muted); font-weight: 400; font-size: 0.75rem; }
+
 @media (max-width: 520px) {
   .row { flex-direction: column; }
 }

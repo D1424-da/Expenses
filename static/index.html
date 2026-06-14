@@ -29,6 +29,7 @@
           <span id="current-month"></span>
           <button id="next-month" aria-label="次の月">›</button>
         </div>
+        <button id="compare-btn" class="logout-btn" title="商品の最安値">🔎 最安値</button>
         <button id="logout" class="logout-btn" title="ログアウト">ログアウト</button>
       </div>
     </header>
@@ -50,7 +51,7 @@
         <p class="hint">スマホならカメラが起動します。読み取り後に内容を確認して保存できます。</p>
         <label class="file-button">
           📷 レシートを取り込む
-          <input id="file-input" type="file" accept="image/*" capture="environment" hidden />
+          <input id="file-input" type="file" accept="image/*" capture="environment" multiple hidden />
         </label>
         <div id="ocr-status" class="status" hidden></div>
       </section>
@@ -84,6 +85,7 @@
 
           <div class="form-actions">
             <button type="submit" class="primary" id="save-btn">保存</button>
+            <button type="button" id="skip-btn" hidden>スキップ</button>
             <button type="button" id="reset-btn">クリア</button>
           </div>
         </form>
@@ -99,6 +101,19 @@
         <p id="empty-msg" class="empty" hidden>この月の記録はまだありません。</p>
       </section>
     </main>
+
+    <!-- 商品の最安値（店舗横断で比較） -->
+    <div id="compare-modal" class="modal" hidden>
+      <div class="modal-box">
+        <div class="modal-head">
+          <h2>🔎 商品の最安値</h2>
+          <button id="compare-close" aria-label="閉じる">✕</button>
+        </div>
+        <p class="hint">保存した明細を商品名でまとめ、最安の店を表示します。</p>
+        <input id="compare-search" type="search" placeholder="商品名で検索（空欄で全件）" />
+        <div id="compare-list" class="compare-list"></div>
+      </div>
+    </div>
   </div>
 
   <!-- ブラウザ内OCR（サーバー不要）。グローバル Tesseract を提供する -->

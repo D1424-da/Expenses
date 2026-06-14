@@ -82,45 +82,60 @@ function parseDate(text) {
   return null;
 }
 
+// 1行から金額を取り出す（¥1,280 / 1280円 / 1,280 など）。なければ null。
+function amountInLine(line) {
+  const t = toHalfWidth(line);
+  const m = t.match(/(?:[¥￥]\s*)?(\d{1,3}(?:,\d{3})+|\d{2,7})\s*円?/);
+  if (!m) return null;
+  const v = parseInt(m[1].replace(/,/g, ""), 10);
+  return v > 0 && v < 10000000 ? v : null;
+}
+
 function parseTotal(text) {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   const hasExclude = (low) => EXCLUDE_KEYWORDS.some((ex) => low.includes(ex.toLowerCase()));
 
-  // 明細など、行末に現れる金額候補の最大値（妥当性チェック用）
-  let lineMax = 0;
-  for (const line of lines) {
-    if (hasExclude(line.toLowerCase())) continue;
-    if (isNoiseLine(line)) continue;
-    const m = line.match(/(\d{1,3}(?:,\d{3})+|\d{2,7})\s*円?\s*[*※]?$/);
-    if (m) {
-      const val = normalizeAmount(m[1]);
-      if (val && val > 0 && val < 10000000) lineMax = Math.max(lineMax, val);
+  // ラベルと金額が別の行に分かれることがある（Visionの特徴）。
+  // i行目のラベルに対応する金額を、同じ行→続く2行から探す。
+  const amountNear = (i) => {
+    const same = amountInLine(lines[i]);
+    if (same != null) return same;
+    for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
+      const a = amountInLine(lines[j]);
+      if (a != null) return a;
     }
-  }
+    return null;
+  };
 
-  // 1) キーワード行を優先（OCR誤読で合計が明細より小さい場合は信用しない）
+  // お釣り・お預り・小計・税・現金・ポイント等に紐づく金額は「合計ではない」ので除外。
+  const excluded = new Set();
+  lines.forEach((line, i) => {
+    if (hasExclude(line.toLowerCase())) {
+      const a = amountNear(i);
+      if (a != null) excluded.add(a);
+    }
+  });
+
+  // 1) 「合計」系キーワードに紐づく金額を最優先（除外金額は採らない）
   for (const keyword of TOTAL_KEYWORDS) {
-    for (const line of lines) {
-      const low = line.toLowerCase();
+    for (let i = 0; i < lines.length; i++) {
+      const low = lines[i].toLowerCase();
       if (!low.includes(keyword.toLowerCase())) continue;
       if (hasExclude(low)) continue;
-      const amount = normalizeAmount(line);
-      if (amount && amount > 0 && amount >= lineMax) return amount;
+      const a = amountNear(i);
+      if (a != null && !excluded.has(a)) return a;
     }
   }
 
-  // 2) フォールバック: 金額らしき数値の最大
-  const candidates = [];
-  for (const line of lines) {
-    if (hasExclude(line.toLowerCase())) continue;
-    if (isNoiseLine(line)) continue;
-    if (/[¥￥]|円|\d,\d{3}/.test(line)) {
-      const amount = normalizeAmount(line);
-      if (amount && amount > 0 && amount < 10000000) candidates.push(amount);
-    }
-  }
-  if (candidates.length) return Math.max(...candidates);
-  return lineMax || null;
+  // 2) フォールバック: 除外金額・ノイズ行を除いた中での最大金額
+  let best = null;
+  lines.forEach((line) => {
+    if (hasExclude(line.toLowerCase())) return;
+    if (isNoiseLine(line)) return;
+    const a = amountInLine(line);
+    if (a != null && !excluded.has(a)) best = best == null ? a : Math.max(best, a);
+  });
+  return best;
 }
 
 function parseStore(text) {
@@ -136,27 +151,53 @@ function parseStore(text) {
   return "";
 }
 
+// 数字・記号のみ（価格だけ）の行かどうか
+function isPriceOnlyLine(line) {
+  const t = toHalfWidth(line).trim();
+  return /^[¥￥]?\s*\d{1,3}(?:,\d{3})+\s*円?$|^[¥￥]?\s*\d{2,7}\s*円?[*※]?$/.test(t);
+}
+
+function cleanName(s) {
+  return s.replace(/^[\s　:：\-_*\d.]+/, "").replace(/[\s　:：\-_*]+$/, "").slice(0, 60);
+}
+
 function parseItems(text) {
   const items = [];
   const stopWords = [...TOTAL_KEYWORDS, ...EXCLUDE_KEYWORDS];
-  for (let line of text.split("\n")) {
-    line = line.trim();
-    if (!line) continue;
+  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+  const isStop = (line) => {
     const low = line.toLowerCase();
-    if (stopWords.some((kw) => low.includes(kw.toLowerCase()))) continue;
-    if (isNoiseLine(line)) continue;
-    const m = line.match(/[¥￥]?\s*(\d{1,3}(?:,\d{3})+|\d{2,6})\s*円?\s*[*※]?$/);
-    if (!m) continue;
-    const price = normalizeAmount(m[1]);
-    const name = line
-      .slice(0, m.index)
-      .replace(/^[\s　:：\-_*]+/, "")
-      .replace(/[\s　:：\-_*]+$/, "");
-    if (name && price && price > 0 && price < 1000000) {
-      items.push({ name: name.slice(0, 60), price });
+    return stopWords.some((kw) => low.includes(kw.toLowerCase())) || isNoiseLine(line);
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isStop(line)) continue;
+
+    // パターンA: 「品名 ... 価格」が同じ行
+    const m = line.match(/^(.*\D)\s*[¥￥]?\s*(\d{1,3}(?:,\d{3})+|\d{2,6})\s*円?\s*[*※]?$/);
+    if (m) {
+      const name = cleanName(m[1]);
+      const price = normalizeAmount(m[2]);
+      if (name && name.length >= 1 && price && price > 0 && price < 1000000) {
+        items.push({ name, price });
+        continue;
+      }
+    }
+
+    // パターンB: この行が「価格だけ」で、前の行が品名（Visionで分かれた場合）
+    if (isPriceOnlyLine(line) && i > 0) {
+      const prev = lines[i - 1];
+      if (!isStop(prev) && !isPriceOnlyLine(prev) && /[^\d\s¥￥,円]/.test(prev)) {
+        const price = amountInLine(line);
+        const name = cleanName(prev);
+        if (name && price && price > 0 && price < 1000000) {
+          items.push({ name, price });
+        }
+      }
     }
   }
-  return items.slice(0, 50);
+  return items.slice(0, 80);
 }
 
 function guessCategory(text, store) {
