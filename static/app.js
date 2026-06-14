@@ -20,21 +20,15 @@ import {
   onSnapshot,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 import { firebaseConfig, OCR_API_BASE, CATEGORIES } from "./firebase-config.js";
 import { parseReceipt } from "./parser.js";
 
 // ---- Firebase 初期化 -------------------------------------------------------
+// レシート画像は保存しない（Cloud Storage 不要 = 無料の Spark プランで動く）。
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
-const storage = getStorage(fbApp);
 const provider = new GoogleAuthProvider();
 
 // ---- 状態 ------------------------------------------------------------------
@@ -42,7 +36,6 @@ let currentUser = null;
 let currentMonth = new Date(); // 表示中の月
 let currentExpenses = []; // 当月の支出（リアルタイム同期）
 let unsubscribe = null; // Firestore リスナー解除関数
-let pendingImageFile = null; // OCR後、保存時にアップロードする画像
 
 const $ = (id) => document.getElementById(id);
 const yen = (n) => "¥" + Number(n || 0).toLocaleString("ja-JP");
@@ -184,7 +177,7 @@ async function handleFile(e) {
       });
       data = parseReceipt(text);
     }
-    pendingImageFile = file; // 保存時に Storage へアップロード
+    // 画像は保存しないが、確認用にその場でプレビュー表示する
     fillForm(data, URL.createObjectURL(file));
     status.className = "status ok";
     status.textContent = "✅ 読み取りました。内容を確認して保存してください。";
@@ -303,7 +296,6 @@ function resetForm() {
   $("f-rawtext").value = "";
   $("items-list").innerHTML = "";
   showPreview(null);
-  pendingImageFile = null;
   updateItemsCount();
   $("f-date").value = todayStr();
 }
@@ -328,14 +320,9 @@ async function handleSubmit(e) {
       // 更新
       await updateDoc(doc(db, "users", currentUser.uid, "expenses", id), payload);
     } else {
-      // 新規。画像があれば Storage にアップロードして URL を保存。
-      let imageUrl = "";
-      if (pendingImageFile) {
-        imageUrl = await uploadReceiptImage(pendingImageFile);
-      }
+      // 新規（レシート画像は保存しない）
       await addDoc(expensesCol(), {
         ...payload,
-        imageUrl,
         rawText: $("f-rawtext").value || "",
         createdAt: serverTimestamp(),
       });
@@ -357,15 +344,6 @@ async function handleSubmit(e) {
     saveBtn.disabled = false;
     saveBtn.textContent = "保存";
   }
-}
-
-async function uploadReceiptImage(file) {
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-  const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const path = `users/${currentUser.uid}/receipts/${name}`;
-  const sref = storageRef(storage, path);
-  await uploadBytes(sref, file, { contentType: file.type });
-  return await getDownloadURL(sref);
 }
 
 // ---- サマリー --------------------------------------------------------------
@@ -407,11 +385,7 @@ function renderList() {
   for (const e of rows) {
     const item = document.createElement("div");
     item.className = "expense-item";
-    const thumb = e.imageUrl
-      ? `<img class="ei-thumb" src="${escapeHtml(e.imageUrl)}" alt="" />`
-      : `<div class="ei-thumb"></div>`;
     item.innerHTML = `
-      ${thumb}
       <div class="ei-main">
         <div class="ei-store">${escapeHtml(e.store || "(店名なし)")}</div>
         <div class="ei-meta"><span class="ei-cat">${escapeHtml(e.category)}</span>${escapeHtml(e.date)}${e.memo ? " · " + escapeHtml(e.memo) : ""}</div>
@@ -435,9 +409,8 @@ function editExpense(e) {
   $("f-store").value = e.store || "";
   $("f-category").value = e.category;
   $("f-memo").value = e.memo || "";
-  pendingImageFile = null;
   renderItems(e.items || []);
-  showPreview(e.imageUrl || null);
+  showPreview(null);
   $("form-card").scrollIntoView({ behavior: "smooth" });
 }
 

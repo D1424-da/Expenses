@@ -11,17 +11,19 @@ GitHub Pages などの静的ホスティングだけで公開できます。
 ## アーキテクチャ
 
 ```
-GitHub Pages (静的ホスティング)          Firebase
+GitHub Pages (静的ホスティング)          Firebase (無料 Spark プラン)
 ┌────────────────────────┐           ┌──────────────────┐
 │ 画面 + Tesseract.js       │ ───────▶  │ Authentication    │
 │ （ブラウザ内でOCR + 抽出）  │  読み書き  │ Firestore(データ)  │
-│                         │ ◀───────  │ Cloud Storage(画像) │
+│                         │ ◀───────  │                  │
 └────────────────────────┘           └──────────────────┘
 ```
 
 - **OCR**: ブラウザ内の Tesseract.js（無料・サーバー不要）。`static/parser.js` で
   日付・店名・金額・品目を抽出。
-- **データ・画像・認証・同期**: Firebase（フロントが SDK で直接アクセス）。
+- **データ・認証・同期**: Firebase（Firestore + Authentication）。フロントが SDK で
+  直接アクセス。**カード登録不要の無料 Spark プランで動きます**
+  （レシート画像は保存せず、読み取った金額などのデータのみ保存）。
 
 > 💡 より高精度・高速にしたい場合は、付属の FastAPI + Tesseract バックエンドを使う
 > こともできます（「高精度OCR（任意）」参照）。
@@ -33,7 +35,6 @@ GitHub Pages (静的ホスティング)          Firebase
 - ✍️ 読み取り結果（日付・店名・合計・カテゴリ・明細）の確認・修正・手入力
 - 🔄 Firestore のリアルタイム同期（別端末での変更が即反映）
 - 📊 月ごとの合計とカテゴリ別内訳バー、月切替・カテゴリ絞り込み・編集・削除
-- 🖼 レシート画像を Cloud Storage に保存しサムネイル表示
 
 ---
 
@@ -44,23 +45,25 @@ GitHub Pages (静的ホスティング)          Firebase
 1. [Firebase コンソール](https://console.firebase.google.com/) でプロジェクトを作成
 2. **Authentication** → ログイン方法 → **Google** を有効化
 3. **Firestore Database** を作成
-4. **Storage** を有効化
-5. プロジェクトの設定 → 「マイアプリ」→ **ウェブアプリ**を追加し、表示される
+4. プロジェクトの設定 → 「マイアプリ」→ **ウェブアプリ**を追加し、表示される
    `firebaseConfig` を控える
+
+> Cloud Storage は使いません（レシート画像を保存しないため）。Blaze プランへの
+> アップグレードやカード登録は不要です。
 
 `static/firebase-config.js` の各値を、控えた `firebaseConfig` に置き換えます。
 （`OCR_API_BASE` は空文字のままにすると、ブラウザ内 OCR を使います。）
 
 ### 2. セキュリティルールを反映
 
-`firestore.rules` / `storage.rules` は「各ユーザーは自分のデータだけにアクセス可能」
-というルールです。Firebase CLI で反映できます。
+`firestore.rules` は「各ユーザーは自分のデータだけにアクセス可能」というルールです。
+Firebase CLI で反映できます。
 
 ```bash
 npm install -g firebase-tools
 firebase login
-# .firebaserc の "your-firebase-project-id" を自分のプロジェクトID（全部小文字）に変更
-firebase deploy --only firestore:rules,storage
+# .firebaserc の project id が自分のプロジェクトID（全部小文字）になっていることを確認
+firebase deploy --only firestore:rules
 ```
 
 ### 3. ローカルで試す
@@ -120,7 +123,6 @@ users/{uid}/expenses/{expenseId}
   category:  string
   memo:      string
   items:     [{ name, price }]
-  imageUrl:  string           # Cloud Storage のダウンロードURL
   rawText:   string           # OCR生テキスト
   createdAt: serverTimestamp
 ```
@@ -139,7 +141,6 @@ users/{uid}/expenses/{expenseId}
 │   └── deploy-pages.yml      # GitHub Pages 自動デプロイ
 ├── firebase.json            # Hosting / ルールの設定
 ├── firestore.rules          # Firestore セキュリティルール
-├── storage.rules            # Storage セキュリティルール
 ├── .firebaserc              # ← プロジェクトID を設定
 │
 ├── main.py                  # (任意) 高精度OCR用 FastAPI サービス
