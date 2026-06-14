@@ -278,6 +278,10 @@ button.primary:hover { filter: brightness(1.05); }
 .cmp-store { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); }
 .cmp-store.cmp-min { color: var(--ink); font-weight: 700; }
 .cmp-date { color: var(--muted); font-weight: 400; font-size: 0.75rem; }
+.cmp-row { display: flex; flex-direction: column; gap: 1px; }
+.cmp-low { font-size: 0.75rem; color: var(--muted); padding-left: 10px; }
+.cmp-tag { background: #fde68a; color: #92400e; border-radius: 4px; padding: 0 4px; margin-left: 2px; font-size: 0.7rem; font-weight: 700; }
+.cmp-sale { color: #d97706; font-weight: 700; font-size: 0.8rem; white-space: nowrap; }
 
 @media (max-width: 520px) {
   .row { flex-direction: column; }
