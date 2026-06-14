@@ -16,10 +16,11 @@ export const firebaseConfig = {
   appId: "YOUR_APP_ID",
 };
 
-// OCR バックエンド(FastAPI)のベースURL。
-//   - ローカル開発で同一オリジンから配信する場合は "" のままでOK。
-//   - Firebase Hosting にデプロイした場合は、Cloud Run などにデプロイした
-//     OCR サービスの URL を指定する（例: "https://ocr-xxxxx.a.run.app"）。
+// OCR の方式。
+//   - "" (既定): ブラウザ内で Tesseract.js を使って OCR する（サーバー不要。
+//     GitHub Pages などの静的ホスティングだけで動く）。
+//   - URL を指定: その FastAPI バックエンド(/api/ocr)を使う。高精度・高速だが
+//     サーバーが必要（例: "https://ocr-xxxxx.a.run.app"）。
 export const OCR_API_BASE = "";
 
 // 家計簿カテゴリ

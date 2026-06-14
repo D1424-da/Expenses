@@ -28,6 +28,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 import { firebaseConfig, OCR_API_BASE, CATEGORIES } from "./firebase-config.js";
+import { parseReceipt } from "./parser.js";
 
 // ---- Firebase 初期化 -------------------------------------------------------
 const fbApp = initializeApp(firebaseConfig);
@@ -163,25 +164,75 @@ async function handleFile(e) {
   status.className = "status loading";
   status.textContent = "📤 読み取り中… (数秒かかります)";
 
-  const fd = new FormData();
-  fd.append("file", file);
   try {
-    const res = await fetch(`${OCR_API_BASE}/api/ocr`, { method: "POST", body: fd });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || "読み取りに失敗しました");
+    let data;
+    if (OCR_API_BASE) {
+      // OCRバックエンド(FastAPI)を使う設定の場合
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch(`${OCR_API_BASE}/api/ocr`, { method: "POST", body: fd });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "読み取りに失敗しました");
+      }
+      data = await res.json();
+    } else {
+      // 既定: ブラウザ内で Tesseract.js を使って OCR（サーバー不要）
+      const canvas = await preprocessImage(file);
+      const text = await runClientOcr(canvas, (p) => {
+        status.textContent = `🔍 文字を読み取り中… ${Math.round(p * 100)}%`;
+      });
+      data = parseReceipt(text);
     }
-    const data = await res.json();
     pendingImageFile = file; // 保存時に Storage へアップロード
     fillForm(data, URL.createObjectURL(file));
     status.className = "status ok";
     status.textContent = "✅ 読み取りました。内容を確認して保存してください。";
     $("form-card").scrollIntoView({ behavior: "smooth" });
   } catch (err) {
+    console.error(err);
     status.className = "status error";
-    status.textContent = "⚠️ " + err.message;
+    status.textContent = "⚠️ " + (err.message || err);
   } finally {
     e.target.value = ""; // 同じファイルを再選択できるように
+  }
+}
+
+// レシートは細い印字が多いので、拡大＋グレースケール化して読み取りやすくする。
+async function preprocessImage(file) {
+  const img = await createImageBitmap(file);
+  const targetW = 1500;
+  const scale = img.width < targetW ? targetW / img.width : 1;
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(img.width * scale);
+  canvas.height = Math.round(img.height * scale);
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = imageData.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const g = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    d[i] = d[i + 1] = d[i + 2] = g;
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
+// Tesseract.js（ブラウザ内OCR）。日本語データは初回に自動ダウンロードされる。
+async function runClientOcr(image, onProgress) {
+  if (!window.Tesseract) {
+    throw new Error("OCRライブラリの読み込みに失敗しました（ネットワークをご確認ください）");
+  }
+  const worker = await window.Tesseract.createWorker("jpn", 1, {
+    logger: (m) => {
+      if (m.status === "recognizing text" && onProgress) onProgress(m.progress);
+    },
+  });
+  try {
+    const { data } = await worker.recognize(image);
+    return data.text;
+  } finally {
+    await worker.terminate();
   }
 }
 
