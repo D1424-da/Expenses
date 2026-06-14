@@ -1,10 +1,16 @@
 // OCRの生テキストから家計簿の項目を推定して抽出する（parser.py のブラウザ版）。
 // 完璧な抽出は難しいため推定値を返し、ユーザーが保存前に画面で修正できる前提。
 
-const TOTAL_KEYWORDS = ["合計", "合 計", "総合計", "お買上", "お買い上げ", "計", "total", "ﾄｰﾀﾙ"];
-const EXCLUDE_KEYWORDS = [
-  "小計", "お預り", "お預かり", "お釣", "釣り", "おつり", "預り", "現金",
-  "クレジット", "ポイント", "残高", "課税", "消費税", "内税", "外税",
+const TOTAL_KEYWORDS = ["合計", "合 計", "総合計", "お買上", "お買い上げ", "total", "ﾄｰﾀﾙ"];
+// 「金額そのものを合計から除外したい」行（支払い・釣り・ポイント等）。
+const CASH_EXCLUDE = ["お預", "お釣", "おつり", "釣り", "預り", "現金", "クレジット", "ポイント", "残高", "チャージ", "お返し", "電子マネー"];
+// 「合計ではない／小計や税」のラベル。明細の終端判定にも使う。
+const SUBTOTAL_KEYWORDS = ["小計", "消費税", "内税", "外税", "課税", "対象", "値引", "税込", "税抜"];
+const EXCLUDE_KEYWORDS = [...CASH_EXCLUDE, ...SUBTOTAL_KEYWORDS];
+// 店名として採用したくない挨拶・定型文・業態の説明。
+const GREETINGS = [
+  "ありがとう", "毎度", "またのお越し", "領収", "レシート", "お客様", "控え", "ご来店", "お買い上げ",
+  "ディスカウントストア", "ドラッグストア", "スーパーマーケット", "コンビニエンスストア", "ホームセンター", "ショッピングセンター",
 ];
 
 // カテゴリ推定用キーワード（上から順に優先）
@@ -82,21 +88,33 @@ function parseDate(text) {
   return null;
 }
 
-// 1行から金額を取り出す（¥1,280 / 1280円 / 1,280 など）。なければ null。
+// 1行から金額を取り出す。Visionが「¥1, 771」のように空白を挟むことがあるので許容。
 function amountInLine(line) {
   const t = toHalfWidth(line);
-  const m = t.match(/(?:[¥￥]\s*)?(\d{1,3}(?:,\d{3})+|\d{2,7})\s*円?/);
-  if (!m) return null;
-  const v = parseInt(m[1].replace(/,/g, ""), 10);
+  let raw = null;
+  let m = t.match(/[¥￥]\s*([0-9][0-9,\s]*[0-9]|[0-9])/); // ¥の直後を最優先
+  if (m) raw = m[1];
+  if (raw == null) {
+    m = t.match(/([0-9][0-9,\s]*[0-9]|[0-9])\s*円/); // 〜円
+    if (m) raw = m[1];
+  }
+  if (raw == null) {
+    m = t.match(/(\d{1,3}(?:,\s?\d{3})+|\d{2,7})/); // カンマ区切り or 2桁以上
+    if (m) raw = m[1];
+  }
+  if (raw == null) return null;
+  const v = parseInt(raw.replace(/[,\s]/g, ""), 10);
   return v > 0 && v < 10000000 ? v : null;
 }
 
 function parseTotal(text) {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
-  const hasExclude = (low) => EXCLUDE_KEYWORDS.some((ex) => low.includes(ex.toLowerCase()));
+  const has = (line, words) => {
+    const low = line.toLowerCase();
+    return words.some((w) => low.includes(w.toLowerCase()));
+  };
 
   // ラベルと金額が別の行に分かれることがある（Visionの特徴）。
-  // i行目のラベルに対応する金額を、同じ行→続く2行から探す。
   const amountNear = (i) => {
     const same = amountInLine(lines[i]);
     if (same != null) return same;
@@ -107,30 +125,32 @@ function parseTotal(text) {
     return null;
   };
 
-  // お釣り・お預り・小計・税・現金・ポイント等に紐づく金額は「合計ではない」ので除外。
+  // 支払い・お釣り・ポイント等の金額は「購入合計ではない」ので除外。
+  // （小計や税は除外しない。税込だと小計＝合計で一致することがあるため）
   const excluded = new Set();
   lines.forEach((line, i) => {
-    if (hasExclude(line.toLowerCase())) {
+    if (has(line, CASH_EXCLUDE)) {
       const a = amountNear(i);
       if (a != null) excluded.add(a);
     }
   });
 
-  // 1) 「合計」系キーワードに紐づく金額を最優先（除外金額は採らない）
+  // 1) 「合計」系キーワードに紐づく金額を最優先（最初の合計を信用して即採用）。
+  //    支払い額(クレジット等)が合計と一致して除外されてしまう問題を避けるため、
+  //    ここでは excluded を見ない。
   for (const keyword of TOTAL_KEYWORDS) {
     for (let i = 0; i < lines.length; i++) {
-      const low = lines[i].toLowerCase();
-      if (!low.includes(keyword.toLowerCase())) continue;
-      if (hasExclude(low)) continue;
+      if (!has(lines[i], [keyword])) continue;
+      if (has(lines[i], CASH_EXCLUDE)) continue;
       const a = amountNear(i);
-      if (a != null && !excluded.has(a)) return a;
+      if (a != null) return a;
     }
   }
 
-  // 2) フォールバック: 除外金額・ノイズ行を除いた中での最大金額
+  // 2) フォールバック: 支払い系を除いた中での最大金額
   let best = null;
   lines.forEach((line) => {
-    if (hasExclude(line.toLowerCase())) return;
+    if (has(line, CASH_EXCLUDE)) return;
     if (isNoiseLine(line)) return;
     const a = amountInLine(line);
     if (a != null && !excluded.has(a)) best = best == null ? a : Math.max(best, a);
@@ -145,7 +165,9 @@ function parseStore(text) {
     line = line.trim();
     if (line.length < 2) continue;
     if (skip.test(line)) continue;
-    if (/(tel|電話|〒|\d{2,4}-\d{2,4}-\d{3,4})/i.test(line)) continue;
+    if (/(tel|電話|〒|登録番号|\d{2,4}-\d{2,4}-\d{3,4})/i.test(line)) continue;
+    // 挨拶・定型文（毎度ありがとうございます等）は店名にしない
+    if (GREETINGS.some((g) => line.includes(g))) continue;
     return line.slice(0, 50);
   }
   return "";
@@ -158,13 +180,24 @@ function isPriceOnlyLine(line) {
 }
 
 function cleanName(s) {
-  return s.replace(/^[\s　:：\-_*\d.]+/, "").replace(/[\s　:：\-_*]+$/, "").slice(0, 60);
+  // 先頭の記号（◆◇●○・*-: 数字など）と末尾の記号（¥含む）を除去
+  return s
+    .replace(/^[\s　:：\-_*◆◇●○・･\d.]+/, "")
+    .replace(/[\s　:：\-_*¥￥]+$/, "")
+    .slice(0, 60);
 }
 
 function parseItems(text) {
   const items = [];
   const stopWords = [...TOTAL_KEYWORDS, ...EXCLUDE_KEYWORDS];
-  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+  let lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+
+  // 明細は「小計／合計」より上にある。そこで打ち切ってクレジット明細等の数字を拾わない。
+  const cutAt = lines.findIndex((l) =>
+    [...SUBTOTAL_KEYWORDS, ...TOTAL_KEYWORDS].some((kw) => l.includes(kw))
+  );
+  if (cutAt > 0) lines = lines.slice(0, cutAt);
+
   const isStop = (line) => {
     const low = line.toLowerCase();
     return stopWords.some((kw) => low.includes(kw.toLowerCase())) || isNoiseLine(line);
