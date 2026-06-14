@@ -3,7 +3,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -48,6 +49,8 @@ const todayStr = () => {
 };
 
 // ---- 認証 ------------------------------------------------------------------
+// ポップアップ方式は COOP（Cross-Origin-Opener-Policy）で弾かれる環境があるため、
+// リダイレクト方式でログインする。
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (user) {
@@ -61,10 +64,17 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+// リダイレクトから戻ってきた際のエラーを拾って表示する
+getRedirectResult(auth).catch((err) => {
+  const el = $("login-error");
+  el.textContent = "ログインに失敗しました: " + (err.message || err.code);
+  el.hidden = false;
+});
+
 $("google-login").onclick = async () => {
   $("login-error").hidden = true;
   try {
-    await signInWithPopup(auth, provider);
+    await signInWithRedirect(auth, provider);
   } catch (err) {
     const el = $("login-error");
     el.textContent = "ログインに失敗しました: " + (err.message || err.code);
