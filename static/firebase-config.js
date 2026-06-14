@@ -8,12 +8,12 @@
 // 識別子であり、データ保護は firestore.rules / storage.rules で行います）。
 
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyDwEtOmYVP7bjmjnDsKOuAIWWJx6FFV2os",
+  authDomain: "expenses-9af61.firebaseapp.com",
+  projectId: "expenses-9af61",
+  storageBucket: "expenses-9af61.firebasestorage.app",
+  messagingSenderId: "277005147489",
+  appId: "1:277005147489:web:f605c0e9b3d669a795b920",
 };
 
 // OCR バックエンド(FastAPI)のベースURL。
