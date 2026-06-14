@@ -23,6 +23,12 @@ export const firebaseConfig = {
 //     サーバーが必要（例: "https://ocr-xxxxx.a.run.app"）。
 export const OCR_API_BASE = "";
 
+// 高精度OCR（Google Cloud Vision を Cloud Functions 経由で使う）。
+//   true : クラウドOCRを使う（要 Blaze プラン + Vision API 有効化 + functions デプロイ）。
+//          失敗時は自動でブラウザ内OCRにフォールバックする。
+//   false: ブラウザ内 Tesseract.js のみを使う。
+export const USE_CLOUD_VISION = true;
+
 // 家計簿カテゴリ
 export const CATEGORIES = [
   "食費",
