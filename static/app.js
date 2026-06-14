@@ -1,57 +1,157 @@
-"use strict";
+// レシート家計簿 — フロントエンド（Firebase + OCRバックエンド連携）
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  serverTimestamp,
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+import { firebaseConfig, OCR_API_BASE, CATEGORIES } from "./firebase-config.js";
+
+// ---- Firebase 初期化 -------------------------------------------------------
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+const storage = getStorage(fbApp);
+const provider = new GoogleAuthProvider();
 
 // ---- 状態 ------------------------------------------------------------------
+let currentUser = null;
 let currentMonth = new Date(); // 表示中の月
-let categories = [];
+let currentExpenses = []; // 当月の支出（リアルタイム同期）
+let unsubscribe = null; // Firestore リスナー解除関数
+let pendingImageFile = null; // OCR後、保存時にアップロードする画像
 
 const $ = (id) => document.getElementById(id);
 const yen = (n) => "¥" + Number(n || 0).toLocaleString("ja-JP");
-const monthKey = (d) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+const pad = (n) => String(n).padStart(2, "0");
+const monthKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
 const monthLabel = (d) => `${d.getFullYear()}年${d.getMonth() + 1}月`;
+const todayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
 
-// ---- 初期化 ----------------------------------------------------------------
-async function init() {
-  await loadCategories();
-  bindEvents();
+// ---- 認証 ------------------------------------------------------------------
+onAuthStateChanged(auth, (user) => {
+  currentUser = user;
+  if (user) {
+    $("login-screen").hidden = true;
+    $("app").hidden = false;
+    setupApp();
+  } else {
+    if (unsubscribe) unsubscribe();
+    $("app").hidden = true;
+    $("login-screen").hidden = false;
+  }
+});
+
+$("google-login").onclick = async () => {
+  $("login-error").hidden = true;
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (err) {
+    const el = $("login-error");
+    el.textContent = "ログインに失敗しました: " + (err.message || err.code);
+    el.hidden = false;
+  }
+};
+
+let appInitialized = false;
+function setupApp() {
+  if (!appInitialized) {
+    populateCategories();
+    bindEvents();
+    resetForm();
+    appInitialized = true;
+  }
   renderMonth();
-  await refresh();
+  subscribeMonth();
 }
 
-async function loadCategories() {
-  const res = await fetch("/api/categories");
-  const data = await res.json();
-  categories = data.categories;
-
+function populateCategories() {
   const sel = $("f-category");
   const filter = $("filter-category");
-  for (const c of categories) {
+  for (const c of CATEGORIES) {
     sel.add(new Option(c, c));
     filter.add(new Option(c, c));
   }
 }
 
 function bindEvents() {
+  $("logout").onclick = () => signOut(auth);
   $("prev-month").onclick = () => shiftMonth(-1);
   $("next-month").onclick = () => shiftMonth(1);
   $("file-input").onchange = handleFile;
   $("expense-form").onsubmit = handleSubmit;
   $("reset-btn").onclick = resetForm;
-  $("filter-category").onchange = loadList;
+  $("filter-category").onchange = renderList;
 }
 
 function shiftMonth(delta) {
   currentMonth.setMonth(currentMonth.getMonth() + delta);
   renderMonth();
-  refresh();
+  subscribeMonth();
 }
 
 function renderMonth() {
   $("current-month").textContent = monthLabel(currentMonth);
 }
 
-async function refresh() {
-  await Promise.all([loadSummary(), loadList()]);
+// ---- Firestore（当月をリアルタイム購読） -----------------------------------
+function expensesCol() {
+  return collection(db, "users", currentUser.uid, "expenses");
+}
+
+function subscribeMonth() {
+  if (unsubscribe) unsubscribe();
+  const start = monthKey(currentMonth) + "-01";
+  // 翌月1日（文字列比較の上限）
+  const next = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+  const end = monthKey(next) + "-01";
+
+  const q = query(
+    expensesCol(),
+    where("date", ">=", start),
+    where("date", "<", end),
+    orderBy("date", "desc")
+  );
+  unsubscribe = onSnapshot(
+    q,
+    (snap) => {
+      currentExpenses = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderList();
+      renderSummary();
+    },
+    (err) => {
+      console.error(err);
+      $("ocr-status").hidden = false;
+      $("ocr-status").className = "status error";
+      $("ocr-status").textContent =
+        "データ取得に失敗しました（Firebaseの設定/ルールを確認してください）: " + err.message;
+    }
+  );
 }
 
 // ---- OCR 取り込み ----------------------------------------------------------
@@ -66,13 +166,14 @@ async function handleFile(e) {
   const fd = new FormData();
   fd.append("file", file);
   try {
-    const res = await fetch("/api/ocr", { method: "POST", body: fd });
+    const res = await fetch(`${OCR_API_BASE}/api/ocr`, { method: "POST", body: fd });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || "読み取りに失敗しました");
     }
     const data = await res.json();
-    fillForm(data);
+    pendingImageFile = file; // 保存時に Storage へアップロード
+    fillForm(data, URL.createObjectURL(file));
     status.className = "status ok";
     status.textContent = "✅ 読み取りました。内容を確認して保存してください。";
     $("form-card").scrollIntoView({ behavior: "smooth" });
@@ -85,21 +186,24 @@ async function handleFile(e) {
 }
 
 // ---- フォーム --------------------------------------------------------------
-function fillForm(data) {
+function fillForm(data, previewUrl) {
   $("form-title").textContent = "読み取り結果を確認";
   $("f-id").value = "";
-  $("f-date").value = data.date || "";
+  $("f-date").value = data.date || todayStr();
   $("f-amount").value = data.amount || 0;
   $("f-store").value = data.store || "";
   $("f-category").value = data.category || "その他";
   $("f-memo").value = "";
-  $("f-image").value = data.image_path || "";
+  $("f-image-url").value = "";
   $("f-rawtext").value = data.raw_text || "";
   renderItems(data.items || []);
+  showPreview(previewUrl);
+}
 
+function showPreview(url) {
   const preview = $("form-preview");
-  if (data.image_path) {
-    $("preview-img").src = "/api/image/" + data.image_path;
+  if (url) {
+    $("preview-img").src = url;
     preview.hidden = false;
   } else {
     preview.hidden = true;
@@ -107,8 +211,7 @@ function fillForm(data) {
 }
 
 function renderItems(items) {
-  const list = $("items-list");
-  list.innerHTML = "";
+  $("items-list").innerHTML = "";
   for (const it of items) addItemRow(it.name, it.price);
   updateItemsCount();
 }
@@ -145,62 +248,91 @@ function resetForm() {
   $("expense-form").reset();
   $("form-title").textContent = "手入力で追加";
   $("f-id").value = "";
-  $("f-image").value = "";
+  $("f-image-url").value = "";
   $("f-rawtext").value = "";
   $("items-list").innerHTML = "";
-  $("form-preview").hidden = true;
+  showPreview(null);
+  pendingImageFile = null;
   updateItemsCount();
-  $("f-date").value = monthKey(new Date()) + "-" + String(new Date().getDate()).padStart(2, "0");
+  $("f-date").value = todayStr();
 }
 
 async function handleSubmit(e) {
   e.preventDefault();
-  const id = $("f-id").value;
-  const fd = new FormData();
-  fd.append("date", $("f-date").value);
-  fd.append("store", $("f-store").value);
-  fd.append("amount", $("f-amount").value || 0);
-  fd.append("category", $("f-category").value);
-  fd.append("memo", $("f-memo").value);
-  fd.append("items", JSON.stringify(collectItems()));
+  const saveBtn = $("save-btn");
+  saveBtn.disabled = true;
+  saveBtn.textContent = "保存中…";
+  try {
+    const id = $("f-id").value;
+    const payload = {
+      date: $("f-date").value,
+      store: $("f-store").value.trim(),
+      amount: Number($("f-amount").value) || 0,
+      category: $("f-category").value,
+      memo: $("f-memo").value.trim(),
+      items: collectItems(),
+    };
 
-  let url = "/api/expenses";
-  let method = "POST";
-  if (id) {
-    url += "/" + id;
-    method = "PUT";
-  } else {
-    fd.append("image_path", $("f-image").value);
-    fd.append("raw_text", $("f-rawtext").value);
-  }
+    if (id) {
+      // 更新
+      await updateDoc(doc(db, "users", currentUser.uid, "expenses", id), payload);
+    } else {
+      // 新規。画像があれば Storage にアップロードして URL を保存。
+      let imageUrl = "";
+      if (pendingImageFile) {
+        imageUrl = await uploadReceiptImage(pendingImageFile);
+      }
+      await addDoc(expensesCol(), {
+        ...payload,
+        imageUrl,
+        rawText: $("f-rawtext").value || "",
+        createdAt: serverTimestamp(),
+      });
+    }
 
-  const res = await fetch(url, { method, body: fd });
-  if (!res.ok) {
-    alert("保存に失敗しました。");
-    return;
+    // 保存した支出の月へ移動
+    const savedMonth = new Date($("f-date").value + "T00:00:00");
+    if (monthKey(savedMonth) !== monthKey(currentMonth)) {
+      currentMonth = savedMonth;
+      renderMonth();
+      subscribeMonth();
+    }
+    resetForm();
+    $("ocr-status").hidden = true;
+  } catch (err) {
+    console.error(err);
+    alert("保存に失敗しました: " + err.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = "保存";
   }
-  // 保存した支出の月へ移動して表示
-  const saved = (await res.json()).expense;
-  if (saved && saved.date) currentMonth = new Date(saved.date + "T00:00:00");
-  resetForm();
-  $("ocr-status").hidden = true;
-  renderMonth();
-  await refresh();
+}
+
+async function uploadReceiptImage(file) {
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const path = `users/${currentUser.uid}/receipts/${name}`;
+  const sref = storageRef(storage, path);
+  await uploadBytes(sref, file, { contentType: file.type });
+  return await getDownloadURL(sref);
 }
 
 // ---- サマリー --------------------------------------------------------------
-async function loadSummary() {
-  const res = await fetch("/api/summary?month=" + monthKey(currentMonth));
-  const data = await res.json();
-  $("summary-total").textContent = yen(data.total);
-  $("summary-count").textContent = data.count
-    ? `${data.count}件の記録`
+function renderSummary() {
+  const total = currentExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+  $("summary-total").textContent = yen(total);
+  $("summary-count").textContent = currentExpenses.length
+    ? `${currentExpenses.length}件の記録`
     : "記録なし";
 
+  const byCat = {};
+  for (const e of currentExpenses) {
+    byCat[e.category] = (byCat[e.category] || 0) + (e.amount || 0);
+  }
+  const entries = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+  const max = entries.length ? entries[0][1] : 0;
   const bars = $("category-bars");
   bars.innerHTML = "";
-  const entries = Object.entries(data.by_category).sort((a, b) => b[1] - a[1]);
-  const max = entries.length ? entries[0][1] : 0;
   for (const [cat, amt] of entries) {
     const row = document.createElement("div");
     row.className = "cat-row";
@@ -214,27 +346,24 @@ async function loadSummary() {
 }
 
 // ---- 一覧 ------------------------------------------------------------------
-async function loadList() {
+function renderList() {
   const cat = $("filter-category").value;
-  let url = "/api/expenses?month=" + monthKey(currentMonth);
-  if (cat) url += "&category=" + encodeURIComponent(cat);
-  const res = await fetch(url);
-  const data = await res.json();
+  const rows = cat ? currentExpenses.filter((e) => e.category === cat) : currentExpenses;
   const list = $("expense-list");
   list.innerHTML = "";
-  $("empty-msg").hidden = data.expenses.length > 0;
+  $("empty-msg").hidden = rows.length > 0;
 
-  for (const e of data.expenses) {
+  for (const e of rows) {
     const item = document.createElement("div");
     item.className = "expense-item";
-    const thumb = e.image_path
-      ? `<img class="ei-thumb" src="/api/image/${e.image_path}" alt="" />`
+    const thumb = e.imageUrl
+      ? `<img class="ei-thumb" src="${escapeHtml(e.imageUrl)}" alt="" />`
       : `<div class="ei-thumb"></div>`;
     item.innerHTML = `
       ${thumb}
       <div class="ei-main">
         <div class="ei-store">${escapeHtml(e.store || "(店名なし)")}</div>
-        <div class="ei-meta"><span class="ei-cat">${escapeHtml(e.category)}</span>${e.date}${e.memo ? " · " + escapeHtml(e.memo) : ""}</div>
+        <div class="ei-meta"><span class="ei-cat">${escapeHtml(e.category)}</span>${escapeHtml(e.date)}${e.memo ? " · " + escapeHtml(e.memo) : ""}</div>
       </div>
       <div class="ei-amount">${yen(e.amount)}</div>
       <div class="ei-actions">
@@ -252,24 +381,22 @@ function editExpense(e) {
   $("f-id").value = e.id;
   $("f-date").value = e.date;
   $("f-amount").value = e.amount;
-  $("f-store").value = e.store;
+  $("f-store").value = e.store || "";
   $("f-category").value = e.category;
-  $("f-memo").value = e.memo;
+  $("f-memo").value = e.memo || "";
+  pendingImageFile = null;
   renderItems(e.items || []);
-  const preview = $("form-preview");
-  if (e.image_path) {
-    $("preview-img").src = "/api/image/" + e.image_path;
-    preview.hidden = false;
-  } else {
-    preview.hidden = true;
-  }
+  showPreview(e.imageUrl || null);
   $("form-card").scrollIntoView({ behavior: "smooth" });
 }
 
 async function deleteExpense(id) {
   if (!confirm("この記録を削除しますか?")) return;
-  const res = await fetch("/api/expenses/" + id, { method: "DELETE" });
-  if (res.ok) await refresh();
+  try {
+    await deleteDoc(doc(db, "users", currentUser.uid, "expenses", id));
+  } catch (err) {
+    alert("削除に失敗しました: " + err.message);
+  }
 }
 
 // ---- ユーティリティ --------------------------------------------------------
@@ -279,15 +406,10 @@ function escapeHtml(s) {
   );
 }
 
-// 明細を手動追加できるよう、details 内にボタンを差し込む
-window.addEventListener("DOMContentLoaded", () => {
-  const details = $("items-details");
-  const addBtn = document.createElement("button");
-  addBtn.type = "button";
-  addBtn.textContent = "＋ 明細を追加";
-  addBtn.style.marginTop = "8px";
-  addBtn.onclick = () => addItemRow();
-  details.appendChild(addBtn);
-  resetForm();
-  init();
-});
+// 明細を手動追加するボタンを details 内に差し込む
+const addBtn = document.createElement("button");
+addBtn.type = "button";
+addBtn.textContent = "＋ 明細を追加";
+addBtn.style.marginTop = "8px";
+addBtn.onclick = () => addItemRow();
+$("items-details").appendChild(addBtn);

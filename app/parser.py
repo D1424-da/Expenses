@@ -40,6 +40,18 @@ def _normalize_amount(text: str) -> int | None:
         return None
 
 
+def _is_noise_line(line: str) -> bool:
+    """電話番号・FAX・郵便番号・日付など、金額や品目として扱うべきでない行。"""
+    low = line.lower()
+    if re.search(r"(tel|電話|fax|〒)", low):
+        return True
+    if re.search(r"\d{2,4}-\d{2,4}-\d{3,4}", line):  # 電話番号
+        return True
+    if re.search(r"\d{1,4}\s*[年/\-.]\s*\d{1,2}\s*[月/\-.]\s*\d{1,2}", line):  # 日付
+        return True
+    return False
+
+
 def parse_date(text: str) -> str | None:
     """テキストから日付を探して YYYY-MM-DD で返す。見つからなければ None。"""
     t = text.translate(str.maketrans("０１２３４５６７８９", "0123456789"))
@@ -83,6 +95,8 @@ def parse_total(text: str) -> int | None:
         low = line.lower()
         if any(ex.lower() in low for ex in _EXCLUDE_KEYWORDS):
             continue
+        if _is_noise_line(line):
+            continue
         m = re.search(r"(\d{1,3}(?:,\d{3})+|\d{2,7})\s*円?\s*[*※]?$", line)
         if m:
             val = _normalize_amount(m.group(1))
@@ -109,6 +123,8 @@ def parse_total(text: str) -> int | None:
         if any(ex.lower() in low for ex in _EXCLUDE_KEYWORDS):
             continue
         # 「円」や「¥」が付く、またはカンマ区切りの数値を金額候補とする
+        if _is_noise_line(line):
+            continue
         if re.search(r"[¥￥]|円|\d,\d{3}", line):
             amount = _normalize_amount(line)
             if amount and 0 < amount < 10_000_000:
@@ -145,11 +161,7 @@ def parse_items(text: str) -> list[dict[str, Any]]:
         if any(kw.lower() in low for kw in _TOTAL_KEYWORDS + _EXCLUDE_KEYWORDS):
             continue
         # 電話番号・郵便番号・日付など、品目でない行は除外
-        if re.search(r"(tel|電話|fax|〒)", low):
-            continue
-        if re.search(r"\d{2,4}-\d{2,4}-\d{3,4}", line):  # 電話番号
-            continue
-        if re.search(r"\d{1,4}\s*[年/\-.]\s*\d{1,2}\s*[月/\-.]\s*\d{1,2}", line):  # 日付
+        if _is_noise_line(line):
             continue
         # 行末の金額（¥1,280 / 1280 / 1,280円 など）
         m = re.search(r"[¥￥]?\s*(\d{1,3}(?:,\d{3})+|\d{2,6})\s*円?\s*[*※]?$", line)

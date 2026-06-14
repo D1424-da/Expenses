@@ -4,9 +4,11 @@ __pycache__/
 .venv/
 venv/
 
-# App data
-data/expenses.db
-data/uploads/
+# Firebase
+.firebase/
+firebase-debug.log
+*-debug.log
+node_modules/
 
 # OS
 .DS_Store
