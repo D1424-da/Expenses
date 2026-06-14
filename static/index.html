@@ -4,85 +4,103 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>レシート家計簿</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="topbar">
-    <h1>🧾 レシート家計簿</h1>
-    <div class="month-picker">
-      <button id="prev-month" aria-label="前の月">‹</button>
-      <span id="current-month"></span>
-      <button id="next-month" aria-label="次の月">›</button>
+  <!-- ログイン画面（未ログイン時に表示） -->
+  <div id="login-screen" class="login-screen" hidden>
+    <div class="login-card">
+      <h1>🧾 レシート家計簿</h1>
+      <p>レシートを撮るだけで記録。<br />どの端末からでも同じデータを確認できます。</p>
+      <button id="google-login" class="google-btn">
+        <span class="g-icon">G</span> Google でログイン
+      </button>
+      <p id="login-error" class="login-error" hidden></p>
     </div>
-  </header>
+  </div>
 
-  <main>
-    <!-- サマリー -->
-    <section class="summary card">
-      <div class="summary-total">
-        <span class="label">今月の支出</span>
-        <span id="summary-total" class="value">¥0</span>
-        <span id="summary-count" class="sub"></span>
-      </div>
-      <div id="category-bars" class="category-bars"></div>
-    </section>
-
-    <!-- レシート読み取り -->
-    <section class="card capture">
-      <h2>レシートを撮影 / 選択</h2>
-      <p class="hint">スマホならカメラが起動します。読み取り後に内容を確認して保存できます。</p>
-      <label class="file-button">
-        📷 レシートを取り込む
-        <input id="file-input" type="file" accept="image/*" capture="environment" hidden />
-      </label>
-      <div id="ocr-status" class="status" hidden></div>
-    </section>
-
-    <!-- 入力フォーム（OCR結果の確認・修正 / 手入力） -->
-    <section class="card form-card" id="form-card">
-      <h2 id="form-title">手入力で追加</h2>
-      <form id="expense-form">
-        <input type="hidden" id="f-id" />
-        <input type="hidden" id="f-image" />
-        <input type="hidden" id="f-rawtext" />
-
-        <div class="row">
-          <label>日付<input type="date" id="f-date" required /></label>
-          <label>金額(円)<input type="number" id="f-amount" min="0" required /></label>
+  <!-- アプリ本体（ログイン後に表示） -->
+  <div id="app" hidden>
+    <header class="topbar">
+      <h1>🧾 レシート家計簿</h1>
+      <div class="topbar-right">
+        <div class="month-picker">
+          <button id="prev-month" aria-label="前の月">‹</button>
+          <span id="current-month"></span>
+          <button id="next-month" aria-label="次の月">›</button>
         </div>
-        <label>店名<input type="text" id="f-store" placeholder="例: スーパー〇〇" /></label>
-        <label>カテゴリ
-          <select id="f-category"></select>
+        <button id="logout" class="logout-btn" title="ログアウト">ログアウト</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- サマリー -->
+      <section class="summary card">
+        <div class="summary-total">
+          <span class="label">今月の支出</span>
+          <span id="summary-total" class="value">¥0</span>
+          <span id="summary-count" class="sub"></span>
+        </div>
+        <div id="category-bars" class="category-bars"></div>
+      </section>
+
+      <!-- レシート読み取り -->
+      <section class="card capture">
+        <h2>レシートを撮影 / 選択</h2>
+        <p class="hint">スマホならカメラが起動します。読み取り後に内容を確認して保存できます。</p>
+        <label class="file-button">
+          📷 レシートを取り込む
+          <input id="file-input" type="file" accept="image/*" capture="environment" hidden />
         </label>
-        <label>メモ<input type="text" id="f-memo" placeholder="任意" /></label>
+        <div id="ocr-status" class="status" hidden></div>
+      </section>
 
-        <details id="items-details">
-          <summary>明細（<span id="items-count">0</span>件）</summary>
-          <div id="items-list" class="items-list"></div>
-        </details>
+      <!-- 入力フォーム（OCR結果の確認・修正 / 手入力） -->
+      <section class="card form-card" id="form-card">
+        <h2 id="form-title">手入力で追加</h2>
+        <form id="expense-form">
+          <input type="hidden" id="f-id" />
+          <input type="hidden" id="f-image-url" />
+          <input type="hidden" id="f-rawtext" />
 
-        <div class="form-preview" id="form-preview" hidden>
-          <img id="preview-img" alt="読み取ったレシート" />
+          <div class="row">
+            <label>日付<input type="date" id="f-date" required /></label>
+            <label>金額(円)<input type="number" id="f-amount" min="0" required /></label>
+          </div>
+          <label>店名<input type="text" id="f-store" placeholder="例: スーパー〇〇" /></label>
+          <label>カテゴリ
+            <select id="f-category"></select>
+          </label>
+          <label>メモ<input type="text" id="f-memo" placeholder="任意" /></label>
+
+          <details id="items-details">
+            <summary>明細（<span id="items-count">0</span>件）</summary>
+            <div id="items-list" class="items-list"></div>
+          </details>
+
+          <div class="form-preview" id="form-preview" hidden>
+            <img id="preview-img" alt="読み取ったレシート" />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="primary" id="save-btn">保存</button>
+            <button type="button" id="reset-btn">クリア</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 一覧 -->
+      <section class="card list-card">
+        <div class="list-head">
+          <h2>支出一覧</h2>
+          <select id="filter-category"><option value="">全カテゴリ</option></select>
         </div>
+        <div id="expense-list" class="expense-list"></div>
+        <p id="empty-msg" class="empty" hidden>この月の記録はまだありません。</p>
+      </section>
+    </main>
+  </div>
 
-        <div class="form-actions">
-          <button type="submit" class="primary" id="save-btn">保存</button>
-          <button type="button" id="reset-btn">クリア</button>
-        </div>
-      </form>
-    </section>
-
-    <!-- 一覧 -->
-    <section class="card list-card">
-      <div class="list-head">
-        <h2>支出一覧</h2>
-        <select id="filter-category"><option value="">全カテゴリ</option></select>
-      </div>
-      <div id="expense-list" class="expense-list"></div>
-      <p id="empty-msg" class="empty" hidden>この月の記録はまだありません。</p>
-    </section>
-  </main>
-
-  <script src="/static/app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
