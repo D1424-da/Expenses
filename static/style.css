@@ -13,6 +13,9 @@
 
 * { box-sizing: border-box; }
 
+/* hidden 属性は常に最優先で非表示にする（display:flex 等に負けないように） */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
