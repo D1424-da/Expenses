@@ -77,6 +77,13 @@ const todayStr = () => {
   const d = new Date();
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
+// "2026-06-01" や "2026/6/1" を YYYY-MM-DD に整える。不正なら null。
+const normDate = (s) => {
+  if (!s) return null;
+  const m = String(s).match(/(\d{4})\D(\d{1,2})\D(\d{1,2})/);
+  if (!m) return null;
+  return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+};
 
 // ---- 認証 ------------------------------------------------------------------
 // ポップアップ方式は COOP（Cross-Origin-Opener-Policy）で弾かれる環境があるため、
@@ -281,23 +288,40 @@ async function ocrAndShow(file) {
       }
       data = await res.json();
     } else if (USE_CLOUD_VISION) {
-      // 高精度: Google Cloud Vision（Cloud Functions経由）。失敗時はブラウザ内OCRへ。
-      let text;
+      // 高精度: Gemini（Cloud Functions経由）で画像から構造化抽出。失敗時はブラウザ内OCRへ。
       try {
-        status.textContent = "🔍 クラウドOCRで読み取り中…";
+        status.textContent = "🤖 AIで読み取り中…";
         const imageBase64 = await fileToBase64(file, 1600);
         const res = await cloudOcr({ imageBase64 });
-        text = (res.data && res.data.text) || "";
-        log("クラウドOCR成功");
+        const s = res.data && res.data.structured;
+        if (s) {
+          data = {
+            date: normDate(s.date) || todayStr(),
+            store: (s.store || "").toString().slice(0, 50),
+            amount: Math.round(Number(s.total)) || 0,
+            category: CATEGORIES.includes(s.category) ? s.category : "その他",
+            items: Array.isArray(s.items)
+              ? s.items
+                  .filter((it) => it && it.name)
+                  .map((it) => ({ name: String(it.name).slice(0, 60), price: Math.round(Number(it.price)) || 0 }))
+              : [],
+            raw_text: (res.data && res.data.text) || "",
+          };
+          log("AI読み取り成功");
+        } else {
+          // 構造化に失敗したらテキストから推定
+          data = parseReceipt((res.data && res.data.text) || "");
+          log("AI構造化なし→テキスト解析にフォールバック");
+        }
       } catch (err) {
         logErr("クラウドOCR失敗、ブラウザ内OCRに切替:", err.code, err.message, err);
         status.textContent = "🔍 文字を読み取り中…（ブラウザ内OCR）";
         const canvas = await preprocessImage(file);
-        text = await runClientOcr(canvas, (p) => {
+        const text = await runClientOcr(canvas, (p) => {
           status.textContent = `🔍 文字を読み取り中… ${Math.round(p * 100)}%`;
         });
+        data = parseReceipt(text);
       }
-      data = parseReceipt(text);
     } else {
       // ブラウザ内で Tesseract.js を使って OCR（サーバー不要）
       const canvas = await preprocessImage(file);
