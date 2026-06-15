@@ -8,9 +8,14 @@ const { GoogleGenAI } = require("@google/genai");
 setGlobalOptions({ region: "asia-northeast1", maxInstances: 5 });
 
 // Vertex AI 経由（APIキー不要。関数のサービスアカウントで認証）。
+const PROJECT_ID =
+  process.env.GCLOUD_PROJECT ||
+  process.env.GOOGLE_CLOUD_PROJECT ||
+  process.env.GCP_PROJECT ||
+  "expenses-9af61"; // 取得できない環境向けの保険
 const ai = new GoogleGenAI({
   vertexai: true,
-  project: process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT,
+  project: PROJECT_ID,
   location: "us-central1",
 });
 
