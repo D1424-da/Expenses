@@ -16,7 +16,7 @@ const PROJECT_ID =
 const ai = new GoogleGenAI({
   vertexai: true,
   project: PROJECT_ID,
-  location: "us-central1",
+  location: "global",
 });
 
 const PROMPT = `あなたは日本のレシートを読み取るアシスタントです。
@@ -51,7 +51,7 @@ exports.ocrReceipt = onCall(
     let textOut = "";
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash-001",
+        model: "gemini-2.0-flash",
         contents: [
           {
             role: "user",
