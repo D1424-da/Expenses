@@ -18,7 +18,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import ocr, parser
+from app import parser
+# ocr モジュールは OpenCV/Tesseract に依存するため、必要になるまで読み込まない。
+# Gemini エンジンだけを使う軽量(Docker無し)デプロイで起動が失敗しないようにする。
+try:
+    from app import gemini
+except Exception:  # noqa: BLE001 — gemini は任意
+    gemini = None  # type: ignore
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -55,7 +61,18 @@ async def ocr_receipt(file: UploadFile = File(...)) -> JSONResponse:
     if not image_bytes:
         raise HTTPException(400, "空のファイルです。")
 
+    # OCR_ENGINE=gemini のときは Gemini で画像から直接構造化抽出（高精度）。
+    # キーはサーバーの環境変数 GEMINI_API_KEY に保持し、フロントには出さない。
+    if os.environ.get("OCR_ENGINE", "tesseract").lower() == "gemini":
+        if gemini is None:
+            raise HTTPException(500, "Gemini エンジンを利用できません。")
+        try:
+            return JSONResponse(gemini.extract_receipt(image_bytes))
+        except Exception as exc:  # noqa: BLE001 — ユーザーに原因を返す
+            raise HTTPException(500, f"AI 読み取りに失敗しました: {exc}") from exc
+
     try:
+        from app import ocr  # 遅延 import（OpenCV/Tesseract が必要なときだけ）
         text = ocr.run_ocr(image_bytes)
     except Exception as exc:  # noqa: BLE001 — ユーザーに原因を返す
         raise HTTPException(500, f"OCR に失敗しました: {exc}") from exc
