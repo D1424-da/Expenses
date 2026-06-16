@@ -109,7 +109,31 @@ uvicorn main:app --reload      # http://localhost:8000
 （Cloud Run / Render などにデプロイ可能）。別オリジンから呼ぶ場合はサーバー側の
 環境変数 `CORS_ORIGINS` に公開元 URL を指定してください。
 
-OCR エンジンは環境変数 `OCR_ENGINE` で切替可能（`tesseract` 既定 / `claude` / `google`）。
+OCR エンジンは環境変数 `OCR_ENGINE` で切替可能（`tesseract` 既定 / `gemini` / `claude` / `google`）。
+
+### 高精度AI（Gemini）をバックエンド経由で使う（推奨）
+
+Gemini で画像から直接「日付・店名・支店名・合計・カテゴリ・明細」を構造化抽出できます。
+**API キーはフロント（公開される静的ファイル）には置かず、必ずバックエンドの環境変数に
+保持してください。** フロントに書くと GitHub 等で公開され、Google に「漏洩キー」として
+自動的に無効化されます（`403 PERMISSION_DENIED: Your API key was reported as leaked`）。
+
+1. [Google AI Studio](https://aistudio.google.com/apikey) で API キーを発行
+2. バックエンドに環境変数を設定して起動
+
+   ```bash
+   export OCR_ENGINE=gemini
+   export GEMINI_API_KEY="（発行したキー）"
+   export GEMINI_MODEL="gemini-2.5-flash"   # 任意
+   export CORS_ORIGINS="https://<ユーザー名>.github.io"   # 公開元
+   uvicorn main:app --host 0.0.0.0 --port 8000
+   ```
+
+   Cloud Run / Render などにデプロイする場合も、これらを環境変数（シークレット）として設定します。
+3. `static/firebase-config.js` の `OCR_API_BASE` にバックエンドの URL を設定
+
+> 旧版はフロントから直接 Gemini を呼んでいましたが、キーが公開され無効化されるため、
+> バックエンド経由に変更しました。`OCR_API_BASE` が空のときはブラウザ内 Tesseract を使います。
 
 ---
 

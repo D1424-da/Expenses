@@ -19,6 +19,10 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import ocr, parser
+try:
+    from app import gemini
+except Exception:  # noqa: BLE001 — gemini は任意
+    gemini = None  # type: ignore
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -54,6 +58,16 @@ async def ocr_receipt(file: UploadFile = File(...)) -> JSONResponse:
         raise HTTPException(400, "画像サイズが大きすぎます（最大15MB）。")
     if not image_bytes:
         raise HTTPException(400, "空のファイルです。")
+
+    # OCR_ENGINE=gemini のときは Gemini で画像から直接構造化抽出（高精度）。
+    # キーはサーバーの環境変数 GEMINI_API_KEY に保持し、フロントには出さない。
+    if os.environ.get("OCR_ENGINE", "tesseract").lower() == "gemini":
+        if gemini is None:
+            raise HTTPException(500, "Gemini エンジンを利用できません。")
+        try:
+            return JSONResponse(gemini.extract_receipt(image_bytes))
+        except Exception as exc:  # noqa: BLE001 — ユーザーに原因を返す
+            raise HTTPException(500, f"AI 読み取りに失敗しました: {exc}") from exc
 
     try:
         text = ocr.run_ocr(image_bytes)

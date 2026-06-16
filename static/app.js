@@ -30,9 +30,7 @@ import {
 import {
   firebaseConfig,
   OCR_API_BASE,
-  USE_CLOUD_VISION,
   CATEGORIES,
-  GEMINI_API_KEY,
 } from "./firebase-config.js";
 import { parseReceipt } from "./parser.js";
 
@@ -53,53 +51,9 @@ const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 const provider = new GoogleAuthProvider();
-// Gemini API 直接呼び出し（Cloud Functions 不要・無料枠）
-const GEMINI_PROMPT = `あなたは日本のレシートを読み取るアシスタントです。
-画像のレシートを読み取り、次の形式のJSONだけを出力してください（説明文やマークダウンは不要）。
-
-{
-  "date": "YYYY-MM-DD",
-  "store": "店舗・チェーン名",
-  "branch": "支店名・店舗名（〇〇店）",
-  "total": 整数,
-  "category": "食費|日用品|外食|交通費|医療費|娯楽|衣服|光熱費|通信費|その他",
-  "items": [ { "name": "商品名", "price": 整数 } ]
-}
-
-ルール:
-- store は店名（チェーン名や屋号）。挨拶、住所、電話、登録番号は含めない。
-- branch は支店名・店舗名（「〇〇店」など）。無ければ空文字。
-- total は税込の支払い合計（「合計」の金額）。お預り・お釣り・小計・ポイントは含めない。
-- items は購入した商品のみ。税・値引・小計・合計・ポイント等は含めない。
-- price と total は数値のみ（カンマや¥や円は付けない）。
-- 読み取れない項目は空文字または空配列にする。`;
-
-async function callGeminiOcr(imageBase64) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [
-          { inline_data: { mime_type: "image/jpeg", data: imageBase64 } },
-          { text: GEMINI_PROMPT },
-        ]}],
-        generationConfig: { response_mime_type: "application/json", temperature: 0 },
-      }),
-    }
-  );
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(JSON.stringify(err));
-  }
-  const json = await res.json();
-  const text = json.candidates?.[0]?.content?.parts?.[0]?.text || "";
-  const clean = text.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
-  let structured = null;
-  try { structured = JSON.parse(clean); } catch (e) { /* ignore */ }
-  return { structured, text };
-}
+// 高精度な AI 読み取り（Gemini）は OCR バックエンド経由で行う。
+// API キーをフロントに置くと公開され Google に無効化されるため、
+// キーはサーバー側の環境変数に保持し、ここでは OCR_API_BASE を呼ぶだけにする。
 log("Firebase初期化完了", {
   projectId: firebaseConfig.projectId,
   authDomain: firebaseConfig.authDomain,
@@ -121,13 +75,6 @@ const monthLabel = (d) => `${d.getFullYear()}年${d.getMonth() + 1}月`;
 const todayStr = () => {
   const d = new Date();
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-};
-// "2026-06-01" や "2026/6/1" を YYYY-MM-DD に整える。不正なら null。
-const normDate = (s) => {
-  if (!s) return null;
-  const m = String(s).match(/(\d{4})\D(\d{1,2})\D(\d{1,2})/);
-  if (!m) return null;
-  return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
 };
 
 // ---- 認証 ------------------------------------------------------------------
@@ -314,7 +261,7 @@ function skipCurrent() {
 }
 
 async function ocrAndShow(file) {
-  log("OCR開始:", file.name, file.type, `${Math.round(file.size / 1024)}KB`, OCR_API_BASE ? "(バックエンド)" : USE_CLOUD_VISION ? "(クラウドVision)" : "(ブラウザ内Tesseract)");
+  log("OCR開始:", file.name, file.type, `${Math.round(file.size / 1024)}KB`, OCR_API_BASE ? "(バックエンド)" : "(ブラウザ内Tesseract)");
   const status = $("ocr-status");
   status.hidden = false;
   status.className = "status loading";
@@ -323,44 +270,21 @@ async function ocrAndShow(file) {
   try {
     let data;
     if (OCR_API_BASE) {
-      // OCRバックエンド(FastAPI)を使う設定の場合
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch(`${OCR_API_BASE}/api/ocr`, { method: "POST", body: fd });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || "読み取りに失敗しました");
-      }
-      data = await res.json();
-    } else if (USE_CLOUD_VISION) {
-      // 高精度: Gemini（Cloud Functions経由）で画像から構造化抽出。失敗時はブラウザ内OCRへ。
+      // OCRバックエンド(FastAPI)を使う設定の場合。高精度AI(Gemini)もここ経由。
+      // 失敗時はブラウザ内OCRにフォールバックする。
       try {
         status.textContent = "🤖 AIで読み取り中…";
-        const imageBase64 = await fileToBase64(file, 1600);
-        const res = await callGeminiOcr(imageBase64);
-        const s = res.structured;
-        if (s) {
-          data = {
-            date: normDate(s.date) || todayStr(),
-            store: (s.store || "").toString().slice(0, 50),
-            branch: (s.branch || "").toString().slice(0, 50),
-            amount: Math.round(Number(s.total)) || 0,
-            category: CATEGORIES.includes(s.category) ? s.category : "その他",
-            items: Array.isArray(s.items)
-              ? s.items
-                  .filter((it) => it && it.name)
-                  .map((it) => ({ name: String(it.name).slice(0, 60), price: Math.round(Number(it.price)) || 0 }))
-              : [],
-            raw_text: res.text || "",
-          };
-          log("AI読み取り成功");
-        } else {
-          // 構造化に失敗したらテキストから推定
-          data = parseReceipt(res.text || "");
-          log("AI構造化なし→テキスト解析にフォールバック");
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch(`${OCR_API_BASE}/api/ocr`, { method: "POST", body: fd });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || "読み取りに失敗しました");
         }
+        data = await res.json();
+        log("バックエンド読み取り成功");
       } catch (err) {
-        logErr("クラウドOCR失敗、ブラウザ内OCRに切替:", err.code, err.message, err);
+        logErr("バックエンドOCR失敗、ブラウザ内OCRに切替:", err.message, err);
         status.textContent = "🔍 文字を読み取り中…（ブラウザ内OCR）";
         const canvas = await preprocessImage(file);
         const text = await runClientOcr(canvas, (p) => {
@@ -390,20 +314,6 @@ async function ocrAndShow(file) {
     status.textContent = `⚠️ ${queuePrefix()}` + (err.message || err) +
       (ocrTotal > 1 ? "（「スキップ」で次へ進めます）" : "");
   }
-}
-
-// クラウドOCR送信用: 画像を縮小してJPEGのbase64文字列にする（通信量削減）。
-async function fileToBase64(file, maxW = 1600) {
-  const img = await createImageBitmap(file);
-  const scale = img.width > maxW ? maxW / img.width : 1;
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(img.width * scale);
-  canvas.height = Math.round(img.height * scale);
-  const ctx = canvas.getContext("2d");
-  ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-  return dataUrl.split(",")[1]; // "data:image/jpeg;base64," を除去
 }
 
 // レシートは細い印字が多いので、拡大＋グレースケール＋コントラスト補正＋
