@@ -8,7 +8,7 @@
 // 識別子であり、データ保護は firestore.rules / storage.rules で行います）。
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyBIXsYlSwA0V3qYIAdQRjuRaS1EUl5gwMo",
+  apiKey: "AIzaSyDwEtOmYVP7bjmjnDsKOuAIWWJx6FFV2os",
   authDomain: "expenses-9af61.firebaseapp.com",
   projectId: "expenses-9af61",
   storageBucket: "expenses-9af61.firebasestorage.app",
@@ -25,7 +25,7 @@ export const OCR_API_BASE = "";
 
 // Gemini API キー（Google AI Studio で取得。フロントから直接呼ぶ方式。無料枠あり）
 // aistudio.google.com/apikey で取得した AIzaSy... 形式のキーを設定。
-export const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
+export const GEMINI_API_KEY = "AIzaSyBIXsYlSwA0V3qYIAdQRjuRaS1EUl5gwMo";
 
 // 高精度OCR（Gemini API をフロントから直接呼ぶ）。
 //   true : Gemini APIを使う（GEMINI_API_KEY 要設定）。失敗時はブラウザ内OCRへ。
