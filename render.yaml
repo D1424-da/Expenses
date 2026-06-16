@@ -1,0 +1,22 @@
+# Render Blueprint（Docker 不要・Python ネイティブ）。
+# Render ダッシュボードの「New +」→「Blueprint」でこのリポジトリを選ぶと、
+# このファイルに従ってサービスが作成される。
+#
+# GEMINI_API_KEY と CORS_ORIGINS は sync:false なので、作成時にダッシュボードで入力する
+# （= キーを Git に残さない）。
+services:
+  - type: web
+    name: receipt-ocr
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-gemini.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OCR_ENGINE
+        value: gemini
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: CORS_ORIGINS
+        sync: false   # 例: https://<ユーザー名>.github.io
+      - key: GEMINI_API_KEY
+        sync: false   # Cloud Shell で取得したキー（ダッシュボードで入力）
