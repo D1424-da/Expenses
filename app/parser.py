@@ -165,6 +165,22 @@ def parse_store(text: str) -> str:
     return ""
 
 
+def parse_branch(text: str, store: str) -> str:
+    """支店名（「〇〇店」）を推定する。店名行とは別の「△△店」行を拾う。"""
+    for line in text.splitlines():
+        line = line.strip()
+        if len(line) < 2 or len(line) > 30:
+            continue
+        if line == store:
+            continue
+        if re.search(r"(tel|電話|〒|登録番号|\d{2,4}-\d{2,4}-\d{3,4})", line, re.IGNORECASE):
+            continue
+        m = re.search(r"([^\s　]{1,20}店)\s*\d{0,6}\s*$", line)
+        if m:
+            return m.group(1)[:50]
+    return ""
+
+
 def _clean_item_name(s: str) -> str:
     # 「外8 0104」「内8 5401」「外85416」等の軽減税率印＋商品コードを除去。
     # これがあると別店舗の同一商品が比較でグルーピングできない。
@@ -225,6 +241,7 @@ def parse_receipt(text: str) -> dict[str, Any]:
     return {
         "date": parse_date(text) or dt.date.today().isoformat(),
         "store": store,
+        "branch": parse_branch(text, store),
         "amount": parse_total(text) or 0,
         "category": guess_category(text, store),
         "items": parse_items(text),
