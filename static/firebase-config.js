@@ -8,7 +8,7 @@
 // 識別子であり、データ保護は firestore.rules / storage.rules で行います）。
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyDwEtOmYVP7bjmjnDsKOuAIWWJx6FFV2os",
+  apiKey: "AIzaSyBIXsYlSwA0V3qYIAdQRjuRaS1EUl5gwMo",
   authDomain: "expenses-9af61.firebaseapp.com",
   projectId: "expenses-9af61",
   storageBucket: "expenses-9af61.firebasestorage.app",
