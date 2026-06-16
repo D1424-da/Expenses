@@ -9,7 +9,7 @@ export const firebaseConfig = {
 
 export const OCR_API_BASE = "";
 
-export const GEMINI_API_KEY = "AIzaSyDwEtOmYVP7bjmjnDsKOuAIWWJx6FFV2os";
+export const GEMINI_API_KEY = "AIzaSyDlkWY7QwLu-eDFV49GKgldgaiYvL6Q8W8";
 
 export const USE_CLOUD_VISION = true;
 
