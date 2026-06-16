@@ -185,6 +185,20 @@ function parseStore(text) {
   return "";
 }
 
+// 支店名（「〇〇店」）を推定する。店名行と別に「△△店」の行があれば拾う。
+function parseBranch(text, store) {
+  for (let line of text.split("\n")) {
+    line = line.trim();
+    if (line.length < 2 || line.length > 30) continue;
+    if (line === store) continue;
+    if (/(tel|電話|〒|登録番号|\d{2,4}-\d{2,4}-\d{3,4})/i.test(line)) continue;
+    // 「〇〇店」「〇〇店 12」等。末尾の番号は落とす。
+    const m = line.match(/([^\s　]{1,20}店)\s*\d{0,6}\s*$/);
+    if (m) return m[1].slice(0, 50);
+  }
+  return "";
+}
+
 // 数字・記号のみ（価格だけ）の行かどうか
 function isPriceOnlyLine(line) {
   const t = toHalfWidth(line).trim();
@@ -271,6 +285,7 @@ export function parseReceipt(text) {
   return {
     date: parseDate(text) || todayStr(),
     store,
+    branch: parseBranch(text, store),
     amount: parseTotal(text) || 0,
     category: guessCategory(text, store),
     items: parseItems(text),

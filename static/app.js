@@ -60,6 +60,7 @@ const GEMINI_PROMPT = `あなたは日本のレシートを読み取るアシス
 {
   "date": "YYYY-MM-DD",
   "store": "店舗・チェーン名",
+  "branch": "支店名・店舗名（〇〇店）",
   "total": 整数,
   "category": "食費|日用品|外食|交通費|医療費|娯楽|衣服|光熱費|通信費|その他",
   "items": [ { "name": "商品名", "price": 整数 } ]
@@ -67,6 +68,7 @@ const GEMINI_PROMPT = `あなたは日本のレシートを読み取るアシス
 
 ルール:
 - store は店名（チェーン名や屋号）。挨拶、住所、電話、登録番号は含めない。
+- branch は支店名・店舗名（「〇〇店」など）。無ければ空文字。
 - total は税込の支払い合計（「合計」の金額）。お預り・お釣り・小計・ポイントは含めない。
 - items は購入した商品のみ。税・値引・小計・合計・ポイント等は含めない。
 - price と total は数値のみ（カンマや¥や円は付けない）。
@@ -341,6 +343,7 @@ async function ocrAndShow(file) {
           data = {
             date: normDate(s.date) || todayStr(),
             store: (s.store || "").toString().slice(0, 50),
+            branch: (s.branch || "").toString().slice(0, 50),
             amount: Math.round(Number(s.total)) || 0,
             category: CATEGORIES.includes(s.category) ? s.category : "その他",
             items: Array.isArray(s.items)
@@ -488,6 +491,7 @@ function fillForm(data, previewUrl) {
   $("f-date").value = data.date || todayStr();
   $("f-amount").value = data.amount || 0;
   $("f-store").value = data.store || "";
+  $("f-branch").value = data.branch || "";
   $("f-category").value = data.category || "その他";
   $("f-memo").value = "";
   $("f-image-url").value = "";
@@ -562,6 +566,7 @@ async function handleSubmit(e) {
     const payload = {
       date: $("f-date").value,
       store: $("f-store").value.trim(),
+      branch: $("f-branch").value.trim(),
       amount: Number($("f-amount").value) || 0,
       category: $("f-category").value,
       memo: $("f-memo").value.trim(),
@@ -642,7 +647,7 @@ function renderList() {
     item.className = "expense-item";
     item.innerHTML = `
       <div class="ei-main">
-        <div class="ei-store">${escapeHtml(e.store || "(店名なし)")}</div>
+        <div class="ei-store">${escapeHtml(e.store || "(店名なし)")}${e.branch ? ` <span class="ei-branch">${escapeHtml(e.branch)}</span>` : ""}</div>
         <div class="ei-meta"><span class="ei-cat">${escapeHtml(e.category)}</span>${escapeHtml(e.date)}${e.memo ? " · " + escapeHtml(e.memo) : ""}</div>
       </div>
       <div class="ei-amount">${yen(e.amount)}</div>
@@ -662,6 +667,7 @@ function editExpense(e) {
   $("f-date").value = e.date;
   $("f-amount").value = e.amount;
   $("f-store").value = e.store || "";
+  $("f-branch").value = e.branch || "";
   $("f-category").value = e.category;
   $("f-memo").value = e.memo || "";
   renderItems(e.items || []);
@@ -698,6 +704,7 @@ async function openCompare() {
             name: String(it.name),
             price: Number(it.price),
             store: e.store || "(店名なし)",
+            branch: e.branch || "",
             date: e.date || "",
           });
         }
@@ -727,19 +734,22 @@ function median(nums) {
 // 平常価格はセール1回に引っ張られにくいよう中央値で見積もる。
 function summarizeByStore(entries) {
   const map = new Map();
+  // 同じチェーンでも支店ごとに別の店として集計する（店名＋支店名でグループ化）
   for (const e of entries) {
-    if (!map.has(e.store)) map.set(e.store, []);
-    map.get(e.store).push(e);
+    const key = `${e.store}${e.branch || ""}`;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(e);
   }
   const out = [];
-  for (const [store, list] of map) {
+  for (const [, list] of map) {
     list.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
     const latest = list[list.length - 1]; // 最新の記録 = 現在価格
     let low = list[0];
     for (const e of list) if (e.price < low.price) low = e; // その店の過去最安
     const regular = median(list.map((e) => e.price)); // 平常価格の目安
     out.push({
-      store,
+      store: list[0].store,
+      branch: list[0].branch || "",
       current: latest.price,
       currentDate: latest.date,
       low: low.price,
@@ -795,7 +805,7 @@ function renderCompare() {
           : "";
         return `<div class="cmp-row">
             <div class="cmp-store ${isMin ? "cmp-min" : ""}">
-              <span>${escapeHtml(s.store)}${s.currentDate ? ` <span class="cmp-date">${escapeHtml(s.currentDate)}</span>` : ""}${s.saleNow ? ' <span class="cmp-tag">セール中</span>' : ""}</span>
+              <span>${escapeHtml(s.store)}${s.branch ? ` <span class="cmp-branch">${escapeHtml(s.branch)}</span>` : ""}${s.currentDate ? ` <span class="cmp-date">${escapeHtml(s.currentDate)}</span>` : ""}${s.saleNow ? ' <span class="cmp-tag">セール中</span>' : ""}</span>
               <span>${yen(s.current)}${isMin ? " 🏆" : ""}</span>
             </div>
             ${lowHtml}
