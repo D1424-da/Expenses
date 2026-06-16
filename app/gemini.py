@@ -13,6 +13,7 @@ import base64
 import datetime as dt
 import json
 import os
+import urllib.error
 import urllib.request
 
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
@@ -96,8 +97,13 @@ def extract_receipt(image_bytes: bytes) -> dict:
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310 — 固定の信頼できるURL
-        result = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310 — 固定の信頼できるURL
+            result = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        # Gemini からのエラー本文（キー不正・API未有効化など）を原因に含める。
+        detail = exc.read().decode("utf-8", "replace")[:300]
+        raise RuntimeError(f"Gemini API エラー (HTTP {exc.code}): {detail}") from exc
 
     try:
         text = result["candidates"][0]["content"]["parts"][0]["text"]
