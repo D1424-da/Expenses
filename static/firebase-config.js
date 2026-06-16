@@ -23,9 +23,12 @@ export const firebaseConfig = {
 //     サーバーが必要（例: "https://ocr-xxxxx.a.run.app"）。
 export const OCR_API_BASE = "";
 
-// 高精度OCR（Google Cloud Vision を Cloud Functions 経由で使う）。
-//   true : クラウドOCRを使う（要 Blaze プラン + Vision API 有効化 + functions デプロイ）。
-//          失敗時は自動でブラウザ内OCRにフォールバックする。
+// Gemini API キー（Google AI Studio で取得。フロントから直接呼ぶ方式。無料枠あり）
+// aistudio.google.com/apikey で取得した AIzaSy... 形式のキーを設定。
+export const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
+
+// 高精度OCR（Gemini API をフロントから直接呼ぶ）。
+//   true : Gemini APIを使う（GEMINI_API_KEY 要設定）。失敗時はブラウザ内OCRへ。
 //   false: ブラウザ内 Tesseract.js のみを使う。
 export const USE_CLOUD_VISION = true;
 

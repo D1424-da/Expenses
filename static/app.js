@@ -32,6 +32,7 @@ import {
   OCR_API_BASE,
   USE_CLOUD_VISION,
   CATEGORIES,
+  GEMINI_API_KEY,
 } from "./firebase-config.js";
 import { parseReceipt } from "./parser.js";
 
@@ -52,9 +53,51 @@ const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 const provider = new GoogleAuthProvider();
-// 高精度OCR用の Cloud Functions（東京リージョン）
-const functions = getFunctions(fbApp, "asia-northeast1");
-const cloudOcr = httpsCallable(functions, "ocrReceipt");
+// Gemini API 直接呼び出し（Cloud Functions 不要・無料枠）
+const GEMINI_PROMPT = `あなたは日本のレシートを読み取るアシスタントです。
+画像のレシートを読み取り、次の形式のJSONだけを出力してください（説明文やマークダウンは不要）。
+
+{
+  "date": "YYYY-MM-DD",
+  "store": "店舗・チェーン名",
+  "total": 整数,
+  "category": "食費|日用品|外食|交通費|医療費|娯楽|衣服|光熱費|通信費|その他",
+  "items": [ { "name": "商品名", "price": 整数 } ]
+}
+
+ルール:
+- store は店名（チェーン名や屋号）。挨拶、住所、電話、登録番号は含めない。
+- total は税込の支払い合計（「合計」の金額）。お預り・お釣り・小計・ポイントは含めない。
+- items は購入した商品のみ。税・値引・小計・合計・ポイント等は含めない。
+- price と total は数値のみ（カンマや¥や円は付けない）。
+- 読み取れない項目は空文字または空配列にする。`;
+
+async function callGeminiOcr(imageBase64) {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [
+          { inline_data: { mime_type: "image/jpeg", data: imageBase64 } },
+          { text: GEMINI_PROMPT },
+        ]}],
+        generationConfig: { response_mime_type: "application/json", temperature: 0 },
+      }),
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(JSON.stringify(err));
+  }
+  const json = await res.json();
+  const text = json.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  const clean = text.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+  let structured = null;
+  try { structured = JSON.parse(clean); } catch (e) { /* ignore */ }
+  return { structured, text };
+}
 log("Firebase初期化完了", {
   projectId: firebaseConfig.projectId,
   authDomain: firebaseConfig.authDomain,
@@ -292,8 +335,8 @@ async function ocrAndShow(file) {
       try {
         status.textContent = "🤖 AIで読み取り中…";
         const imageBase64 = await fileToBase64(file, 1600);
-        const res = await cloudOcr({ imageBase64 });
-        const s = res.data && res.data.structured;
+        const res = await callGeminiOcr(imageBase64);
+        const s = res.structured;
         if (s) {
           data = {
             date: normDate(s.date) || todayStr(),
@@ -305,12 +348,12 @@ async function ocrAndShow(file) {
                   .filter((it) => it && it.name)
                   .map((it) => ({ name: String(it.name).slice(0, 60), price: Math.round(Number(it.price)) || 0 }))
               : [],
-            raw_text: (res.data && res.data.text) || "",
+            raw_text: res.text || "",
           };
           log("AI読み取り成功");
         } else {
           // 構造化に失敗したらテキストから推定
-          data = parseReceipt((res.data && res.data.text) || "");
+          data = parseReceipt(res.text || "");
           log("AI構造化なし→テキスト解析にフォールバック");
         }
       } catch (err) {
