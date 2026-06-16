@@ -10,6 +10,7 @@
 """
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 
@@ -17,6 +18,8 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+
+logger = logging.getLogger("uvicorn.error")
 
 from app import parser
 # ocr モジュールは OpenCV/Tesseract に依存するため、必要になるまで読み込まない。
@@ -69,6 +72,7 @@ async def ocr_receipt(file: UploadFile = File(...)) -> JSONResponse:
         try:
             return JSONResponse(gemini.extract_receipt(image_bytes))
         except Exception as exc:  # noqa: BLE001 — ユーザーに原因を返す
+            logger.exception("Gemini OCR failed")  # 原因を Render ログに出す
             raise HTTPException(500, f"AI 読み取りに失敗しました: {exc}") from exc
 
     try:
