@@ -131,6 +131,7 @@ function setupApp() {
     populateCategories();
     bindEvents();
     resetForm();
+    prewarmOcr(); // レシート読み取りを速くするため、裏でOCRエンジンを準備しておく
     appInitialized = true;
   }
   renderMonth();
@@ -158,6 +159,11 @@ function bindEvents() {
   $("compare-btn").onclick = openCompare;
   $("compare-close").onclick = () => ($("compare-modal").hidden = true);
   $("compare-search").oninput = renderCompare;
+  // カレンダー: カテゴリ候補を埋め、日付タップ用モーダルのイベントを束ねる
+  for (const c of CATEGORIES) $("day-category").add(new Option(c, c));
+  $("day-category").value = "食費";
+  $("day-close").onclick = () => ($("day-modal").hidden = true);
+  $("day-form").onsubmit = handleDayAdd;
 }
 
 function shiftMonth(delta) {
@@ -196,6 +202,8 @@ function subscribeMonth() {
       log("Firestore更新:", currentExpenses.length, "件");
       renderList();
       renderSummary();
+      renderCalendar();
+      if (!$("day-modal").hidden) renderDayModal(); // 開いていれば内容を更新
     },
     (err) => {
       logErr("Firestore購読エラー:", err.code, err.message, err);
@@ -372,25 +380,58 @@ async function preprocessImage(file) {
 }
 
 // Tesseract.js（ブラウザ内OCR）。日本語データは初回に自動ダウンロードされる。
-async function runClientOcr(image, onProgress) {
+// 高速化のポイント: ワーカー（WASMエンジン＋日本語データの読み込み）は重いので、
+// 1度だけ作って使い回す。毎回 createWorker/terminate していた旧実装より、
+// 2枚目以降はもちろん、事前ウォームアップ済みなら1枚目から大幅に速くなる。
+let ocrWorkerPromise = null;
+let onOcrProgress = null; // 認識中の進捗コールバック（呼び出しごとに差し替える）
+
+function getOcrWorker() {
   if (!window.Tesseract) {
     throw new Error("OCRライブラリの読み込みに失敗しました（ネットワークをご確認ください）");
   }
-  const worker = await window.Tesseract.createWorker("jpn", 1, {
-    logger: (m) => {
-      if (m.status === "recognizing text" && onProgress) onProgress(m.progress);
-    },
-  });
-  try {
-    // レシート向け: 単一の縦並びテキストとして扱い、単語間スペースを保持
-    await worker.setParameters({
-      tessedit_pageseg_mode: "6",
-      preserve_interword_spaces: "1",
+  if (!ocrWorkerPromise) {
+    log("OCRワーカーを初期化中…（初回のみ言語データを取得）");
+    ocrWorkerPromise = (async () => {
+      const worker = await window.Tesseract.createWorker("jpn", 1, {
+        logger: (m) => {
+          if (m.status === "recognizing text" && onOcrProgress) onOcrProgress(m.progress);
+        },
+      });
+      // レシート向け: 単一の縦並びテキストとして扱い、単語間スペースを保持
+      await worker.setParameters({
+        tessedit_pageseg_mode: "6",
+        preserve_interword_spaces: "1",
+      });
+      log("OCRワーカー準備完了");
+      return worker;
+    })().catch((err) => {
+      // 失敗時は次回また作り直せるようにキャッシュを破棄
+      ocrWorkerPromise = null;
+      throw err;
     });
+  }
+  return ocrWorkerPromise;
+}
+
+// 初回の体感速度を上げるため、ログイン直後などに裏で言語データを読み込んでおく。
+function prewarmOcr() {
+  if (OCR_API_BASE) return; // バックエンドOCRを使う設定ならブラウザ内OCRは不要
+  try {
+    getOcrWorker().catch((err) => logErr("OCR事前準備に失敗（実行時に再試行）:", err.message));
+  } catch (err) {
+    logErr("OCR事前準備をスキップ:", err.message);
+  }
+}
+
+async function runClientOcr(image, onProgress) {
+  const worker = await getOcrWorker();
+  onOcrProgress = onProgress;
+  try {
     const { data } = await worker.recognize(image);
     return data.text;
   } finally {
-    await worker.terminate();
+    onOcrProgress = null;
   }
 }
 
@@ -541,6 +582,157 @@ function renderSummary() {
       <span class="cat-bar-wrap"><span class="cat-bar" style="width:${pct}%"></span></span>
       <span class="cat-amount">${yen(amt)}</span>`;
     bars.appendChild(row);
+  }
+}
+
+// ---- カレンダー ------------------------------------------------------------
+const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
+const dayKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+let selectedDay = null; // 日付モーダルで開いている日（"YYYY-MM-DD"）
+
+// 当月の支出を日付ごとに合計する { "YYYY-MM-DD": 金額 }
+function totalsByDay() {
+  const map = {};
+  for (const e of currentExpenses) {
+    if (!e.date) continue;
+    map[e.date] = (map[e.date] || 0) + (e.amount || 0);
+  }
+  return map;
+}
+
+// 月のカレンダーを描画。各セルにその日の買い物合計、行末に週間合計を出す。
+function renderCalendar() {
+  const cal = $("calendar");
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  const totals = totalsByDay();
+  const todayKey = dayKey(new Date());
+
+  // グリッドの先頭は週の頭（日曜）に揃える
+  const first = new Date(year, month, 1);
+  const gridStart = new Date(year, month, 1 - first.getDay());
+
+  // 曜日見出し + 「週計」列
+  let html = '<div class="cal-grid">';
+  for (const w of WEEKDAYS) html += `<div class="cal-dow">${w}</div>`;
+  html += '<div class="cal-dow cal-week-h">週計</div>';
+
+  // 当月を覆うのに必要な週数（4〜6週）だけ描く
+  const cursor = new Date(gridStart);
+  const weeks = Math.ceil((first.getDay() + new Date(year, month + 1, 0).getDate()) / 7);
+  for (let w = 0; w < weeks; w++) {
+    let weekSum = 0;
+    let rowHtml = "";
+    for (let i = 0; i < 7; i++) {
+      const key = dayKey(cursor);
+      const inMonth = cursor.getMonth() === month;
+      const amt = totals[key] || 0;
+      if (inMonth) weekSum += amt;
+      const cls = [
+        "cal-day",
+        inMonth ? "" : "cal-out",
+        key === todayKey ? "cal-today" : "",
+        amt > 0 ? "cal-has" : "",
+      ].filter(Boolean).join(" ");
+      rowHtml += `<div class="${cls}" data-day="${key}" ${inMonth ? "" : "data-out"}>
+          <span class="cal-num">${cursor.getDate()}</span>
+          ${amt > 0 ? `<span class="cal-amt">${yen(amt)}</span>` : ""}
+        </div>`;
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    rowHtml += `<div class="cal-week">${weekSum > 0 ? yen(weekSum) : ""}</div>`;
+    html += rowHtml;
+  }
+  html += "</div>";
+  cal.innerHTML = html;
+
+  // 当月の日付タップで入力モーダルを開く（前後月の日は無効）
+  cal.querySelectorAll(".cal-day:not(.cal-out)").forEach((el) => {
+    el.onclick = () => openDayModal(el.dataset.day);
+  });
+}
+
+// ---- 日付モーダル（その日の合計確認＋金額の追加入力） ----------------------
+function openDayModal(key) {
+  selectedDay = key;
+  $("day-amount").value = "";
+  $("day-store").value = "";
+  $("day-category").value = "食費";
+  renderDayModal();
+  $("day-modal").hidden = false;
+  $("day-amount").focus();
+}
+
+function renderDayModal() {
+  if (!selectedDay) return;
+  const [y, m, d] = selectedDay.split("-").map(Number);
+  $("day-modal-title").textContent = `${y}年${m}月${d}日の買い物`;
+
+  const items = currentExpenses
+    .filter((e) => e.date === selectedDay)
+    .sort((a, b) => (b.amount || 0) - (a.amount || 0));
+  const total = items.reduce((s, e) => s + (e.amount || 0), 0);
+  $("day-total").textContent = yen(total);
+
+  const list = $("day-list");
+  if (!items.length) {
+    list.innerHTML = "<p class='empty'>まだ記録がありません。</p>";
+    return;
+  }
+  list.innerHTML = "";
+  for (const e of items) {
+    const row = document.createElement("div");
+    row.className = "day-row";
+    row.innerHTML = `
+      <div class="day-row-main">
+        <span class="ei-cat">${escapeHtml(e.category)}</span>
+        <span class="day-row-store">${escapeHtml(e.store || "(店名なし)")}</span>
+      </div>
+      <span class="day-row-amt">${yen(e.amount)}</span>
+      <button data-act="del" aria-label="削除">🗑️</button>`;
+    row.querySelector('[data-act="del"]').onclick = () => deleteExpense(e.id);
+    list.appendChild(row);
+  }
+}
+
+// カレンダーから、その日の買い物金額を直接追加する
+async function handleDayAdd(e) {
+  e.preventDefault();
+  const amount = Number($("day-amount").value);
+  if (!amount || amount <= 0) {
+    $("day-amount").focus();
+    return;
+  }
+  const btn = e.target.querySelector("button");
+  btn.disabled = true;
+  try {
+    await addDoc(expensesCol(), {
+      date: selectedDay,
+      store: $("day-store").value.trim(),
+      branch: "",
+      amount,
+      category: $("day-category").value,
+      memo: "",
+      items: [],
+      rawText: "",
+      createdAt: serverTimestamp(),
+    });
+    log("カレンダーから追加:", selectedDay, amount);
+    $("day-amount").value = "";
+    $("day-store").value = "";
+    // 当月以外の日に追加した場合はその月へ移動して購読し直す
+    const addedMonth = new Date(selectedDay + "T00:00:00");
+    if (monthKey(addedMonth) !== monthKey(currentMonth)) {
+      currentMonth = addedMonth;
+      renderMonth();
+      subscribeMonth();
+    }
+    // 同月ならリアルタイム購読が renderDayModal を更新する
+  } catch (err) {
+    logErr("カレンダー追加エラー:", err.code, err.message, err);
+    alert("追加に失敗しました: " + err.message);
+  } finally {
+    btn.disabled = false;
   }
 }
 
