@@ -282,8 +282,11 @@ async function ocrAndShow(file) {
       // 失敗時はブラウザ内OCRにフォールバックする。
       try {
         status.textContent = "🤖 AIで読み取り中…";
+        // 元画像（スマホ写真は数MB）をそのまま送ると、アップロードと
+        // AI処理の両方が遅くなる。送信前に縮小してJPEGに再圧縮する。
+        const upload = await downscaleForUpload(file);
         const fd = new FormData();
-        fd.append("file", file);
+        fd.append("file", upload, "receipt.jpg");
         const res = await fetch(`${OCR_API_BASE}/api/ocr`, { method: "POST", body: fd });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
@@ -321,6 +324,41 @@ async function ocrAndShow(file) {
     status.className = "status error";
     status.textContent = `⚠️ ${queuePrefix()}` + (err.message || err) +
       (ocrTotal > 1 ? "（「スキップ」で次へ進めます）" : "");
+  }
+}
+
+// AI(Gemini)へ送る画像を縮小＋JPEG再圧縮する。長辺1600pxあればレシートの
+// 文字は十分読め、数MBの写真が数百KBになりアップロードもAI処理も速くなる。
+// createImageBitmap が失敗する形式（HEIC 等）では元ファイルをそのまま返す。
+const UPLOAD_MAX_DIM = 1600;
+const UPLOAD_JPEG_QUALITY = 0.85;
+
+async function downscaleForUpload(file) {
+  try {
+    const img = await createImageBitmap(file);
+    const longSide = Math.max(img.width, img.height);
+    const scale = longSide > UPLOAD_MAX_DIM ? UPLOAD_MAX_DIM / longSide : 1;
+    // 既に十分小さいJPEGなら再圧縮せずそのまま使う。
+    if (scale === 1 && file.type === "image/jpeg") {
+      img.close?.();
+      return file;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    img.close?.();
+    const blob = await new Promise((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", UPLOAD_JPEG_QUALITY)
+    );
+    if (!blob) return file; // 失敗時は元ファイルにフォールバック
+    log("アップロード用に縮小:", `${Math.round(file.size / 1024)}KB → ${Math.round(blob.size / 1024)}KB`);
+    return blob;
+  } catch (err) {
+    logErr("画像の縮小に失敗（元画像を送信）:", err.message);
+    return file;
   }
 }
 
