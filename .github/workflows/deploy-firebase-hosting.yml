@@ -1,0 +1,29 @@
+name: Deploy to Firebase Hosting
+
+# main に push（マージ）されたら Firebase Hosting (expenses-9af61.firebaseapp.com)
+# に自動デプロイする。これで GitHub Pages だけでなく Firebase Hosting 側も
+# 手動デプロイ不要で最新に保たれる。
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Actions タブから手動実行も可能
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Firebase Hosting (live)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          # Firebase コンソールで発行したサービスアカウントの JSON を、
+          # リポジトリの Settings → Secrets → Actions に
+          # FIREBASE_SERVICE_ACCOUNT という名前で登録しておく。
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: expenses-9af61
