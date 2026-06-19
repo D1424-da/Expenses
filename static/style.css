@@ -95,6 +95,7 @@ main {
 
 /* 取り込み */
 .capture .hint { color: var(--muted); font-size: 0.85rem; margin-top: 0; }
+.capture-buttons { display: flex; gap: 10px; }
 .file-button {
   display: inline-block;
   background: var(--accent);
@@ -104,9 +105,10 @@ main {
   font-weight: 600;
   cursor: pointer;
   text-align: center;
-  width: 100%;
+  flex: 1;
 }
 .file-button:hover { filter: brightness(1.05); }
+.file-button.secondary { background: var(--accent-weak); color: var(--accent); }
 .status {
   margin-top: 12px;
   padding: 10px 12px;

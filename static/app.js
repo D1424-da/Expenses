@@ -151,10 +151,12 @@ function bindEvents() {
   $("logout").onclick = () => signOut(auth);
   $("prev-month").onclick = () => shiftMonth(-1);
   $("next-month").onclick = () => shiftMonth(1);
-  $("file-input").onchange = handleFiles;
-  // カメラを開く瞬間にもバックエンドを起こす。撮影している間に起動が進むので、
-  // 放置後でも読み取り開始までの待ち時間を短縮できる。
+  $("file-input").onchange = handleFiles; // アルバムから複数選択
+  $("camera-input").onchange = handleFiles; // その場で撮影（1枚ずつ）
+  // カメラやアルバムを開く瞬間にもバックエンドを起こす。操作している間に起動が
+  // 進むので、放置後でも読み取り開始までの待ち時間を短縮できる。
   $("file-input").onclick = prewarmOcr;
+  $("camera-input").onclick = prewarmOcr;
   $("expense-form").onsubmit = handleSubmit;
   $("reset-btn").onclick = resetForm;
   $("skip-btn").onclick = skipCurrent;
