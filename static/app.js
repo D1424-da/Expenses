@@ -151,7 +151,12 @@ function bindEvents() {
   $("logout").onclick = () => signOut(auth);
   $("prev-month").onclick = () => shiftMonth(-1);
   $("next-month").onclick = () => shiftMonth(1);
-  $("file-input").onchange = handleFiles;
+  $("file-input").onchange = handleFiles; // アルバムから複数選択
+  $("camera-input").onchange = handleFiles; // その場で撮影（1枚ずつ）
+  // カメラやアルバムを開く瞬間にもバックエンドを起こす。操作している間に起動が
+  // 進むので、放置後でも読み取り開始までの待ち時間を短縮できる。
+  $("file-input").onclick = prewarmOcr;
+  $("camera-input").onclick = prewarmOcr;
   $("expense-form").onsubmit = handleSubmit;
   $("reset-btn").onclick = resetForm;
   $("skip-btn").onclick = skipCurrent;
@@ -454,7 +459,16 @@ function getOcrWorker() {
 
 // 初回の体感速度を上げるため、ログイン直後などに裏で言語データを読み込んでおく。
 function prewarmOcr() {
-  if (OCR_API_BASE) return; // バックエンドOCRを使う設定ならブラウザ内OCRは不要
+  if (OCR_API_BASE) {
+    // バックエンド(Render無料プラン)はアクセスが無いとスリープし、次の
+    // リクエストでコールドスタート(起動に数十秒)が発生する。アプリ起動時に
+    // /api/health を叩いて先に起こしておけば、撮影中に起動が進み、最初の
+    // 読み取りの待ち時間を大幅に短縮できる。
+    fetch(`${OCR_API_BASE}/api/health`, { cache: "no-store" })
+      .then(() => log("OCRバックエンドをウォームアップしました"))
+      .catch((err) => logErr("OCRバックエンドのウォームアップに失敗:", err.message));
+    return;
+  }
   try {
     getOcrWorker().catch((err) => logErr("OCR事前準備に失敗（実行時に再試行）:", err.message));
   } catch (err) {

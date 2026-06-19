@@ -57,11 +57,17 @@
       <!-- レシート読み取り -->
       <section class="card capture">
         <h2>レシートを撮影 / 選択</h2>
-        <p class="hint">スマホならカメラが起動します。読み取り後に内容を確認して保存できます。</p>
-        <label class="file-button">
-          📷 レシートを取り込む
-          <input id="file-input" type="file" accept="image/*" capture="environment" multiple hidden />
-        </label>
+        <p class="hint">その場で撮影するか、撮影済みの写真を複数選んで取り込めます。読み取り後に内容を確認して保存できます。</p>
+        <div class="capture-buttons">
+          <label class="file-button">
+            📷 撮影する
+            <input id="camera-input" type="file" accept="image/*" capture="environment" hidden />
+          </label>
+          <label class="file-button secondary">
+            🖼️ 写真から選ぶ
+            <input id="file-input" type="file" accept="image/*" multiple hidden />
+          </label>
+        </div>
         <div id="ocr-status" class="status" hidden></div>
       </section>
 
