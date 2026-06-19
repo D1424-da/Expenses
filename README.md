@@ -78,6 +78,17 @@ python3 -m http.server 8000   # → http://localhost:8000
 
 ---
 
+## 公開（Firebase Hosting の自動デプロイ）
+
+`main` に push（マージ）すると Firebase Hosting に自動デプロイするワークフロー
+（`.github/workflows/deploy-firebase-hosting.yml`）を同梱しています。利用には、
+Firebase のサービスアカウント鍵を GitHub のシークレット `FIREBASE_SERVICE_ACCOUNT`
+に登録してください（Firebase コンソール → プロジェクトの設定 → サービスアカウント →
+「新しい秘密鍵を生成」で得た JSON の中身をそのまま登録）。登録後は `main` への
+マージだけで `expenses-9af61.firebaseapp.com` が最新になります。
+
+---
+
 ## 公開（GitHub Pages）
 
 `static/` を GitHub Pages に公開するワークフロー（`.github/workflows/deploy-pages.yml`）
