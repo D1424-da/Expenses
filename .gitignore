@@ -13,3 +13,10 @@ node_modules/
 # OS
 .DS_Store
 functions/.env
+
+# 秘密情報（絶対にコミットしない）
+.env
+*-firebase-adminsdk-*.json
+serviceAccount*.json
+*service-account*.json
+*-adminsdk-*.json
