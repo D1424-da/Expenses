@@ -366,12 +366,18 @@ def guess_category(text: str, store: str) -> str:
 def parse_receipt(text: str) -> dict[str, Any]:
     """OCR テキストを家計簿の各項目に変換する。"""
     store = parse_store(text)
+    category = guess_category(text, store)
+    items = parse_items(text)
+    # 行ごとのカテゴリを推定する。品名から判定できなければレシート全体のカテゴリ。
+    for item in items:
+        item_cat = guess_category(item["name"], "")
+        item["category"] = item_cat if item_cat != "その他" else category
     return {
         "date": parse_date(text) or dt.date.today().isoformat(),
         "store": store,
         "branch": parse_branch(text, store),
         "amount": parse_total(text) or 0,
-        "category": guess_category(text, store),
-        "items": parse_items(text),
+        "category": category,
+        "items": items,
         "raw_text": text,
     }
