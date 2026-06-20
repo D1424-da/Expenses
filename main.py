@@ -79,13 +79,29 @@ async def ocr_receipt(file: UploadFile = File(...)) -> JSONResponse:
         except Exception as exc:  # noqa: BLE001 — ユーザーに原因を返す
             logger.exception("Gemini OCR failed")  # 原因を Render ログに出す
             # 保険: VISION_API_KEY があれば Vision でフォールバック（OCR専用）。
-            if vision is not None and os.environ.get("VISION_API_KEY"):
+            has_vision_key = bool(os.environ.get("VISION_API_KEY"))
+            if vision is not None and has_vision_key:
                 try:
                     logger.warning("Gemini 失敗。Vision にフォールバックします。")
                     return JSONResponse(vision.extract_receipt(image_bytes))
-                except Exception:  # noqa: BLE001 — フォールバックも失敗
+                except Exception as vexc:  # noqa: BLE001 — フォールバックも失敗
                     logger.exception("Vision fallback failed")
-            raise HTTPException(500, f"AI 読み取りに失敗しました: {exc}") from exc
+                    # Vision が失敗した本当の理由（Cloud Vision 未有効化=403、
+                    # APIキー制限など）が Gemini エラーに隠れないよう両方返す。
+                    raise HTTPException(
+                        500,
+                        f"AI 読み取りに失敗しました。"
+                        f"Gemini: {exc} / Vision フォールバックも失敗: {vexc}",
+                    ) from vexc
+            # フォールバック未設定/無効のときは、その旨も添えて原因を返す。
+            reason = (
+                "（VISION_API_KEY 未設定のためフォールバック無効）"
+                if not has_vision_key
+                else "（Vision フォールバック利用不可）"
+            )
+            raise HTTPException(
+                500, f"AI 読み取りに失敗しました: {exc} {reason}"
+            ) from exc
 
     try:
         from app import ocr  # 遅延 import（OpenCV/Tesseract が必要なときだけ）
