@@ -179,6 +179,19 @@ def parse_total(text: str) -> int | None:
     return best
 
 
+def _split_store_branch(line: str) -> tuple[str, str]:
+    """「スーパータイヨー 甲突店」のように店名と支店が同じ行にある場合に分割する。
+
+    Google Vision はチェーン名と「〇〇店」を1行にまとめて出すことが多く、
+    そのままだと店名に支店が混ざり、支店欄が空になる（最安値比較が店名＋支店
+    ごとの集計なので、支店が取れないと別支店を区別できない）。
+    """
+    m = re.match(r"^(.*?\S)[\s　]+([^\s　]{1,20}店)\s*\d{0,6}$", line)
+    if m and len(m.group(1)) >= 2:
+        return m.group(1).strip(), m.group(2)
+    return line, ""
+
+
 def parse_store(text: str) -> str:
     """店名を推定する。レシート上部の意味のある行を採用する。"""
     skip = re.compile(r"^\s*[\d\W_]+\s*$")  # 数字・記号のみの行は除外
@@ -194,7 +207,9 @@ def parse_store(text: str) -> str:
         # 「毎日! 新鮮! 激安!」のような宣伝スローガン（!が複数）は店名にしない
         if len(re.findall(r"[!！]", line)) >= 2:
             continue
-        return line[:50]
+        # 店名行に支店（〇〇店）が同居していればチェーン名だけを採用する。
+        store, _branch = _split_store_branch(line)
+        return store[:50]
     return ""
 
 
@@ -248,18 +263,24 @@ def parse_items(text: str) -> list[dict[str, Any]]:
     """品目と価格の組を推定する。
 
     Google Vision はレシートの列が分かれると「品名」と「価格」を別の行に
-    出力することが多い。そのため、同一行に金額がある場合（パターンA）に加え、
-    「価格だけの行」の直前の行を品名とみなすパターンB も扱う。
+    出力することが多い。そのため次の3パターンを扱う:
+      A) 同一行に「品名 ... 価格」がある
+      B) 「価格だけの行」の直前の行が品名（1対1）
+      C) 「品名群 → 価格群」と縦に分かれる（価格だけの連続ブロックを、
+         直前に同数並ぶ品名行と上から順に対応づける）
     """
     items: list[dict[str, Any]] = []
     stop_words = _TOTAL_KEYWORDS + _EXCLUDE_KEYWORDS + _RECEIPT_META_KEYWORDS
     lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
 
     # 明細は「小計／合計」より上にある。そこで打ち切り、クレジット明細等の数字を拾わない。
+    # 単独の「計」は使わない（「お会計券」等のレシート番号ヘッダに誤マッチし、
+    # 明細を丸ごと切り捨ててしまうため）。合計系は具体的な語で明示する。
     subtotal_total = ["小計", "消費税", "内税", "外税", "課税", "対象",
-                      "値引", "税込", "税抜"] + _TOTAL_KEYWORDS
+                      "値引", "税込", "税抜", "合計", "総合計", "お買上", "お買い上げ"]
     cut_at = next(
-        (i for i, ln in enumerate(lines) if any(kw in ln for kw in subtotal_total)),
+        (i for i, ln in enumerate(lines)
+         if any(kw in ln for kw in subtotal_total) and "会計券" not in ln),
         -1,
     )
     if cut_at > 0:
@@ -269,34 +290,69 @@ def parse_items(text: str) -> list[dict[str, Any]]:
         low = line.lower()
         return any(kw.lower() in low for kw in stop_words) or _is_noise_line(line)
 
+    n = len(lines)
+    consumed = [False] * n
+
+    # パターンA: 「品名 ... 価格」が同じ行
     for i, line in enumerate(lines):
         if is_stop(line):
+            consumed[i] = True
             continue
-
-        # パターンA: 「品名 ... 価格」が同じ行
+        # 非貪欲（.*?）にして、「¥ 1, 248」のように空白を挟む3桁区切りの金額でも
+        # 末尾の数字だけ（248）でなく全体（1248）を拾えるようにする。
         m = re.search(
-            r"^(.*\D)\s*[¥￥]?\s*(\d{1,3}(?:,\d{3})+|\d{2,6})\s*円?\s*[*※]?$", line
+            r"^(.*?\D)\s*[¥￥]?\s*(\d{1,3}(?:,\s?\d{3})+|\d{2,6})\s*円?\s*[*※]?$", line
         )
         if m:
             name = _clean_item_name(m.group(1))
-            price = _normalize_amount(m.group(2))
+            price = _amount_in_line(m.group(2))
             if _is_valid_item_name(name) and price and 0 < price < 1_000_000:
-                items.append({"name": name, "price": price})
-                continue
+                items.append({"name": name, "price": price, "_idx": i})
+                consumed[i] = True
 
-        # パターンB: この行が「価格だけ」で、前の行が品名（Vision で分かれた場合）
-        if _is_price_only_line(line) and i > 0:
-            prev = lines[i - 1]
-            if (
-                not is_stop(prev)
-                and not _is_price_only_line(prev)
-                and re.search(r"[^\d\s¥￥,円]", prev)
-            ):
-                price = _amount_in_line(line)
-                name = _clean_item_name(prev)
-                if _is_valid_item_name(name) and price and 0 < price < 1_000_000:
-                    items.append({"name": name, "price": price})
-    return items[:80]
+    # パターンB/C: 「価格だけの行」のかたまりを、その直前に並ぶ品名行と対応づける。
+    # Vision は列がずれると「品名群 → 価格群」と縦に分けて出すため、価格だけの
+    # 連続ブロックを取り、同じ個数だけ直前にある品名行と上から順にペアにする。
+    # （ブロック長1は従来のパターンB＝品名の直後に価格、と同じ挙動になる）
+    i = 0
+    while i < n:
+        if consumed[i] or is_stop(lines[i]) or not _is_price_only_line(lines[i]):
+            i += 1
+            continue
+        # 価格だけの連続ブロックを収集
+        prices: list[int] = []
+        j = i
+        while (
+            j < n and not consumed[j] and not is_stop(lines[j])
+            and _is_price_only_line(lines[j])
+        ):
+            amount = _amount_in_line(lines[j])
+            if amount is None:
+                break
+            prices.append(amount)
+            j += 1
+        # 直前に並ぶ品名行を、価格と同数だけさかのぼって収集
+        names: list[str] = []
+        k = i - 1
+        while k >= 0 and len(names) < len(prices):
+            if consumed[k] or is_stop(lines[k]) or _is_price_only_line(lines[k]):
+                break
+            name = _clean_item_name(lines[k])
+            if not _is_valid_item_name(name) or not re.search(r"[^\d\s¥￥,円]", lines[k]):
+                break
+            names.append(name)
+            k += -1
+        names.reverse()  # 上から下の順に戻す
+        # 品名と価格が同数のときだけ採用（数が合わないと誤対応になるため）。
+        if names and len(names) == len(prices):
+            for idx, (name, price) in enumerate(zip(names, prices)):
+                if price and 0 < price < 1_000_000:
+                    items.append({"name": name, "price": price, "_idx": i - len(names) + idx})
+        i = j
+
+    # 元のレシート上の出現順に整えて内部キーを除去
+    items.sort(key=lambda it: it["_idx"])
+    return [{"name": it["name"], "price": it["price"]} for it in items[:80]]
 
 
 def guess_category(text: str, store: str) -> str:
