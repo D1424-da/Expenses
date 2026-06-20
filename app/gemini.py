@@ -76,6 +76,7 @@ def _normalize(structured: dict, raw_text: str) -> dict:
         "category": overall,
         "items": items,
         "raw_text": raw_text,
+        "engine": "gemini",
     }
 
 

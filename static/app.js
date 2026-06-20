@@ -65,6 +65,7 @@ log("Firebase初期化完了", {
 let currentUser = null;
 let currentMonth = new Date(); // 表示中の月
 let currentExpenses = []; // 当月の支出（リアルタイム同期）
+let historyDict = null; // Gemini保存データから作る正解辞書（履歴正規化用・セッションキャッシュ）
 let unsubscribe = null; // Firestore リスナー解除関数
 
 const $ = (id) => document.getElementById(id);
@@ -318,6 +319,11 @@ async function ocrAndShow(file) {
       data = parseReceipt(text);
     }
     log("OCR完了。抽出結果:", data);
+    // Gemini 以外（Vision / PaddleOCR）は抽出精度が低いので、過去に Gemini で
+    // 保存したデータ（店名・支店・商品名・カテゴリ）を正解辞書として正規化する。
+    if (data && data.engine !== "gemini") {
+      data = await normalizeWithHistory(data);
+    }
     // 画像は保存しないが、確認用にその場でプレビュー表示する
     fillForm(data, URL.createObjectURL(file));
     status.className = "status ok";
@@ -331,6 +337,160 @@ async function ocrAndShow(file) {
     status.textContent = `⚠️ ${queuePrefix()}` + (err.message || err) +
       (ocrTotal > 1 ? "（「スキップ」で次へ進めます）" : "");
   }
+}
+
+// ---- 履歴正規化（Gemini の抽出結果を正解として Vision/PaddleOCR を補正）------
+// 過去に Gemini で抽出・保存したデータ（店名・支店・商品名・カテゴリ）を辞書化し、
+// 精度の低い Vision/PaddleOCR の結果があいまい一致したら、その正解表記に揃える。
+
+// 照合用にゆらぎを吸収したキーへ正規化（全角半角・大小・記号/空白除去）。
+function normKey(s) {
+  return String(s || "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[\s,.。・･\-_/\\()'"`*※&]/g, "")
+    .trim();
+}
+
+// レーベンシュタイン距離（OCRの誤字に強い類似度の土台）。
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  if (!m) return n;
+  if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, i) => i);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+    }
+    prev = cur;
+  }
+  return prev[n];
+}
+
+function similarity(a, b) {
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  return 1 - levenshtein(a, b) / Math.max(a.length, b.length);
+}
+
+// 辞書（[{key, canonical, category?}]）から最も近い候補を返す（しきい値未満は null）。
+function bestMatch(raw, entries, threshold) {
+  const k = normKey(raw);
+  if (!k || !entries.length) return null;
+  let best = null, bestScore = 0;
+  for (const e of entries) {
+    let score = similarity(k, e.key);
+    // どちらかが他方を含む（OCRで一部欠落/混入）場合は高めに評価する。
+    if (e.key.includes(k) || k.includes(e.key)) score = Math.max(score, 0.9);
+    if (score > bestScore) { bestScore = score; best = e; }
+  }
+  return best && bestScore >= threshold ? { entry: best, score: bestScore } : null;
+}
+
+function bump(map, key) {
+  if (!key) return;
+  map.set(key, (map.get(key) || 0) + 1);
+}
+function argmax(map) {
+  let top = "", n = -1;
+  for (const [k, c] of map) if (c > n) { n = c; top = k; }
+  return top;
+}
+
+// 全期間の支出から正解辞書を構築（セッション内キャッシュ）。
+async function loadHistoryDict() {
+  if (historyDict) return historyDict;
+  const stores = new Map();   // key -> {key, spellings:Map}
+  const branches = new Map();
+  const products = new Map();  // key -> {key, spellings:Map, cats:Map}
+  const storeCat = new Map();  // storeKey -> Map(category->count)
+
+  const add = (map, value) => {
+    const k = normKey(value);
+    if (!k) return;
+    let e = map.get(k);
+    if (!e) { e = { key: k, spellings: new Map() }; map.set(k, e); }
+    bump(e.spellings, value);
+  };
+
+  const snap = await getDocs(expensesCol());
+  snap.forEach((d) => {
+    const e = d.data();
+    if (e.store) add(stores, e.store);
+    if (e.branch) add(branches, e.branch);
+    if (e.store && e.category) {
+      const sk = normKey(e.store);
+      if (!storeCat.has(sk)) storeCat.set(sk, new Map());
+      bump(storeCat.get(sk), e.category);
+    }
+    (e.items || []).forEach((it) => {
+      if (!it || !it.name) return;
+      const k = normKey(it.name);
+      if (!k) return;
+      let p = products.get(k);
+      if (!p) { p = { key: k, spellings: new Map(), cats: new Map() }; products.set(k, p); }
+      bump(p.spellings, it.name);
+      if (it.category) bump(p.cats, it.category);
+    });
+  });
+
+  const finalize = (map) =>
+    [...map.values()].map((e) => ({ key: e.key, canonical: argmax(e.spellings) }));
+
+  historyDict = {
+    stores: finalize(stores),
+    branches: finalize(branches),
+    products: [...products.values()].map((p) => ({
+      key: p.key,
+      canonical: argmax(p.spellings),
+      category: p.cats.size ? argmax(p.cats) : "",
+    })),
+    storeCat,
+  };
+  log("正解辞書を構築:", `店${historyDict.stores.length} 支店${historyDict.branches.length} 商品${historyDict.products.length}`);
+  return historyDict;
+}
+
+// Vision/PaddleOCR の結果を、Gemini 由来の正解辞書で正規化する。
+async function normalizeWithHistory(data) {
+  try {
+    const dict = await loadHistoryDict();
+    const STORE_TH = 0.6, BRANCH_TH = 0.6, PROD_TH = 0.62;
+
+    const sm = bestMatch(data.store, dict.stores, STORE_TH);
+    let storeKey = data.store ? normKey(data.store) : null;
+    if (sm) { data.store = sm.entry.canonical; storeKey = sm.entry.key; }
+
+    const bm = bestMatch(data.branch, dict.branches, BRANCH_TH);
+    if (bm) data.branch = bm.entry.canonical;
+
+    // 全体カテゴリは弱い（空/その他）ときだけ、その店の最頻カテゴリで補う。
+    if ((!data.category || data.category === "その他") && storeKey && dict.storeCat.has(storeKey)) {
+      const top = argmax(dict.storeCat.get(storeKey));
+      if (top) data.category = top;
+    }
+
+    if (Array.isArray(data.items)) {
+      data.items = data.items.map((it) => {
+        if (!it || !it.name) return it;
+        const pm = bestMatch(it.name, dict.products, PROD_TH);
+        if (pm) {
+          it.name = pm.entry.canonical;
+          // 商品名が一致したら、Gemini 由来のカテゴリを採用（強一致 or 元が弱いとき）。
+          if (pm.entry.category && (pm.score >= 0.85 || !it.category || it.category === "その他")) {
+            it.category = pm.entry.category;
+          }
+        }
+        return it;
+      });
+    }
+    log("履歴正規化を適用しました（Gemini基準）");
+  } catch (err) {
+    logErr("履歴正規化に失敗（生の結果を使用）:", err.message, err);
+  }
+  return data;
 }
 
 // AI(Gemini)へ送る画像を縮小＋JPEG再圧縮する。長辺1600pxあればレシートの
@@ -579,6 +739,7 @@ async function handleSubmit(e) {
       });
     }
     log("保存成功");
+    historyDict = null; // 保存で正解辞書が変わるので作り直させる
 
     // 保存した支出の月へ移動
     const savedMonth = new Date($("f-date").value + "T00:00:00");

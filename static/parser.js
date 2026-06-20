@@ -290,5 +290,6 @@ export function parseReceipt(text) {
     category: guessCategory(text, store),
     items: parseItems(text),
     raw_text: text,
+    engine: "paddle", // ブラウザ内OCR。フロントの履歴正規化の対象
   };
 }
