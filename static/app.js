@@ -43,7 +43,7 @@ const logErr = (...a) => DEBUG && console.error("[家計簿]", ...a);
 // 想定外の例外も全部拾う
 window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
 window.addEventListener("unhandledrejection", (e) => logErr("未処理のPromise拒否:", e.reason));
-log("app.js 読み込み開始", "Tesseract利用可能:", !!window.Tesseract);
+log("app.js 読み込み開始");
 
 // ---- Firebase 初期化 -------------------------------------------------------
 // レシート画像は保存しない（Cloud Storage 不要 = 無料の Spark プランで動く）。
@@ -274,7 +274,7 @@ function skipCurrent() {
 }
 
 async function ocrAndShow(file) {
-  log("OCR開始:", file.name, file.type, `${Math.round(file.size / 1024)}KB`, OCR_API_BASE ? "(バックエンド)" : "(ブラウザ内Tesseract)");
+  log("OCR開始:", file.name, file.type, `${Math.round(file.size / 1024)}KB`, OCR_API_BASE ? "(バックエンド)" : "(ブラウザ内PaddleOCR)");
   const status = $("ocr-status");
   status.hidden = false;
   status.className = "status loading";
@@ -300,8 +300,8 @@ async function ocrAndShow(file) {
         data = await res.json();
         log("バックエンド読み取り成功");
       } catch (err) {
-        logErr("バックエンドOCR失敗、ブラウザ内OCRに切替:", err.message, err);
-        status.textContent = "🔍 文字を読み取り中…（ブラウザ内OCR）";
+        logErr("バックエンドOCR失敗、ブラウザ内PaddleOCRに切替:", err.message, err);
+        status.textContent = "🔍 文字を読み取り中…（PaddleOCR・初回はモデル取得で時間がかかります）";
         const canvas = await preprocessImage(file);
         const text = await runClientOcr(canvas, (p) => {
           status.textContent = `🔍 文字を読み取り中… ${Math.round(p * 100)}%`;
@@ -309,7 +309,7 @@ async function ocrAndShow(file) {
         data = parseReceipt(text);
       }
     } else {
-      // ブラウザ内で Tesseract.js を使って OCR（サーバー不要）
+      // ブラウザ内で PaddleOCR を使って OCR（サーバー不要）
       const canvas = await preprocessImage(file);
       const text = await runClientOcr(canvas, (p) => {
         status.textContent = `🔍 文字を読み取り中… ${Math.round(p * 100)}%`;
@@ -370,91 +370,63 @@ async function downscaleForUpload(file) {
 // レシートは細い印字が多いので、拡大＋グレースケール＋コントラスト補正＋
 // 二値化（大津の手法）で読み取りやすくする。
 async function preprocessImage(file) {
+  // PaddleOCR(PP-OCR)は自然画像（カラー）で学習されているため、Tesseract時代の
+  // ような二値化は行わず、原画像のまま渡すほうが精度が出る。大きすぎる写真は
+  // メモリ・速度のため長辺1600pxに縮小するだけにする。
   const img = await createImageBitmap(file);
-  const targetW = 2000; // 高解像度化すると細かい文字が認識されやすい
-  const scale = img.width < targetW ? targetW / img.width : 1;
+  const MAX_DIM = 1600;
+  const longSide = Math.max(img.width, img.height);
+  const scale = longSide > MAX_DIM ? MAX_DIM / longSide : 1;
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(img.width * scale);
   canvas.height = Math.round(img.height * scale);
   const ctx = canvas.getContext("2d");
   ctx.imageSmoothingQuality = "high";
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const d = imageData.data;
-
-  // 1) グレースケール化 + ヒストグラム作成
-  const hist = new Array(256).fill(0);
-  const gray = new Uint8ClampedArray(d.length / 4);
-  for (let i = 0, j = 0; i < d.length; i += 4, j++) {
-    const g = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) | 0;
-    gray[j] = g;
-    hist[g]++;
-  }
-
-  // 2) 大津の手法でしきい値を自動決定
-  const total = gray.length;
-  let sum = 0;
-  for (let t = 0; t < 256; t++) sum += t * hist[t];
-  let sumB = 0, wB = 0, maxVar = -1, threshold = 127;
-  for (let t = 0; t < 256; t++) {
-    wB += hist[t];
-    if (wB === 0) continue;
-    const wF = total - wB;
-    if (wF === 0) break;
-    sumB += t * hist[t];
-    const mB = sumB / wB;
-    const mF = (sum - sumB) / wF;
-    const between = wB * wF * (mB - mF) * (mB - mF);
-    if (between > maxVar) {
-      maxVar = between;
-      threshold = t;
-    }
-  }
-
-  // 3) 二値化（白背景・黒文字）。少し甘めにして文字を太らせる
-  const thr = threshold + 10;
-  for (let i = 0, j = 0; i < d.length; i += 4, j++) {
-    const v = gray[j] > thr ? 255 : 0;
-    d[i] = d[i + 1] = d[i + 2] = v;
-  }
-  ctx.putImageData(imageData, 0, 0);
+  img.close?.();
   return canvas;
 }
 
-// Tesseract.js（ブラウザ内OCR）。日本語データは初回に自動ダウンロードされる。
-// 高速化のポイント: ワーカー（WASMエンジン＋日本語データの読み込み）は重いので、
-// 1度だけ作って使い回す。毎回 createWorker/terminate していた旧実装より、
-// 2枚目以降はもちろん、事前ウォームアップ済みなら1枚目から大幅に速くなる。
-let ocrWorkerPromise = null;
-let onOcrProgress = null; // 認識中の進捗コールバック（呼び出しごとに差し替える）
+// ---- ブラウザ内OCR: PaddleOCR (ppu-paddle-ocr + onnxruntime-web) -------------
+// Gemini→Vision が両方失敗したときの最終フォールバック。ESM/モデルは初回利用時に
+// CDN から取得する（合計約21MB、以降はブラウザのHTTPキャッシュが効く）。
+//
+// 採用モデル: PP-OCRv5 mobile の汎用モデル。日中英＋日本語を1つの認識モデルで扱える。
+// 必要に応じて URL を差し替えれば別言語・サーバーモデルにも切替可能。
+const PADDLE_ESM = "https://esm.sh/ppu-paddle-ocr@5.8.3/web";
+const PADDLE_MEDIA_BASE = "https://media.githubusercontent.com/media/PT-Perkasa-Pilar-Utama/ppu-paddle-ocr-models/refs/heads/main";
+const PADDLE_RAW_BASE = "https://raw.githubusercontent.com/PT-Perkasa-Pilar-Utama/ppu-paddle-ocr-models/refs/heads/main";
+const PADDLE_MODELS = {
+  detection: `${PADDLE_MEDIA_BASE}/detection/PP-OCRv5_mobile_det_infer.onnx`,
+  recognition: `${PADDLE_MEDIA_BASE}/recognition/PP-OCRv5_mobile_rec_infer.onnx`,
+  charactersDictionary: `${PADDLE_RAW_BASE}/recognition/ppocrv5_dict.txt`,
+};
 
-function getOcrWorker() {
-  if (!window.Tesseract) {
-    throw new Error("OCRライブラリの読み込みに失敗しました（ネットワークをご確認ください）");
-  }
-  if (!ocrWorkerPromise) {
-    log("OCRワーカーを初期化中…（初回のみ言語データを取得）");
-    ocrWorkerPromise = (async () => {
-      const worker = await window.Tesseract.createWorker("jpn", 1, {
-        logger: (m) => {
-          if (m.status === "recognizing text" && onOcrProgress) onOcrProgress(m.progress);
-        },
-      });
-      // レシート向け: 単一の縦並びテキストとして扱い、単語間スペースを保持
-      await worker.setParameters({
-        tessedit_pageseg_mode: "6",
-        preserve_interword_spaces: "1",
-      });
-      log("OCRワーカー準備完了");
-      return worker;
+// 高速化のポイント: サービス（WASM/WebGPU セッション＋モデル）の初期化は重いので、
+// 1度だけ作って使い回す。2枚目以降や事前ウォームアップ済みなら大幅に速くなる。
+let paddleServicePromise = null;
+
+function getPaddleOcr() {
+  if (!paddleServicePromise) {
+    log("PaddleOCRを初期化中…（初回のみモデル取得・約21MB）");
+    paddleServicePromise = (async () => {
+      // 動的 import。読み込めなければネットワーク/CDNの問題として扱う。
+      const mod = await import(/* @vite-ignore */ PADDLE_ESM);
+      const PaddleOcrService = mod.PaddleOcrService || mod.default?.PaddleOcrService;
+      if (!PaddleOcrService) {
+        throw new Error("PaddleOCRライブラリの読み込みに失敗しました。");
+      }
+      const service = new PaddleOcrService({ model: PADDLE_MODELS });
+      await service.initialize();
+      log("PaddleOCR準備完了");
+      return service;
     })().catch((err) => {
       // 失敗時は次回また作り直せるようにキャッシュを破棄
-      ocrWorkerPromise = null;
+      paddleServicePromise = null;
       throw err;
     });
   }
-  return ocrWorkerPromise;
+  return paddleServicePromise;
 }
 
 // 初回の体感速度を上げるため、ログイン直後などに裏で言語データを読み込んでおく。
@@ -470,21 +442,21 @@ function prewarmOcr() {
     return;
   }
   try {
-    getOcrWorker().catch((err) => logErr("OCR事前準備に失敗（実行時に再試行）:", err.message));
+    getPaddleOcr().catch((err) => logErr("OCR事前準備に失敗（実行時に再試行）:", err.message));
   } catch (err) {
     logErr("OCR事前準備をスキップ:", err.message);
   }
 }
 
 async function runClientOcr(image, onProgress) {
-  const worker = await getOcrWorker();
-  onOcrProgress = onProgress;
-  try {
-    const { data } = await worker.recognize(image);
-    return data.text;
-  } finally {
-    onOcrProgress = null;
-  }
+  // PaddleOCR は Tesseract のような細かい進捗を返さないため、初期化→認識の
+  // 大まかな段階だけ通知する。
+  onProgress?.(0.1);
+  const service = await getPaddleOcr();
+  onProgress?.(0.6);
+  const result = await service.recognize(image);
+  onProgress?.(1);
+  return result?.text || "";
 }
 
 // ---- フォーム --------------------------------------------------------------

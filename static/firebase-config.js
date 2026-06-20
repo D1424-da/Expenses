@@ -9,7 +9,7 @@ export const firebaseConfig = {
 
 // 高精度OCR(Gemini)を使う場合は、デプロイした OCR バックエンドの URL を設定する。
 // 例: "https://receipt-ocr-xxxx.a.run.app"
-// 空文字のままならブラウザ内 Tesseract OCR を使う（キー不要）。
+// 空文字のままならブラウザ内 PaddleOCR を使う（キー不要）。
 // ※ Gemini の API キーはバックエンドの環境変数 GEMINI_API_KEY に保持する。
 //    フロント（この公開ファイル）に書くと Google に漏洩キーとして無効化される。
 export const OCR_API_BASE = "https://expenses-ft54.onrender.com";
