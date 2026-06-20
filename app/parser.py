@@ -93,57 +93,90 @@ def parse_date(text: str) -> str | None:
     return None
 
 
+def _amount_in_line(line: str) -> int | None:
+    """1行から金額を取り出す。Vision が「¥1, 771」のように空白を挟むことも許容。"""
+    t = line.translate(str.maketrans("０１２３４５６７８９，．", "0123456789,."))
+    raw = None
+    m = re.search(r"[¥￥]\s*([0-9][0-9,\s]*[0-9]|[0-9])", t)  # ¥ の直後を最優先
+    if m:
+        raw = m.group(1)
+    if raw is None:
+        m = re.search(r"([0-9][0-9,\s]*[0-9]|[0-9])\s*円", t)  # 〜円
+        if m:
+            raw = m.group(1)
+    if raw is None:
+        m = re.search(r"(\d{1,3}(?:,\s?\d{3})+|\d{2,7})", t)  # カンマ区切り or 2桁以上
+        if m:
+            raw = m.group(1)
+    if raw is None:
+        return None
+    try:
+        v = int(re.sub(r"[,\s]", "", raw))
+    except ValueError:
+        return None
+    return v if 0 < v < 10_000_000 else None
+
+
 def parse_total(text: str) -> int | None:
     """合計金額を推定する。
 
     まず「合計」系キーワードを含む行の金額を最優先で探す。
-    見つからなければ、行内に現れる金額の最大値を合計とみなす。
+    見つからなければ、支払い系を除いた金額の最大値を合計とみなす。
+
+    Google Vision はラベルと金額を別の行に分けて出力することが多いため、
+    キーワード行だけでなく直後の数行も見て金額を拾う。
     """
     lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
 
-    # 明細など、行末に現れる金額候補の最大値（妥当性チェック用）
-    line_max = 0
-    for line in lines:
+    def has(line: str, words: list[str]) -> bool:
         low = line.lower()
-        if any(ex.lower() in low for ex in _EXCLUDE_KEYWORDS):
-            continue
-        if _is_noise_line(line):
-            continue
-        m = re.search(r"(\d{1,3}(?:,\d{3})+|\d{2,7})\s*円?\s*[*※]?$", line)
-        if m:
-            val = _normalize_amount(m.group(1))
-            if val and 0 < val < 10_000_000:
-                line_max = max(line_max, val)
+        return any(w.lower() in low for w in words)
 
-    # 1) キーワード行を優先（除外語を含む行は無視）
-    # ただし OCR 誤読で合計が明細より小さくなった場合は信用しない。
+    # ラベルと金額が別の行に分かれることがある（Vision の特徴）。
+    def amount_near(i: int) -> int | None:
+        same = _amount_in_line(lines[i])
+        if same is not None:
+            return same
+        for j in range(i + 1, min(i + 3, len(lines))):
+            a = _amount_in_line(lines[j])
+            if a is not None:
+                return a
+        return None
+
+    # 支払い・お釣り・ポイント等の金額は「購入合計ではない」ので除外。
+    # （小計や税は除外しない。税込だと小計＝合計で一致することがあるため）
+    cash_exclude = ["お預", "お釣", "おつり", "釣り", "預り", "現金",
+                    "クレジット", "ポイント", "残高", "チャージ", "お返し", "電子マネー"]
+    excluded: set[int] = set()
+    for i, line in enumerate(lines):
+        if has(line, cash_exclude):
+            a = amount_near(i)
+            if a is not None:
+                excluded.add(a)
+
+    # 1) 「合計」系キーワードに紐づく金額を最優先（最初の合計を即採用）。
+    #    支払い額が合計と一致して除外される問題を避けるため excluded は見ない。
     for keyword in _TOTAL_KEYWORDS:
-        for line in lines:
-            low = line.lower()
-            if keyword.lower() not in low:
+        for i, line in enumerate(lines):
+            if not has(line, [keyword]):
                 continue
-            if any(ex.lower() in low for ex in _EXCLUDE_KEYWORDS):
+            if has(line, cash_exclude):
                 continue
-            amount = _normalize_amount(line)
-            if amount and amount > 0 and amount >= line_max:
-                return amount
+            a = amount_near(i)
+            if a is not None:
+                return a
 
-    # 2) フォールバック: 金額らしき数値の最大を採用（除外語の行は無視）
-    candidates: list[int] = []
+    # 2) フォールバック: 支払い系を除いた中での最大金額
+    best: int | None = None
     for line in lines:
-        low = line.lower()
-        if any(ex.lower() in low for ex in _EXCLUDE_KEYWORDS):
+        if has(line, cash_exclude):
             continue
-        # 「円」や「¥」が付く、またはカンマ区切りの数値を金額候補とする
         if _is_noise_line(line):
             continue
-        if re.search(r"[¥￥]|円|\d,\d{3}", line):
-            amount = _normalize_amount(line)
-            if amount and 0 < amount < 10_000_000:
-                candidates.append(amount)
-    if candidates:
-        return max(candidates)
-    return line_max or None
+        a = _amount_in_line(line)
+        if a is not None and a not in excluded:
+            best = a if best is None else max(best, a)
+    return best
 
 
 def parse_store(text: str) -> str:
@@ -202,29 +235,68 @@ def _is_valid_item_name(name: str) -> bool:
     return has_ja or latin >= 2
 
 
+def _is_price_only_line(line: str) -> bool:
+    """数字・記号のみ（価格だけ）の行かどうか。"""
+    t = line.translate(str.maketrans("０１２３４５６７８９，．", "0123456789,.")).strip()
+    return bool(
+        re.match(r"^[¥￥]?\s*\d{1,3}(?:,\d{3})+\s*円?$", t)
+        or re.match(r"^[¥￥]?\s*\d{2,7}\s*円?[*※]?$", t)
+    )
+
+
 def parse_items(text: str) -> list[dict[str, Any]]:
-    """品目と価格の組を推定する（行末に金額がある行を拾う）。"""
+    """品目と価格の組を推定する。
+
+    Google Vision はレシートの列が分かれると「品名」と「価格」を別の行に
+    出力することが多い。そのため、同一行に金額がある場合（パターンA）に加え、
+    「価格だけの行」の直前の行を品名とみなすパターンB も扱う。
+    """
     items: list[dict[str, Any]] = []
     stop_words = _TOTAL_KEYWORDS + _EXCLUDE_KEYWORDS + _RECEIPT_META_KEYWORDS
-    for line in text.splitlines():
-        line = line.strip()
-        if not line:
-            continue
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+
+    # 明細は「小計／合計」より上にある。そこで打ち切り、クレジット明細等の数字を拾わない。
+    subtotal_total = ["小計", "消費税", "内税", "外税", "課税", "対象",
+                      "値引", "税込", "税抜"] + _TOTAL_KEYWORDS
+    cut_at = next(
+        (i for i, ln in enumerate(lines) if any(kw in ln for kw in subtotal_total)),
+        -1,
+    )
+    if cut_at > 0:
+        lines = lines[:cut_at]
+
+    def is_stop(line: str) -> bool:
         low = line.lower()
-        if any(kw.lower() in low for kw in stop_words):
+        return any(kw.lower() in low for kw in stop_words) or _is_noise_line(line)
+
+    for i, line in enumerate(lines):
+        if is_stop(line):
             continue
-        # 電話番号・郵便番号・日付・時刻・店舗番号など、品目でない行は除外
-        if _is_noise_line(line):
-            continue
-        # 行末の金額（¥1,280 / 1280 / 1,280円 など）
-        m = re.search(r"[¥￥]?\s*(\d{1,3}(?:,\d{3})+|\d{2,6})\s*円?\s*[*※]?$", line)
-        if not m:
-            continue
-        price = _normalize_amount(m.group(1))
-        name = _clean_item_name(line[: m.start()])
-        if _is_valid_item_name(name) and price and 0 < price < 1_000_000:
-            items.append({"name": name, "price": price})
-    return items[:50]
+
+        # パターンA: 「品名 ... 価格」が同じ行
+        m = re.search(
+            r"^(.*\D)\s*[¥￥]?\s*(\d{1,3}(?:,\d{3})+|\d{2,6})\s*円?\s*[*※]?$", line
+        )
+        if m:
+            name = _clean_item_name(m.group(1))
+            price = _normalize_amount(m.group(2))
+            if _is_valid_item_name(name) and price and 0 < price < 1_000_000:
+                items.append({"name": name, "price": price})
+                continue
+
+        # パターンB: この行が「価格だけ」で、前の行が品名（Vision で分かれた場合）
+        if _is_price_only_line(line) and i > 0:
+            prev = lines[i - 1]
+            if (
+                not is_stop(prev)
+                and not _is_price_only_line(prev)
+                and re.search(r"[^\d\s¥￥,円]", prev)
+            ):
+                price = _amount_in_line(line)
+                name = _clean_item_name(prev)
+                if _is_valid_item_name(name) and price and 0 < price < 1_000_000:
+                    items.append({"name": name, "price": price})
+    return items[:80]
 
 
 def guess_category(text: str, store: str) -> str:

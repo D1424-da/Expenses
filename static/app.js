@@ -223,6 +223,7 @@ function subscribeMonth() {
 // ---- OCR 取り込み（複数枚対応） --------------------------------------------
 let ocrQueue = []; // これから処理する画像
 let ocrTotal = 0; // 今回選んだ合計枚数
+let currentPreviewUrl = null; // プレビュー用の Object URL（メモリ解放のため保持）
 
 function handleFiles(e) {
   const files = [...e.target.files];
@@ -477,10 +478,19 @@ function fillForm(data, previewUrl) {
 
 function showPreview(url) {
   const preview = $("form-preview");
+  // 直前のプレビュー画像（Object URL）を解放する。複数枚を続けて読み取ると
+  // 解放しないままだとスマホ写真（各数MB）がメモリに溜まり、フリーズや
+  // クラッシュの原因になる。
+  if (currentPreviewUrl && currentPreviewUrl !== url) {
+    URL.revokeObjectURL(currentPreviewUrl);
+    currentPreviewUrl = null;
+  }
   if (url) {
+    currentPreviewUrl = url;
     $("preview-img").src = url;
     preview.hidden = false;
   } else {
+    $("preview-img").removeAttribute("src");
     preview.hidden = true;
   }
 }
