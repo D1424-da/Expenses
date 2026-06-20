@@ -300,7 +300,16 @@ async function ocrAndShow(file) {
           throw new Error(err.detail || "読み取りに失敗しました");
         }
         data = await res.json();
-        log("バックエンド読み取り成功");
+        const used = data.engine || "不明";
+        log("バックエンド読み取り成功:", `エンジン=${used}`);
+        if (used === "gemini") {
+          log("✅ Gemini API で読み取りました（最優先・高精度）");
+        } else {
+          logErr(
+            `⚠️ Gemini を使えず ${used} にフォールバックしました。` +
+            "Gemini API のキー/課金状態を確認してください（429=クレジット枯渇など）。",
+          );
+        }
       } catch (err) {
         logErr("バックエンドOCR失敗、ブラウザ内PaddleOCRに切替:", err.message, err);
         status.textContent = "🔍 文字を読み取り中…（PaddleOCR・初回はモデル取得で時間がかかります）";
@@ -598,7 +607,15 @@ function prewarmOcr() {
     // /api/health を叩いて先に起こしておけば、撮影中に起動が進み、最初の
     // 読み取りの待ち時間を大幅に短縮できる。
     fetch(`${OCR_API_BASE}/api/health`, { cache: "no-store" })
-      .then(() => log("OCRバックエンドをウォームアップしました"))
+      .then((res) => res.json().catch(() => ({})))
+      .then((h) =>
+        log(
+          "OCRバックエンド稼働:",
+          `設定エンジン=${h.engine || "?"}`,
+          h.status ? `status=${h.status}` : "",
+          "(これは設定値。実際にGeminiが使えたかは読み取り時のログを参照)",
+        ),
+      )
       .catch((err) => logErr("OCRバックエンドのウォームアップに失敗:", err.message));
     return;
   }
