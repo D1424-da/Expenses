@@ -20,3 +20,5 @@ services:
         sync: false   # 例: https://<ユーザー名>.github.io
       - key: GEMINI_API_KEY
         sync: false   # Cloud Shell で取得したキー（ダッシュボードで入力）
+      - key: VISION_API_KEY
+        sync: false   # 保険: Gemini 失敗時の Vision API フォールバック用（任意・ダッシュボードで入力）

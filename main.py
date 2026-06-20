@@ -28,6 +28,11 @@ try:
     from app import gemini
 except Exception:  # noqa: BLE001 — gemini は任意
     gemini = None  # type: ignore
+# Vision は Gemini が失敗したときの保険（OCR専用）。任意の依存にする。
+try:
+    from app import vision
+except Exception:  # noqa: BLE001 — vision は任意
+    vision = None  # type: ignore
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -73,6 +78,13 @@ async def ocr_receipt(file: UploadFile = File(...)) -> JSONResponse:
             return JSONResponse(gemini.extract_receipt(image_bytes))
         except Exception as exc:  # noqa: BLE001 — ユーザーに原因を返す
             logger.exception("Gemini OCR failed")  # 原因を Render ログに出す
+            # 保険: VISION_API_KEY があれば Vision でフォールバック（OCR専用）。
+            if vision is not None and os.environ.get("VISION_API_KEY"):
+                try:
+                    logger.warning("Gemini 失敗。Vision にフォールバックします。")
+                    return JSONResponse(vision.extract_receipt(image_bytes))
+                except Exception:  # noqa: BLE001 — フォールバックも失敗
+                    logger.exception("Vision fallback failed")
             raise HTTPException(500, f"AI 読み取りに失敗しました: {exc}") from exc
 
     try:

@@ -157,8 +157,8 @@
     </div>
   </div>
 
-  <!-- ブラウザ内OCR（サーバー不要）。グローバル Tesseract を提供する -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <!-- ブラウザ内OCRは PaddleOCR(ppu-paddle-ocr + onnxruntime-web) を app.js から
+       動的 import で読み込む（Gemini→Vision が両方失敗したときの最終フォールバック）。 -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
