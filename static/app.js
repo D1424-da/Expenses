@@ -497,16 +497,23 @@ function showPreview(url) {
 
 function renderItems(items) {
   $("items-list").innerHTML = "";
-  for (const it of items) addItemRow(it.name, it.price);
+  for (const it of items) addItemRow(it.name, it.price, it.category);
   updateItemsCount();
 }
 
-function addItemRow(name = "", price = 0) {
+function addItemRow(name = "", price = 0, category = "") {
   const row = document.createElement("div");
   row.className = "item-row";
+  // 行のカテゴリ初期値: AI/保存値 → 未指定なら支出全体のカテゴリ → "その他"。
+  let selected = category || $("f-category").value || "その他";
+  if (!CATEGORIES.includes(selected)) selected = "その他";
+  const options = CATEGORIES.map(
+    (c) => `<option value="${c}"${c === selected ? " selected" : ""}>${c}</option>`,
+  ).join("");
   row.innerHTML = `
     <input type="text" class="item-name" value="${escapeHtml(name)}" placeholder="品目" />
     <input type="number" class="item-price" value="${price || 0}" min="0" />
+    <select class="item-category" aria-label="明細カテゴリ">${options}</select>
     <button type="button" aria-label="削除">✕</button>`;
   row.querySelector("button").onclick = () => {
     row.remove();
@@ -521,6 +528,7 @@ function collectItems() {
     .map((r) => ({
       name: r.querySelector(".item-name").value.trim(),
       price: Number(r.querySelector(".item-price").value) || 0,
+      category: r.querySelector(".item-category").value,
     }))
     .filter((it) => it.name || it.price);
 }

@@ -137,8 +137,9 @@ input:focus, select:focus { outline: 2px solid var(--accent-weak); border-color:
 
 .items-list { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; }
 .item-row { display: flex; gap: 8px; align-items: center; }
-.item-row input[type="text"] { flex: 1; }
-.item-row input[type="number"] { width: 110px; }
+.item-row input[type="text"] { flex: 1; min-width: 0; }
+.item-row input[type="number"] { width: 84px; flex-shrink: 0; }
+.item-row select.item-category { width: 92px; flex-shrink: 0; }
 .item-row button { flex-shrink: 0; background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1.1rem; }
 #items-details summary { cursor: pointer; color: var(--muted); font-size: 0.85rem; }
 
