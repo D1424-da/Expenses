@@ -83,7 +83,9 @@ async def ocr_receipt(file: UploadFile = File(...)) -> JSONResponse:
             if vision is not None and has_vision_key:
                 try:
                     logger.warning("Gemini 失敗。Vision にフォールバックします。")
-                    return JSONResponse(vision.extract_receipt(image_bytes))
+                    result = vision.extract_receipt(image_bytes)
+                    result["engine"] = "vision"  # フロントの履歴正規化の対象
+                    return JSONResponse(result)
                 except Exception as vexc:  # noqa: BLE001 — フォールバックも失敗
                     logger.exception("Vision fallback failed")
                     # Vision が失敗した本当の理由（Cloud Vision 未有効化=403、
@@ -109,7 +111,9 @@ async def ocr_receipt(file: UploadFile = File(...)) -> JSONResponse:
     except Exception as exc:  # noqa: BLE001 — ユーザーに原因を返す
         raise HTTPException(500, f"OCR に失敗しました: {exc}") from exc
 
-    return JSONResponse(parser.parse_receipt(text))
+    result = parser.parse_receipt(text)
+    result["engine"] = "tesseract"  # フロントの履歴正規化の対象
+    return JSONResponse(result)
 
 
 # ---- フロント配信（ローカル開発用。本番は Firebase Hosting を使う） ----------
