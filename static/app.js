@@ -723,7 +723,6 @@ function updateItemsCount() {
 
 function resetForm() {
   $("expense-form").reset();
-  $("form-title").textContent = "手入力で追加";
   $("f-id").value = "";
   $("f-image-url").value = "";
   $("f-rawtext").value = "";
@@ -732,6 +731,7 @@ function resetForm() {
   showPreview(null);
   updateItemsCount();
   $("f-date").value = todayStr();
+  setFormMode("add");
 }
 
 async function handleSubmit(e) {
@@ -775,7 +775,10 @@ async function handleSubmit(e) {
       renderMonth();
       subscribeMonth();
     }
+    const wasEdit = !!id;
     resetForm();
+    // 編集の保存後は、編集元の一覧へ自然に戻す。
+    if (wasEdit) $("expense-list").scrollIntoView({ behavior: "smooth" });
     // 複数枚取り込み中なら次の画像へ。なければステータスを消す。
     if (!advanceQueue()) $("ocr-status").hidden = true;
   } catch (err) {
@@ -783,7 +786,8 @@ async function handleSubmit(e) {
     alert("保存に失敗しました: " + err.message);
   } finally {
     saveBtn.disabled = false;
-    saveBtn.textContent = "保存";
+    // 編集中ならラベルを維持（エラーで編集を続ける場合に備える）。
+    saveBtn.textContent = $("f-id").value ? "更新する" : "保存";
   }
 }
 
@@ -996,7 +1000,9 @@ function renderDayModal() {
         <span class="day-row-store">${escapeHtml(e.store || "(店名なし)")}</span>
       </div>
       <span class="day-row-amt">${yen(e.amount)}</span>
+      <button data-act="edit" aria-label="編集">✏️</button>
       <button data-act="del" aria-label="削除">🗑️</button>`;
+    row.querySelector('[data-act="edit"]').onclick = () => editExpense(e);
     row.querySelector('[data-act="del"]').onclick = () => deleteExpense(e.id);
     list.appendChild(row);
   }
@@ -1120,7 +1126,6 @@ function renderExpenseRow(e, indented) {
 }
 
 function editExpense(e) {
-  $("form-title").textContent = "支出を編集";
   $("f-id").value = e.id;
   $("f-date").value = e.date;
   $("f-amount").value = e.amount;
@@ -1131,7 +1136,28 @@ function editExpense(e) {
   $("f-engine").value = e.ocrEngine || ""; // 抽出元エンジンを保持（再保存時も維持）
   renderItems(e.items || []);
   showPreview(null);
+  setFormMode("edit", e);
+  // カレンダーの日付モーダルから編集を始めた場合は閉じてフォームを見せる
+  $("day-modal").hidden = true;
   $("form-card").scrollIntoView({ behavior: "smooth" });
+}
+
+// フォームの見た目を「編集中／新規追加」で切り替える。
+// 何を編集しているかが分かるよう、見出し・ボタン文言・編集中バナーを更新する。
+function setFormMode(mode, e) {
+  const editing = mode === "edit";
+  $("form-card").classList.toggle("editing", editing);
+  $("form-title").textContent = editing ? "支出を編集" : "手入力で追加";
+  $("save-btn").textContent = editing ? "更新する" : "保存";
+  $("reset-btn").textContent = editing ? "編集をやめる" : "クリア";
+  const banner = $("edit-banner");
+  if (editing && e) {
+    const where = [e.store || "(店名なし)", e.branch].filter(Boolean).join(" ");
+    banner.textContent = `編集中: ${where} ・ ${e.date}`;
+    banner.hidden = false;
+  } else {
+    banner.hidden = true;
+  }
 }
 
 async function deleteExpense(id) {
