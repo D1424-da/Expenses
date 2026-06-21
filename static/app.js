@@ -65,7 +65,9 @@ log("Firebase初期化完了", {
 let currentUser = null;
 let currentMonth = new Date(); // 表示中の月
 let currentExpenses = []; // 当月の支出（リアルタイム同期）
-let historyDict = null; // Gemini保存データから作る正解辞書（履歴正規化用・セッションキャッシュ）
+let historyDict = null; // Gemini/Vertex保存データから作る正解辞書（履歴正規化用・セッションキャッシュ）
+// 正解として信頼する高精度AIエンジン。これ以外（vision/tesseract/paddle）は正規化対象。
+const TRUSTED_ENGINES = ["gemini", "vertex"];
 let unsubscribe = null; // Firestore リスナー解除関数
 
 const $ = (id) => document.getElementById(id);
@@ -302,12 +304,12 @@ async function ocrAndShow(file) {
         data = await res.json();
         const used = data.engine || "不明";
         log("バックエンド読み取り成功:", `エンジン=${used}`);
-        if (used === "gemini") {
-          log("✅ Gemini API で読み取りました（最優先・高精度）");
+        if (TRUSTED_ENGINES.includes(used)) {
+          log(`✅ 高精度AI（${used}）で読み取りました`);
         } else {
           logErr(
-            `⚠️ Gemini を使えず ${used} にフォールバックしました。` +
-            "Gemini API のキー/課金状態を確認してください（429=クレジット枯渇など）。",
+            `⚠️ Gemini/Vertex を使えず ${used} にフォールバックしました。` +
+            "AI のキー/課金状態を確認してください（429=クレジット枯渇など）。",
           );
         }
       } catch (err) {
@@ -328,9 +330,10 @@ async function ocrAndShow(file) {
       data = parseReceipt(text);
     }
     log("OCR完了。抽出結果:", data);
-    // Gemini 以外（Vision / PaddleOCR）は抽出精度が低いので、過去に Gemini で
-    // 保存したデータ（店名・支店・商品名・カテゴリ）を正解辞書として正規化する。
-    if (data && data.engine !== "gemini") {
+    // 高精度AI（Gemini / Vertex）以外（Vision / PaddleOCR）は抽出精度が低いので、
+    // 過去に Gemini/Vertex で保存したデータ（店名・支店・商品名・カテゴリ）を
+    // 正解辞書として正規化する。
+    if (data && !TRUSTED_ENGINES.includes(data.engine)) {
       data = await normalizeWithHistory(data);
     }
     // 画像は保存しないが、確認用にその場でプレビュー表示する
@@ -427,6 +430,10 @@ async function loadHistoryDict() {
   const snap = await getDocs(expensesCol());
   snap.forEach((d) => {
     const e = d.data();
+    // 正解辞書は Gemini/Vertex で抽出したデータのみ採用する。
+    // 旧データ（ocrEngine 無し）は主に Gemini 由来なので含める。
+    // vision/tesseract/paddle/manual で保存したものは除外（正解にしない）。
+    if (e.ocrEngine && !TRUSTED_ENGINES.includes(e.ocrEngine)) return;
     if (e.store) add(stores, e.store);
     if (e.branch) add(branches, e.branch);
     if (e.store && e.category) {
@@ -649,6 +656,8 @@ function fillForm(data, previewUrl) {
   $("f-memo").value = "";
   $("f-image-url").value = "";
   $("f-rawtext").value = data.raw_text || "";
+  // どのエンジンで抽出したか記録（保存時に ocrEngine として残し、正解辞書の判定に使う）
+  $("f-engine").value = data.engine || "";
   renderItems(data.items || []);
   showPreview(previewUrl);
 }
@@ -720,6 +729,7 @@ function resetForm() {
   $("f-id").value = "";
   $("f-image-url").value = "";
   $("f-rawtext").value = "";
+  $("f-engine").value = "manual"; // 手入力。正解辞書には含めない
   $("items-list").innerHTML = "";
   showPreview(null);
   updateItemsCount();
@@ -741,6 +751,8 @@ async function handleSubmit(e) {
       category: $("f-category").value,
       memo: $("f-memo").value.trim(),
       items: collectItems(),
+      // 抽出元エンジン。正解辞書（gemini/vertex のみ採用）の判定に使う。
+      ocrEngine: $("f-engine").value || "manual",
     };
 
     log(id ? "更新:" : "新規保存:", payload);
@@ -935,6 +947,7 @@ async function handleDayAdd(e) {
       memo: "",
       items: [],
       rawText: "",
+      ocrEngine: "manual", // 手入力。正解辞書には含めない
       createdAt: serverTimestamp(),
     });
     log("カレンダーから追加:", selectedDay, amount);
@@ -992,6 +1005,7 @@ function editExpense(e) {
   $("f-branch").value = e.branch || "";
   $("f-category").value = e.category;
   $("f-memo").value = e.memo || "";
+  $("f-engine").value = e.ocrEngine || ""; // 抽出元エンジンを保持（再保存時も維持）
   renderItems(e.items || []);
   showPreview(null);
   $("form-card").scrollIntoView({ behavior: "smooth" });
