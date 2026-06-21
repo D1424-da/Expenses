@@ -54,7 +54,7 @@ def _to_int(value: object) -> int:
         return 0
 
 
-def _normalize(structured: dict, raw_text: str) -> dict:
+def _normalize(structured: dict, raw_text: str, engine: str = "gemini") -> dict:
     """フロントと同じ形（parser.parse_receipt 互換）に整える。"""
     category = structured.get("category")
     overall = category if category in CATEGORIES else "その他"
@@ -76,7 +76,38 @@ def _normalize(structured: dict, raw_text: str) -> dict:
         "category": overall,
         "items": items,
         "raw_text": raw_text,
-        "engine": "gemini",
+        "engine": engine,
+    }
+
+
+def parse_generate_content(result: dict) -> tuple[dict, str]:
+    """generateContent のレスポンスから (構造化dict, 生テキスト) を取り出す。
+
+    Gemini Developer API と Vertex AI で応答形式が共通なので両方で使える。
+    """
+    try:
+        text = result["candidates"][0]["content"]["parts"][0]["text"]
+    except (KeyError, IndexError, TypeError):
+        text = ""
+    clean = text.strip()
+    if clean.startswith("```"):
+        clean = clean.split("\n", 1)[-1] if "\n" in clean else clean
+        clean = clean.replace("```json", "").replace("```", "").strip()
+    try:
+        structured = json.loads(clean)
+    except json.JSONDecodeError:
+        structured = {}
+    return structured, text
+
+
+def build_request_body(b64_image: str) -> dict:
+    """generateContent のリクエストボディ（Gemini/Vertex 共通）。"""
+    return {
+        "contents": [{"parts": [
+            {"inline_data": {"mime_type": "image/jpeg", "data": b64_image}},
+            {"text": PROMPT},
+        ]}],
+        "generationConfig": {"response_mime_type": "application/json", "temperature": 0},
     }
 
 
@@ -91,16 +122,9 @@ def extract_receipt(image_bytes: bytes) -> dict:
         "https://generativelanguage.googleapis.com/v1beta/models/"
         f"{GEMINI_MODEL}:generateContent?key={api_key}"
     )
-    body = {
-        "contents": [{"parts": [
-            {"inline_data": {"mime_type": "image/jpeg", "data": b64}},
-            {"text": PROMPT},
-        ]}],
-        "generationConfig": {"response_mime_type": "application/json", "temperature": 0},
-    }
     req = urllib.request.Request(
         url,
-        data=json.dumps(body).encode("utf-8"),
+        data=json.dumps(build_request_body(b64)).encode("utf-8"),
         headers={"Content-Type": "application/json"},
         method="POST",
     )
@@ -112,16 +136,5 @@ def extract_receipt(image_bytes: bytes) -> dict:
         detail = exc.read().decode("utf-8", "replace")[:300]
         raise RuntimeError(f"Gemini API エラー (HTTP {exc.code}): {detail}") from exc
 
-    try:
-        text = result["candidates"][0]["content"]["parts"][0]["text"]
-    except (KeyError, IndexError, TypeError):
-        text = ""
-    clean = text.strip()
-    if clean.startswith("```"):
-        clean = clean.split("\n", 1)[-1] if "\n" in clean else clean
-        clean = clean.replace("```json", "").replace("```", "").strip()
-    try:
-        structured = json.loads(clean)
-    except json.JSONDecodeError:
-        structured = {}
+    structured, text = parse_generate_content(result)
     return _normalize(structured, text)
