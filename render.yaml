@@ -9,9 +9,18 @@ services:
     name: receipt-ocr
     runtime: python
     plan: free
+    healthCheckPath: /api/health
     buildCommand: pip install -r requirements-gemini.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"   # Docker(python:3.11-slim)と揃える
+      - key: FIREBASE_PROJECT_ID
+        sync: false   # 設定すると /api/ocr を Firebase 認証必須にできる（任意）
+      - key: RATE_PER_IP
+        value: "10"   # IPあたり/分（簡易レート制限）
+      - key: RATE_GLOBAL
+        value: "60"   # 全体/分
       - key: OCR_ENGINE
         value: gemini   # gemini=Developer API / vertex=Vertex AI(Google Cloud課金)
       - key: GEMINI_MODEL

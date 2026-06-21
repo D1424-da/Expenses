@@ -27,6 +27,7 @@ const CATEGORY_KEYWORDS = {
   光熱費: ["電力", "電気", "ガス", "水道"],
   通信費: ["docomo", "au", "softbank", "携帯", "通信", "wifi", "インターネット"],
   衣服: ["ユニクロ", "uniqlo", "gu", "しまむら", "衣料", "アパレル", "zara"],
+  娯楽: ["映画", "シネマ", "カラオケ", "ゲーム", "書店", "本", "tsutaya", "ゲオ", "geo", "遊園地", "アミューズ", "ボウリング", "玩具", "おもちゃ"],
   日用品: ["ドラッグ", "薬局", "ホームセンター", "カインズ", "ニトリ", "100円", "ダイソー", "セリア", "雑貨"],
   食費: ["スーパー", "イオン", "西友", "ライフ", "マルエツ", "業務スーパー", "コンビニ", "セブン", "ローソン", "ファミリーマート", "ファミマ", "青果", "精肉", "鮮魚", "タイヨー", "問屋", "生鮮"],
 };
@@ -39,7 +40,7 @@ function toHalfWidth(s) {
   });
 }
 
-function normalizeAmount(text) {
+export function normalizeAmount(text) {
   const m = toHalfWidth(text).match(/(\d[\d,]*)/);
   if (!m) return null;
   const v = parseInt(m[1].replace(/,/g, ""), 10);
@@ -65,7 +66,7 @@ function todayStr() {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-function parseDate(text) {
+export function parseDate(text) {
   const t = toHalfWidth(text);
   const patterns = [
     /(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/g, // 2024年1月2日
@@ -117,7 +118,7 @@ function amountInLine(line) {
   return v > 0 && v < 10000000 ? v : null;
 }
 
-function parseTotal(text) {
+export function parseTotal(text) {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   const has = (line, words) => {
     const low = line.toLowerCase();
@@ -226,7 +227,7 @@ function isValidItemName(name) {
   return hasJa || latin >= 2; // 日本語を含むか、英字が2文字以上あれば商品名とみなす
 }
 
-function parseItems(text) {
+export function parseItems(text) {
   const items = [];
   const stopWords = [...TOTAL_KEYWORDS, ...EXCLUDE_KEYWORDS];
   let lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
@@ -272,7 +273,7 @@ function parseItems(text) {
   return items.slice(0, 80);
 }
 
-function guessCategory(text, store) {
+export function guessCategory(text, store) {
   const haystack = (store + "\n" + text).toLowerCase();
   for (const [category, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
     if (keywords.some((kw) => haystack.includes(kw.toLowerCase()))) return category;

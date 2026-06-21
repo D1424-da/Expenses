@@ -68,7 +68,7 @@
             <input id="file-input" type="file" accept="image/*" multiple hidden />
           </label>
         </div>
-        <div id="ocr-status" class="status" hidden></div>
+        <div id="ocr-status" class="status" role="status" aria-live="polite" hidden></div>
       </section>
 
       <!-- 入力フォーム（OCR結果の確認・修正 / 手入力） -->
@@ -83,7 +83,7 @@
 
           <div class="row">
             <label>日付<input type="date" id="f-date" required /></label>
-            <label>金額(円)<input type="number" id="f-amount" min="0" required /></label>
+            <label>金額(円)<input type="number" id="f-amount" min="0" step="1" inputmode="numeric" required /></label>
           </div>
           <div class="row">
             <label>店名<input type="text" id="f-store" placeholder="例: スーパー〇〇" /></label>
@@ -123,7 +123,7 @@
 
     <!-- 商品の最安値（店舗横断で比較） -->
     <div id="compare-modal" class="modal" hidden>
-      <div class="modal-box">
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="商品の最安値">
         <div class="modal-head">
           <h2>🔎 商品の最安値</h2>
           <button id="compare-close" aria-label="閉じる">✕</button>
@@ -135,7 +135,7 @@
     </div>
     <!-- カレンダーの日付タップ → その日の買い物を確認・追加 -->
     <div id="day-modal" class="modal" hidden>
-      <div class="modal-box">
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="day-modal-title">
         <div class="modal-head">
           <h2 id="day-modal-title">買い物</h2>
           <button id="day-close" aria-label="閉じる">✕</button>
@@ -148,7 +148,7 @@
         <form id="day-form" class="day-form">
           <h3>この日に追加</h3>
           <div class="row">
-            <label>金額(円)<input type="number" id="day-amount" min="0" placeholder="例: 1280" /></label>
+            <label>金額(円)<input type="number" id="day-amount" min="0" step="1" inputmode="numeric" placeholder="例: 1280" /></label>
             <label>カテゴリ<select id="day-category"></select></label>
           </div>
           <label>店名<input type="text" id="day-store" placeholder="任意" /></label>
@@ -158,7 +158,7 @@
     </div>
     <!-- 週計タップ → その週のカテゴリ別内訳（明細カテゴリで集計） -->
     <div id="week-modal" class="modal" hidden>
-      <div class="modal-box">
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="week-modal-title">
         <div class="modal-head">
           <h2 id="week-modal-title">週の内訳</h2>
           <button id="week-close" aria-label="閉じる">✕</button>

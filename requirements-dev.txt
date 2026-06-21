@@ -1,0 +1,4 @@
+# 開発・テスト用依存。CI と手元テストで使用（本番イメージには含めない）。
+-r requirements-base.txt
+pytest==8.3.4
+httpx==0.28.1

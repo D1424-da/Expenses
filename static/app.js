@@ -9,10 +9,6 @@ import {
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFunctions,
-  httpsCallable,
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
-import {
   getFirestore,
   collection,
   doc,
@@ -71,6 +67,30 @@ const TRUSTED_ENGINES = ["gemini", "vertex"];
 let unsubscribe = null; // Firestore リスナー解除関数
 
 const $ = (id) => document.getElementById(id);
+
+// ---- モーダル共通（開閉・背景タップ/Escで閉じる・背景スクロール抑止） --------
+function openModal(id) {
+  $(id).hidden = false;
+  document.body.classList.add("modal-open");
+}
+function closeModal(id) {
+  $(id).hidden = true;
+  if (!document.querySelector(".modal:not([hidden])")) {
+    document.body.classList.remove("modal-open");
+  }
+}
+function bindModalDismiss() {
+  document.querySelectorAll(".modal").forEach((m) => {
+    // 背景（オーバーレイ）クリックで閉じる。中身(.modal-box)クリックは無視。
+    m.addEventListener("click", (e) => { if (e.target === m) closeModal(m.id); });
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const open = document.querySelector(".modal:not([hidden])");
+    if (open) closeModal(open.id);
+  });
+}
+
 const yen = (n) => "¥" + Number(n || 0).toLocaleString("ja-JP");
 const pad = (n) => String(n).padStart(2, "0");
 const monthKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
@@ -162,14 +182,15 @@ function bindEvents() {
   $("reset-btn").onclick = resetForm;
   $("skip-btn").onclick = skipCurrent;
   $("compare-btn").onclick = openCompare;
-  $("compare-close").onclick = () => ($("compare-modal").hidden = true);
+  $("compare-close").onclick = () => closeModal("compare-modal");
+  bindModalDismiss();
   $("compare-search").oninput = renderCompare;
   // カレンダー: カテゴリ候補を埋め、日付タップ用モーダルのイベントを束ねる
   for (const c of CATEGORIES) $("day-category").add(new Option(c, c));
   $("day-category").value = "食費";
-  $("day-close").onclick = () => ($("day-modal").hidden = true);
+  $("day-close").onclick = () => closeModal("day-modal");
   $("day-form").onsubmit = handleDayAdd;
-  $("week-close").onclick = () => ($("week-modal").hidden = true);
+  $("week-close").onclick = () => closeModal("week-modal");
 }
 
 function shiftMonth(delta) {
@@ -294,7 +315,28 @@ async function ocrAndShow(file) {
         const upload = await downscaleForUpload(file);
         const fd = new FormData();
         fd.append("file", upload, "receipt.jpg");
-        const res = await fetch(`${OCR_API_BASE}/api/ocr`, { method: "POST", body: fd });
+        // 認証ヘッダ（バックエンドが認証必須でなくても付与は無害）。
+        const headers = {};
+        try {
+          const token = currentUser ? await currentUser.getIdToken() : "";
+          if (token) headers.Authorization = `Bearer ${token}`;
+        } catch (e) { logErr("IDトークン取得失敗（認証なしで続行）:", e.message); }
+        // Render 無料枠はアイドルで停止し、初回は起動に時間がかかる。タイムアウトと
+        // 「起動待ち」表示を入れ、固まったらブラウザ内OCRへフォールバックさせる。
+        const ctrl = new AbortController();
+        const wakeTimer = setTimeout(() => {
+          status.textContent = "🤖 AIサーバーを起動中…（初回は少し時間がかかります）";
+        }, 4000);
+        const killTimer = setTimeout(() => ctrl.abort(), 90000); // 90秒で打ち切り
+        let res;
+        try {
+          res = await fetch(`${OCR_API_BASE}/api/ocr`, {
+            method: "POST", body: fd, headers, signal: ctrl.signal,
+          });
+        } finally {
+          clearTimeout(wakeTimer);
+          clearTimeout(killTimer);
+        }
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.detail || "読み取りに失敗しました");
@@ -699,7 +741,7 @@ function addItemRow(name = "", price = 0, category = "") {
   ).join("");
   row.innerHTML = `
     <input type="text" class="item-name" value="${escapeHtml(name)}" placeholder="品目" />
-    <input type="number" class="item-price" value="${price || 0}" min="0" />
+    <input type="number" class="item-price" value="${price || 0}" min="0" step="1" inputmode="numeric" />
     <select class="item-category" aria-label="明細カテゴリ">${options}</select>
     <button type="button" aria-label="削除">✕</button>`;
   row.querySelector("button").onclick = () => {
@@ -885,7 +927,7 @@ function categoryBreakdown(expenses) {
 // { カテゴリ: 金額 } をバーで描画する（サマリーと週計内訳で共用）
 function renderCatBars(container, byCat) {
   const entries = Object.entries(byCat)
-    .filter(([, a]) => a !== 0)
+    .filter(([, a]) => a > 0) // 端数調整で生じうる0/負の値は表示しない
     .sort((a, b) => b[1] - a[1]);
   const max = entries.reduce((m, [, a]) => Math.max(m, a), 0);
   container.innerHTML = "";
@@ -983,7 +1025,7 @@ function openWeekModal(idx) {
     wk.start && wk.end ? `${fmt(wk.start)}〜${fmt(wk.end)} の内訳` : "週の内訳";
   $("week-total").textContent = yen(wk.total);
   renderCatBars($("week-bars"), wk.byCat);
-  $("week-modal").hidden = false;
+  openModal("week-modal");
 }
 
 // ---- 日付モーダル（その日の合計確認＋金額の追加入力） ----------------------
@@ -993,7 +1035,7 @@ function openDayModal(key) {
   $("day-store").value = "";
   $("day-category").value = "食費";
   renderDayModal();
-  $("day-modal").hidden = false;
+  openModal("day-modal");
   $("day-amount").focus();
 }
 
@@ -1162,7 +1204,7 @@ function editExpense(e) {
   showPreview(null);
   setFormMode("edit", e);
   // カレンダーの日付モーダルから編集を始めた場合は閉じてフォームを見せる
-  $("day-modal").hidden = true;
+  closeModal("day-modal");
   $("form-card").scrollIntoView({ behavior: "smooth" });
 }
 
@@ -1197,8 +1239,7 @@ async function deleteExpense(id) {
 let compareData = []; // [{name, price, store, date}] 全明細をフラット化
 
 async function openCompare() {
-  const modal = $("compare-modal");
-  modal.hidden = false;
+  openModal("compare-modal");
   const list = $("compare-list");
   list.innerHTML = "<p class='empty'>読み込み中…</p>";
   try {
