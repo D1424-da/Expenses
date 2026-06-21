@@ -1,9 +1,24 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // 書き込み内容の最低限の妥当性チェック（型・サイズ・上限）。
+    // 既存データを壊さないよう、未知キーは許容しつつ主要フィールドだけ検証する。
+    function validExpense(d) {
+      return d.amount is number && d.amount >= 0 && d.amount < 100000000
+        && (!('date' in d) || (d.date is string && d.date.size() <= 10))
+        && (!('store' in d) || (d.store is string && d.store.size() <= 100))
+        && (!('branch' in d) || (d.branch is string && d.branch.size() <= 100))
+        && (!('category' in d) || (d.category is string && d.category.size() <= 30))
+        && (!('memo' in d) || (d.memo is string && d.memo.size() <= 500))
+        && (!('items' in d) || d.items is list)
+        && (!('rawText' in d) || (d.rawText is string && d.rawText.size() <= 20000));
+    }
+
     // 各ユーザーは自分のデータ（users/{uid}/...）にのみアクセス可能。
     match /users/{userId}/expenses/{expenseId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if request.auth != null && request.auth.uid == userId
+        && validExpense(request.resource.data);
     }
   }
 }

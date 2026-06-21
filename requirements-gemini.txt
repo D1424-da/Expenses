@@ -1,10 +1,5 @@
-# Gemini エンジンだけを使う軽量バックエンド用（Docker 不要のネイティブ実行向け）。
+# Gemini/Vertex だけを使う軽量バックエンド用（Docker 不要のネイティブ実行向け）。
 # OpenCV/Tesseract を含まないため、ビルドが速く依存トラブルが起きにくい。
 # ブラウザ内 OCR にフォールバックする前提なので、サーバー側の Tesseract は使わない。
-fastapi==0.136.3
-uvicorn[standard]==0.49.0
-python-multipart==0.0.32
-# OCR_ENGINE=vertex（Vertex AI / Google Cloud 課金）を使うときだけ必要。
-# Developer API(OCR_ENGINE=gemini)のみなら無くても動く。
-google-auth==2.43.0
-requests==2.32.5
+# 共通依存（FastAPI / google-auth / requests）は base から取り込む。
+-r requirements-base.txt

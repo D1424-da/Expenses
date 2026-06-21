@@ -2,7 +2,7 @@
   --bg: #f4f6f8;
   --card: #ffffff;
   --ink: #1f2933;
-  --muted: #7b8794;
+  --muted: #5a6573;
   --accent: #2f855a;
   --accent-weak: #c6f6d5;
   --danger: #c53030;
@@ -15,6 +15,9 @@
 
 /* hidden 属性は常に最優先で非表示にする（display:flex 等に負けないように） */
 [hidden] { display: none !important; }
+
+/* モーダル表示中は背面のスクロールを止める */
+body.modal-open { overflow: hidden; }
 
 body {
   margin: 0;
