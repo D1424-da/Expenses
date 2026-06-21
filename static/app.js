@@ -143,10 +143,8 @@ function setupApp() {
 
 function populateCategories() {
   const sel = $("f-category");
-  const filter = $("filter-category");
   for (const c of CATEGORIES) {
     sel.add(new Option(c, c));
-    filter.add(new Option(c, c));
   }
 }
 
@@ -163,7 +161,6 @@ function bindEvents() {
   $("expense-form").onsubmit = handleSubmit;
   $("reset-btn").onclick = resetForm;
   $("skip-btn").onclick = skipCurrent;
-  $("filter-category").onchange = renderList;
   $("compare-btn").onclick = openCompare;
   $("compare-close").onclick = () => ($("compare-modal").hidden = true);
   $("compare-search").oninput = renderCompare;
@@ -1047,31 +1044,79 @@ async function handleDayAdd(e) {
   }
 }
 
-// ---- 一覧 ------------------------------------------------------------------
+// ---- 店舗別一覧 ------------------------------------------------------------
+// 店舗 → 支店 → 明細 の順にまとめて表示する。支店名が入っている店舗だけ
+// 支店の小計見出しを挟み、支店が無い店舗はそのまま明細を並べる。
 function renderList() {
-  const cat = $("filter-category").value;
-  const rows = cat ? currentExpenses.filter((e) => e.category === cat) : currentExpenses;
   const list = $("expense-list");
   list.innerHTML = "";
-  $("empty-msg").hidden = rows.length > 0;
+  $("empty-msg").hidden = currentExpenses.length > 0;
+  if (!currentExpenses.length) return;
 
-  for (const e of rows) {
-    const item = document.createElement("div");
-    item.className = "expense-item";
-    item.innerHTML = `
-      <div class="ei-main">
-        <div class="ei-store">${escapeHtml(e.store || "(店名なし)")}${e.branch ? ` <span class="ei-branch">${escapeHtml(e.branch)}</span>` : ""}</div>
-        <div class="ei-meta"><span class="ei-cat">${escapeHtml(e.category)}</span>${escapeHtml(e.date)}${e.memo ? " · " + escapeHtml(e.memo) : ""}</div>
-      </div>
-      <div class="ei-amount">${yen(e.amount)}</div>
-      <div class="ei-actions">
-        <button data-act="edit">✏️</button>
-        <button data-act="del">🗑️</button>
-      </div>`;
-    item.querySelector('[data-act="edit"]').onclick = () => editExpense(e);
-    item.querySelector('[data-act="del"]').onclick = () => deleteExpense(e.id);
-    list.appendChild(item);
+  const sum = (arr) => arr.reduce((t, e) => t + (e.amount || 0), 0);
+
+  // 店舗ごとに { total, count, branches: Map(支店名 -> 支出[]) } を作る
+  const stores = new Map();
+  for (const e of currentExpenses) {
+    const store = (e.store || "").trim() || "(店名なし)";
+    const branch = (e.branch || "").trim();
+    let s = stores.get(store);
+    if (!s) {
+      s = { total: 0, count: 0, branches: new Map() };
+      stores.set(store, s);
+    }
+    s.total += e.amount || 0;
+    s.count += 1;
+    if (!s.branches.has(branch)) s.branches.set(branch, []);
+    s.branches.get(branch).push(e);
   }
+
+  // 合計金額の大きい店舗から表示
+  const storeList = [...stores.entries()].sort((a, b) => b[1].total - a[1].total);
+  for (const [store, s] of storeList) {
+    const group = document.createElement("div");
+    group.className = "store-group";
+    group.innerHTML = `
+      <div class="store-head">
+        <span class="sg-name">${escapeHtml(store)}</span>
+        <span class="sg-total">${yen(s.total)}<span class="sg-count">${s.count}件</span></span>
+      </div>`;
+
+    const hasBranches = [...s.branches.keys()].some((b) => b !== "");
+    const branchList = [...s.branches.entries()].sort((a, b) => sum(b[1]) - sum(a[1]));
+    for (const [branch, entries] of branchList) {
+      if (hasBranches) {
+        const bhead = document.createElement("div");
+        bhead.className = "branch-head";
+        bhead.innerHTML = `
+          <span class="bh-name">${branch ? escapeHtml(branch) : "（支店なし）"}</span>
+          <span class="bh-total">${yen(sum(entries))}</span>`;
+        group.appendChild(bhead);
+      }
+      entries.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      for (const e of entries) group.appendChild(renderExpenseRow(e, hasBranches));
+    }
+    list.appendChild(group);
+  }
+}
+
+// 店舗別一覧の1明細行。支店見出しの下に入るときは indented で字下げする。
+function renderExpenseRow(e, indented) {
+  const row = document.createElement("div");
+  row.className = "expense-item" + (indented ? " ei-indent" : "");
+  const memo = e.memo ? " · " + escapeHtml(e.memo) : "";
+  row.innerHTML = `
+    <div class="ei-main">
+      <div class="ei-meta">${escapeHtml(e.date)}${memo}</div>
+    </div>
+    <div class="ei-amount">${yen(e.amount)}</div>
+    <div class="ei-actions">
+      <button data-act="edit">✏️</button>
+      <button data-act="del">🗑️</button>
+    </div>`;
+  row.querySelector('[data-act="edit"]').onclick = () => editExpense(e);
+  row.querySelector('[data-act="del"]').onclick = () => deleteExpense(e.id);
+  return row;
 }
 
 function editExpense(e) {

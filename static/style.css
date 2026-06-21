@@ -161,7 +161,22 @@ button.primary:hover { filter: brightness(1.05); }
 .list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .list-head h2 { margin: 0; }
 .list-head select { width: auto; }
-.expense-list { display: flex; flex-direction: column; gap: 8px; }
+.expense-list { display: flex; flex-direction: column; gap: 16px; }
+.store-group { display: flex; flex-direction: column; gap: 6px; }
+.store-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding-bottom: 4px; border-bottom: 2px solid var(--border);
+}
+.store-head .sg-name { font-weight: 700; font-size: 1.02rem; }
+.store-head .sg-total { font-weight: 700; color: var(--accent); white-space: nowrap; }
+.store-head .sg-count { color: var(--muted); font-weight: 400; font-size: 0.75rem; margin-left: 6px; }
+.branch-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  margin-top: 4px; padding: 2px 4px; font-size: 0.85rem;
+}
+.branch-head .bh-name { font-weight: 600; color: var(--muted); }
+.branch-head .bh-total { font-weight: 600; color: var(--muted); white-space: nowrap; }
+.expense-item.ei-indent { margin-left: 12px; }
 .expense-item {
   display: flex;
   align-items: center;
