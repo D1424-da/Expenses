@@ -833,9 +833,12 @@ function expensesByDay() {
 const UNCATEGORIZED = "未分類";
 
 // 支出群を「明細(items)のカテゴリ」で集計して { カテゴリ: 金額 } を返す。
-// ・明細ごとに its category へ price を加算
-// ・明細が無い支出や、税・端数などで明細合計と金額がズレる分は「未分類」へ寄せる
-//   （内訳の合計が週計と一致するようにするため）
+// ・明細ごとに「明細のカテゴリ → 無ければその支出のカテゴリ」へ割り当てる
+//   （明細にカテゴリが無い古いデータ等が "未分類" に落ちないようにする）
+// ・消費税や端数で「明細合計 ≠ 支払額」になる分は、明細の比率で各カテゴリへ按分する。
+//   こうすると税を別枠にせずに済み、内訳の合計が支払額（=週計）と必ず一致する。
+// ・明細が無い支出（カレンダー直接追加・手入力）はその支出のカテゴリへ。
+//   カテゴリも無いときだけ「未分類」になる。
 function categoryBreakdown(expenses) {
   const map = {};
   const add = (cat, amt) => {
@@ -843,18 +846,32 @@ function categoryBreakdown(expenses) {
     map[cat] = (map[cat] || 0) + amt;
   };
   for (const e of expenses) {
-    const amount = e.amount || 0;
+    const amount = Math.round(e.amount || 0);
+    const fallback = e.category || UNCATEGORIZED; // 明細にカテゴリが無いときの受け皿
     const items = Array.isArray(e.items) ? e.items : [];
     const itemSum = items.reduce((s, it) => s + (Number(it.price) || 0), 0);
-    if (items.length && itemSum > 0) {
-      for (const it of items) {
-        add(it.category || UNCATEGORIZED, Number(it.price) || 0);
-      }
-      // 明細に表れない差額（税・端数・割引など）は未分類へ
-      add(UNCATEGORIZED, amount - itemSum);
-    } else {
-      add(UNCATEGORIZED, amount);
+    if (!items.length || itemSum <= 0) {
+      add(fallback, amount);
+      continue;
     }
+    // 明細カテゴリごとに価格を合算
+    const perCat = {};
+    for (const it of items) {
+      const cat = it.category || fallback;
+      perCat[cat] = (perCat[cat] || 0) + (Number(it.price) || 0);
+    }
+    // 支払額(amount)を明細比で按分。円未満は四捨五入し、誤差は最大カテゴリで吸収して
+    // 合計を支払額に厳密一致させる（消費税ぶんも各カテゴリへ自然に配分される）。
+    const cats = Object.keys(perCat);
+    let allocated = 0;
+    let maxCat = cats[0];
+    for (const cat of cats) {
+      const v = Math.round((perCat[cat] * amount) / itemSum);
+      add(cat, v);
+      allocated += v;
+      if (perCat[cat] > perCat[maxCat]) maxCat = cat;
+    }
+    add(maxCat, amount - allocated);
   }
   return map;
 }
