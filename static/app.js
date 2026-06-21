@@ -172,6 +172,7 @@ function bindEvents() {
   $("day-category").value = "食費";
   $("day-close").onclick = () => ($("day-modal").hidden = true);
   $("day-form").onsubmit = handleDayAdd;
+  $("week-close").onclick = () => ($("week-modal").hidden = true);
 }
 
 function shiftMonth(delta) {
@@ -801,26 +802,14 @@ function renderSummary() {
   for (const e of currentExpenses) {
     byCat[e.category] = (byCat[e.category] || 0) + (e.amount || 0);
   }
-  const entries = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
-  const max = entries.length ? entries[0][1] : 0;
-  const bars = $("category-bars");
-  bars.innerHTML = "";
-  for (const [cat, amt] of entries) {
-    const row = document.createElement("div");
-    row.className = "cat-row";
-    const pct = max ? (amt / max) * 100 : 0;
-    row.innerHTML = `
-      <span class="cat-name">${escapeHtml(cat)}</span>
-      <span class="cat-bar-wrap"><span class="cat-bar" style="width:${pct}%"></span></span>
-      <span class="cat-amount">${yen(amt)}</span>`;
-    bars.appendChild(row);
-  }
+  renderCatBars($("category-bars"), byCat);
 }
 
 // ---- カレンダー ------------------------------------------------------------
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 const dayKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 let selectedDay = null; // 日付モーダルで開いている日（"YYYY-MM-DD"）
+let weekBreakdowns = []; // 各週の内訳 [{ start, end, total, byCat }]
 
 // 当月の支出を日付ごとに合計する { "YYYY-MM-DD": 金額 }
 function totalsByDay() {
@@ -832,13 +821,74 @@ function totalsByDay() {
   return map;
 }
 
+// 当月の支出を日付ごとにまとめる { "YYYY-MM-DD": [expense, ...] }
+function expensesByDay() {
+  const map = {};
+  for (const e of currentExpenses) {
+    if (!e.date) continue;
+    (map[e.date] || (map[e.date] = [])).push(e);
+  }
+  return map;
+}
+
+// 明細が無い／価格が取れない支出を寄せる先のカテゴリ名
+const UNCATEGORIZED = "未分類";
+
+// 支出群を「明細(items)のカテゴリ」で集計して { カテゴリ: 金額 } を返す。
+// ・明細ごとに its category へ price を加算
+// ・明細が無い支出や、税・端数などで明細合計と金額がズレる分は「未分類」へ寄せる
+//   （内訳の合計が週計と一致するようにするため）
+function categoryBreakdown(expenses) {
+  const map = {};
+  const add = (cat, amt) => {
+    if (!amt) return;
+    map[cat] = (map[cat] || 0) + amt;
+  };
+  for (const e of expenses) {
+    const amount = e.amount || 0;
+    const items = Array.isArray(e.items) ? e.items : [];
+    const itemSum = items.reduce((s, it) => s + (Number(it.price) || 0), 0);
+    if (items.length && itemSum > 0) {
+      for (const it of items) {
+        add(it.category || UNCATEGORIZED, Number(it.price) || 0);
+      }
+      // 明細に表れない差額（税・端数・割引など）は未分類へ
+      add(UNCATEGORIZED, amount - itemSum);
+    } else {
+      add(UNCATEGORIZED, amount);
+    }
+  }
+  return map;
+}
+
+// { カテゴリ: 金額 } をバーで描画する（サマリーと週計内訳で共用）
+function renderCatBars(container, byCat) {
+  const entries = Object.entries(byCat)
+    .filter(([, a]) => a !== 0)
+    .sort((a, b) => b[1] - a[1]);
+  const max = entries.reduce((m, [, a]) => Math.max(m, a), 0);
+  container.innerHTML = "";
+  for (const [cat, amt] of entries) {
+    const row = document.createElement("div");
+    row.className = "cat-row";
+    const pct = max > 0 ? Math.max(0, (amt / max) * 100) : 0;
+    row.innerHTML = `
+      <span class="cat-name">${escapeHtml(cat)}</span>
+      <span class="cat-bar-wrap"><span class="cat-bar" style="width:${pct}%"></span></span>
+      <span class="cat-amount">${yen(amt)}</span>`;
+    container.appendChild(row);
+  }
+}
+
 // 月のカレンダーを描画。各セルにその日の買い物合計、行末に週間合計を出す。
 function renderCalendar() {
   const cal = $("calendar");
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
   const totals = totalsByDay();
+  const byDay = expensesByDay();
   const todayKey = dayKey(new Date());
+  weekBreakdowns = [];
 
   // グリッドの先頭は週の頭（日曜）に揃える
   const first = new Date(year, month, 1);
@@ -855,11 +905,19 @@ function renderCalendar() {
   for (let w = 0; w < weeks; w++) {
     let weekSum = 0;
     let rowHtml = "";
+    const weekExpenses = []; // この週の当月分の支出（内訳集計用）
+    let weekStart = null;
+    let weekEnd = null;
     for (let i = 0; i < 7; i++) {
       const key = dayKey(cursor);
       const inMonth = cursor.getMonth() === month;
       const amt = totals[key] || 0;
-      if (inMonth) weekSum += amt;
+      if (inMonth) {
+        weekSum += amt;
+        if (byDay[key]) weekExpenses.push(...byDay[key]);
+        if (!weekStart) weekStart = new Date(cursor);
+        weekEnd = new Date(cursor);
+      }
       const cls = [
         "cal-day",
         inMonth ? "" : "cal-out",
@@ -872,7 +930,14 @@ function renderCalendar() {
         </div>`;
       cursor.setDate(cursor.getDate() + 1);
     }
-    rowHtml += `<div class="cal-week">${weekSum > 0 ? yen(weekSum) : ""}</div>`;
+    weekBreakdowns.push({
+      start: weekStart,
+      end: weekEnd,
+      total: weekSum,
+      byCat: categoryBreakdown(weekExpenses),
+    });
+    const weekCls = "cal-week" + (weekSum > 0 ? " cal-week-click" : "");
+    rowHtml += `<div class="${weekCls}" data-week="${w}">${weekSum > 0 ? yen(weekSum) : ""}</div>`;
     html += rowHtml;
   }
   html += "</div>";
@@ -882,6 +947,22 @@ function renderCalendar() {
   cal.querySelectorAll(".cal-day:not(.cal-out)").forEach((el) => {
     el.onclick = () => openDayModal(el.dataset.day);
   });
+  // 週計タップでカテゴリ別の内訳を開く
+  cal.querySelectorAll(".cal-week-click").forEach((el) => {
+    el.onclick = () => openWeekModal(Number(el.dataset.week));
+  });
+}
+
+// 週計をタップ → その週のカテゴリ別内訳（明細カテゴリで集計）を表示
+function openWeekModal(idx) {
+  const wk = weekBreakdowns[idx];
+  if (!wk) return;
+  const fmt = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
+  $("week-modal-title").textContent =
+    wk.start && wk.end ? `${fmt(wk.start)}〜${fmt(wk.end)} の内訳` : "週の内訳";
+  $("week-total").textContent = yen(wk.total);
+  renderCatBars($("week-bars"), wk.byCat);
+  $("week-modal").hidden = false;
 }
 
 // ---- 日付モーダル（その日の合計確認＋金額の追加入力） ----------------------
