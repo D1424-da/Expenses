@@ -644,6 +644,9 @@ async function runClientOcr(image, onProgress) {
 
 // ---- フォーム --------------------------------------------------------------
 function fillForm(data, previewUrl) {
+  // OCR取り込みは新規追加。編集中にレシートを読み取った場合でも編集モード
+  // （バナー・枠線・「更新する」表示）を確実に解除してから埋める。
+  setFormMode("add");
   $("form-title").textContent = "読み取り結果を確認";
   $("f-id").value = "";
   $("f-date").value = data.date || todayStr();
@@ -741,6 +744,7 @@ async function handleSubmit(e) {
   saveBtn.textContent = "保存中…";
   try {
     const id = $("f-id").value;
+    const engine = $("f-engine").value;
     const payload = {
       date: $("f-date").value,
       store: $("f-store").value.trim(),
@@ -750,7 +754,9 @@ async function handleSubmit(e) {
       memo: $("f-memo").value.trim(),
       items: collectItems(),
       // 抽出元エンジン。正解辞書（gemini/vertex のみ採用）の判定に使う。
-      ocrEngine: $("f-engine").value || "manual",
+      // 新規のみ未設定を "manual" とする。編集時は元の値を維持し、ocrEngine の
+      // 無い旧データ（主に Gemini 由来＝信頼）を "manual" に降格させない。
+      ocrEngine: engine || (id ? "" : "manual"),
     };
 
     log(id ? "更新:" : "新規保存:", payload);
@@ -1128,9 +1134,10 @@ function renderExpenseRow(e, indented) {
   const row = document.createElement("div");
   row.className = "expense-item" + (indented ? " ei-indent" : "");
   const memo = e.memo ? " · " + escapeHtml(e.memo) : "";
+  const cat = e.category ? `<span class="ei-cat">${escapeHtml(e.category)}</span>` : "";
   row.innerHTML = `
     <div class="ei-main">
-      <div class="ei-meta">${escapeHtml(e.date)}${memo}</div>
+      <div class="ei-meta">${cat}${escapeHtml(e.date)}${memo}</div>
     </div>
     <div class="ei-amount">${yen(e.amount)}</div>
     <div class="ei-actions">

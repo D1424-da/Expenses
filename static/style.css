@@ -168,23 +168,26 @@ button.primary:hover { filter: brightness(1.05); }
 /* 一覧 */
 .list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .list-head h2 { margin: 0; }
-.list-head select { width: auto; }
 .expense-list { display: flex; flex-direction: column; gap: 16px; }
 .store-group { display: flex; flex-direction: column; gap: 6px; }
 .store-head {
   display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
   padding-bottom: 4px; border-bottom: 2px solid var(--border);
 }
-.store-head .sg-name { font-weight: 700; font-size: 1.02rem; }
+.store-head .sg-name {
+  font-weight: 700; font-size: 1.02rem;
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .store-head .sg-total { font-weight: 700; color: var(--accent); white-space: nowrap; }
 .store-head .sg-count { color: var(--muted); font-weight: 400; font-size: 0.75rem; margin-left: 6px; }
 .branch-head {
   display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
-  margin-top: 4px; padding: 2px 4px; font-size: 0.85rem;
+  margin-top: 4px; padding: 2px 4px 2px 10px; font-size: 0.85rem;
+  border-left: 3px solid var(--border);
 }
-.branch-head .bh-name { font-weight: 600; color: var(--muted); }
-.branch-head .bh-total { font-weight: 600; color: var(--muted); white-space: nowrap; }
-.expense-item.ei-indent { margin-left: 12px; }
+.branch-head .bh-name { font-weight: 600; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.branch-head .bh-total { font-weight: 600; color: var(--ink); white-space: nowrap; }
+.expense-item.ei-indent { margin-left: 10px; border-left: 3px solid var(--border); border-radius: 0 10px 10px 0; }
 .expense-item {
   display: flex;
   align-items: center;
@@ -198,7 +201,6 @@ button.primary:hover { filter: brightness(1.05); }
   background: var(--bg); flex-shrink: 0;
 }
 .expense-item .ei-main { flex: 1; min-width: 0; }
-.expense-item .ei-store { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .expense-item .ei-meta { font-size: 0.78rem; color: var(--muted); }
 .expense-item .ei-cat {
   display: inline-block; background: var(--accent-weak); color: var(--accent);
@@ -305,7 +307,6 @@ button.primary:hover { filter: brightness(1.05); }
 .cmp-store.cmp-min { color: var(--ink); font-weight: 700; }
 .cmp-date { color: var(--muted); font-weight: 400; font-size: 0.75rem; }
 .cmp-branch { color: var(--muted); font-weight: 400; font-size: 0.8rem; }
-.expense-item .ei-branch { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
 .cmp-row { display: flex; flex-direction: column; gap: 1px; }
 .cmp-low { font-size: 0.75rem; color: var(--muted); padding-left: 10px; }
 .cmp-tag { background: #fde68a; color: #92400e; border-radius: 4px; padding: 0 4px; margin-left: 2px; font-size: 0.7rem; font-weight: 700; }
@@ -368,8 +369,12 @@ button.primary:hover { filter: brightness(1.05); }
   border-radius: 8px;
   text-align: right;
 }
-.cal-week-click { cursor: pointer; text-decoration: underline; text-decoration-style: dotted; }
-.cal-week-click:hover { background: var(--border); }
+.cal-week-click {
+  cursor: pointer; background: var(--accent-weak);
+  flex-direction: column; justify-content: center; gap: 1px;
+}
+.cal-week-click::after { content: "内訳▾"; font-size: 0.58rem; font-weight: 600; opacity: 0.85; }
+.cal-week-click:active { filter: brightness(0.95); }
 
 /* 日付モーダル */
 .day-total-line { display: flex; align-items: baseline; justify-content: space-between; margin: 8px 0 12px; }
@@ -380,7 +385,11 @@ button.primary:hover { filter: brightness(1.05); }
 .day-row-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
 .day-row-store { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .day-row-amt { font-weight: 700; }
-.day-row button { background: none; border: none; cursor: pointer; padding: 2px 4px; font-size: 0.9rem; }
+.day-row button {
+  background: none; border: none; cursor: pointer; font-size: 1.05rem;
+  min-width: 40px; min-height: 40px; border-radius: 8px; flex-shrink: 0;
+}
+.day-row button:active { background: var(--bg); }
 .day-form { border-top: 1px solid var(--border); padding-top: 12px; }
 .day-form h3 { margin: 0 0 10px; font-size: 0.95rem; }
 
