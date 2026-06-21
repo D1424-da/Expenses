@@ -798,11 +798,8 @@ function renderSummary() {
     ? `${currentExpenses.length}件の記録`
     : "記録なし";
 
-  const byCat = {};
-  for (const e of currentExpenses) {
-    byCat[e.category] = (byCat[e.category] || 0) + (e.amount || 0);
-  }
-  renderCatBars($("category-bars"), byCat);
+  // カテゴリ別は明細(items)のカテゴリで集計する（レシート全体のカテゴリは使わない）。
+  renderCatBars($("category-bars"), categoryBreakdown(currentExpenses));
 }
 
 // ---- カレンダー ------------------------------------------------------------
