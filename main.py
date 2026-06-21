@@ -28,7 +28,12 @@ try:
     from app import gemini
 except Exception:  # noqa: BLE001 — gemini は任意
     gemini = None  # type: ignore
-# Vision は Gemini が失敗したときの保険（OCR専用）。任意の依存にする。
+# Vertex AI 版 Gemini（Google Cloud 課金=無料トライアル等で動かす）。任意の依存。
+try:
+    from app import vertex
+except Exception:  # noqa: BLE001 — vertex は任意
+    vertex = None  # type: ignore
+# Vision は AI が失敗したときの保険（OCR専用）。任意の依存にする。
 try:
     from app import vision
 except Exception:  # noqa: BLE001 — vision は任意
@@ -69,31 +74,36 @@ async def ocr_receipt(file: UploadFile = File(...)) -> JSONResponse:
     if not image_bytes:
         raise HTTPException(400, "空のファイルです。")
 
-    # OCR_ENGINE=gemini のときは Gemini で画像から直接構造化抽出（高精度）。
-    # キーはサーバーの環境変数 GEMINI_API_KEY に保持し、フロントには出さない。
-    if os.environ.get("OCR_ENGINE", "tesseract").lower() == "gemini":
-        if gemini is None:
-            raise HTTPException(500, "Gemini エンジンを利用できません。")
+    # OCR_ENGINE=gemini / vertex のときは Gemini で画像から直接構造化抽出（高精度）。
+    #   gemini: Developer API（APIキー / AI Studio 課金）
+    #   vertex: Vertex AI（OAuth / Google Cloud 課金=無料トライアル等を消費）
+    # 鍵・資格情報はサーバーの環境変数に保持し、フロントには出さない。
+    engine = os.environ.get("OCR_ENGINE", "tesseract").lower()
+    if engine in ("gemini", "vertex"):
+        ai = vertex if engine == "vertex" else gemini
+        ai_name = "Vertex AI" if engine == "vertex" else "Gemini"
+        if ai is None:
+            raise HTTPException(500, f"{ai_name} エンジンを利用できません。")
         try:
-            return JSONResponse(gemini.extract_receipt(image_bytes))
+            return JSONResponse(ai.extract_receipt(image_bytes))
         except Exception as exc:  # noqa: BLE001 — ユーザーに原因を返す
-            logger.exception("Gemini OCR failed")  # 原因を Render ログに出す
+            logger.exception("%s OCR failed", ai_name)  # 原因を Render ログに出す
             # 保険: VISION_API_KEY があれば Vision でフォールバック（OCR専用）。
             has_vision_key = bool(os.environ.get("VISION_API_KEY"))
             if vision is not None and has_vision_key:
                 try:
-                    logger.warning("Gemini 失敗。Vision にフォールバックします。")
+                    logger.warning("%s 失敗。Vision にフォールバックします。", ai_name)
                     result = vision.extract_receipt(image_bytes)
                     result["engine"] = "vision"  # フロントの履歴正規化の対象
                     return JSONResponse(result)
                 except Exception as vexc:  # noqa: BLE001 — フォールバックも失敗
                     logger.exception("Vision fallback failed")
                     # Vision が失敗した本当の理由（Cloud Vision 未有効化=403、
-                    # APIキー制限など）が Gemini エラーに隠れないよう両方返す。
+                    # APIキー制限など）が AI エラーに隠れないよう両方返す。
                     raise HTTPException(
                         500,
                         f"AI 読み取りに失敗しました。"
-                        f"Gemini: {exc} / Vision フォールバックも失敗: {vexc}",
+                        f"{ai_name}: {exc} / Vision フォールバックも失敗: {vexc}",
                     ) from vexc
             # フォールバック未設定/無効のときは、その旨も添えて原因を返す。
             reason = (

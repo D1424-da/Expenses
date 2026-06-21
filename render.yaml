@@ -13,12 +13,21 @@ services:
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: OCR_ENGINE
-        value: gemini
+        value: gemini   # gemini=Developer API / vertex=Vertex AI(Google Cloud課金)
       - key: GEMINI_MODEL
         value: gemini-2.5-flash
       - key: CORS_ORIGINS
         sync: false   # 例: https://<ユーザー名>.github.io
       - key: GEMINI_API_KEY
-        sync: false   # Cloud Shell で取得したキー（ダッシュボードで入力）
+        sync: false   # OCR_ENGINE=gemini 用。Cloud Shell で取得したキー（ダッシュボードで入力）
       - key: VISION_API_KEY
-        sync: false   # 保険: Gemini 失敗時の Vision API フォールバック用（任意・ダッシュボードで入力）
+        sync: false   # 保険: AI 失敗時の Vision API フォールバック用（任意・ダッシュボードで入力）
+      # ---- OCR_ENGINE=vertex（Vertex AI）を使う場合のみ設定 ----
+      - key: GOOGLE_CLOUD_PROJECT
+        sync: false   # 無料トライアル課金が紐づく GCP プロジェクトID
+      - key: VERTEX_LOCATION
+        value: us-central1   # リージョン（global も可）
+      - key: VERTEX_MODEL
+        sync: false   # 任意。未設定なら GEMINI_MODEL を使用
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
+        sync: false   # サービスアカウント鍵のJSON文字列（aiplatform.user 権限）
