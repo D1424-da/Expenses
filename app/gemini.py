@@ -101,12 +101,19 @@ def parse_generate_content(result: dict) -> tuple[dict, str]:
 
 
 def build_request_body(b64_image: str) -> dict:
-    """generateContent のリクエストボディ（Gemini/Vertex 共通）。"""
+    """generateContent のリクエストボディ（Gemini/Vertex 共通）。
+
+    role は Vertex AI では必須（"user"/"model"）。Gemini Developer API でも
+    有効なので両対応のため明示する。
+    """
     return {
-        "contents": [{"parts": [
-            {"inline_data": {"mime_type": "image/jpeg", "data": b64_image}},
-            {"text": PROMPT},
-        ]}],
+        "contents": [{
+            "role": "user",
+            "parts": [
+                {"inline_data": {"mime_type": "image/jpeg", "data": b64_image}},
+                {"text": PROMPT},
+            ],
+        }],
         "generationConfig": {"response_mime_type": "application/json", "temperature": 0},
     }
 
