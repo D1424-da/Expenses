@@ -156,6 +156,20 @@
         </form>
       </div>
     </div>
+    <!-- 週計タップ → その週のカテゴリ別内訳（明細カテゴリで集計） -->
+    <div id="week-modal" class="modal" hidden>
+      <div class="modal-box">
+        <div class="modal-head">
+          <h2 id="week-modal-title">週の内訳</h2>
+          <button id="week-close" aria-label="閉じる">✕</button>
+        </div>
+        <div class="day-total-line">
+          <span class="label">週計</span>
+          <span id="week-total" class="value">¥0</span>
+        </div>
+        <div id="week-bars" class="category-bars"></div>
+      </div>
+    </div>
   </div>
 
   <!-- ブラウザ内OCRは PaddleOCR(ppu-paddle-ocr + onnxruntime-web) を app.js から

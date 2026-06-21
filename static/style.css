@@ -345,6 +345,8 @@ button.primary:hover { filter: brightness(1.05); }
   border-radius: 8px;
   text-align: right;
 }
+.cal-week-click { cursor: pointer; text-decoration: underline; text-decoration-style: dotted; }
+.cal-week-click:hover { background: var(--border); }
 
 /* 日付モーダル */
 .day-total-line { display: flex; align-items: baseline; justify-content: space-between; margin: 8px 0 12px; }
