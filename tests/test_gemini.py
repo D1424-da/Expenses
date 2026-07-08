@@ -24,7 +24,7 @@ def test_normalize_item_category_falls_back_to_overall():
             {"name": "ノーカテゴリ", "price": 50},
         ],
     }
-    out = gemini._normalize(structured, "raw")
+    out = gemini.normalize_receipt(structured, "raw")
     assert out["amount"] == 1080
     assert out["category"] == "食費"
     cats = [it["category"] for it in out["items"]]
@@ -33,17 +33,17 @@ def test_normalize_item_category_falls_back_to_overall():
 
 
 def test_normalize_invalid_overall_category_becomes_other():
-    out = gemini._normalize({"category": "へんな区分", "total": 0}, "")
+    out = gemini.normalize_receipt({"category": "へんな区分", "total": 0}, "")
     assert out["category"] == "その他"
 
 
 def test_normalize_empty_date_defaults_today():
-    out = gemini._normalize({"total": 100}, "")
+    out = gemini.normalize_receipt({"total": 100}, "")
     assert out["date"]  # 空ではない（今日の日付が入る）
 
 
 def test_normalize_drops_items_without_name():
-    out = gemini._normalize(
+    out = gemini.normalize_receipt(
         {"total": 100, "items": [{"price": 100}, {"name": "x", "price": 50}]}, ""
     )
     assert [it["name"] for it in out["items"]] == ["x"]

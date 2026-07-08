@@ -2,6 +2,7 @@
 import io
 
 import main
+from app import security
 from fastapi.testclient import TestClient
 
 client = TestClient(main.app)
@@ -27,6 +28,6 @@ def test_ocr_rejects_non_image_bytes():
 
 
 def test_looks_like_image_signatures():
-    assert main._looks_like_image(b"\xff\xd8\xff\xe0rest")
-    assert main._looks_like_image(b"\x89PNG\r\n\x1a\nrest")
-    assert not main._looks_like_image(b"plain text bytes")
+    assert security.looks_like_image(b"\xff\xd8\xff\xe0rest")
+    assert security.looks_like_image(b"\x89PNG\r\n\x1a\nrest")
+    assert not security.looks_like_image(b"plain text bytes")

@@ -22,10 +22,8 @@ from __future__ import annotations
 import base64
 import json
 import os
-import urllib.error
-import urllib.request
 
-from app import gemini
+from app import gemini, net
 
 _SCOPES = ["https://www.googleapis.com/auth/cloud-platform"]
 
@@ -77,22 +75,11 @@ def extract_receipt(image_bytes: bytes) -> dict:
         f"https://{host}/v1/projects/{project}/locations/{location}"
         f"/publishers/google/models/{model}:generateContent"
     )
-    req = urllib.request.Request(
+    result = net.post_json(
         url,
-        data=json.dumps(gemini.build_request_body(b64)).encode("utf-8"),
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}",
-        },
-        method="POST",
+        gemini.build_request_body(b64),
+        headers={"Authorization": f"Bearer {token}"},
+        service="Vertex AI",
     )
-    try:
-        with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310 — 固定の信頼できるURL
-            result = json.loads(resp.read().decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        # Vertex からのエラー本文（権限不足・API未有効化・モデル名違いなど）を含める。
-        detail = exc.read().decode("utf-8", "replace")[:300]
-        raise RuntimeError(f"Vertex AI エラー (HTTP {exc.code}): {detail}") from exc
-
     structured, text = gemini.parse_generate_content(result)
-    return gemini._normalize(structured, text, engine="vertex")
+    return gemini.normalize_receipt(structured, text, engine="vertex")

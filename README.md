@@ -231,7 +231,12 @@ users/{uid}/expenses/{expenseId}
 .
 ├── static/                  # フロントエンド（GitHub Pages / 静的ホスティングの公開対象）
 │   ├── index.html
-│   ├── app.js               # Firebase(Auth/Firestore/Storage) + PaddleOCR 連携
+│   ├── app.js               # エントリポイント（画面のオーケストレーション）
+│   ├── ocr-client.js        # 画像縮小・バックエンドOCR呼び出し・PaddleOCR
+│   ├── history.js           # 履歴正規化（Gemini基準の正解辞書）
+│   ├── stats.js             # カテゴリ内訳・最安値比較の集計（純粋関数）
+│   ├── dom-utils.js         # DOM取得・表示整形・モーダル共通処理
+│   ├── log.js               # デバッグログ
 │   ├── parser.js            # OCRテキスト → 家計簿項目の抽出（ブラウザ用）
 │   ├── style.css
 │   └── firebase-config.js   # ← あなたの Firebase 設定に置き換える
@@ -241,10 +246,14 @@ users/{uid}/expenses/{expenseId}
 ├── firestore.rules          # Firestore セキュリティルール
 ├── .firebaserc              # ← プロジェクトID を設定
 │
-├── main.py                  # (任意) 高精度OCR用 FastAPI サービス
+├── main.py                  # (任意) 高精度OCR用 FastAPI サービス（ルーティングのみ）
 ├── app/
+│   ├── engines.py           # OCRエンジンの選択と多段フォールバック
+│   ├── security.py          # 画像検証・レート制限・Firebase認証
+│   ├── net.py               # Google系APIへのJSON POST共通処理
 │   ├── ocr.py               # OCR層（前処理 + エンジン切り替え）
 │   ├── gemini.py            # Gemini で画像→構造化抽出（高精度）
+│   ├── vertex.py            # Vertex AI 版 Gemini（Google Cloud 課金で動かす）
 │   ├── vision.py            # 保険: Gemini失敗時の Google Vision API フォールバック
 │   └── parser.py            # OCRテキスト抽出（parser.js と同等のロジック）
 ├── Dockerfile               # (任意) OCRサービスのコンテナ

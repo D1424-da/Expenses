@@ -13,8 +13,8 @@ import base64
 import datetime as dt
 import json
 import os
-import urllib.error
-import urllib.request
+
+from app import net
 
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 
@@ -54,7 +54,7 @@ def _to_int(value: object) -> int:
         return 0
 
 
-def _normalize(structured: dict, raw_text: str, engine: str = "gemini") -> dict:
+def normalize_receipt(structured: dict, raw_text: str, engine: str = "gemini") -> dict:
     """フロントと同じ形（parser.parse_receipt 互換）に整える。"""
     category = structured.get("category")
     overall = category if category in CATEGORIES else "その他"
@@ -129,19 +129,6 @@ def extract_receipt(image_bytes: bytes) -> dict:
         "https://generativelanguage.googleapis.com/v1beta/models/"
         f"{GEMINI_MODEL}:generateContent?key={api_key}"
     )
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(build_request_body(b64)).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310 — 固定の信頼できるURL
-            result = json.loads(resp.read().decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        # Gemini からのエラー本文（キー不正・API未有効化など）を原因に含める。
-        detail = exc.read().decode("utf-8", "replace")[:300]
-        raise RuntimeError(f"Gemini API エラー (HTTP {exc.code}): {detail}") from exc
-
+    result = net.post_json(url, build_request_body(b64), service="Gemini API")
     structured, text = parse_generate_content(result)
-    return _normalize(structured, text)
+    return normalize_receipt(structured, text)
