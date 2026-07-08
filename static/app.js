@@ -1,4 +1,12 @@
-// レシート家計簿 — フロントエンド（Firebase + OCRバックエンド連携）
+// レシート家計簿 — フロントエンドのエントリポイント（画面のオーケストレーション）。
+//
+// 役割分担:
+//   log.js        : デバッグログ
+//   dom-utils.js  : DOM取得・表示整形・モーダル共通処理
+//   ocr-client.js : 画像縮小・バックエンドOCR呼び出し・ブラウザ内PaddleOCR
+//   history.js    : 履歴正規化（Gemini基準の正解辞書）
+//   stats.js      : カテゴリ内訳・最安値比較の集計（純粋関数）
+//   parser.js     : OCRテキスト → 家計簿項目の抽出
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getAuth,
@@ -23,18 +31,20 @@ import {
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-import {
-  firebaseConfig,
-  OCR_API_BASE,
-  CATEGORIES,
-} from "./firebase-config.js";
+import { firebaseConfig, OCR_API_BASE, CATEGORIES } from "./firebase-config.js";
 import { parseReceipt } from "./parser.js";
-
-// ---- デバッグログ ----------------------------------------------------------
-// 問題の切り分け用。安定したら DEBUG = false にする。
-const DEBUG = true;
-const log = (...a) => DEBUG && console.log("%c[家計簿]", "color:#2f855a;font-weight:bold", ...a);
-const logErr = (...a) => DEBUG && console.error("[家計簿]", ...a);
+import { log, logErr } from "./log.js";
+import {
+  $, yen, monthKey, monthLabel, dayKey, todayStr, WEEKDAYS,
+  escapeHtml, openModal, closeModal, bindModalDismiss,
+} from "./dom-utils.js";
+import {
+  requestBackendOcr, preprocessImage, runClientOcr, prewarmOcr,
+} from "./ocr-client.js";
+import {
+  TRUSTED_ENGINES, normalizeWithHistory, invalidateHistoryDict,
+} from "./history.js";
+import { categoryBreakdown, normName, summarizeByStore } from "./stats.js";
 
 // 想定外の例外も全部拾う
 window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
@@ -61,44 +71,7 @@ log("Firebase初期化完了", {
 let currentUser = null;
 let currentMonth = new Date(); // 表示中の月
 let currentExpenses = []; // 当月の支出（リアルタイム同期）
-let historyDict = null; // Gemini/Vertex保存データから作る正解辞書（履歴正規化用・セッションキャッシュ）
-// 正解として信頼する高精度AIエンジン。これ以外（vision/tesseract/paddle）は正規化対象。
-const TRUSTED_ENGINES = ["gemini", "vertex"];
 let unsubscribe = null; // Firestore リスナー解除関数
-
-const $ = (id) => document.getElementById(id);
-
-// ---- モーダル共通（開閉・背景タップ/Escで閉じる・背景スクロール抑止） --------
-function openModal(id) {
-  $(id).hidden = false;
-  document.body.classList.add("modal-open");
-}
-function closeModal(id) {
-  $(id).hidden = true;
-  if (!document.querySelector(".modal:not([hidden])")) {
-    document.body.classList.remove("modal-open");
-  }
-}
-function bindModalDismiss() {
-  document.querySelectorAll(".modal").forEach((m) => {
-    // 背景（オーバーレイ）クリックで閉じる。中身(.modal-box)クリックは無視。
-    m.addEventListener("click", (e) => { if (e.target === m) closeModal(m.id); });
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
-    const open = document.querySelector(".modal:not([hidden])");
-    if (open) closeModal(open.id);
-  });
-}
-
-const yen = (n) => "¥" + Number(n || 0).toLocaleString("ja-JP");
-const pad = (n) => String(n).padStart(2, "0");
-const monthKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
-const monthLabel = (d) => `${d.getFullYear()}年${d.getMonth() + 1}月`;
-const todayStr = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-};
 
 // ---- 認証 ------------------------------------------------------------------
 // ポップアップ方式は COOP（Cross-Origin-Opener-Policy）で弾かれる環境があるため、
@@ -117,6 +90,12 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+function showLoginError(err) {
+  const el = $("login-error");
+  el.textContent = "ログインに失敗しました: " + (err.code || err.message);
+  el.hidden = false;
+}
+
 // リダイレクトから戻ってきた結果を確認（成功/失敗をログに出す）
 log("リダイレクト結果を確認中…");
 getRedirectResult(auth)
@@ -129,9 +108,7 @@ getRedirectResult(auth)
   })
   .catch((err) => {
     logErr("リダイレクト結果でエラー:", err.code, err.message, err);
-    const el = $("login-error");
-    el.textContent = "ログインに失敗しました: " + (err.code || err.message);
-    el.hidden = false;
+    showLoginError(err);
   });
 
 $("google-login").onclick = async () => {
@@ -142,9 +119,7 @@ $("google-login").onclick = async () => {
     log("signInWithRedirect 呼び出し完了（Googleへ遷移するはず）");
   } catch (err) {
     logErr("signInWithRedirect でエラー:", err.code, err.message, err);
-    const el = $("login-error");
-    el.textContent = "ログインに失敗しました: " + (err.code || err.message);
-    el.hidden = false;
+    showLoginError(err);
   }
 };
 
@@ -206,6 +181,12 @@ function renderMonth() {
 // ---- Firestore（当月をリアルタイム購読） -----------------------------------
 function expensesCol() {
   return collection(db, "users", currentUser.uid, "expenses");
+}
+
+// 履歴正規化・最安値比較用: 全期間の支出データを取得する。
+async function fetchAllExpenses() {
+  const snap = await getDocs(expensesCol());
+  return snap.docs.map((d) => d.data());
 }
 
 function subscribeMonth() {
@@ -296,6 +277,15 @@ function skipCurrent() {
   if (!advanceQueue()) $("ocr-status").hidden = true;
 }
 
+// ブラウザ内 PaddleOCR で読み取り、既存パーサで構造化する。
+async function ocrInBrowser(file, status) {
+  const canvas = await preprocessImage(file);
+  const text = await runClientOcr(canvas, (p) => {
+    status.textContent = `🔍 文字を読み取り中… ${Math.round(p * 100)}%`;
+  });
+  return parseReceipt(text);
+}
+
 async function ocrAndShow(file) {
   log("OCR開始:", file.name, file.type, `${Math.round(file.size / 1024)}KB`, OCR_API_BASE ? "(バックエンド)" : "(ブラウザ内PaddleOCR)");
   const status = $("ocr-status");
@@ -310,38 +300,13 @@ async function ocrAndShow(file) {
       // 失敗時はブラウザ内OCRにフォールバックする。
       try {
         status.textContent = "🤖 AIで読み取り中…";
-        // 元画像（スマホ写真は数MB）をそのまま送ると、アップロードと
-        // AI処理の両方が遅くなる。送信前に縮小してJPEGに再圧縮する。
-        const upload = await downscaleForUpload(file);
-        const fd = new FormData();
-        fd.append("file", upload, "receipt.jpg");
-        // 認証ヘッダ（バックエンドが認証必須でなくても付与は無害）。
-        const headers = {};
-        try {
-          const token = currentUser ? await currentUser.getIdToken() : "";
-          if (token) headers.Authorization = `Bearer ${token}`;
-        } catch (e) { logErr("IDトークン取得失敗（認証なしで続行）:", e.message); }
-        // Render 無料枠はアイドルで停止し、初回は起動に時間がかかる。タイムアウトと
-        // 「起動待ち」表示を入れ、固まったらブラウザ内OCRへフォールバックさせる。
-        const ctrl = new AbortController();
-        const wakeTimer = setTimeout(() => {
-          status.textContent = "🤖 AIサーバーを起動中…（初回は少し時間がかかります）";
-        }, 4000);
-        const killTimer = setTimeout(() => ctrl.abort(), 90000); // 90秒で打ち切り
-        let res;
-        try {
-          res = await fetch(`${OCR_API_BASE}/api/ocr`, {
-            method: "POST", body: fd, headers, signal: ctrl.signal,
-          });
-        } finally {
-          clearTimeout(wakeTimer);
-          clearTimeout(killTimer);
-        }
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.detail || "読み取りに失敗しました");
-        }
-        data = await res.json();
+        data = await requestBackendOcr(
+          file,
+          () => (currentUser ? currentUser.getIdToken() : ""),
+          () => {
+            status.textContent = "🤖 AIサーバーを起動中…（初回は少し時間がかかります）";
+          },
+        );
         const used = data.engine || "不明";
         log("バックエンド読み取り成功:", `エンジン=${used}`);
         if (TRUSTED_ENGINES.includes(used)) {
@@ -355,26 +320,18 @@ async function ocrAndShow(file) {
       } catch (err) {
         logErr("バックエンドOCR失敗、ブラウザ内PaddleOCRに切替:", err.message, err);
         status.textContent = "🔍 文字を読み取り中…（PaddleOCR・初回はモデル取得で時間がかかります）";
-        const canvas = await preprocessImage(file);
-        const text = await runClientOcr(canvas, (p) => {
-          status.textContent = `🔍 文字を読み取り中… ${Math.round(p * 100)}%`;
-        });
-        data = parseReceipt(text);
+        data = await ocrInBrowser(file, status);
       }
     } else {
       // ブラウザ内で PaddleOCR を使って OCR（サーバー不要）
-      const canvas = await preprocessImage(file);
-      const text = await runClientOcr(canvas, (p) => {
-        status.textContent = `🔍 文字を読み取り中… ${Math.round(p * 100)}%`;
-      });
-      data = parseReceipt(text);
+      data = await ocrInBrowser(file, status);
     }
     log("OCR完了。抽出結果:", data);
     // 高精度AI（Gemini / Vertex）以外（Vision / PaddleOCR）は抽出精度が低いので、
     // 過去に Gemini/Vertex で保存したデータ（店名・支店・商品名・カテゴリ）を
     // 正解辞書として正規化する。
     if (data && !TRUSTED_ENGINES.includes(data.engine)) {
-      data = await normalizeWithHistory(data);
+      data = await normalizeWithHistory(data, fetchAllExpenses);
     }
     // 画像は保存しないが、確認用にその場でプレビュー表示する
     fillForm(data, URL.createObjectURL(file));
@@ -389,299 +346,6 @@ async function ocrAndShow(file) {
     status.textContent = `⚠️ ${queuePrefix()}` + (err.message || err) +
       (ocrTotal > 1 ? "（「スキップ」で次へ進めます）" : "");
   }
-}
-
-// ---- 履歴正規化（Gemini の抽出結果を正解として Vision/PaddleOCR を補正）------
-// 過去に Gemini で抽出・保存したデータ（店名・支店・商品名・カテゴリ）を辞書化し、
-// 精度の低い Vision/PaddleOCR の結果があいまい一致したら、その正解表記に揃える。
-
-// 照合用にゆらぎを吸収したキーへ正規化（全角半角・大小・記号/空白除去）。
-function normKey(s) {
-  return String(s || "")
-    .normalize("NFKC")
-    .toLowerCase()
-    .replace(/[\s,.。・･\-_/\\()'"`*※&]/g, "")
-    .trim();
-}
-
-// レーベンシュタイン距離（OCRの誤字に強い類似度の土台）。
-function levenshtein(a, b) {
-  const m = a.length, n = b.length;
-  if (!m) return n;
-  if (!n) return m;
-  let prev = Array.from({ length: n + 1 }, (_, i) => i);
-  for (let i = 1; i <= m; i++) {
-    const cur = [i];
-    for (let j = 1; j <= n; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
-    }
-    prev = cur;
-  }
-  return prev[n];
-}
-
-function similarity(a, b) {
-  if (!a || !b) return 0;
-  if (a === b) return 1;
-  return 1 - levenshtein(a, b) / Math.max(a.length, b.length);
-}
-
-// 辞書（[{key, canonical, category?}]）から最も近い候補を返す（しきい値未満は null）。
-function bestMatch(raw, entries, threshold) {
-  const k = normKey(raw);
-  if (!k || !entries.length) return null;
-  let best = null, bestScore = 0;
-  for (const e of entries) {
-    let score = similarity(k, e.key);
-    // どちらかが他方を含む（OCRで一部欠落/混入）場合は高めに評価する。
-    if (e.key.includes(k) || k.includes(e.key)) score = Math.max(score, 0.9);
-    if (score > bestScore) { bestScore = score; best = e; }
-  }
-  return best && bestScore >= threshold ? { entry: best, score: bestScore } : null;
-}
-
-function bump(map, key) {
-  if (!key) return;
-  map.set(key, (map.get(key) || 0) + 1);
-}
-function argmax(map) {
-  let top = "", n = -1;
-  for (const [k, c] of map) if (c > n) { n = c; top = k; }
-  return top;
-}
-
-// 全期間の支出から正解辞書を構築（セッション内キャッシュ）。
-async function loadHistoryDict() {
-  if (historyDict) return historyDict;
-  const stores = new Map();   // key -> {key, spellings:Map}
-  const branches = new Map();
-  const products = new Map();  // key -> {key, spellings:Map, cats:Map}
-  const storeCat = new Map();  // storeKey -> Map(category->count)
-
-  const add = (map, value) => {
-    const k = normKey(value);
-    if (!k) return;
-    let e = map.get(k);
-    if (!e) { e = { key: k, spellings: new Map() }; map.set(k, e); }
-    bump(e.spellings, value);
-  };
-
-  const snap = await getDocs(expensesCol());
-  snap.forEach((d) => {
-    const e = d.data();
-    // 正解辞書は Gemini/Vertex で抽出したデータのみ採用する。
-    // 旧データ（ocrEngine 無し）は主に Gemini 由来なので含める。
-    // vision/tesseract/paddle/manual で保存したものは除外（正解にしない）。
-    if (e.ocrEngine && !TRUSTED_ENGINES.includes(e.ocrEngine)) return;
-    if (e.store) add(stores, e.store);
-    if (e.branch) add(branches, e.branch);
-    if (e.store && e.category) {
-      const sk = normKey(e.store);
-      if (!storeCat.has(sk)) storeCat.set(sk, new Map());
-      bump(storeCat.get(sk), e.category);
-    }
-    (e.items || []).forEach((it) => {
-      if (!it || !it.name) return;
-      const k = normKey(it.name);
-      if (!k) return;
-      let p = products.get(k);
-      if (!p) { p = { key: k, spellings: new Map(), cats: new Map() }; products.set(k, p); }
-      bump(p.spellings, it.name);
-      if (it.category) bump(p.cats, it.category);
-    });
-  });
-
-  const finalize = (map) =>
-    [...map.values()].map((e) => ({ key: e.key, canonical: argmax(e.spellings) }));
-
-  historyDict = {
-    stores: finalize(stores),
-    branches: finalize(branches),
-    products: [...products.values()].map((p) => ({
-      key: p.key,
-      canonical: argmax(p.spellings),
-      category: p.cats.size ? argmax(p.cats) : "",
-    })),
-    storeCat,
-  };
-  log("正解辞書を構築:", `店${historyDict.stores.length} 支店${historyDict.branches.length} 商品${historyDict.products.length}`);
-  return historyDict;
-}
-
-// Vision/PaddleOCR の結果を、Gemini 由来の正解辞書で正規化する。
-async function normalizeWithHistory(data) {
-  try {
-    const dict = await loadHistoryDict();
-    const STORE_TH = 0.6, BRANCH_TH = 0.6, PROD_TH = 0.62;
-
-    const sm = bestMatch(data.store, dict.stores, STORE_TH);
-    let storeKey = data.store ? normKey(data.store) : null;
-    if (sm) { data.store = sm.entry.canonical; storeKey = sm.entry.key; }
-
-    const bm = bestMatch(data.branch, dict.branches, BRANCH_TH);
-    if (bm) data.branch = bm.entry.canonical;
-
-    // 全体カテゴリは弱い（空/その他）ときだけ、その店の最頻カテゴリで補う。
-    if ((!data.category || data.category === "その他") && storeKey && dict.storeCat.has(storeKey)) {
-      const top = argmax(dict.storeCat.get(storeKey));
-      if (top) data.category = top;
-    }
-
-    if (Array.isArray(data.items)) {
-      data.items = data.items.map((it) => {
-        if (!it || !it.name) return it;
-        const pm = bestMatch(it.name, dict.products, PROD_TH);
-        if (pm) {
-          it.name = pm.entry.canonical;
-          // 商品名が一致したら、Gemini 由来のカテゴリを採用（強一致 or 元が弱いとき）。
-          if (pm.entry.category && (pm.score >= 0.85 || !it.category || it.category === "その他")) {
-            it.category = pm.entry.category;
-          }
-        }
-        return it;
-      });
-    }
-    log("履歴正規化を適用しました（Gemini基準）");
-  } catch (err) {
-    logErr("履歴正規化に失敗（生の結果を使用）:", err.message, err);
-  }
-  return data;
-}
-
-// AI(Gemini)へ送る画像を縮小＋JPEG再圧縮する。長辺1600pxあればレシートの
-// 文字は十分読め、数MBの写真が数百KBになりアップロードもAI処理も速くなる。
-// createImageBitmap が失敗する形式（HEIC 等）では元ファイルをそのまま返す。
-const UPLOAD_MAX_DIM = 1600;
-const UPLOAD_JPEG_QUALITY = 0.85;
-
-async function downscaleForUpload(file) {
-  try {
-    const img = await createImageBitmap(file);
-    const longSide = Math.max(img.width, img.height);
-    const scale = longSide > UPLOAD_MAX_DIM ? UPLOAD_MAX_DIM / longSide : 1;
-    // 既に十分小さいJPEGなら再圧縮せずそのまま使う。
-    if (scale === 1 && file.type === "image/jpeg") {
-      img.close?.();
-      return file;
-    }
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(img.width * scale);
-    canvas.height = Math.round(img.height * scale);
-    const ctx = canvas.getContext("2d");
-    ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    img.close?.();
-    const blob = await new Promise((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", UPLOAD_JPEG_QUALITY)
-    );
-    if (!blob) return file; // 失敗時は元ファイルにフォールバック
-    log("アップロード用に縮小:", `${Math.round(file.size / 1024)}KB → ${Math.round(blob.size / 1024)}KB`);
-    return blob;
-  } catch (err) {
-    logErr("画像の縮小に失敗（元画像を送信）:", err.message);
-    return file;
-  }
-}
-
-// レシートは細い印字が多いので、拡大＋グレースケール＋コントラスト補正＋
-// 二値化（大津の手法）で読み取りやすくする。
-async function preprocessImage(file) {
-  // PaddleOCR(PP-OCR)は自然画像（カラー）で学習されているため、Tesseract時代の
-  // ような二値化は行わず、原画像のまま渡すほうが精度が出る。大きすぎる写真は
-  // メモリ・速度のため長辺1600pxに縮小するだけにする。
-  const img = await createImageBitmap(file);
-  const MAX_DIM = 1600;
-  const longSide = Math.max(img.width, img.height);
-  const scale = longSide > MAX_DIM ? MAX_DIM / longSide : 1;
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(img.width * scale);
-  canvas.height = Math.round(img.height * scale);
-  const ctx = canvas.getContext("2d");
-  ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  img.close?.();
-  return canvas;
-}
-
-// ---- ブラウザ内OCR: PaddleOCR (ppu-paddle-ocr + onnxruntime-web) -------------
-// Gemini→Vision が両方失敗したときの最終フォールバック。ESM/モデルは初回利用時に
-// CDN から取得する（合計約21MB、以降はブラウザのHTTPキャッシュが効く）。
-//
-// 採用モデル: PP-OCRv5 mobile の汎用モデル。日中英＋日本語を1つの認識モデルで扱える。
-// 必要に応じて URL を差し替えれば別言語・サーバーモデルにも切替可能。
-const PADDLE_ESM = "https://esm.sh/ppu-paddle-ocr@5.8.3/web";
-const PADDLE_MEDIA_BASE = "https://media.githubusercontent.com/media/PT-Perkasa-Pilar-Utama/ppu-paddle-ocr-models/refs/heads/main";
-const PADDLE_RAW_BASE = "https://raw.githubusercontent.com/PT-Perkasa-Pilar-Utama/ppu-paddle-ocr-models/refs/heads/main";
-const PADDLE_MODELS = {
-  detection: `${PADDLE_MEDIA_BASE}/detection/PP-OCRv5_mobile_det_infer.onnx`,
-  recognition: `${PADDLE_MEDIA_BASE}/recognition/PP-OCRv5_mobile_rec_infer.onnx`,
-  charactersDictionary: `${PADDLE_RAW_BASE}/recognition/ppocrv5_dict.txt`,
-};
-
-// 高速化のポイント: サービス（WASM/WebGPU セッション＋モデル）の初期化は重いので、
-// 1度だけ作って使い回す。2枚目以降や事前ウォームアップ済みなら大幅に速くなる。
-let paddleServicePromise = null;
-
-function getPaddleOcr() {
-  if (!paddleServicePromise) {
-    log("PaddleOCRを初期化中…（初回のみモデル取得・約21MB）");
-    paddleServicePromise = (async () => {
-      // 動的 import。読み込めなければネットワーク/CDNの問題として扱う。
-      const mod = await import(/* @vite-ignore */ PADDLE_ESM);
-      const PaddleOcrService = mod.PaddleOcrService || mod.default?.PaddleOcrService;
-      if (!PaddleOcrService) {
-        throw new Error("PaddleOCRライブラリの読み込みに失敗しました。");
-      }
-      const service = new PaddleOcrService({ model: PADDLE_MODELS });
-      await service.initialize();
-      log("PaddleOCR準備完了");
-      return service;
-    })().catch((err) => {
-      // 失敗時は次回また作り直せるようにキャッシュを破棄
-      paddleServicePromise = null;
-      throw err;
-    });
-  }
-  return paddleServicePromise;
-}
-
-// 初回の体感速度を上げるため、ログイン直後などに裏で言語データを読み込んでおく。
-function prewarmOcr() {
-  if (OCR_API_BASE) {
-    // バックエンド(Render無料プラン)はアクセスが無いとスリープし、次の
-    // リクエストでコールドスタート(起動に数十秒)が発生する。アプリ起動時に
-    // /api/health を叩いて先に起こしておけば、撮影中に起動が進み、最初の
-    // 読み取りの待ち時間を大幅に短縮できる。
-    fetch(`${OCR_API_BASE}/api/health`, { cache: "no-store" })
-      .then((res) => res.json().catch(() => ({})))
-      .then((h) =>
-        log(
-          "OCRバックエンド稼働:",
-          `設定エンジン=${h.engine || "?"}`,
-          h.status ? `status=${h.status}` : "",
-          "(これは設定値。実際にGeminiが使えたかは読み取り時のログを参照)",
-        ),
-      )
-      .catch((err) => logErr("OCRバックエンドのウォームアップに失敗:", err.message));
-    return;
-  }
-  try {
-    getPaddleOcr().catch((err) => logErr("OCR事前準備に失敗（実行時に再試行）:", err.message));
-  } catch (err) {
-    logErr("OCR事前準備をスキップ:", err.message);
-  }
-}
-
-async function runClientOcr(image, onProgress) {
-  // PaddleOCR は Tesseract のような細かい進捗を返さないため、初期化→認識の
-  // 大まかな段階だけ通知する。
-  onProgress?.(0.1);
-  const service = await getPaddleOcr();
-  onProgress?.(0.6);
-  const result = await service.recognize(image);
-  onProgress?.(1);
-  return result?.text || "";
 }
 
 // ---- フォーム --------------------------------------------------------------
@@ -779,6 +443,16 @@ function resetForm() {
   setFormMode("add");
 }
 
+// 保存/追加した支出の月が表示中の月と違えば、その月へ移動して購読し直す。
+function jumpToMonthOf(dateStr) {
+  const target = new Date(dateStr + "T00:00:00");
+  if (monthKey(target) !== monthKey(currentMonth)) {
+    currentMonth = target;
+    renderMonth();
+    subscribeMonth();
+  }
+}
+
 async function handleSubmit(e) {
   e.preventDefault();
   const saveBtn = $("save-btn");
@@ -814,15 +488,10 @@ async function handleSubmit(e) {
       });
     }
     log("保存成功");
-    historyDict = null; // 保存で正解辞書が変わるので作り直させる
+    invalidateHistoryDict(); // 保存で正解辞書が変わるので作り直させる
 
     // 保存した支出の月へ移動
-    const savedMonth = new Date($("f-date").value + "T00:00:00");
-    if (monthKey(savedMonth) !== monthKey(currentMonth)) {
-      currentMonth = savedMonth;
-      renderMonth();
-      subscribeMonth();
-    }
+    jumpToMonthOf($("f-date").value);
     const wasEdit = !!id;
     resetForm();
     // 編集の保存後は、編集元の一覧へ自然に戻す。
@@ -851,9 +520,26 @@ function renderSummary() {
   renderCatBars($("category-bars"), categoryBreakdown(currentExpenses));
 }
 
+// { カテゴリ: 金額 } をバーで描画する（サマリーと週計内訳で共用）
+function renderCatBars(container, byCat) {
+  const entries = Object.entries(byCat)
+    .filter(([, a]) => a > 0) // 端数調整で生じうる0/負の値は表示しない
+    .sort((a, b) => b[1] - a[1]);
+  const max = entries.reduce((m, [, a]) => Math.max(m, a), 0);
+  container.innerHTML = "";
+  for (const [cat, amt] of entries) {
+    const row = document.createElement("div");
+    row.className = "cat-row";
+    const pct = max > 0 ? Math.max(0, (amt / max) * 100) : 0;
+    row.innerHTML = `
+      <span class="cat-name">${escapeHtml(cat)}</span>
+      <span class="cat-bar-wrap"><span class="cat-bar" style="width:${pct}%"></span></span>
+      <span class="cat-amount">${yen(amt)}</span>`;
+    container.appendChild(row);
+  }
+}
+
 // ---- カレンダー ------------------------------------------------------------
-const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
-const dayKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 let selectedDay = null; // 日付モーダルで開いている日（"YYYY-MM-DD"）
 let weekBreakdowns = []; // 各週の内訳 [{ start, end, total, byCat }]
 
@@ -875,72 +561,6 @@ function expensesByDay() {
     (map[e.date] || (map[e.date] = [])).push(e);
   }
   return map;
-}
-
-// 明細が無い／価格が取れない支出を寄せる先のカテゴリ名
-const UNCATEGORIZED = "未分類";
-
-// 支出群を「明細(items)のカテゴリ」で集計して { カテゴリ: 金額 } を返す。
-// ・明細ごとに「明細のカテゴリ → 無ければその支出のカテゴリ」へ割り当てる
-//   （明細にカテゴリが無い古いデータ等が "未分類" に落ちないようにする）
-// ・消費税や端数で「明細合計 ≠ 支払額」になる分は、明細の比率で各カテゴリへ按分する。
-//   こうすると税を別枠にせずに済み、内訳の合計が支払額（=週計）と必ず一致する。
-// ・明細が無い支出（カレンダー直接追加・手入力）はその支出のカテゴリへ。
-//   カテゴリも無いときだけ「未分類」になる。
-function categoryBreakdown(expenses) {
-  const map = {};
-  const add = (cat, amt) => {
-    if (!amt) return;
-    map[cat] = (map[cat] || 0) + amt;
-  };
-  for (const e of expenses) {
-    const amount = Math.round(e.amount || 0);
-    const fallback = e.category || UNCATEGORIZED; // 明細にカテゴリが無いときの受け皿
-    const items = Array.isArray(e.items) ? e.items : [];
-    const itemSum = items.reduce((s, it) => s + (Number(it.price) || 0), 0);
-    if (!items.length || itemSum <= 0) {
-      add(fallback, amount);
-      continue;
-    }
-    // 明細カテゴリごとに価格を合算
-    const perCat = {};
-    for (const it of items) {
-      const cat = it.category || fallback;
-      perCat[cat] = (perCat[cat] || 0) + (Number(it.price) || 0);
-    }
-    // 支払額(amount)を明細比で按分。円未満は四捨五入し、誤差は最大カテゴリで吸収して
-    // 合計を支払額に厳密一致させる（消費税ぶんも各カテゴリへ自然に配分される）。
-    const cats = Object.keys(perCat);
-    let allocated = 0;
-    let maxCat = cats[0];
-    for (const cat of cats) {
-      const v = Math.round((perCat[cat] * amount) / itemSum);
-      add(cat, v);
-      allocated += v;
-      if (perCat[cat] > perCat[maxCat]) maxCat = cat;
-    }
-    add(maxCat, amount - allocated);
-  }
-  return map;
-}
-
-// { カテゴリ: 金額 } をバーで描画する（サマリーと週計内訳で共用）
-function renderCatBars(container, byCat) {
-  const entries = Object.entries(byCat)
-    .filter(([, a]) => a > 0) // 端数調整で生じうる0/負の値は表示しない
-    .sort((a, b) => b[1] - a[1]);
-  const max = entries.reduce((m, [, a]) => Math.max(m, a), 0);
-  container.innerHTML = "";
-  for (const [cat, amt] of entries) {
-    const row = document.createElement("div");
-    row.className = "cat-row";
-    const pct = max > 0 ? Math.max(0, (amt / max) * 100) : 0;
-    row.innerHTML = `
-      <span class="cat-name">${escapeHtml(cat)}</span>
-      <span class="cat-bar-wrap"><span class="cat-bar" style="width:${pct}%"></span></span>
-      <span class="cat-amount">${yen(amt)}</span>`;
-    container.appendChild(row);
-  }
 }
 
 // 月のカレンダーを描画。各セルにその日の買い物合計、行末に週間合計を出す。
@@ -1099,14 +719,9 @@ async function handleDayAdd(e) {
     log("カレンダーから追加:", selectedDay, amount);
     $("day-amount").value = "";
     $("day-store").value = "";
-    // 当月以外の日に追加した場合はその月へ移動して購読し直す
-    const addedMonth = new Date(selectedDay + "T00:00:00");
-    if (monthKey(addedMonth) !== monthKey(currentMonth)) {
-      currentMonth = addedMonth;
-      renderMonth();
-      subscribeMonth();
-    }
-    // 同月ならリアルタイム購読が renderDayModal を更新する
+    // 当月以外の日に追加した場合はその月へ移動して購読し直す。
+    // 同月ならリアルタイム購読が renderDayModal を更新する。
+    jumpToMonthOf(selectedDay);
   } catch (err) {
     logErr("カレンダー追加エラー:", err.code, err.message, err);
     alert("追加に失敗しました: " + err.message);
@@ -1244,10 +859,9 @@ async function openCompare() {
   list.innerHTML = "<p class='empty'>読み込み中…</p>";
   try {
     // 全期間の支出を取得して、明細を商品ごとに集計する
-    const snap = await getDocs(expensesCol());
+    const expenses = await fetchAllExpenses();
     compareData = [];
-    snap.forEach((d) => {
-      const e = d.data();
+    for (const e of expenses) {
       (e.items || []).forEach((it) => {
         if (it && it.name && it.price > 0) {
           compareData.push({
@@ -1259,57 +873,13 @@ async function openCompare() {
           });
         }
       });
-    });
+    }
     log("最安値比較: 明細", compareData.length, "件");
     renderCompare();
   } catch (err) {
     logErr("最安値比較の読み込み失敗:", err.code, err.message, err);
     list.innerHTML = "<p class='empty'>読み込みに失敗しました。</p>";
   }
-}
-
-// 比較用に商品名をゆるく正規化（空白・記号除去、小文字化）
-function normName(name) {
-  return name.toLowerCase().replace(/[\s　,.\-_*()（）]/g, "");
-}
-
-function median(nums) {
-  const s = [...nums].sort((a, b) => a - b);
-  const m = Math.floor(s.length / 2);
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
-}
-
-// 同一商品を店舗ごとに集計する。各店舗について「現在価格（最新）」と
-// 「その店の過去最安（セール時の値）」を出し、一時的なセールを見分けられるようにする。
-// 平常価格はセール1回に引っ張られにくいよう中央値で見積もる。
-function summarizeByStore(entries) {
-  const map = new Map();
-  // 同じチェーンでも支店ごとに別の店として集計する（店名＋支店名でグループ化）
-  for (const e of entries) {
-    const key = `${e.store}${e.branch || ""}`;
-    if (!map.has(key)) map.set(key, []);
-    map.get(key).push(e);
-  }
-  const out = [];
-  for (const [, list] of map) {
-    list.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
-    const latest = list[list.length - 1]; // 最新の記録 = 現在価格
-    let low = list[0];
-    for (const e of list) if (e.price < low.price) low = e; // その店の過去最安
-    const regular = median(list.map((e) => e.price)); // 平常価格の目安
-    out.push({
-      store: list[0].store,
-      branch: list[0].branch || "",
-      current: latest.price,
-      currentDate: latest.date,
-      low: low.price,
-      lowDate: low.date,
-      hasLow: low.price < latest.price, // 今より安く買えた履歴がある
-      saleNow: list.length >= 2 && latest.price <= regular * 0.9, // 今セール中
-      isSaleLow: list.length >= 2 && low.price <= regular * 0.9, // 過去最安はセール価格
-    });
-  }
-  return out;
 }
 
 function renderCompare() {
@@ -1376,13 +946,6 @@ function renderCompare() {
       <div class="cmp-stores">${rowsHtml}</div>`;
     list.appendChild(card);
   }
-}
-
-// ---- ユーティリティ --------------------------------------------------------
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
-  );
 }
 
 // 明細を手動追加するボタンを details 内に差し込む
