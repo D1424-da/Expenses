@@ -45,6 +45,21 @@ def test_recipe_rejects_invalid_servings():
     assert r.status_code == 422
 
 
+def test_recipe_rejects_invalid_max_minutes():
+    r = client.post("/api/recipe", json={"items": ["卵"], "servings": 2, "max_minutes": 4})
+    assert r.status_code == 422
+    r = client.post("/api/recipe", json={"items": ["卵"], "servings": 2, "max_minutes": 181})
+    assert r.status_code == 422
+
+
+def test_recipe_accepts_valid_options():
+    """max_minutes と use_up の有効な値はバリデーション通過（503 は API キーなしの正常な失敗）。"""
+    import os
+    os.environ.pop("GEMINI_API_KEY", None)
+    r = client.post("/api/recipe", json={"items": ["卵"], "servings": 2, "max_minutes": 30, "use_up": True})
+    assert r.status_code in (200, 503)
+
+
 def test_recipe_returns_503_without_api_key(monkeypatch):
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     r = client.post("/api/recipe", json={"items": ["卵", "牛乳"], "servings": 2})

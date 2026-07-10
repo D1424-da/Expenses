@@ -1,35 +1,57 @@
-// レシピ提案モーダル。期間（今日/今週/今月）と種別（1食分/週間献立）を選んでGeminiに送る。
+// レシピ提案モーダル。期間・種別・時短・使い切りを選んでGeminiに送る。
 import { $, escapeHtml, dayKey, openModal, closeModal } from "./dom-utils.js";
 import { log, logErr } from "./log.js";
 import { OCR_API_BASE } from "./firebase-config.js";
+import { saveRecipe } from "./saved-recipes.js";
+import { addItemsToList } from "./shopping-list.js";
 
 let _getToken;
-let _selectedDay = null;  // "YYYY-MM-DD"
-let _expenses = [];       // 当月の全支出（Firestore購読分）
-let _activePeriod = "day";
-let _activeType = "meal";
+let _selectedDay = null;
+let _expenses    = [];
+let _activePeriod  = "day";
+let _activeType    = "meal";
+let _maxMinutes    = 0;    // 0 = 気にしない
+let _useUp         = false;
+let _lastMarkdown  = "";
+let _lastItems     = [];
+let _lastServings  = 2;
 
 export function initRecipe({ getToken }) {
   _getToken = getToken;
-  $("recipe-close").onclick = () => closeModal("recipe-modal");
+  $("recipe-close").onclick       = () => closeModal("recipe-modal");
   $("recipe-suggest-btn").onclick = _suggest;
 
   // 期間タブ
   $("recipe-period-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
-    btn.onclick = () => {
-      _activePeriod = btn.dataset.period;
-      _setActiveTab("recipe-period-tabs", btn);
-      _renderIngredients();
-    };
+    btn.onclick = () => { _activePeriod = btn.dataset.period; _setActiveTab("recipe-period-tabs", btn); _renderIngredients(); };
   });
-
   // 種別タブ
   $("recipe-type-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
-    btn.onclick = () => {
-      _activeType = btn.dataset.rtype;
-      _setActiveTab("recipe-type-tabs", btn);
-    };
+    btn.onclick = () => { _activeType = btn.dataset.rtype; _setActiveTab("recipe-type-tabs", btn); };
   });
+  // 時短タブ
+  $("recipe-time-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
+    btn.onclick = () => { _maxMinutes = Number(btn.dataset.minutes); _setActiveTab("recipe-time-tabs", btn); };
+  });
+  // 使い切りチェックボックス
+  $("recipe-useup").onchange = (e) => { _useUp = e.target.checked; };
+
+  // 保存・リスト追加ボタン（レシピ表示後に現れる）
+  $("recipe-save-btn").onclick = async () => {
+    const title = _extractTitle(_lastMarkdown);
+    await saveRecipe({ title, markdown: _lastMarkdown, items: _lastItems, period: _activePeriod, rtype: _activeType, servings: _lastServings });
+    $("recipe-save-btn").textContent = "✅ 保存しました";
+    setTimeout(() => { $("recipe-save-btn").textContent = "📚 保存"; }, 2000);
+  };
+  $("recipe-shopping-btn").onclick = async () => {
+    const ingredients = _extractIngredients(_lastMarkdown);
+    const added = await addItemsToList(ingredients.length ? ingredients : _lastItems);
+    $("recipe-shopping-btn").textContent = `✅ ${added}品目を追加`;
+    setTimeout(() => { $("recipe-shopping-btn").textContent = "🛒 リストに追加"; }, 2000);
+  };
+
+  // saved-recipes.js からレシピの Markdown → HTML 変換関数を参照できるようにする
+  window.__recipeHelpers__ = { _markdownToHtml };
 }
 
 /**
@@ -48,10 +70,20 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
   _setActiveTabByValue("recipe-period-tabs", "data-period", _activePeriod);
   _setActiveTabByValue("recipe-type-tabs", "data-rtype", _activeType);
 
+  _lastMarkdown = "";
+  _lastItems = [];
   $("recipe-result").hidden = true;
-  $("recipe-result").textContent = "";
+  $("recipe-result").innerHTML = "";
   $("recipe-status").hidden = true;
+  $("recipe-post-actions").hidden = true;
+  $("recipe-save-btn").textContent = "📚 保存";
+  $("recipe-shopping-btn").textContent = "🛒 リストに追加";
   $("recipe-servings").value = "2";
+  // 時短タブ・使い切りをリセット
+  _maxMinutes = 0;
+  _useUp = false;
+  $("recipe-useup").checked = false;
+  _setActiveTabByValue("recipe-time-tabs", "data-minutes", "0");
 
   _renderIngredients();
   openModal("recipe-modal");
@@ -127,7 +159,13 @@ async function _suggest() {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ items, servings, recipe_type: _activeType }),
+      body: JSON.stringify({
+        items,
+        servings,
+        recipe_type: _activeType,
+        max_minutes: _maxMinutes || null,
+        use_up: _useUp,
+      }),
     });
     if (!res.ok) {
       const msg = await res.text().catch(() => res.statusText);
@@ -139,10 +177,14 @@ async function _suggest() {
       return;
     }
     log("レシピ提案成功:", items.length, "品目,", servings, "人前,", _activeType);
+    _lastMarkdown = recipe;
+    _lastItems    = items;
+    _lastServings = servings;
     $("recipe-status").hidden = true;
     const result = $("recipe-result");
     result.innerHTML = _markdownToHtml(recipe);
     result.hidden = false;
+    $("recipe-post-actions").hidden = false;
   } catch (err) {
     logErr("レシピ提案エラー:", err.message, err);
     _showStatus("error", "レシピの取得に失敗しました: " + err.message);
@@ -185,6 +227,29 @@ function _markdownToHtml(md) {
   }
   closeList();
   return out.join("\n");
+}
+
+// Markdown から最初の ## 見出しをタイトルとして取り出す
+function _extractTitle(md) {
+  const m = md.match(/^##\s+(.+)$/m);
+  return m ? m[1].replace(/\*\*/g, "").trim() : "レシピ";
+}
+
+// Markdown の「**使う食材**:」行から食材名を抽出（量の表記は除去）
+function _extractIngredients(md) {
+  const items = [];
+  const rx = /\*\*使う食材\*\*[：:]\s*([^\n]+)/g;
+  let m;
+  while ((m = rx.exec(md)) !== null) {
+    m[1].split(/[、，,]/).forEach((raw) => {
+      const name = raw
+        .replace(/\s*[\d一二三四五六七八九十百]+\s*[gGkKmlg個本枚杯食片束パック袋缶大小さじtsp]+[程度くらい以上以下]*\s*/g, "")
+        .replace(/\*\*/g, "")
+        .trim();
+      if (name.length >= 2) items.push(name);
+    });
+  }
+  return [...new Set(items)];
 }
 
 function _setActiveTab(containerId, activeBtn) {

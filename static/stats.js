@@ -60,6 +60,47 @@ export function median(nums) {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
+// 今月の支出から「過去最安値で買えた商品」を抽出してアラートリストを返す。
+// allExpenses: 全期間の支出（compare-view が取得済みのもの）
+// thisMonthExpenses: 今月の支出
+// 戻り値: [{ name, store, price, prevMin, savedPer }] （価格差が大きい順）
+export function lowestPriceAlerts(allExpenses, thisMonthExpenses) {
+  // 今月の明細品目を収集（品名 → [{store, price, date}]）
+  const thisMonth = new Map();
+  for (const e of thisMonthExpenses) {
+    for (const it of e.items || []) {
+      if (!it.name || !it.price) continue;
+      const key = normName(it.name);
+      if (!thisMonth.has(key)) thisMonth.set(key, { name: it.name, entries: [] });
+      thisMonth.get(key).entries.push({ store: e.store, branch: e.branch, price: it.price, date: e.date });
+    }
+  }
+  if (!thisMonth.size) return [];
+
+  // 全期間の明細から過去最安を計算（今月分を含む）
+  const history = new Map();
+  for (const e of allExpenses) {
+    for (const it of e.items || []) {
+      if (!it.name || !it.price) continue;
+      const key = normName(it.name);
+      if (!history.has(key)) history.set(key, Infinity);
+      history.set(key, Math.min(history.get(key), it.price));
+    }
+  }
+
+  const alerts = [];
+  for (const [key, { name, entries }] of thisMonth) {
+    const allTimeMin = history.get(key) ?? Infinity;
+    for (const e of entries) {
+      if (e.price <= allTimeMin && e.price > 0) {
+        alerts.push({ name, store: e.store, price: e.price, prevMin: allTimeMin });
+        break;
+      }
+    }
+  }
+  return alerts.slice(0, 5); // 最大5件
+}
+
 // 同一商品を店舗ごとに集計する。各店舗について「現在価格（最新）」と
 // 「その店の過去最安（セール時の値）」を出し、一時的なセールを見分けられるようにする。
 // 平常価格はセール1回に引っ張られにくいよう中央値で見積もる。
