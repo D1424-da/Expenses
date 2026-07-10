@@ -58,9 +58,10 @@ function _renderRow(e, indented, onEdit, onDelete) {
   row.className = "expense-item" + (indented ? " ei-indent" : "");
   const memo = e.memo ? ` · ${escapeHtml(e.memo)}` : "";
   const cat = e.category ? `<span class="ei-cat">${escapeHtml(e.category)}</span>` : "";
-  const itemsHtml = (e.items || []).length
-    ? `<ul class="ei-items">${(e.items).map((it) => {
-        const qty = it.qty != null ? `<span class="ei-item-qty">${it.qty}${escapeHtml(it.unit || "")}</span>` : "";
+  const items = e.items || [];
+  const itemsHtml = items.length
+    ? `<ul class="ei-items">${items.map((it) => {
+        const qty = it.qty != null ? `<span class="ei-item-qty">${escapeHtml(String(it.qty))}${escapeHtml(it.unit || "")}</span>` : "";
         return `<li><span class="ei-item-name">${escapeHtml(it.name)}</span>${qty}<span class="ei-item-price">${yen(it.price)}</span></li>`;
       }).join("")}</ul>`
     : "";
