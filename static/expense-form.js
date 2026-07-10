@@ -22,7 +22,7 @@ export function initForm(ctx) {
   addBtn.type = "button";
   addBtn.textContent = "＋ 明細を追加";
   addBtn.style.marginTop = "8px";
-  addBtn.onclick = () => _addItemRow();
+  addBtn.onclick = () => { _addItemRow(); _updateItemsCount(); };
   $("items-details").appendChild(addBtn);
 }
 
@@ -142,7 +142,6 @@ function _addItemRow(name = "", price = 0, category = "", qty = "", unit = "") {
     </div>`;
   row.querySelector("button").onclick = () => { row.remove(); _updateItemsCount(); };
   $("items-list").appendChild(row);
-  _updateItemsCount();
 }
 
 function _collectItems() {
@@ -172,11 +171,11 @@ function _updateItemsCount() {
 async function _handleSubmit(e) {
   e.preventDefault();
   const saveBtn = $("save-btn");
+  const id = $("f-id").value;
   saveBtn.disabled = true;
   saveBtn.textContent = "保存中…";
   try {
     const user = _ctx.getUser();
-    const id = $("f-id").value;
     const engine = $("f-engine").value;
     const payload = {
       date: $("f-date").value,
@@ -213,6 +212,6 @@ async function _handleSubmit(e) {
     alert("保存に失敗しました: " + err.message);
   } finally {
     saveBtn.disabled = false;
-    saveBtn.textContent = $("f-id").value ? "更新する" : "保存";
+    saveBtn.textContent = id && $("f-id").value ? "更新する" : "保存";
   }
 }

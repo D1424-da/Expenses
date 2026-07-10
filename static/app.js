@@ -290,12 +290,14 @@ function renderSummary() {
   _refreshAlerts();
 }
 
+let _allExpensesCache = null;
+
 async function _refreshAlerts() {
   const el = $("lowest-alerts");
   if (!el) return;
   try {
-    const all = await fetchAllExpenses();
-    const alerts = lowestPriceAlerts(all, currentExpenses);
+    _allExpensesCache = _allExpensesCache ?? await fetchAllExpenses();
+    const alerts = lowestPriceAlerts(_allExpensesCache, currentExpenses);
     if (!alerts.length) { el.hidden = true; return; }
     el.hidden = false;
     el.innerHTML = `<div class="alert-title">🎉 今月のお得な買い物</div>` +
@@ -318,11 +320,13 @@ async function _addCalendarExpense({ date, store, amount, category }) {
     createdAt: serverTimestamp(),
   });
   log("カレンダーから追加:", date, amount);
+  _allExpensesCache = null;
   _jumpToMonthOf(date);
 }
 
 // ---- フォーム保存後のコールバック（expense-form のコールバック） ------------
 function _onFormSaved(dateStr, wasEdit) {
+  _allExpensesCache = null;
   _jumpToMonthOf(dateStr);
   if (wasEdit) $("expense-list").scrollIntoView({ behavior: "smooth" });
   if (!_advanceQueue()) $("ocr-status").hidden = true;

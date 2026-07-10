@@ -201,7 +201,7 @@ function _renderIngredients() {
   } else {
     chips.innerHTML = unique.map((n) => `<span class="recipe-chip">${escapeHtml(n)}</span>`).join("");
   }
-  const periodLabel = { day: "今日", week: "今週", month: "今月" }[_activePeriod] || "";
+  const periodLabel = _PERIOD_LABELS[_activePeriod] || "";
   $("recipe-modal-title").textContent = `🍳 レシピ提案（${periodLabel}）`;
   $("recipe-result").hidden = true;
   $("recipe-status").hidden = true;
@@ -506,6 +506,7 @@ async function _renderBudgetIngredients() {
   chips.innerHTML = `<span class="recipe-empty-hint">💰 予算内の食材を計算中…</span>`;
   $("recipe-budget-status").textContent = "";
   $("recipe-budget-total").textContent  = "";
+  $("recipe-modal-title").textContent = `🍳 レシピ提案（予算モード・${_PERIOD_LABELS[_activePeriod] || ""}）`;
 
   const budget = _getBudget?.() || {};
   const foodBudget = budget["食費"] || 0;
@@ -519,7 +520,7 @@ async function _renderBudgetIngredients() {
   // 期間ごとの予算と支出を計算
   const divisors = { month: 1, week: 4.3, day: 30 };
   const periodBudget = Math.round(foodBudget / (divisors[_activePeriod] || 1));
-  const periodLabel  = { day: "今日", week: "今週", month: "今月" }[_activePeriod] || "";
+  const periodLabel  = _PERIOD_LABELS[_activePeriod] || "";
 
   const periodExpenses = _filterExpensesByPeriod(_activePeriod)
     .filter((e) => !e.category || e.category === "食費");
@@ -609,7 +610,7 @@ function _renderBudgetChips() {
   });
 
   const totalCost = _budgetSelectedItems.reduce((s, i) => s + i.estimatedPrice, 0);
-  const periodLabel = { day: "今日", week: "今週", month: "今月" }[_activePeriod] || "";
+  const periodLabel = _PERIOD_LABELS[_activePeriod] || "";
   $("recipe-budget-status").textContent = `${periodLabel}の食費残り ${yen(_budgetRemaining)}`;
   $("recipe-budget-total").textContent  = `推定合計 ${yen(totalCost)}`;
 }
@@ -617,10 +618,14 @@ function _renderBudgetChips() {
 // ---- 週間献立 → カレンダー --------------------------------------------------
 
 const _DAY_ORDER = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"];
+const _PERIOD_LABELS = { day: "今日", week: "今週", month: "今月" };
 
-// 買い物日を献立の1日目（月曜日扱い）とする
+// 選択日を含む週の月曜日を返す（週間献立のカレンダー反映起点）。
 function _getMondayOf(selectedDay) {
-  return new Date(selectedDay + "T00:00:00");
+  const d = new Date(selectedDay + "T00:00:00");
+  const dow = d.getDay(); // 0=Sun, 1=Mon, …, 6=Sat
+  d.setDate(d.getDate() + (dow === 0 ? -6 : 1 - dow));
+  return d;
 }
 
 // 週間献立マークダウンを {date, 朝食, 昼食, 夕食}[] に変換する。
