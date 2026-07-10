@@ -102,9 +102,9 @@ function _drawSvg(data) {
       .map((cat) => ({ cat, amt: d.byCat[cat] || 0 }))
       .filter((s) => s.amt > 0);
 
-    // 未分類があれば末尾に追加
+    // 未分類があれば末尾に追加（CATEGORIES に含まれない場合のみ）
     const uncatAmt = d.byCat["未分類"] || 0;
-    if (uncatAmt > 0) segments.push({ cat: "未分類", amt: uncatAmt });
+    if (uncatAmt > 0 && !CATEGORIES.includes("未分類")) segments.push({ cat: "未分類", amt: uncatAmt });
 
     for (const { cat, amt } of segments) {
       const segH = max > 0 ? (amt / max) * innerH : 0;
