@@ -11,8 +11,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   signOut,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -97,28 +96,14 @@ function showLoginError(err) {
 }
 
 // リダイレクトから戻ってきた結果を確認（成功/失敗をログに出す）
-log("リダイレクト結果を確認中…");
-getRedirectResult(auth)
-  .then((result) => {
-    if (result && result.user) {
-      log("リダイレクトログイン成功:", result.user.email);
-    } else {
-      log("リダイレクト結果なし（通常のページ読み込み、または未ログイン）");
-    }
-  })
-  .catch((err) => {
-    logErr("リダイレクト結果でエラー:", err.code, err.message, err);
-    showLoginError(err);
-  });
-
 $("google-login").onclick = async () => {
-  log("ログインボタン押下 → signInWithRedirect 開始");
+  log("ログインボタン押下 → signInWithPopup 開始");
   $("login-error").hidden = true;
   try {
-    await signInWithRedirect(auth, provider);
-    log("signInWithRedirect 呼び出し完了（Googleへ遷移するはず）");
+    const result = await signInWithPopup(auth, provider);
+    log("ポップアップログイン成功:", result.user.email);
   } catch (err) {
-    logErr("signInWithRedirect でエラー:", err.code, err.message, err);
+    logErr("signInWithPopup でエラー:", err.code, err.message, err);
     showLoginError(err);
   }
 };
