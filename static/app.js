@@ -154,7 +154,7 @@ function setupApp() {
       onEdit: editExpense,
       onDelete: deleteExpense,
       onRecipeSuggest: (selectedDay, expenses) =>
-        openRecipeModal({ selectedDay, expenses }),
+        openRecipeModal({ selectedDay, expenses, initialPeriod: "day" }),
     });
     initCompare({ fetchAllExpenses });
     initRecipe({ getToken: () => currentUser?.getIdToken(), fetchAllExpenses, getBudget });
