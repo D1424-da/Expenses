@@ -14,11 +14,29 @@ service cloud.firestore {
         && (!('rawText' in d) || (d.rawText is string && d.rawText.size() <= 20000));
     }
 
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
     // 各ユーザーは自分のデータ（users/{uid}/...）にのみアクセス可能。
     match /users/{userId}/expenses/{expenseId} {
-      allow read, delete: if request.auth != null && request.auth.uid == userId;
-      allow create, update: if request.auth != null && request.auth.uid == userId
-        && validExpense(request.resource.data);
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && validExpense(request.resource.data);
+    }
+
+    // 設定（予算・買い物リスト）。ドキュメントIDは決め打ち（budget / shoppingList）。
+    match /users/{userId}/settings/{settingId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // 保存済みレシピ。
+    match /users/{userId}/savedRecipes/{recipeId} {
+      allow read, delete: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.title is string
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.markdown is string
+        && request.resource.data.markdown.size() <= 50000;
     }
   }
 }
