@@ -209,7 +209,13 @@ function _renderIngredients() {
 
 function _itemsForPeriod(period) {
   return _filterExpensesByPeriod(period)
-    .flatMap((e) => (e.items || []).map((it) => it.name).filter((n) => n && n.length >= 1));
+    .flatMap((e) => (e.items || []).map((it) => {
+      if (!it.name || it.name.length < 1) return null;
+      // 数量・単位がある場合は "牛肉 300g" "たまご 6個" 形式でAPIに渡す（精度向上）
+      if (it.qty != null && it.unit) return `${it.name} ${it.qty}${it.unit}`;
+      if (it.qty != null) return `${it.name} ×${it.qty}`;
+      return it.name;
+    }).filter(Boolean));
 }
 
 function _filterExpensesByPeriod(period) {
