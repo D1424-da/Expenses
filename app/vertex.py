@@ -58,7 +58,7 @@ def _get_access_token() -> str:
     return creds.token
 
 
-def extract_receipt(image_bytes: bytes) -> dict:
+def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dict:
     """Vertex AI（Gemini）で画像から構造化レシートデータを抽出する。"""
     project = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("VERTEX_PROJECT")
     if not project:
@@ -77,7 +77,7 @@ def extract_receipt(image_bytes: bytes) -> dict:
     )
     result = net.post_json(
         url,
-        gemini.build_request_body(b64),
+        gemini.build_request_body(b64, content_type),
         headers={"Authorization": f"Bearer {token}"},
         service="Vertex AI",
     )

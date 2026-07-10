@@ -97,7 +97,7 @@ async def ocr_receipt(
     engine = os.environ.get("OCR_ENGINE", "tesseract").lower()
     if engine in engines.AI_ENGINES:
         try:
-            return JSONResponse(engines.extract_with_ai(engine, image_bytes))
+            return JSONResponse(engines.extract_with_ai(engine, image_bytes, file.content_type))
         except engines.ExtractionError as exc:
             raise HTTPException(
                 500, "レシートの読み取りに失敗しました。時間をおいて再試行してください。"

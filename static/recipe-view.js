@@ -1,5 +1,5 @@
 // レシピ提案モーダル。期間（今日/今週/今月）と種別（1食分/週間献立）を選んでGeminiに送る。
-import { $, openModal, closeModal } from "./dom-utils.js";
+import { $, escapeHtml, dayKey, openModal, closeModal } from "./dom-utils.js";
 import { log, logErr } from "./log.js";
 import { OCR_API_BASE } from "./firebase-config.js";
 
@@ -65,7 +65,7 @@ function _renderIngredients() {
   if (unique.length === 0) {
     chips.innerHTML = `<span class="recipe-empty-hint">この期間に明細品目がありません</span>`;
   } else {
-    chips.innerHTML = unique.map((n) => `<span class="recipe-chip">${_esc(n)}</span>`).join("");
+    chips.innerHTML = unique.map((n) => `<span class="recipe-chip">${escapeHtml(n)}</span>`).join("");
   }
   // 期間ラベルを反映
   const periodLabel = { day: "今日", week: "今週", month: "今月" }[_activePeriod] || "";
@@ -77,15 +77,13 @@ function _renderIngredients() {
 
 // 期間に応じて食材名リストを返す
 function _itemsForPeriod(period) {
-  const filtered = _filterExpensesByPeriod(period);
-  return filtered.flatMap((e) => (e.items || []).map((it) => it.name).filter(Boolean));
+  return _filterExpensesByPeriod(period)
+    .flatMap((e) => (e.items || []).map((it) => it.name).filter(Boolean));
 }
 
 function _filterExpensesByPeriod(period) {
   if (!_selectedDay) return [];
-  if (period === "day") {
-    return _expenses.filter((e) => e.date === _selectedDay);
-  }
+  if (period === "day") return _expenses.filter((e) => e.date === _selectedDay);
   if (period === "week") {
     const { start, end } = _weekRange(_selectedDay);
     return _expenses.filter((e) => e.date && e.date >= start && e.date <= end);
@@ -97,14 +95,10 @@ function _filterExpensesByPeriod(period) {
 // _selectedDay を含む日〜土の範囲を返す
 function _weekRange(dayStr) {
   const d = new Date(dayStr + "T00:00:00");
-  const dow = d.getDay(); // 0=日
+  const dow = d.getDay();
   const sun = new Date(d); sun.setDate(d.getDate() - dow);
   const sat = new Date(d); sat.setDate(d.getDate() + (6 - dow));
-  return { start: _fmt(sun), end: _fmt(sat) };
-}
-
-function _fmt(d) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return { start: dayKey(sun), end: dayKey(sat) };
 }
 
 async function _suggest() {
@@ -140,6 +134,10 @@ async function _suggest() {
       throw new Error(msg || `HTTP ${res.status}`);
     }
     const { recipe } = await res.json();
+    if (!recipe || !recipe.trim()) {
+      _showStatus("error", "レシピを取得できませんでした。食材を変えて再試行してください。");
+      return;
+    }
     log("レシピ提案成功:", items.length, "品目,", servings, "人前,", _activeType);
     $("recipe-status").hidden = true;
     const result = $("recipe-result");
@@ -153,16 +151,40 @@ async function _suggest() {
   }
 }
 
-// 最低限の Markdown → HTML 変換（## 見出し・**太字**・番号リスト・箇条書き）
+// Markdown → HTML 変換（見出し・太字・番号リスト・箇条書き）。
+// <li> は必ず <ol>/<ul> で囲む（囲みなしだとブラウザでマーカーが表示されない）。
 function _markdownToHtml(md) {
-  return md
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/^## (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^### (.+)$/gm, "<h4>$1</h4>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/^(\d+)\. (.+)$/gm, "<li>$2</li>")
-    .replace(/^- (.+)$/gm, "<li>$1</li>")
-    .replace(/\n{2,}/g, "<br>");
+  const bold = (s) => s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  const lines = md.split("\n");
+  const out = [];
+  let listTag = ""; // 現在開いているリストタグ ("ol"|"ul"|"")
+
+  const closeList = () => { if (listTag) { out.push(`</${listTag}>`); listTag = ""; } };
+
+  for (const raw of lines) {
+    const line = escapeHtml(raw);
+    let m;
+    if ((m = line.match(/^## (.+)$/))) {
+      closeList();
+      out.push(`<h3>${bold(m[1])}</h3>`);
+    } else if ((m = line.match(/^### (.+)$/))) {
+      closeList();
+      out.push(`<h4>${bold(m[1])}</h4>`);
+    } else if ((m = line.match(/^(\d+)\. (.+)$/))) {
+      if (listTag !== "ol") { closeList(); out.push("<ol>"); listTag = "ol"; }
+      out.push(`<li>${bold(m[2])}</li>`);
+    } else if ((m = line.match(/^- (.+)$/))) {
+      if (listTag !== "ul") { closeList(); out.push("<ul>"); listTag = "ul"; }
+      out.push(`<li>${bold(m[1])}</li>`);
+    } else if (line.trim()) {
+      closeList();
+      out.push(`<p>${bold(line)}</p>`);
+    } else {
+      closeList();
+    }
+  }
+  closeList();
+  return out.join("\n");
 }
 
 function _setActiveTab(containerId, activeBtn) {
@@ -183,8 +205,3 @@ function _showStatus(type, text) {
   s.hidden = false;
 }
 
-function _esc(s) {
-  return String(s).replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
-  );
-}

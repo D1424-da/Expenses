@@ -39,7 +39,7 @@ class ExtractionError(RuntimeError):
     """利用可能なエンジンをすべて試しても抽出できなかった。"""
 
 
-def extract_with_ai(preferred: str, image_bytes: bytes) -> dict:
+def extract_with_ai(preferred: str, image_bytes: bytes, content_type: str = "image/jpeg") -> dict:
     """AI で画像から直接構造化抽出する（多段フォールバック付き）。
 
     設定エンジンを先頭に、もう一方の AI → Vision の順で試す。
@@ -57,7 +57,7 @@ def extract_with_ai(preferred: str, image_bytes: bytes) -> dict:
         if module is None:
             continue  # 依存未導入などで利用不可ならスキップ
         try:
-            return module.extract_receipt(image_bytes)
+            return module.extract_receipt(image_bytes, content_type)
         except Exception as exc:  # noqa: BLE001 — 次の手段へ
             logger.exception("%s OCR failed", _AI_LABELS[name])
             errors.append(f"{_AI_LABELS[name]}: {exc}")

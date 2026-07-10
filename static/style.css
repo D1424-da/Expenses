@@ -438,4 +438,5 @@ button.primary:hover { filter: brightness(1.05); }
 }
 .recipe-result h3 { font-size: 1rem; font-weight: 600; margin: 12px 0 4px; }
 .recipe-result h4 { font-size: 0.93rem; font-weight: 600; margin: 8px 0 2px; }
-.recipe-result li { margin-left: 1.2em; list-style: disc; }
+.recipe-result p { margin: 2px 0; }
+.recipe-result ul, .recipe-result ol { padding-left: 1.5em; margin: 2px 0 6px; }

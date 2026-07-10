@@ -74,6 +74,9 @@ def suggest_recipes(items: list[str], servings: int, recipe_type: str = "meal") 
     )
     result = net.post_json(url, body, service="Gemini Recipe API")
     try:
-        return result["candidates"][0]["content"]["parts"][0]["text"]
+        text = result["candidates"][0]["content"]["parts"][0]["text"]
     except (KeyError, IndexError, TypeError):
-        return ""
+        text = ""
+    if not text or not text.strip():
+        raise RuntimeError("Gemini がレシピを生成できませんでした。")
+    return text
