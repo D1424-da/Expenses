@@ -437,6 +437,17 @@ button:not(.primary):hover { background: var(--stone); }
 .expense-item .ei-amount { font-weight: 700; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
 .expense-item .ei-actions { display: flex; gap: 4px; }
 .expense-item .ei-actions button { padding: 6px 10px; font-size: 0.83rem; }
+.expense-item .ei-items {
+  list-style: none; margin: 4px 0 0; padding: 0;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.expense-item .ei-items li {
+  display: flex; align-items: baseline; gap: 6px;
+  font-size: 0.78rem; color: var(--ink-2);
+}
+.expense-item .ei-items .ei-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.expense-item .ei-items .ei-item-qty { color: var(--muted); white-space: nowrap; }
+.expense-item .ei-items .ei-item-price { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--muted); }
 .empty { color: var(--muted); text-align: center; padding: 20px; font-size: 0.88rem; }
 
 /* ============================================================

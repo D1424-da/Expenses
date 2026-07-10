@@ -1,10 +1,12 @@
 // 支出の推移グラフ（過去6ヶ月）— カテゴリ別積み上げ棒グラフ、SVG描画。
-import { $, yen, openModal, closeModal } from "./dom-utils.js";
+import { $, yen, openModal, closeModal, monthKey } from "./dom-utils.js";
 import { CATEGORIES } from "./firebase-config.js";
 import { categoryBreakdown } from "./stats.js";
 import { log, logErr } from "./log.js";
 
 let _fetchMonthExpenses;
+// 過去月のデータをキャッシュ（当月は随時更新されるのでキャッシュ対象外）
+const _monthCache = new Map();
 
 // CATEGORIES の順番に対応したパレット（10色）
 const CAT_COLORS = [
@@ -43,12 +45,17 @@ async function _open() {
     const months = Array.from({ length: 6 }, (_, i) =>
       new Date(now.getFullYear(), now.getMonth() - (5 - i), 1),
     );
+    const currentKey = monthKey(now);
     const data = await Promise.all(
       months.map(async (m) => {
+        const key = monthKey(m);
+        if (key !== currentKey && _monthCache.has(key)) return _monthCache.get(key);
         const expenses = await _fetchMonthExpenses(m);
         const byCat = categoryBreakdown(expenses);
         const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
-        return { label: `${m.getMonth() + 1}月`, total, byCat };
+        const entry = { label: `${m.getMonth() + 1}月`, total, byCat };
+        if (key !== currentKey) _monthCache.set(key, entry);
+        return entry;
       }),
     );
     log("支出推移:", data.map((d) => `${d.label}:${d.total}`).join(" "));

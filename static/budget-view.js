@@ -7,6 +7,7 @@ import { log, logErr } from "./log.js";
 
 let _db, _getUser, _categories;
 let _budget = {}; // { 食費: 30000, ... }
+let _budgetLoaded = false;
 let _onUpdated; // () => void — 予算保存後に呼んでサマリーを再描画させる
 
 export function initBudget({ db, getUser, categories, onUpdated }) {
@@ -27,6 +28,7 @@ export async function loadBudget() {
   try {
     const snap = await getDoc(_settingsRef(user.uid, "budget"));
     _budget = snap.exists() ? (snap.data().limits || {}) : {};
+    _budgetLoaded = true;
     log("予算読み込み:", _budget);
   } catch (err) {
     logErr("予算読み込みエラー:", err.message, err);
@@ -77,7 +79,7 @@ export function renderBudgetBars(expenses, container) {
 }
 
 async function _openSettings() {
-  await loadBudget(); // 最新値を取得してから開く
+  if (!_budgetLoaded) await loadBudget(); // 未取得のときのみ Firestore を読む
   openModal("budget-modal");
   const inputs = $("budget-inputs");
   inputs.innerHTML = "";

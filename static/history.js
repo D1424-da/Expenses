@@ -17,20 +17,24 @@ function normKey(s) {
 }
 
 // レーベンシュタイン距離（OCRの誤字に強い類似度の土台）。
+// 行バッファを再利用して呼び出しごとの Array アロケーションを排除する。
+let _levPrev = [];
+let _levCur = [];
 function levenshtein(a, b) {
   const m = a.length, n = b.length;
   if (!m) return n;
   if (!n) return m;
-  let prev = Array.from({ length: n + 1 }, (_, i) => i);
+  if (_levPrev.length <= n) { _levPrev = new Array(n + 1); _levCur = new Array(n + 1); }
+  for (let i = 0; i <= n; i++) _levPrev[i] = i;
   for (let i = 1; i <= m; i++) {
-    const cur = [i];
+    _levCur[0] = i;
     for (let j = 1; j <= n; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+      _levCur[j] = Math.min(_levPrev[j] + 1, _levCur[j - 1] + 1, _levPrev[j - 1] + cost);
     }
-    prev = cur;
+    const tmp = _levPrev; _levPrev = _levCur; _levCur = tmp;
   }
-  return prev[n];
+  return _levPrev[n];
 }
 
 function similarity(a, b) {
@@ -43,11 +47,17 @@ function similarity(a, b) {
 function bestMatch(raw, entries, threshold) {
   const k = normKey(raw);
   if (!k || !entries.length) return null;
+  // 完全一致は levenshtein なしで確定
+  const exact = entries.find((e) => e.key === k);
+  if (exact) return { entry: exact, score: 1 };
   let best = null, bestScore = 0;
   for (const e of entries) {
-    let score = similarity(k, e.key);
+    const maxLen = Math.max(k.length, e.key.length);
+    const contained = maxLen > 0 && (e.key.includes(k) || k.includes(e.key));
+    // 文字列長の差だけで threshold を下回ることが確実なら levenshtein をスキップ
+    if (!contained && maxLen > 0 && Math.abs(k.length - e.key.length) / maxLen > 1 - threshold) continue;
     // どちらかが他方を含む（OCRで一部欠落/混入）場合は高めに評価する。
-    if (e.key.includes(k) || k.includes(e.key)) score = Math.max(score, 0.9);
+    const score = contained ? Math.max(0.9, similarity(k, e.key)) : similarity(k, e.key);
     if (score > bestScore) { bestScore = score; best = e; }
   }
   return best && bestScore >= threshold ? { entry: best, score: bestScore } : null;

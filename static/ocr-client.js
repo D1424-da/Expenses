@@ -129,7 +129,10 @@ function getPaddleOcr() {
 }
 
 // 初回の体感速度を上げるため、ログイン直後などに裏で言語データを読み込んでおく。
+let _prewarmed = false;
 export function prewarmOcr() {
+  if (_prewarmed) return;
+  _prewarmed = true;
   if (OCR_API_BASE) {
     // バックエンド(Render無料プラン)はアクセスが無いとスリープし、次の
     // リクエストでコールドスタート(起動に数十秒)が発生する。アプリ起動時に
