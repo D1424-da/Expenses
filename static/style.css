@@ -337,6 +337,7 @@ main {
   border-radius: 12px;
   font-size: 0.86rem;
   line-height: 1.5;
+  white-space: pre-line; /* \n を改行として表示 */
 }
 .status.loading { background: var(--status-loading-bg); color: var(--status-loading-ink); }
 .status.error { background: var(--status-error-bg); color: var(--danger); }
