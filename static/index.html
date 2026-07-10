@@ -12,6 +12,12 @@
     <div class="login-card">
       <h1>🧾 レシート家計簿</h1>
       <p>レシートを撮るだけで記録。<br />どの端末からでも同じデータを確認できます。</p>
+      <!-- LINE/Instagram等のインアプリブラウザ用の警告（app.jsで制御） -->
+      <div id="inapp-warning" class="inapp-warning" hidden>
+        <p>⚠️ LINEなどのアプリ内ブラウザでは<br />Googleログインができません。</p>
+        <p class="inapp-hint">右下の <strong>「…」→「ブラウザで開く」</strong> をタップするか、<br />URLをコピーしてSafari / Chromeで開いてください。</p>
+        <button id="copy-url-btn" class="copy-url-btn">🔗 URLをコピー</button>
+      </div>
       <button id="google-login" class="google-btn">
         <span class="g-icon">G</span> Google でログイン
       </button>

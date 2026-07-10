@@ -82,9 +82,29 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// スマホ（モバイル）では signInWithRedirect、PCでは signInWithPopup を使う。
-// WebView/in-app browser では popup が Google ポリシーでブロックされるため。
-const _isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+// LINE / Instagram / Facebook などのインアプリブラウザを検知する。
+// これらのWebViewではGoogleのOAuthが完全にブロックされるため、外部ブラウザへ誘導する。
+const _ua = navigator.userAgent;
+const _isInAppBrowser = /Line\/|FBAN|FBAV|Instagram|MicroMessenger/i.test(_ua);
+const _isMobile = /Android|iPhone|iPad|iPod/i.test(_ua);
+
+if (_isInAppBrowser) {
+  log("インアプリブラウザを検知:", _ua);
+  const warning = $("inapp-warning");
+  if (warning) warning.hidden = false;
+  const loginBtn = $("google-login");
+  if (loginBtn) loginBtn.hidden = true;
+}
+
+$("copy-url-btn") && ($("copy-url-btn").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(location.href);
+    $("copy-url-btn").textContent = "✅ コピーしました";
+    setTimeout(() => { $("copy-url-btn").textContent = "🔗 URLをコピー"; }, 2500);
+  } catch {
+    prompt("URLをコピーしてください:", location.href);
+  }
+});
 
 getRedirectResult(auth).then((result) => {
   if (result?.user) log("リダイレクトログイン成功:", result.user.email);
