@@ -545,6 +545,7 @@ button:not(.primary):hover { background: var(--stone); }
 .cal-week-click { cursor: pointer; background: var(--sage-light); flex-direction: column; justify-content: center; gap: 1px; }
 .cal-week-click::after { content: "内訳▾"; font-size: 0.55rem; font-weight: 600; opacity: 0.75; }
 .cal-week-click:active { filter: brightness(0.95); }
+.cal-meal { font-size: 0.65rem; line-height: 1; margin-top: auto; }
 
 /* ============================================================
    DAY / WEEK MODALS
@@ -552,6 +553,12 @@ button:not(.primary):hover { background: var(--stone); }
 .day-total-line { display: flex; align-items: baseline; justify-content: space-between; margin: 8px 0 14px; }
 .day-total-line .label { color: var(--muted); font-size: 0.83rem; }
 .day-total-line .value { font-size: 1.6rem; font-weight: 800; color: var(--sage); font-variant-numeric: tabular-nums; }
+.day-meal-plan { background: var(--sage-light); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; }
+.day-meal-title { font-size: 0.85rem; font-weight: 700; color: var(--sage); margin: 0 0 8px; }
+.day-meal-content { display: flex; flex-direction: column; gap: 5px; }
+.meal-row { display: flex; gap: 8px; align-items: baseline; }
+.meal-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); width: 2.5rem; flex-shrink: 0; }
+.meal-text { font-size: 0.88rem; color: var(--ink); }
 .day-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .day-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 12px; background: var(--card); }
 .day-row-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }

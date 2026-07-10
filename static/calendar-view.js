@@ -9,6 +9,7 @@ import { CATEGORIES } from "./firebase-config.js";
 
 let _onAddExpense, _onEdit, _onDelete, _onRecipeSuggest;
 let _expenses = [];
+let _mealPlans = {};
 let _selectedDay = null;
 let _weekBreakdowns = [];
 
@@ -67,9 +68,11 @@ export function renderCalendar(expenses, month) {
         key === todayKey ? "cal-today" : "",
         amt > 0 ? "cal-has" : "",
       ].filter(Boolean).join(" ");
+      const hasMeal = inMonth && _mealPlans[key];
       rowHtml += `<div class="${cls}" data-day="${key}" ${inMonth ? "" : "data-out"}>
           <span class="cal-num">${cursor.getDate()}</span>
           ${amt > 0 ? `<span class="cal-amt">${yen(amt)}</span>` : ""}
+          ${hasMeal ? `<span class="cal-meal" title="献立あり">🍽</span>` : ""}
         </div>`;
       cursor.setDate(cursor.getDate() + 1);
     }
@@ -95,6 +98,11 @@ export function renderCalendar(expenses, month) {
 // Firestore 更新時、日付モーダルが開いていれば内容を最新化する
 export function maybeRefreshDayModal() {
   if (!$("day-modal").hidden) _renderDayModal();
+}
+
+// 献立マップが更新されたときに呼ぶ（app.js → mealPlanSync コールバック）
+export function updateMealPlans(map) {
+  _mealPlans = map || {};
 }
 
 function _totalsByDay(expenses) {
@@ -162,6 +170,22 @@ function _renderDayModal() {
     row.querySelector('[data-act="edit"]').onclick = () => _onEdit(e);
     row.querySelector('[data-act="del"]').onclick = () => _onDelete(e.id);
     list.appendChild(row);
+  }
+
+  // 献立がある日は内容を表示
+  const mealPlanEl = $("day-meal-plan");
+  const mealContentEl = $("day-meal-content");
+  const plan = _mealPlans[_selectedDay];
+  if (plan && (plan.朝食 || plan.昼食 || plan.夕食)) {
+    mealContentEl.innerHTML = [
+      plan.朝食 ? `<div class="meal-row"><span class="meal-label">朝食</span><span class="meal-text">${escapeHtml(plan.朝食)}</span></div>` : "",
+      plan.昼食 ? `<div class="meal-row"><span class="meal-label">昼食</span><span class="meal-text">${escapeHtml(plan.昼食)}</span></div>` : "",
+      plan.夕食 ? `<div class="meal-row"><span class="meal-label">夕食</span><span class="meal-text">${escapeHtml(plan.夕食)}</span></div>` : "",
+    ].join("");
+    mealPlanEl.hidden = false;
+  } else {
+    mealPlanEl.hidden = true;
+    mealContentEl.innerHTML = "";
   }
 
   // 明細品目がある支出がひとつでもあればレシピ提案ボタンを表示

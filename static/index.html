@@ -165,6 +165,10 @@
           <span class="label">この日の合計</span>
           <span id="day-total" class="value">¥0</span>
         </div>
+        <div id="day-meal-plan" class="day-meal-plan" hidden>
+          <h3 class="day-meal-title">🍽 今日の献立</h3>
+          <div id="day-meal-content" class="day-meal-content"></div>
+        </div>
         <div id="day-list" class="day-list"></div>
         <form id="day-form" class="day-form">
           <h3>この日に追加</h3>
@@ -241,6 +245,7 @@
         <div id="recipe-post-actions" class="recipe-post-actions" hidden>
           <button id="recipe-save-btn" type="button">📚 保存</button>
           <button id="recipe-shopping-btn" type="button">🛒 リストに追加</button>
+          <button id="recipe-calendar-btn" type="button" hidden>📅 カレンダーに反映</button>
         </div>
         <!-- 料理ごと保存選択パネル -->
         <div id="recipe-dish-selector" class="recipe-dish-selector" hidden>

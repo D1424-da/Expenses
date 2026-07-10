@@ -33,6 +33,19 @@ service cloud.firestore {
       allow write: if isOwner(userId) && validSetting(request.resource.data);
     }
 
+    // 週間献立（カレンダー表示用）。ドキュメントIDは日付（YYYY-MM-DD）。
+    function validMealPlan(d) {
+      return d.date is string && d.date.size() <= 10
+        && (!('朝食' in d) || (d['朝食'] is string && d['朝食'].size() <= 200))
+        && (!('昼食' in d) || (d['昼食'] is string && d['昼食'].size() <= 200))
+        && (!('夕食' in d) || (d['夕食'] is string && d['夕食'].size() <= 200))
+        && (!('savedAt' in d) || d.savedAt is string);
+    }
+    match /users/{userId}/mealPlans/{mealId} {
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && validMealPlan(request.resource.data);
+    }
+
     // 保存済みレシピ。
     function validRecipe(d) {
       return d.title is string && d.title.size() <= 200

@@ -4,6 +4,7 @@ import { log, logErr } from "./log.js";
 import { OCR_API_BASE } from "./firebase-config.js";
 import { saveRecipe } from "./saved-recipes.js";
 import { addItemsToList } from "./shopping-list.js";
+import { saveMealPlan } from "./meal-plan.js";
 
 let _getToken;
 let _fetchAllExpenses;
@@ -102,6 +103,9 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
   $("recipe-dish-save-btn").onclick = _saveDishSelection;
   $("recipe-dish-cancel-btn").onclick = _hideDishSelector;
 
+  // カレンダーに反映ボタン（週間献立のみ表示）
+  $("recipe-calendar-btn").onclick = _exportToCalendar;
+
   // saved-recipes.js からレシピのヘルパー関数を参照できるようにする
   window.__recipeHelpers__ = { _markdownToHtml, _extractIngredients, _attachStores };
 }
@@ -135,6 +139,8 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
   $("recipe-dish-selector").hidden = true;
   $("recipe-save-btn").textContent = "📚 保存";
   $("recipe-shopping-btn").textContent = "🛒 リストに追加";
+  $("recipe-calendar-btn").textContent = "📅 カレンダーに反映";
+  $("recipe-calendar-btn").hidden = true;
   // 前回使った人数を復元（なければ2）
   $("recipe-servings").value = localStorage.getItem("recipe_servings") || "2";
   // 時短タブ・使い切りをリセット
@@ -272,6 +278,8 @@ async function _suggest() {
       _renderCostBadge(info);
     }).catch((err) => logErr("コスト推定エラー:", err.message));
     $("recipe-post-actions").hidden = false;
+    // カレンダー反映ボタンは週間献立のときのみ表示
+    $("recipe-calendar-btn").hidden = _activeType !== "weekly";
   } catch (err) {
     logErr("レシピ提案エラー:", err.message, err);
     _showStatus("error", "レシピの取得に失敗しました: " + err.message);
@@ -554,4 +562,73 @@ function _showStatus(type, text) {
   s.className = "status " + type;
   s.textContent = text;
   s.hidden = false;
+}
+
+// ---- 週間献立 → カレンダー --------------------------------------------------
+
+const _DAY_ORDER = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"];
+
+// selectedDay を含む週の月曜日を返す
+function _getMondayOf(selectedDay) {
+  const d = new Date(selectedDay + "T00:00:00");
+  const dow = d.getDay(); // 0=日, 1=月…
+  const offset = dow === 0 ? 6 : dow - 1;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - offset);
+  return monday;
+}
+
+// 週間献立マークダウンを {date, 朝食, 昼食, 夕食}[] に変換する。
+// "## 月曜日" セクションごとに3食を抽出し、_selectedDay の週の日付を割り当てる。
+function _extractWeeklyMeals(md, selectedDay) {
+  const monday = _getMondayOf(selectedDay);
+  const results = [];
+
+  const sections = md.split(/^## /m).slice(1);
+  for (const section of sections) {
+    const headingEnd = section.indexOf("\n");
+    if (headingEnd === -1) continue;
+    const dayName = section.slice(0, headingEnd).trim();
+    const dayIdx = _DAY_ORDER.indexOf(dayName);
+    if (dayIdx === -1) continue;
+
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + dayIdx);
+    const dateStr = dayKey(date);
+
+    const body = section.slice(headingEnd);
+    const breakfastM = body.match(/- \*\*朝食\*\*[：:]\s*(.+)/);
+    const lunchM     = body.match(/- \*\*昼食\*\*[：:]\s*(.+)/);
+    const dinnerM    = body.match(/^### 夕食[：:]\s*(.+)$/m);
+
+    results.push({
+      date: dateStr,
+      朝食: breakfastM ? breakfastM[1].trim() : "",
+      昼食: lunchM     ? lunchM[1].trim()     : "",
+      夕食: dinnerM    ? dinnerM[1].trim()    : "",
+    });
+  }
+  return results;
+}
+
+async function _exportToCalendar() {
+  const btn = $("recipe-calendar-btn");
+  btn.disabled = true;
+  try {
+    const meals = _extractWeeklyMeals(_lastMarkdown, _selectedDay);
+    if (!meals.length) {
+      alert("献立情報を解析できませんでした。週間献立を再生成してください。");
+      return;
+    }
+    for (const { date, 朝食, 昼食, 夕食 } of meals) {
+      if (朝食 || 昼食 || 夕食) await saveMealPlan(date, { 朝食, 昼食, 夕食 });
+    }
+    btn.textContent = `✅ ${meals.length}日分を反映しました`;
+    setTimeout(() => { btn.textContent = "📅 カレンダーに反映"; }, 3000);
+  } catch (err) {
+    logErr("献立カレンダー反映エラー:", err.message);
+    alert("カレンダーへの反映に失敗しました: " + err.message);
+  } finally {
+    btn.disabled = false;
+  }
 }
