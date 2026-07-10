@@ -189,7 +189,14 @@
           <button id="recipe-close" aria-label="閉じる">✕</button>
         </div>
         <div class="recipe-row">
-          <span class="recipe-label">利用する食材を購入した期間</span>
+          <span class="recipe-label">食材の選び方</span>
+          <div class="recipe-tabs" id="recipe-mode-tabs" role="group" aria-label="食材選択モード">
+            <button class="recipe-tab active" data-mode="history">📋 購入履歴</button>
+            <button class="recipe-tab" data-mode="budget">💰 予算から</button>
+          </div>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-label" id="recipe-period-label">利用する食材を購入した期間</span>
           <div class="recipe-tabs" id="recipe-period-tabs" role="group" aria-label="期間選択">
             <button class="recipe-tab" data-period="day">今日</button>
             <button class="recipe-tab" data-period="week">今週</button>
@@ -197,6 +204,10 @@
           </div>
         </div>
         <div id="recipe-ingredients" class="recipe-ingredients"></div>
+        <div id="recipe-budget-info" class="recipe-budget-info" hidden>
+          <span id="recipe-budget-status"></span>
+          <span id="recipe-budget-total"></span>
+        </div>
         <div class="recipe-row">
           <span class="recipe-label">種類</span>
           <div class="recipe-tabs" id="recipe-type-tabs" role="group" aria-label="レシピ種類">
