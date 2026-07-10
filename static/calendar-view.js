@@ -150,6 +150,23 @@ function _renderDayModal() {
     .sort((a, b) => (b.amount || 0) - (a.amount || 0));
   $("day-total").textContent = yen(items.reduce((s, e) => s + (e.amount || 0), 0));
 
+  // 献立がある日は内容を表示（支出の有無に関わらず先に描画）
+  const mealPlanEl = $("day-meal-plan");
+  const mealContentEl = $("day-meal-content");
+  const plan = _mealPlans[_selectedDay];
+  if (plan && (plan.朝食 || plan.昼食 || plan.夕食)) {
+    mealContentEl.innerHTML = [
+      plan.朝食 ? `<div class="meal-row"><span class="meal-label">朝食</span><span class="meal-text">${escapeHtml(plan.朝食)}</span></div>` : "",
+      plan.昼食 ? `<div class="meal-row"><span class="meal-label">昼食</span><span class="meal-text">${escapeHtml(plan.昼食)}</span></div>` : "",
+      plan.夕食 ? `<div class="meal-row"><span class="meal-label">夕食</span><span class="meal-text">${escapeHtml(plan.夕食)}</span></div>` : "",
+    ].join("");
+    mealPlanEl.hidden = false;
+  } else {
+    mealPlanEl.hidden = true;
+    mealContentEl.innerHTML = "";
+  }
+
+  // 支出リスト
   const list = $("day-list");
   if (!items.length) {
     list.innerHTML = "<p class='empty'>まだ記録がありません。</p>";
@@ -170,22 +187,6 @@ function _renderDayModal() {
     row.querySelector('[data-act="edit"]').onclick = () => _onEdit(e);
     row.querySelector('[data-act="del"]').onclick = () => _onDelete(e.id);
     list.appendChild(row);
-  }
-
-  // 献立がある日は内容を表示
-  const mealPlanEl = $("day-meal-plan");
-  const mealContentEl = $("day-meal-content");
-  const plan = _mealPlans[_selectedDay];
-  if (plan && (plan.朝食 || plan.昼食 || plan.夕食)) {
-    mealContentEl.innerHTML = [
-      plan.朝食 ? `<div class="meal-row"><span class="meal-label">朝食</span><span class="meal-text">${escapeHtml(plan.朝食)}</span></div>` : "",
-      plan.昼食 ? `<div class="meal-row"><span class="meal-label">昼食</span><span class="meal-text">${escapeHtml(plan.昼食)}</span></div>` : "",
-      plan.夕食 ? `<div class="meal-row"><span class="meal-label">夕食</span><span class="meal-text">${escapeHtml(plan.夕食)}</span></div>` : "",
-    ].join("");
-    mealPlanEl.hidden = false;
-  } else {
-    mealPlanEl.hidden = true;
-    mealContentEl.innerHTML = "";
   }
 
   // 明細品目がある支出がひとつでもあればレシピ提案ボタンを表示

@@ -477,14 +477,9 @@ function _showStatus(type, text) {
 
 const _DAY_ORDER = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"];
 
-// selectedDay を含む週の月曜日を返す
+// 買い物日を献立の1日目（月曜日扱い）とする
 function _getMondayOf(selectedDay) {
-  const d = new Date(selectedDay + "T00:00:00");
-  const dow = d.getDay(); // 0=日, 1=月…
-  const offset = dow === 0 ? 6 : dow - 1;
-  const monday = new Date(d);
-  monday.setDate(d.getDate() - offset);
-  return monday;
+  return new Date(selectedDay + "T00:00:00");
 }
 
 // 週間献立マークダウンを {date, 朝食, 昼食, 夕食}[] に変換する。
