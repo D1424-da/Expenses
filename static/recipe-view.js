@@ -12,6 +12,7 @@ let _getBudget;
 let _expensesCache = null; // レシピモーダル1セッション中のキャッシュ
 let _selectedDay = null;
 let _expenses    = [];
+let _activePeriod  = "day";
 let _activeType    = "meal";
 let _maxMinutes    = 0;    // 0 = 気にしない
 let _useUp         = false;
@@ -62,6 +63,10 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
     $(id).addEventListener("change", () => { _saveFamily(); _updateFamilyToggleLabel(); });
   });
 
+  // 期間タブ
+  $("recipe-period-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
+    btn.onclick = () => { _activePeriod = btn.dataset.period; _setActiveTab("recipe-period-tabs", btn); _renderIngredients(); };
+  });
   // 種別タブ
   $("recipe-type-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
     btn.onclick = () => { _activeType = btn.dataset.rtype; _setActiveTab("recipe-type-tabs", btn); };
@@ -109,14 +114,15 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
  * @param {Array}    opts.expenses       - 当月全支出（Firestore購読済み）
  * @param {string}  [opts.initialPeriod] - "day"|"week"|"month"（デフォルト "day"）
  */
-export function openRecipeModal({ selectedDay, expenses }) {
+export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }) {
   _selectedDay = selectedDay;
   _expenses = expenses || [];
+  _activePeriod = initialPeriod;
   _activeType = "meal";
 
   // タブ初期状態
+  _setActiveTabByValue("recipe-period-tabs", "data-period", _activePeriod);
   _setActiveTabByValue("recipe-type-tabs", "data-rtype", _activeType);
-  $("recipe-modal-title").textContent = "🍳 レシピ提案";
 
   _lastMarkdown = "";
   _lastItems = [];
@@ -162,20 +168,43 @@ function _updateFamilyToggleLabel() {
   }
 }
 
-// 選択日の食材チップを描画する
+// 選択期間の食材チップを描画する
 function _renderIngredients() {
-  const items = _expenses
-    .filter((e) => e.date === _selectedDay)
-    .flatMap((e) => (e.items || []).map((it) => it.name).filter((n) => n.length >= 1));
+  const items = _itemsForPeriod(_activePeriod);
   const unique = [...new Set(items)];
   const chips = $("recipe-ingredients");
   if (unique.length === 0) {
-    chips.innerHTML = `<span class="recipe-empty-hint">明細品目がありません</span>`;
+    chips.innerHTML = `<span class="recipe-empty-hint">この期間に明細品目がありません</span>`;
   } else {
     chips.innerHTML = unique.map((n) => `<span class="recipe-chip">${escapeHtml(n)}</span>`).join("");
   }
+  const periodLabel = { day: "今日", week: "今週", month: "今月" }[_activePeriod] || "";
+  $("recipe-modal-title").textContent = `🍳 レシピ提案（${periodLabel}）`;
   $("recipe-result").hidden = true;
   $("recipe-status").hidden = true;
+}
+
+function _itemsForPeriod(period) {
+  return _filterExpensesByPeriod(period)
+    .flatMap((e) => (e.items || []).map((it) => it.name).filter((n) => n && n.length >= 1));
+}
+
+function _filterExpensesByPeriod(period) {
+  if (!_selectedDay) return [];
+  if (period === "day") return _expenses.filter((e) => e.date === _selectedDay);
+  if (period === "week") {
+    const { start, end } = _weekRange(_selectedDay);
+    return _expenses.filter((e) => e.date && e.date >= start && e.date <= end);
+  }
+  return _expenses; // "month": 当月全件
+}
+
+function _weekRange(dayStr) {
+  const d = new Date(dayStr + "T00:00:00");
+  const dow = d.getDay();
+  const sun = new Date(d); sun.setDate(d.getDate() - dow);
+  const sat = new Date(d); sat.setDate(d.getDate() + (6 - dow));
+  return { start: dayKey(sun), end: dayKey(sat) };
 }
 
 async function _suggest() {
@@ -187,7 +216,7 @@ async function _suggest() {
     .map((el) => el.textContent.trim())
     .filter(Boolean);
   if (!items.length) {
-    _showStatus("error", "食材が見つかりません。明細付きのレシートを保存してから提案してください。");
+    _showStatus("error", "食材が見つかりません。期間を変更するか、明細付きのレシートを保存してください。");
     return;
   }
   const servings = Math.max(1, Math.min(20, Number($("recipe-servings").value) || 2));
