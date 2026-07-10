@@ -7,6 +7,8 @@ import { addItemsToList } from "./shopping-list.js";
 
 let _getToken;
 let _fetchAllExpenses;
+let _getBudget;
+let _lastCostInfo = null;
 let _selectedDay = null;
 let _expenses    = [];
 let _activePeriod  = "day";
@@ -42,9 +44,10 @@ function _hasFamily() {
   return _FAM_FIELDS.some(({ id }) => Number($(id).value) > 0);
 }
 
-export function initRecipe({ getToken, fetchAllExpenses }) {
+export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
   _getToken = getToken;
   _fetchAllExpenses = fetchAllExpenses;
+  _getBudget = getBudget;
   $("recipe-close").onclick       = () => closeModal("recipe-modal");
   $("recipe-suggest-btn").onclick = _suggest;
 
@@ -86,8 +89,9 @@ export function initRecipe({ getToken, fetchAllExpenses }) {
       const names = ingredients.length ? ingredients : _lastItems;
       const itemsWithStore = await _attachStores(names);
       const added = await addItemsToList(itemsWithStore);
-      btn.textContent = `✅ ${added}品目を追加`;
-      setTimeout(() => { btn.textContent = "🛒 リストに追加"; }, 2000);
+      const costStr = _lastCostInfo?.total ? `（推定合計 ${_yen(_lastCostInfo.total)}）` : "";
+      btn.textContent = `✅ ${added}品目を追加${costStr}`;
+      setTimeout(() => { btn.textContent = "🛒 リストに追加"; }, 3000);
     } finally {
       btn.disabled = false;
     }
@@ -119,8 +123,11 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
 
   _lastMarkdown = "";
   _lastItems = [];
+  _lastCostInfo = null;
   $("recipe-result").hidden = true;
   $("recipe-result").innerHTML = "";
+  $("recipe-cost-badge").hidden = true;
+  $("recipe-cost-badge").innerHTML = "";
   $("recipe-status").hidden = true;
   $("recipe-post-actions").hidden = true;
   $("recipe-dish-selector").hidden = true;
@@ -256,6 +263,12 @@ async function _suggest() {
     const result = $("recipe-result");
     result.innerHTML = _markdownToHtml(recipe);
     result.hidden = false;
+    // 概算コストをバックグラウンドで計算して表示
+    const ingredients = _extractIngredients(recipe);
+    _estimateCost(ingredients.length ? ingredients : items, servings).then((info) => {
+      _lastCostInfo = info;
+      _renderCostBadge(info);
+    });
     $("recipe-post-actions").hidden = false;
   } catch (err) {
     logErr("レシピ提案エラー:", err.message, err);
@@ -344,6 +357,87 @@ async function _doSave(dishes) {
   } finally {
     btn.disabled = false;
   }
+}
+
+// ---- 概算コスト推定・表示 ------------------------------------------------
+
+function _yen(n) { return "¥" + Math.round(n).toLocaleString("ja-JP"); }
+
+// 過去の購入履歴から食材の最新価格を引いて合計コストを推定する。
+// 購入単位（パックサイズ等）が不明なため、あくまで目安。
+async function _estimateCost(ingredientNames, servings) {
+  if (!_fetchAllExpenses || !ingredientNames.length) return null;
+  try {
+    const all = await _fetchAllExpenses();
+    if (!all.length) return { noHistory: true };
+
+    // 食材名 → 最新購入価格（日付降順で最初に見つかったもの）
+    const priceMap = new Map();
+    const byDate = [...all].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    for (const exp of byDate) {
+      if (!exp.items) continue;
+      for (const it of exp.items) {
+        if (it.name && it.price && !priceMap.has(it.name)) {
+          priceMap.set(it.name, it.price);
+        }
+      }
+    }
+
+    let total = 0;
+    let matched = 0;
+    for (const name of ingredientNames) {
+      if (priceMap.has(name)) { total += priceMap.get(name); matched++; }
+    }
+
+    // 月次食費予算 → 1食あたり目安（月÷30日÷3食）
+    const budget = _getBudget ? _getBudget() : {};
+    const monthlyFood = budget["食費"] || 0;
+    const perMeal = monthlyFood ? Math.round(monthlyFood / 30 / 3) : 0;
+
+    return {
+      total,
+      matched,
+      totalItems: ingredientNames.length,
+      perMeal,
+      overBudget: perMeal > 0 && total > perMeal,
+    };
+  } catch { return null; }
+}
+
+function _renderCostBadge(info) {
+  const el = $("recipe-cost-badge");
+  if (!el) return;
+
+  if (!info) { el.hidden = true; return; }
+
+  if (info.noHistory) {
+    el.innerHTML = `<p class="cost-no-history">
+      📊 購入履歴がまだ少ないため概算コストを表示できません。<br>
+      レシートの保存が増えると自動で表示されます。</p>`;
+    el.hidden = false;
+    return;
+  }
+
+  const { total, matched, totalItems, perMeal, overBudget } = info;
+  const matchPct = Math.round((matched / totalItems) * 100);
+
+  let budgetHtml = "";
+  if (perMeal > 0) {
+    const cls   = overBudget ? "cost-over" : "cost-ok";
+    const label = overBudget
+      ? `⚠️ 1食目安（${_yen(perMeal)}）を超えています`
+      : `✅ 1食目安（${_yen(perMeal)}）内におさまります`;
+    budgetHtml = `<span class="cost-status ${cls}">${label}</span>`;
+  }
+
+  el.innerHTML = `
+    <div class="cost-main">
+      <span class="cost-amount">推定コスト <strong>${_yen(total)}</strong></span>
+      ${budgetHtml}
+    </div>
+    <p class="cost-note">※ 購入履歴から算出（${matched}/${totalItems}品目一致・${matchPct}%）。パックサイズや数量は考慮していないため目安です。</p>
+  `;
+  el.hidden = false;
 }
 
 // ---- 店名付き買い物リスト追加 --------------------------------------------
