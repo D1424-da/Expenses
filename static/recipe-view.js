@@ -219,6 +219,8 @@ async function _suggest() {
     _showStatus("error", "食材が見つかりません。期間を変更するか、明細付きのレシートを保存してください。");
     return;
   }
+  const cappedItems = items.length > 50 ? items.slice(0, 50) : items;
+  if (items.length > 50) log(`食材が${items.length}品あるため上位50品に絞りました`);
   const servings = Math.max(1, Math.min(20, Number($("recipe-servings").value) || 2));
   const btn = $("recipe-suggest-btn");
   btn.disabled = true;
@@ -235,7 +237,7 @@ async function _suggest() {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
-        items,
+        items: cappedItems,
         servings,
         recipe_type: _activeType,
         max_minutes: _maxMinutes || null,
@@ -523,8 +525,8 @@ async function _exportToCalendar() {
       alert("献立情報を解析できませんでした。週間献立を再生成してください。");
       return;
     }
-    for (const { date, 朝食, 昼食, 夕食 } of meals) {
-      if (朝食 || 昼食 || 夕食) await saveMealPlan(date, { 朝食, 昼食, 夕食 });
+    for (const { date, 朝食, 昼食, 夕食, 夕食レシピ } of meals) {
+      if (朝食 || 昼食 || 夕食) await saveMealPlan(date, { 朝食, 昼食, 夕食, 夕食レシピ });
     }
     btn.textContent = `✅ ${meals.length}日分を反映しました`;
     setTimeout(() => { btn.textContent = "📅 カレンダーに反映"; }, 3000);
