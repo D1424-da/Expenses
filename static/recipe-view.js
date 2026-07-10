@@ -196,6 +196,14 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
   _updateFamilyToggleLabel();
   _renderIngredients();
   openModal("recipe-modal");
+
+  // バックエンドがスリープしている場合に備えてウォームアップする
+  if (OCR_API_BASE) {
+    fetch(`${OCR_API_BASE}/api/health`, { cache: "no-store" })
+      .then((r) => r.json().catch(() => ({})))
+      .then((h) => log("レシピバックエンド稼働:", h.status || "ok"))
+      .catch((err) => log("レシピバックエンド ウォームアップ:", err.message));
+  }
 }
 
 function _updateFamilyToggleLabel() {
@@ -297,24 +305,36 @@ async function _suggest() {
 
   try {
     const token = _getToken ? await _getToken() : "";
-    const res = await fetch(`${OCR_API_BASE}/api/recipe`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({
-        items: cappedItems,
-        servings,
-        recipe_type: _activeType,
-        max_minutes: _maxMinutes || null,
-        use_up: _useUp,
-        family: _hasFamily() ? _saveFamily() : null,
-      }),
+    const body = JSON.stringify({
+      items: cappedItems,
+      servings,
+      recipe_type: _activeType,
+      max_minutes: _maxMinutes || null,
+      use_up: _useUp,
+      family: _hasFamily() ? _saveFamily() : null,
     });
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+
+    let res;
+    try {
+      res = await fetch(`${OCR_API_BASE}/api/recipe`, { method: "POST", headers, body });
+    } catch (fetchErr) {
+      // 接続エラー（サーバースリープ中など）— 最大30秒待ってリトライ
+      log("レシピバックエンド接続エラー、再試行中:", fetchErr.message);
+      _showStatus("loading", "⏳ バックエンドを起動中です…（初回は30秒ほどかかる場合があります）");
+      await new Promise((r) => setTimeout(r, 15000));
+      res = await fetch(`${OCR_API_BASE}/api/recipe`, { method: "POST", headers, body });
+    }
+
     if (!res.ok) {
       const msg = await res.text().catch(() => res.statusText);
-      throw new Error(msg || `HTTP ${res.status}`);
+      // HTTPエラーの詳細をログに残しつつ、ユーザー向けには簡潔に表示
+      logErr("レシピAPI HTTPエラー:", res.status, msg);
+      const detail = msg.replace(/<[^>]*>/g, "").trim().slice(0, 200); // HTMLタグ除去
+      throw new Error(`HTTP ${res.status}${detail ? " — " + detail : ""}`);
     }
     const { recipe } = await res.json();
     if (!recipe || !recipe.trim()) {
