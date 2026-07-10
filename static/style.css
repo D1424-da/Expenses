@@ -576,12 +576,6 @@ button:not(.primary):hover { background: var(--stone); }
 /* ============================================================
    RECIPE MODAL
    ============================================================ */
-.recipe-open-btn {
-  width: 100%; margin-top: 12px; padding: 12px;
-  background: none; border: 1.5px dashed var(--sage); color: var(--sage);
-  border-radius: var(--r-btn); cursor: pointer; font-size: 0.9rem; font-weight: 600;
-}
-.recipe-open-btn:hover { background: var(--sage-light); }
 .recipe-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .recipe-label { font-size: 0.78rem; color: var(--muted); white-space: nowrap; min-width: 2.5em; font-weight: 600; }
 .recipe-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
