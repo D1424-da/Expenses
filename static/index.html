@@ -219,6 +219,22 @@
           </label>
           <button id="recipe-suggest-btn" type="button" class="primary">提案する</button>
         </div>
+        <!-- 家族構成（折りたたみ） -->
+        <div class="family-section">
+          <button type="button" id="family-toggle" class="family-toggle">
+            👨‍👩‍👧 家族構成を設定（より最適なレシピになります）
+          </button>
+          <div id="family-panel" class="family-panel" hidden>
+            <p class="family-hint">家族の構成を入力すると、辛さ・量・食感などを考慮したレシピを提案します。次回以降は自動で記憶されます。</p>
+            <div class="family-grid">
+              <label class="family-row"><span>大人（男）</span><input type="number" id="fam-adults-m" value="0" min="0" max="10" inputmode="numeric" /><span>人</span></label>
+              <label class="family-row"><span>大人（女）</span><input type="number" id="fam-adults-f" value="0" min="0" max="10" inputmode="numeric" /><span>人</span></label>
+              <label class="family-row"><span>幼児（〜5歳）</span><input type="number" id="fam-toddlers" value="0" min="0" max="10" inputmode="numeric" /><span>人</span></label>
+              <label class="family-row"><span>小学生</span><input type="number" id="fam-elementary" value="0" min="0" max="10" inputmode="numeric" /><span>人</span></label>
+              <label class="family-row"><span>中学・高校生</span><input type="number" id="fam-junior-high" value="0" min="0" max="10" inputmode="numeric" /><span>人</span></label>
+            </div>
+          </div>
+        </div>
         <div id="recipe-status" class="status" hidden></div>
         <div id="recipe-result" class="recipe-result" hidden></div>
         <div id="recipe-post-actions" class="recipe-post-actions" hidden>

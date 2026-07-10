@@ -566,6 +566,29 @@ button:not(.primary):hover { background: var(--stone); }
 .recipe-servings-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
 .recipe-servings-row label { display: flex; align-items: center; gap: 6px; font-size: 0.88rem; flex-direction: row; color: var(--ink); }
 .recipe-servings-row input { width: 54px; text-align: center; }
+
+/* 家族構成 */
+.family-section { margin-top: 10px; }
+.family-toggle {
+  width: 100%; text-align: left; background: var(--sage-light); border: none;
+  border-radius: var(--r-btn); padding: 10px 14px; font-size: 0.83rem;
+  font-weight: 600; color: var(--sage); cursor: pointer; font-family: inherit;
+}
+.family-toggle.active { background: var(--sage); color: #fff; }
+.family-panel { margin-top: 8px; padding: 14px; background: var(--stone); border-radius: 14px; }
+.family-hint { font-size: 0.78rem; color: var(--muted); margin: 0 0 10px; line-height: 1.5; }
+.family-grid { display: flex; flex-direction: column; gap: 6px; }
+.family-row {
+  display: flex; align-items: center; gap: 8px; font-size: 0.86rem; color: var(--ink);
+  flex-direction: row;
+}
+.family-row span:first-child { flex: 1; }
+.family-row input {
+  width: 52px; text-align: center; padding: 7px 6px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--card); color: var(--ink);
+  appearance: textfield; -moz-appearance: textfield;
+}
 .recipe-result { line-height: 1.7; font-size: 0.9rem; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 10px; }
 .recipe-result h3 { font-size: 1rem; font-weight: 700; margin: 14px 0 4px; }
 .recipe-result h4 { font-size: 0.9rem; font-weight: 700; margin: 10px 0 2px; }
@@ -646,7 +669,13 @@ button:not(.primary):hover { background: var(--stone); }
 .shopping-add-form { display: flex; gap: 8px; margin-bottom: 14px; }
 .shopping-add-form input { flex: 1; }
 .shopping-add-form button { flex-shrink: 0; padding: 11px 18px; }
-.shopping-items { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
+.shopping-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.shopping-store-header {
+  font-size: 0.78rem; font-weight: 700; color: var(--sage);
+  padding: 10px 4px 4px; letter-spacing: 0.03em;
+  border-top: 1px solid var(--border); margin-top: 4px;
+}
+.shopping-store-header:first-child { border-top: none; margin-top: 0; padding-top: 4px; }
 .shopping-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 14px; background: var(--card); }
 .shopping-item.done { opacity: 0.45; }
 .shopping-item.done .shopping-check span { text-decoration: line-through; }

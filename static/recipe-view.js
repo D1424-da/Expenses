@@ -17,11 +17,47 @@ let _lastMarkdown  = "";
 let _lastItems     = [];
 let _lastServings  = 2;
 
+const _FAM_FIELDS = [
+  { id: "fam-adults-m",   key: "adults_m" },
+  { id: "fam-adults-f",   key: "adults_f" },
+  { id: "fam-toddlers",   key: "toddlers" },
+  { id: "fam-elementary", key: "elementary" },
+  { id: "fam-junior-high",key: "junior_high" },
+];
+
+function _loadFamily() {
+  try { return JSON.parse(localStorage.getItem("recipe_family") || "{}"); } catch { return {}; }
+}
+function _saveFamily() {
+  const obj = {};
+  _FAM_FIELDS.forEach(({ id, key }) => { obj[key] = Number($(id).value) || 0; });
+  localStorage.setItem("recipe_family", JSON.stringify(obj));
+  return obj;
+}
+function _restoreFamily() {
+  const saved = _loadFamily();
+  _FAM_FIELDS.forEach(({ id, key }) => { $(id).value = saved[key] ?? 0; });
+}
+function _hasFamily() {
+  return _FAM_FIELDS.some(({ id }) => Number($(id).value) > 0);
+}
+
 export function initRecipe({ getToken, fetchAllExpenses }) {
   _getToken = getToken;
   _fetchAllExpenses = fetchAllExpenses;
   $("recipe-close").onclick       = () => closeModal("recipe-modal");
   $("recipe-suggest-btn").onclick = _suggest;
+
+  // 家族構成トグル
+  $("family-toggle").onclick = () => {
+    const panel = $("family-panel");
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) _restoreFamily();
+  };
+  // 家族構成の各フィールドが変わったら自動保存
+  _FAM_FIELDS.forEach(({ id }) => {
+    $(id).addEventListener("change", () => { _saveFamily(); _updateFamilyToggleLabel(); });
+  });
 
   // 期間タブ
   $("recipe-period-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
@@ -98,8 +134,28 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
   $("recipe-useup").checked = false;
   _setActiveTabByValue("recipe-time-tabs", "data-minutes", "0");
 
+  _restoreFamily();
+  _updateFamilyToggleLabel();
   _renderIngredients();
   openModal("recipe-modal");
+}
+
+function _updateFamilyToggleLabel() {
+  const btn = $("family-toggle");
+  if (_hasFamily()) {
+    const saved = _loadFamily();
+    const parts = [];
+    if (saved.adults_m)   parts.push(`男${saved.adults_m}`);
+    if (saved.adults_f)   parts.push(`女${saved.adults_f}`);
+    if (saved.toddlers)   parts.push(`幼児${saved.toddlers}`);
+    if (saved.elementary) parts.push(`小学生${saved.elementary}`);
+    if (saved.junior_high)parts.push(`中高生${saved.junior_high}`);
+    btn.textContent = `👨‍👩‍👧 家族構成: ${parts.join("・")}人`;
+    btn.classList.add("active");
+  } else {
+    btn.textContent = "👨‍👩‍👧 家族構成を設定（より最適なレシピになります）";
+    btn.classList.remove("active");
+  }
 }
 
 // 選択期間の食材チップを描画する
@@ -179,6 +235,7 @@ async function _suggest() {
         recipe_type: _activeType,
         max_minutes: _maxMinutes || null,
         use_up: _useUp,
+        family: _hasFamily() ? _saveFamily() : null,
       }),
     });
     if (!res.ok) {
@@ -271,10 +328,12 @@ async function _doSave(dishes) {
   btn.disabled = true;
   try {
     for (const d of dishes) {
+      // 料理ごとの食材を抽出。見つからなければ期間の食材チップにフォールバック
+      const dishItems = _extractIngredients(d.markdown);
       await saveRecipe({
         title: d.title,
         markdown: d.markdown,
-        items: _lastItems,
+        items: dishItems.length ? dishItems : _lastItems,
         period: _activePeriod,
         rtype: _activeType,
         servings: _lastServings,
