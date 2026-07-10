@@ -32,7 +32,7 @@ import {
 } from "./dom-utils.js";
 import { requestBackendOcr, preprocessImage, runClientOcr, prewarmOcr } from "./ocr-client.js";
 import { TRUSTED_ENGINES, normalizeWithHistory } from "./history.js";
-import { categoryBreakdown } from "./stats.js";
+import { categoryBreakdown, buildPriceHistory, lowestPriceAlerts } from "./stats.js";
 import { initForm, fillForm, resetForm, editExpense, deleteExpense } from "./expense-form.js";
 import { renderList } from "./list-view.js";
 import { initCalendar, renderCalendar, maybeRefreshDayModal, updateMealPlans } from "./calendar-view.js";
@@ -43,7 +43,6 @@ import { initTrend } from "./trend-view.js";
 import { initSavedRecipes } from "./saved-recipes.js";
 import { initShoppingList, startSync as startShoppingSync, stopSync as stopShoppingSync } from "./shopping-list.js";
 import { initMealPlan, startMealPlanSync, stopMealPlanSync } from "./meal-plan.js";
-import { lowestPriceAlerts } from "./stats.js";
 
 window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
 window.addEventListener("unhandledrejection", (e) => logErr("未処理のPromise拒否:", e.reason));
@@ -290,13 +289,17 @@ function renderSummary() {
 }
 
 let _allExpensesCache = null;
+let _priceHistoryCache = null;
 
 async function _refreshAlerts() {
   const el = $("lowest-alerts");
   if (!el) return;
   try {
-    _allExpensesCache = _allExpensesCache ?? await fetchAllExpenses();
-    const alerts = lowestPriceAlerts(_allExpensesCache, currentExpenses);
+    if (!_allExpensesCache) {
+      _allExpensesCache = await fetchAllExpenses();
+      _priceHistoryCache = buildPriceHistory(_allExpensesCache);
+    }
+    const alerts = lowestPriceAlerts(_priceHistoryCache, currentExpenses);
     if (!alerts.length) { el.hidden = true; return; }
     el.hidden = false;
     el.innerHTML = `<div class="alert-title">🎉 今月のお得な買い物</div>` +
@@ -320,7 +323,10 @@ async function _addCalendarExpense({ date, store, amount, category }) {
   });
   log("カレンダーから追加:", date, amount);
   // キャッシュに追記して全件再フェッチを回避（onSnapshot で currentExpenses は自動更新される）
-  if (_allExpensesCache) _allExpensesCache.push({ date, store, branch: "", amount, category, memo: "", items: [], ocrEngine: "manual" });
+  if (_allExpensesCache) {
+    _allExpensesCache.push({ date, store, branch: "", amount, category, memo: "", items: [], ocrEngine: "manual" });
+    _priceHistoryCache = buildPriceHistory(_allExpensesCache);
+  }
   _jumpToMonthOf(date);
 }
 

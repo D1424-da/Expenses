@@ -1,7 +1,7 @@
 // カレンダー描画・週計モーダル・日付モーダル（その日の一覧＋直接追加）。
 //
-// initCalendar(ctx) で初期化。renderCalendar(expenses, month) で毎回再描画。
-// Firestore 更新時は renderCalendar → maybeRefreshDayModal の順に呼ぶこと。
+// 同月の再描画（Firestore 更新・献立更新）は差分パッチのみで行い全再構築しない。
+// 月が変わったときだけ innerHTML を差し替える。
 import { $, yen, dayKey, escapeHtml, openModal, closeModal, renderCatBars, WEEKDAYS } from "./dom-utils.js";
 import { log, logErr } from "./log.js";
 import { categoryBreakdown } from "./stats.js";
@@ -9,10 +9,18 @@ import { CATEGORIES } from "./firebase-config.js";
 import { saveMeal, deleteMeal } from "./meal-plan.js";
 
 let _onAddExpense, _onEdit, _onDelete;
-let _expenses = [];
+let _expenses  = [];
 let _mealPlans = {};
 let _selectedDay = null;
 let _weekBreakdowns = [];
+
+// 日付モーダルのデリゲーション用マップ（_renderDayModal のたびに再構築）
+const _dayExpenseById = new Map();
+
+// 差分更新用の状態
+let _renderedMonth = null; // { year, month } — 最後に全再構築した月
+let _dayEls  = new Map(); // dateKey → { dayEl, amtEl, mealEl, lastAmt, lastMeal }
+let _weekEls = [];        // [{ el, lastTotal }] — 週計セルへの参照
 
 export function initCalendar({ onAddExpense, onEdit, onDelete }) {
   _onAddExpense = onAddExpense;
@@ -21,78 +29,33 @@ export function initCalendar({ onAddExpense, onEdit, onDelete }) {
 
   for (const c of CATEGORIES) $("day-category").add(new Option(c, c));
   $("day-category").value = "食費";
-  $("day-close").onclick = () => closeModal("day-modal");
-  $("day-form").onsubmit = _handleDayAdd;
+  $("day-close").onclick  = () => closeModal("day-modal");
+  $("day-form").onsubmit  = _handleDayAdd;
   $("week-close").onclick = () => closeModal("week-modal");
+
+  // カレンダー全体に1つデリゲーションリスナーを置く（innerHTML 差し替え後も有効）
+  $("calendar").addEventListener("click", (ev) => {
+    const weekEl = ev.target.closest("[data-week]");
+    if (weekEl?.classList.contains("cal-week-click")) {
+      _openWeekModal(Number(weekEl.dataset.week));
+      return;
+    }
+    const dayEl = ev.target.closest("[data-day]");
+    if (dayEl && !dayEl.hasAttribute("data-out")) _openDayModal(dayEl.dataset.day);
+  });
 }
 
 export function renderCalendar(expenses, month) {
   _expenses = expenses;
-  const cal = $("calendar");
   const year = month.getFullYear();
-  const m = month.getMonth();
-  const totals = _totalsByDay(expenses);
-  const byDay = _expensesByDay(expenses);
-  const todayKey = dayKey(new Date());
-  _weekBreakdowns = [];
+  const m    = month.getMonth();
 
-  const first = new Date(year, m, 1);
-  const gridStart = new Date(year, m, 1 - first.getDay());
-
-  let html = '<div class="cal-grid">';
-  for (const w of WEEKDAYS) html += `<div class="cal-dow">${w}</div>`;
-  html += '<div class="cal-dow cal-week-h">週計</div>';
-
-  const cursor = new Date(gridStart);
-  const weeks = Math.ceil((first.getDay() + new Date(year, m + 1, 0).getDate()) / 7);
-  for (let w = 0; w < weeks; w++) {
-    let weekSum = 0;
-    let rowHtml = "";
-    const weekExpenses = [];
-    let weekStart = null, weekEnd = null;
-
-    for (let i = 0; i < 7; i++) {
-      const key = dayKey(cursor);
-      const inMonth = cursor.getMonth() === m;
-      const amt = totals[key] || 0;
-      if (inMonth) {
-        weekSum += amt;
-        if (byDay[key]) weekExpenses.push(...byDay[key]);
-        weekStart ??= new Date(cursor);
-        weekEnd = new Date(cursor);
-      }
-      const cls = [
-        "cal-day",
-        inMonth ? "" : "cal-out",
-        key === todayKey ? "cal-today" : "",
-        amt > 0 ? "cal-has" : "",
-      ].filter(Boolean).join(" ");
-      const _mp = _mealPlans[key];
-      const hasMeal = inMonth && _mp && (_mp.朝食 || _mp.お弁当 || _mp.昼食 || _mp.夕食);
-      rowHtml += `<div class="${cls}" data-day="${key}" ${inMonth ? "" : "data-out"}>
-          <span class="cal-num">${cursor.getDate()}</span>
-          ${amt > 0 ? `<span class="cal-amt">${yen(amt)}</span>` : ""}
-          ${hasMeal ? `<span class="cal-meal" title="献立あり">🍽</span>` : ""}
-        </div>`;
-      cursor.setDate(cursor.getDate() + 1);
-    }
-    _weekBreakdowns.push({
-      start: weekStart, end: weekEnd,
-      total: weekSum, byCat: categoryBreakdown(weekExpenses),
-    });
-    const weekCls = "cal-week" + (weekSum > 0 ? " cal-week-click" : "");
-    rowHtml += `<div class="${weekCls}" data-week="${w}">${weekSum > 0 ? yen(weekSum) : ""}</div>`;
-    html += rowHtml;
+  if (_renderedMonth?.year === year && _renderedMonth?.month === m) {
+    _diffUpdate(year, m);
+  } else {
+    _fullBuild(year, m);
+    _renderedMonth = { year, month: m };
   }
-  html += "</div>";
-  cal.innerHTML = html;
-
-  cal.querySelectorAll(".cal-day:not(.cal-out)").forEach((el) => {
-    el.onclick = () => _openDayModal(el.dataset.day);
-  });
-  cal.querySelectorAll(".cal-week-click").forEach((el) => {
-    el.onclick = () => _openWeekModal(Number(el.dataset.week));
-  });
 }
 
 // Firestore 更新時、日付モーダルが開いていれば内容を最新化する
@@ -104,6 +67,169 @@ export function maybeRefreshDayModal() {
 export function updateMealPlans(map) {
   _mealPlans = map || {};
 }
+
+// ---- グリッド全再構築（月が変わったとき） ------------------------------------
+
+function _fullBuild(year, m) {
+  const cal      = $("calendar");
+  const totals   = _totalsByDay(_expenses);
+  const byDay    = _expensesByDay(_expenses);
+  const todayKey = dayKey(new Date());
+
+  _dayEls.clear();
+  _weekEls = [];
+  _weekBreakdowns = [];
+
+  const first     = new Date(year, m, 1);
+  const gridStart = new Date(year, m, 1 - first.getDay());
+  const weeks     = Math.ceil((first.getDay() + new Date(year, m + 1, 0).getDate()) / 7);
+
+  let html = '<div class="cal-grid">';
+  for (const w of WEEKDAYS) html += `<div class="cal-dow">${w}</div>`;
+  html += '<div class="cal-dow cal-week-h">週計</div>';
+
+  const cursor = new Date(gridStart);
+  for (let w = 0; w < weeks; w++) {
+    let weekSum = 0;
+    let rowHtml = "";
+    const weekExpenses = [];
+    let weekStart = null, weekEnd = null;
+
+    for (let i = 0; i < 7; i++) {
+      const key     = dayKey(cursor);
+      const inMonth = cursor.getMonth() === m;
+      const amt     = inMonth ? (totals[key] || 0) : 0;
+      if (inMonth) {
+        weekSum += amt;
+        if (byDay[key]) weekExpenses.push(...byDay[key]);
+        weekStart ??= new Date(cursor);
+        weekEnd = new Date(cursor);
+      }
+      const _mp     = _mealPlans[key];
+      const hasMeal = inMonth && !!_mp && !!(_mp.朝食 || _mp.お弁当 || _mp.昼食 || _mp.夕食);
+      const cls = [
+        "cal-day",
+        inMonth ? "" : "cal-out",
+        key === todayKey ? "cal-today" : "",
+        amt > 0 ? "cal-has" : "",
+      ].filter(Boolean).join(" ");
+
+      rowHtml += `<div class="${cls}" data-day="${key}"${inMonth ? "" : " data-out"}>
+          <span class="cal-num">${cursor.getDate()}</span>
+          ${amt > 0    ? `<span class="cal-amt">${yen(amt)}</span>`            : ""}
+          ${hasMeal    ? `<span class="cal-meal" title="献立あり">🍽</span>` : ""}
+        </div>`;
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    _weekBreakdowns.push({
+      start: weekStart, end: weekEnd,
+      total: weekSum, byCat: categoryBreakdown(weekExpenses),
+    });
+    const weekCls = "cal-week" + (weekSum > 0 ? " cal-week-click" : "");
+    rowHtml += `<div class="${weekCls}" data-week="${w}">${weekSum > 0 ? yen(weekSum) : ""}</div>`;
+    html += rowHtml;
+  }
+  html += "</div>";
+  cal.innerHTML = html;
+
+  // 差分更新用の参照を収集（次回の同月再描画で使う）
+  cal.querySelectorAll("[data-day]:not([data-out])").forEach((dayEl) => {
+    const key  = dayEl.dataset.day;
+    const _mp  = _mealPlans[key];
+    _dayEls.set(key, {
+      dayEl,
+      amtEl:    dayEl.querySelector(".cal-amt")  ?? null,
+      mealEl:   dayEl.querySelector(".cal-meal") ?? null,
+      lastAmt:  totals[key] || 0,
+      lastMeal: !!_mp && !!(_mp.朝食 || _mp.お弁当 || _mp.昼食 || _mp.夕食),
+    });
+  });
+  cal.querySelectorAll("[data-week]").forEach((el, idx) => {
+    _weekEls.push({ el, lastTotal: _weekBreakdowns[idx]?.total ?? 0 });
+  });
+}
+
+// ---- 同月差分パッチ（Firestore 更新・献立更新のたびに呼ばれる） ---------------
+
+function _diffUpdate(year, m) {
+  const totals = _totalsByDay(_expenses);
+  const byDay  = _expensesByDay(_expenses);
+
+  // 日付セルのパッチ（金額・献立アイコンのみ変わりうる）
+  for (const [key, cell] of _dayEls) {
+    const newAmt  = totals[key] || 0;
+    const _mp     = _mealPlans[key];
+    const newMeal = !!_mp && !!(_mp.朝食 || _mp.お弁当 || _mp.昼食 || _mp.夕食);
+
+    if (newAmt !== cell.lastAmt) {
+      cell.lastAmt = newAmt;
+      if (newAmt > 0) {
+        if (!cell.amtEl) {
+          cell.amtEl = document.createElement("span");
+          cell.amtEl.className = "cal-amt";
+          cell.dayEl.appendChild(cell.amtEl);
+        }
+        cell.amtEl.textContent = yen(newAmt);
+      } else {
+        cell.amtEl?.remove();
+        cell.amtEl = null;
+      }
+      cell.dayEl.classList.toggle("cal-has", newAmt > 0);
+    }
+
+    if (newMeal !== cell.lastMeal) {
+      cell.lastMeal = newMeal;
+      if (newMeal && !cell.mealEl) {
+        cell.mealEl = document.createElement("span");
+        cell.mealEl.className = "cal-meal";
+        cell.mealEl.title = "献立あり";
+        cell.mealEl.textContent = "🍽";
+        cell.dayEl.appendChild(cell.mealEl);
+      } else if (!newMeal && cell.mealEl) {
+        cell.mealEl.remove();
+        cell.mealEl = null;
+      }
+    }
+  }
+
+  // 週計セルのパッチ
+  _recomputeWeekBreakdowns(year, m, totals, byDay);
+  _weekEls.forEach((cell, idx) => {
+    const newTotal = _weekBreakdowns[idx]?.total ?? 0;
+    if (newTotal === cell.lastTotal) return;
+    cell.lastTotal = newTotal;
+    cell.el.textContent = newTotal > 0 ? yen(newTotal) : "";
+    cell.el.classList.toggle("cal-week-click", newTotal > 0);
+  });
+}
+
+function _recomputeWeekBreakdowns(year, m, totals, byDay) {
+  const first     = new Date(year, m, 1);
+  const gridStart = new Date(year, m, 1 - first.getDay());
+  const weeks     = Math.ceil((first.getDay() + new Date(year, m + 1, 0).getDate()) / 7);
+  const cursor    = new Date(gridStart);
+  _weekBreakdowns = [];
+
+  for (let w = 0; w < weeks; w++) {
+    let weekSum = 0;
+    const weekExpenses = [];
+    let weekStart = null, weekEnd = null;
+    for (let i = 0; i < 7; i++) {
+      const key = dayKey(cursor);
+      if (cursor.getMonth() === m) {
+        weekSum += totals[key] || 0;
+        if (byDay[key]) weekExpenses.push(...byDay[key]);
+        weekStart ??= new Date(cursor);
+        weekEnd = new Date(cursor);
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    _weekBreakdowns.push({ start: weekStart, end: weekEnd, total: weekSum, byCat: categoryBreakdown(weekExpenses) });
+  }
+}
+
+// ---- ユーティリティ -----------------------------------------------------------
 
 function _totalsByDay(expenses) {
   return expenses.reduce((map, e) => {
@@ -119,6 +245,8 @@ function _expensesByDay(expenses) {
   }, {});
 }
 
+// ---- 週計モーダル -------------------------------------------------------------
+
 function _openWeekModal(idx) {
   const wk = _weekBreakdowns[idx];
   if (!wk) return;
@@ -130,10 +258,12 @@ function _openWeekModal(idx) {
   openModal("week-modal");
 }
 
+// ---- 日付モーダル -------------------------------------------------------------
+
 function _openDayModal(key) {
   _selectedDay = key;
   $("day-amount").value = "";
-  $("day-store").value = "";
+  $("day-store").value  = "";
   $("day-category").value = "食費";
   _renderDayModal();
   openModal("day-modal");
@@ -151,20 +281,31 @@ function _renderDayModal() {
   $("day-total").textContent = yen(items.reduce((s, e) => s + (e.amount || 0), 0));
 
   // 献立（常に表示・各食事をインライン編集可能）
-  const mealPlanEl    = $("day-meal-plan");
   const mealContentEl = $("day-meal-content");
-  const plan = _mealPlans[_selectedDay] || {};
   mealContentEl.innerHTML = "";
-  mealContentEl.appendChild(_buildMealEditor(plan));
-  mealPlanEl.hidden = false;
+  mealContentEl.appendChild(_buildMealEditor(_mealPlans[_selectedDay] || {}));
+  $("day-meal-plan").hidden = false;
 
-  // 支出リスト
+  // 支出リスト（イベントデリゲーション）
+  _dayExpenseById.clear();
+  for (const e of items) _dayExpenseById.set(e.id, e);
+
   const list = $("day-list");
-  if (!items.length) {
-    list.innerHTML = "<p class='empty'>まだ記録がありません。</p>";
-    return;
+  list.innerHTML = items.length ? "" : "<p class='empty'>まだ記録がありません。</p>";
+  if (!items.length) return;
+
+  // リストにデリゲーションリスナーを1回だけ登録
+  if (!list._delegated) {
+    list.addEventListener("click", (ev) => {
+      const btn = ev.target.closest("[data-act]");
+      if (!btn) return;
+      const id = btn.dataset.id;
+      if (btn.dataset.act === "edit") _onEdit?.(_dayExpenseById.get(id));
+      if (btn.dataset.act === "del")  _onDelete?.(id);
+    });
+    list._delegated = true;
   }
-  list.innerHTML = "";
+
   for (const e of items) {
     const row = document.createElement("div");
     row.className = "day-row";
@@ -174,14 +315,16 @@ function _renderDayModal() {
         <span class="day-row-store">${escapeHtml(e.store || "(店名なし)")}</span>
       </div>
       <span class="day-row-amt">${yen(e.amount)}</span>
-      <button data-act="edit" aria-label="編集">✏️</button>
-      <button data-act="del" aria-label="削除">🗑️</button>`;
-    row.querySelector('[data-act="edit"]').onclick = () => _onEdit(e);
-    row.querySelector('[data-act="del"]').onclick = () => _onDelete(e.id);
+      <div class="ei-actions">
+        <button data-act="edit" data-id="${e.id}" aria-label="編集">✏️</button>
+        <button data-act="del"  data-id="${e.id}" aria-label="削除">🗑️</button>
+      </div>`;
     list.appendChild(row);
   }
-
 }
+
+
+// ---- 献立インライン編集 -------------------------------------------------------
 
 // 献立の3食をインライン編集できる DOM を組み立てる。
 // blur で自動保存、🗑️ で1食削除、📖 でレシピ展開。
@@ -276,7 +419,6 @@ function _buildMealEditor(plan) {
       }
     });
 
-    // 削除ボタン
     delBtn.onclick = async () => {
       input.value = "";
       _savedVal = "";
@@ -293,6 +435,8 @@ function _buildMealEditor(plan) {
   return wrap;
 }
 
+// ---- カレンダーから支出追加 ---------------------------------------------------
+
 async function _handleDayAdd(e) {
   e.preventDefault();
   const amount = Number($("day-amount").value);
@@ -301,13 +445,13 @@ async function _handleDayAdd(e) {
   btn.disabled = true;
   try {
     await _onAddExpense({
-      date: _selectedDay,
-      store: $("day-store").value.trim(),
+      date:     _selectedDay,
+      store:    $("day-store").value.trim(),
       amount,
       category: $("day-category").value,
     });
     $("day-amount").value = "";
-    $("day-store").value = "";
+    $("day-store").value  = "";
   } catch (err) {
     logErr("カレンダー追加エラー:", err.code, err.message, err);
     alert("追加に失敗しました: " + err.message);
