@@ -441,6 +441,13 @@ button.primary:hover { filter: brightness(1.05); }
 .recipe-result p { margin: 2px 0; }
 .recipe-result ul, .recipe-result ol { padding-left: 1.5em; margin: 2px 0 6px; }
 
+/* ---- 難易度バッジ ---- */
+.recipe-difficulty { display: flex; align-items: center; gap: 6px; margin: 2px 0 6px; font-size: 0.82rem; color: var(--muted); }
+.diff-badge { font-size: 0.88rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.diff-easy { background: #d1fae5; color: #065f46; }
+.diff-mid  { background: #fef3c7; color: #92400e; }
+.diff-hard { background: #fee2e2; color: #991b1b; }
+
 /* 時短・使い切り行 */
 .recipe-useup-row {
   display: flex; align-items: center; gap: 8px;
