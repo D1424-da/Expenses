@@ -84,9 +84,17 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
       if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
     };
   });
-  // 種別タブ
+  // 種別タブ — 週間献立に切り替えたら期間を今月へ自動拡張（今日/今週では食材が0になりやすい）
   $("recipe-type-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
-    btn.onclick = () => { _activeType = btn.dataset.rtype; _setActiveTab("recipe-type-tabs", btn); };
+    btn.onclick = () => {
+      _activeType = btn.dataset.rtype;
+      _setActiveTab("recipe-type-tabs", btn);
+      if (_activeType === "weekly" && _activePeriod !== "month") {
+        _activePeriod = "month";
+        _setActiveTabByValue("recipe-period-tabs", "data-period", "month");
+      }
+      if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
+    };
   });
   // 時短タブ
   $("recipe-time-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
