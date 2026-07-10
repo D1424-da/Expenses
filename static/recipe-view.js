@@ -19,6 +19,9 @@ let _useUp         = false;
 let _lastMarkdown  = "";
 let _lastItems     = [];
 let _lastServings  = 2;
+let _budgetMode        = false;
+let _budgetSelectedItems = []; // { name, estimatedPrice }
+let _budgetRemaining   = 0;
 
 const _FAM_FIELDS = [
   { id: "fam-adults-m",   key: "adults_m" },
@@ -63,9 +66,23 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
     $(id).addEventListener("change", () => { _saveFamily(); _updateFamilyToggleLabel(); });
   });
 
+  // 食材選択モードタブ（購入履歴 / 予算から）
+  $("recipe-mode-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
+    btn.onclick = () => {
+      _budgetMode = btn.dataset.mode === "budget";
+      _setActiveTab("recipe-mode-tabs", btn);
+      $("recipe-period-label").textContent = _budgetMode ? "残り予算の計算対象" : "利用する食材を購入した期間";
+      $("recipe-budget-info").hidden = !_budgetMode;
+      if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
+    };
+  });
   // 期間タブ
   $("recipe-period-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
-    btn.onclick = () => { _activePeriod = btn.dataset.period; _setActiveTab("recipe-period-tabs", btn); _renderIngredients(); };
+    btn.onclick = () => {
+      _activePeriod = btn.dataset.period;
+      _setActiveTab("recipe-period-tabs", btn);
+      if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
+    };
   });
   // 種別タブ
   $("recipe-type-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
@@ -123,6 +140,12 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
   // タブ初期状態
   _setActiveTabByValue("recipe-period-tabs", "data-period", _activePeriod);
   _setActiveTabByValue("recipe-type-tabs", "data-rtype", _activeType);
+
+  _budgetMode = false;
+  _budgetSelectedItems = [];
+  _setActiveTabByValue("recipe-mode-tabs", "data-mode", "history");
+  $("recipe-period-label").textContent = "利用する食材を購入した期間";
+  $("recipe-budget-info").hidden = true;
 
   _lastMarkdown = "";
   _lastItems = [];
@@ -213,7 +236,7 @@ async function _suggest() {
     return;
   }
   const items = [...$("recipe-ingredients").querySelectorAll(".recipe-chip")]
-    .map((el) => el.textContent.trim())
+    .map((el) => el.dataset.name || el.textContent.trim())
     .filter(Boolean);
   if (!items.length) {
     _showStatus("error", "食材が見つかりません。期間を変更するか、明細付きのレシートを保存してください。");
@@ -468,6 +491,121 @@ function _showStatus(type, text) {
   s.className = "status " + type;
   s.textContent = text;
   s.hidden = false;
+}
+
+// ---- 予算モード：過去購入履歴から予算内食材を自動選択 -------------------------
+
+async function _renderBudgetIngredients() {
+  const chips = $("recipe-ingredients");
+  chips.innerHTML = `<span class="recipe-empty-hint">💰 予算内の食材を計算中…</span>`;
+  $("recipe-budget-status").textContent = "";
+  $("recipe-budget-total").textContent  = "";
+
+  const budget = _getBudget?.() || {};
+  const foodBudget = budget["食費"] || 0;
+
+  if (!foodBudget) {
+    $("recipe-budget-status").textContent = "食費の月次予算が未設定です";
+    chips.innerHTML = `<span class="recipe-empty-hint">ホーム画面の「💰 予算」ボタンから食費の月次予算を設定してください。</span>`;
+    return;
+  }
+
+  // 期間ごとの予算と支出を計算
+  const divisors = { month: 1, week: 4.3, day: 30 };
+  const periodBudget = Math.round(foodBudget / (divisors[_activePeriod] || 1));
+  const periodLabel  = { day: "今日", week: "今週", month: "今月" }[_activePeriod] || "";
+
+  const periodExpenses = _filterExpensesByPeriod(_activePeriod)
+    .filter((e) => !e.category || e.category === "食費");
+  const spent = periodExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+  _budgetRemaining = Math.max(0, periodBudget - spent);
+
+  if (_budgetRemaining <= 0) {
+    $("recipe-budget-status").textContent =
+      `${periodLabel}の食費予算を超過（支出 ${yen(spent)} / 予算 ${yen(periodBudget)}）`;
+    chips.innerHTML = `<span class="recipe-empty-hint">⚠️ ${periodLabel}の食費予算を使い切っています。</span>`;
+    return;
+  }
+
+  try {
+    const all = _expensesCache ?? await _fetchAllExpenses();
+    _expensesCache = all;
+
+    // 品目ごとに平均単価・購入回数・直近日付を集計
+    const itemMap = new Map();
+    for (const exp of all) {
+      if (!exp.items) continue;
+      for (const it of exp.items) {
+        if (!it.name || !it.price || it.price <= 0) continue;
+        const cur = itemMap.get(it.name) || { totalPrice: 0, count: 0, lastDate: "" };
+        itemMap.set(it.name, {
+          totalPrice: cur.totalPrice + it.price,
+          count:      cur.count + 1,
+          lastDate:   exp.date > cur.lastDate ? exp.date : cur.lastDate,
+        });
+      }
+    }
+
+    if (!itemMap.size) {
+      $("recipe-budget-status").textContent = `${periodLabel}の食費残り ${yen(_budgetRemaining)}`;
+      chips.innerHTML = `<span class="recipe-empty-hint">過去のレシートに明細品目がありません。OCRでレシートを読み取ると自動で食材を選択できます。</span>`;
+      return;
+    }
+
+    // 購入回数の多い順→直近順でソート、予算内に収まる食材を貪欲に選択
+    const sorted = [...itemMap.entries()]
+      .map(([name, { totalPrice, count, lastDate }]) => ({
+        name,
+        estimatedPrice: Math.round(totalPrice / count),
+        count,
+        lastDate,
+      }))
+      .filter((i) => i.estimatedPrice > 0 && i.estimatedPrice <= _budgetRemaining)
+      .sort((a, b) => b.count !== a.count ? b.count - a.count : b.lastDate.localeCompare(a.lastDate));
+
+    let totalCost = 0;
+    _budgetSelectedItems = [];
+    for (const item of sorted) {
+      if (totalCost + item.estimatedPrice <= _budgetRemaining && _budgetSelectedItems.length < 30) {
+        _budgetSelectedItems.push(item);
+        totalCost += item.estimatedPrice;
+      }
+    }
+
+    if (!_budgetSelectedItems.length) {
+      $("recipe-budget-status").textContent = `${periodLabel}の食費残り ${yen(_budgetRemaining)}`;
+      chips.innerHTML = `<span class="recipe-empty-hint">予算内に収まる食材が見つかりませんでした。</span>`;
+      return;
+    }
+
+    _renderBudgetChips();
+  } catch (err) {
+    logErr("予算食材計算エラー:", err.message);
+    chips.innerHTML = `<span class="recipe-empty-hint">食材の計算に失敗しました: ${escapeHtml(err.message)}</span>`;
+  }
+}
+
+function _renderBudgetChips() {
+  const chips = $("recipe-ingredients");
+  chips.innerHTML = _budgetSelectedItems.map((item) =>
+    `<span class="recipe-chip recipe-chip-budget" data-name="${escapeHtml(item.name)}" title="推定 ${yen(item.estimatedPrice)} — タップで除外">
+      ${escapeHtml(item.name)}<button class="chip-remove" type="button" aria-label="${escapeHtml(item.name)}を除外">×</button>
+    </span>`,
+  ).join("");
+
+  chips.querySelectorAll(".chip-remove").forEach((btn) => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const name = btn.closest(".recipe-chip-budget").dataset.name;
+      _budgetSelectedItems = _budgetSelectedItems.filter((i) => i.name !== name);
+      _renderBudgetChips();
+    };
+  });
+
+  const totalCost = _budgetSelectedItems.reduce((s, i) => s + i.estimatedPrice, 0);
+  const periodLabel = { day: "今日", week: "今週", month: "今月" }[_activePeriod] || "";
+  $("recipe-budget-status").textContent = `${periodLabel}の食費残り ${yen(_budgetRemaining)}`;
+  $("recipe-budget-total").textContent  = `推定合計 ${yen(totalCost)}`;
 }
 
 // ---- 週間献立 → カレンダー --------------------------------------------------
