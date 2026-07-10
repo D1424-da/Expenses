@@ -37,6 +37,11 @@ import { renderList } from "./list-view.js";
 import { initCalendar, renderCalendar, maybeRefreshDayModal } from "./calendar-view.js";
 import { initCompare } from "./compare-view.js";
 import { initRecipe, openRecipeModal } from "./recipe-view.js";
+import { initBudget, loadBudget, getBudget, renderBudgetBars } from "./budget-view.js";
+import { initTrend } from "./trend-view.js";
+import { initSavedRecipes } from "./saved-recipes.js";
+import { initShoppingList, startSync as startShoppingSync, stopSync as stopShoppingSync } from "./shopping-list.js";
+import { lowestPriceAlerts } from "./stats.js";
 
 window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
 window.addEventListener("unhandledrejection", (e) => logErr("未処理のPromise拒否:", e.reason));
@@ -70,6 +75,7 @@ onAuthStateChanged(auth, (user) => {
     setupApp();
   } else {
     if (unsubscribe) unsubscribe();
+    stopShoppingSync();
     $("app").hidden = true;
     $("login-screen").hidden = false;
   }
@@ -111,8 +117,12 @@ function setupApp() {
     });
     initCompare({ fetchAllExpenses });
     initRecipe({ getToken: () => currentUser?.getIdToken() });
+    initBudget({ db, getUser: () => currentUser, categories: CATEGORIES, onUpdated: renderSummary });
+    initTrend({ fetchMonthExpenses });
+    initSavedRecipes({ db, getUser: () => currentUser });
+    initShoppingList({ db, getUser: () => currentUser });
 
-    $("logout").onclick = () => signOut(auth);
+    $("logout").onclick = () => { stopShoppingSync(); signOut(auth); };
     $("prev-month").onclick = () => shiftMonth(-1);
     $("next-month").onclick = () => shiftMonth(1);
     $("file-input").onchange = handleFiles;
@@ -125,6 +135,8 @@ function setupApp() {
     prewarmOcr();
     appInitialized = true;
   }
+  loadBudget().then(renderSummary);
+  startShoppingSync();
   renderMonth();
   subscribeMonth();
 }
@@ -146,6 +158,19 @@ function expensesCol() {
 
 async function fetchAllExpenses() {
   const snap = await getDocs(expensesCol());
+  return snap.docs.map((d) => d.data());
+}
+
+async function fetchMonthExpenses(month) {
+  const start = monthKey(month) + "-01";
+  const next  = new Date(month.getFullYear(), month.getMonth() + 1, 1);
+  const end   = monthKey(next) + "-01";
+  const q = query(
+    expensesCol(),
+    where("date", ">=", start),
+    where("date", "<",  end),
+  );
+  const snap = await getDocs(q);
   return snap.docs.map((d) => d.data());
 }
 
@@ -187,7 +212,33 @@ function renderSummary() {
   $("summary-total").textContent = yen(total);
   $("summary-count").textContent = currentExpenses.length
     ? `${currentExpenses.length}件の記録` : "記録なし";
-  renderCatBars($("category-bars"), categoryBreakdown(currentExpenses));
+
+  const bars = $("category-bars");
+  const usedBudget = renderBudgetBars(currentExpenses, bars);
+  if (!usedBudget) renderCatBars(bars, categoryBreakdown(currentExpenses));
+
+  // 最安値アラート（全件取得が必要なので非同期で後からレンダリング）
+  _refreshAlerts();
+}
+
+async function _refreshAlerts() {
+  const el = $("lowest-alerts");
+  if (!el) return;
+  try {
+    const all = await fetchAllExpenses();
+    const alerts = lowestPriceAlerts(all, currentExpenses);
+    if (!alerts.length) { el.hidden = true; return; }
+    el.hidden = false;
+    el.innerHTML = `<div class="alert-title">🎉 今月のお得な買い物</div>` +
+      alerts.map((a) =>
+        `<div class="alert-row">
+          <span class="alert-name">${a.name}</span>
+          <span class="alert-detail">${a.store} <strong>${yen(a.price)}</strong>（過去最安！）</span>
+        </div>`,
+      ).join("");
+  } catch (_) {
+    el.hidden = true;
+  }
 }
 
 // ---- カレンダーからの直接追加（calendar-view のコールバック） --------------

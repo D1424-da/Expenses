@@ -440,3 +440,96 @@ button.primary:hover { filter: brightness(1.05); }
 .recipe-result h4 { font-size: 0.93rem; font-weight: 600; margin: 8px 0 2px; }
 .recipe-result p { margin: 2px 0; }
 .recipe-result ul, .recipe-result ol { padding-left: 1.5em; margin: 2px 0 6px; }
+
+/* 時短・使い切り行 */
+.recipe-useup-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.9rem; color: var(--ink); margin-bottom: 8px;
+  flex-direction: row;
+}
+.recipe-useup-row input[type="checkbox"] { width: auto; }
+
+/* レシピ提案後アクションボタン */
+.recipe-post-actions {
+  display: flex; gap: 10px; margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.recipe-post-actions button { flex: 1; font-size: 0.9rem; padding: 10px; }
+
+/* ---- サマリー上部レイアウト ---- */
+.summary-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.summary-total { margin-bottom: 0; }
+.summary-actions { display: flex; gap: 8px; flex-shrink: 0; padding-top: 4px; }
+.summary-action-btn {
+  background: var(--accent-weak); color: var(--accent); border: none;
+  border-radius: 8px; padding: 7px 12px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+}
+.summary-action-btn:hover { filter: brightness(0.95); }
+
+/* ---- 最安値アラート ---- */
+.lowest-alerts {
+  margin-top: 12px; padding: 10px 12px; border-radius: 8px;
+  background: #fffbeb; border: 1px solid #fde68a;
+}
+.alert-title { font-size: 0.82rem; font-weight: 700; color: #92400e; margin-bottom: 6px; }
+.alert-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 0.85rem; flex-wrap: wrap; margin-top: 4px; }
+.alert-name { font-weight: 600; color: var(--ink); }
+.alert-detail { color: var(--muted); }
+.alert-detail strong { color: var(--accent); }
+
+/* ---- 買い物バッジ ---- */
+.shopping-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #e53e3e; color: #fff; border-radius: 999px;
+  font-size: 0.65rem; font-weight: 700; min-width: 16px; height: 16px;
+  padding: 0 4px; margin-left: 2px; vertical-align: top;
+}
+
+/* ---- 月次予算 ---- */
+.budget-inputs { display: flex; flex-direction: column; gap: 10px; }
+.budget-input-row { display: flex; align-items: center; gap: 10px; }
+.budget-cat-label { width: 80px; flex-shrink: 0; font-size: 0.88rem; }
+.budget-input-wrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex: 1; }
+.budget-yen-prefix { padding: 0 8px; color: var(--muted); font-size: 0.9rem; }
+.budget-input-wrap input { border: none; border-radius: 0; padding: 8px 8px 8px 0; }
+.budget-input-wrap input:focus { outline: none; }
+
+.budget-row { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
+.budget-row-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 0.85rem; }
+.budget-amount { font-weight: 600; }
+.budget-amount.budget-warn { color: #d97706; }
+.budget-amount.budget-over { color: var(--danger); }
+.budget-limit { font-size: 0.78rem; color: var(--muted); font-weight: 400; }
+.budget-bar-wrap { height: 8px; background: var(--bg); border-radius: 6px; overflow: hidden; }
+.budget-bar { height: 100%; background: var(--accent); border-radius: 6px; transition: width 0.3s; }
+.budget-bar.budget-bar-warn { background: #d97706; }
+.budget-bar.budget-bar-over { background: var(--danger); }
+
+/* ---- 支出推移グラフ ---- */
+.trend-svg { width: 100%; max-width: 380px; display: block; margin: 0 auto; }
+
+/* ---- 保存済みレシピ ---- */
+.saved-recipes-list { display: flex; flex-direction: column; gap: 10px; }
+.saved-recipe-card { border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.saved-recipe-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.saved-recipe-title { font-weight: 600; }
+.saved-recipe-meta { font-size: 0.78rem; color: var(--muted); }
+.saved-recipe-actions { display: flex; gap: 8px; }
+.saved-recipe-actions button { font-size: 0.85rem; padding: 6px 12px; }
+.sr-del-btn { color: var(--danger); border-color: var(--border); }
+.back-btn { background: none; border: none; color: var(--accent); font-size: 0.9rem; cursor: pointer; padding: 4px 0; margin-bottom: 8px; }
+.saved-recipe-detail-title { margin: 4px 0 12px; font-size: 1rem; }
+
+/* ---- 買い物リスト ---- */
+.shopping-add-form { display: flex; gap: 8px; margin-bottom: 12px; }
+.shopping-add-form input { flex: 1; }
+.shopping-add-form button { flex-shrink: 0; padding: 10px 16px; }
+.shopping-items { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.shopping-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; }
+.shopping-item.done { opacity: 0.5; }
+.shopping-item.done span { text-decoration: line-through; }
+.shopping-check { display: flex; align-items: center; gap: 8px; flex: 1; cursor: pointer; font-size: 0.95rem; flex-direction: row; }
+.shopping-check input[type="checkbox"] { width: auto; flex-shrink: 0; }
+.shopping-del { background: none; border: none; color: var(--muted); font-size: 0.9rem; cursor: pointer; padding: 4px 6px; flex-shrink: 0; }
+.shopping-del:hover { color: var(--danger); }
+.shopping-clear-btn { width: 100%; background: none; border: 1px solid var(--border); color: var(--muted); font-size: 0.85rem; padding: 8px; margin-top: 4px; }

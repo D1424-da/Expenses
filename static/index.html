@@ -29,6 +29,10 @@
           <span id="current-month"></span>
           <button id="next-month" aria-label="次の月">›</button>
         </div>
+        <button id="shopping-btn" class="logout-btn" title="買い物リスト">
+          🛒<span id="shopping-badge" class="shopping-badge" hidden></span>
+        </button>
+        <button id="saved-recipes-btn" class="logout-btn" title="保存済みレシピ">📚</button>
         <button id="compare-btn" class="logout-btn" title="商品の最安値">🔎 最安値</button>
         <button id="logout" class="logout-btn" title="ログアウト">ログアウト</button>
       </div>
@@ -37,12 +41,19 @@
     <main>
       <!-- サマリー -->
       <section class="summary card">
-        <div class="summary-total">
-          <span class="label">今月の支出</span>
-          <span id="summary-total" class="value">¥0</span>
-          <span id="summary-count" class="sub"></span>
+        <div class="summary-top">
+          <div class="summary-total">
+            <span class="label">今月の支出</span>
+            <span id="summary-total" class="value">¥0</span>
+            <span id="summary-count" class="sub"></span>
+          </div>
+          <div class="summary-actions">
+            <button id="budget-btn" class="summary-action-btn" title="予算設定">💰 予算</button>
+            <button id="trend-btn" class="summary-action-btn" title="支出推移">📈 推移</button>
+          </div>
         </div>
         <div id="category-bars" class="category-bars"></div>
+        <div id="lowest-alerts" class="lowest-alerts" hidden></div>
       </section>
 
       <!-- カレンダー（日ごとの買い物金額＋週間合計） -->
@@ -179,6 +190,18 @@
             <button class="recipe-tab" data-rtype="weekly">週間献立</button>
           </div>
         </div>
+        <div class="recipe-row">
+          <span class="recipe-label">時短</span>
+          <div class="recipe-tabs" id="recipe-time-tabs" role="group" aria-label="調理時間">
+            <button class="recipe-tab active" data-minutes="0">指定なし</button>
+            <button class="recipe-tab" data-minutes="15">15分</button>
+            <button class="recipe-tab" data-minutes="30">30分</button>
+          </div>
+        </div>
+        <label class="recipe-useup-row">
+          <input type="checkbox" id="recipe-useup" />
+          <span>食材を使い切るレシピ</span>
+        </label>
         <div class="recipe-servings-row">
           <label>人数
             <input type="number" id="recipe-servings" value="2" min="1" max="20" inputmode="numeric" />
@@ -188,6 +211,10 @@
         </div>
         <div id="recipe-status" class="status" hidden></div>
         <div id="recipe-result" class="recipe-result" hidden></div>
+        <div id="recipe-post-actions" class="recipe-post-actions" hidden>
+          <button id="recipe-save-btn" type="button">📚 保存</button>
+          <button id="recipe-shopping-btn" type="button">🛒 リストに追加</button>
+        </div>
       </div>
     </div>
     <!-- 週計タップ → その週のカテゴリ別内訳（明細カテゴリで集計） -->
@@ -202,6 +229,65 @@
           <span id="week-total" class="value">¥0</span>
         </div>
         <div id="week-bars" class="category-bars"></div>
+      </div>
+    </div>
+    <!-- 月次予算設定 -->
+    <div id="budget-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="月次予算設定">
+        <div class="modal-head">
+          <h2>💰 月次予算</h2>
+          <button id="budget-close" aria-label="閉じる">✕</button>
+        </div>
+        <p class="hint">カテゴリごとに月の目標金額を設定します。0 または空欄は「予算なし」です。</p>
+        <form id="budget-form">
+          <div id="budget-inputs" class="budget-inputs"></div>
+          <button type="submit" class="primary" style="margin-top:12px">保存する</button>
+        </form>
+      </div>
+    </div>
+    <!-- 支出推移グラフ -->
+    <div id="trend-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="支出推移">
+        <div class="modal-head">
+          <h2>📈 支出推移</h2>
+          <button id="trend-close" aria-label="閉じる">✕</button>
+        </div>
+        <p id="trend-loading" class="hint">読み込み中…</p>
+        <div id="trend-chart"></div>
+      </div>
+    </div>
+    <!-- 保存済みレシピ -->
+    <div id="saved-recipes-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="保存済みレシピ">
+        <div class="modal-head">
+          <h2>📚 保存済みレシピ</h2>
+          <button id="saved-recipes-close" aria-label="閉じる">✕</button>
+        </div>
+        <div id="saved-recipes-list-wrap">
+          <div id="saved-recipes-list" class="saved-recipes-list"></div>
+          <p id="saved-recipes-empty" class="empty" hidden>保存済みのレシピがありません。</p>
+        </div>
+        <div id="saved-recipe-detail" hidden>
+          <button id="saved-recipe-back" class="back-btn">← 一覧に戻る</button>
+          <h3 id="saved-recipe-title-detail" class="saved-recipe-detail-title"></h3>
+          <div id="saved-recipe-content" class="recipe-result"></div>
+        </div>
+      </div>
+    </div>
+    <!-- 買い物リスト -->
+    <div id="shopping-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="買い物リスト">
+        <div class="modal-head">
+          <h2>🛒 買い物リスト</h2>
+          <button id="shopping-close" aria-label="閉じる">✕</button>
+        </div>
+        <form id="shopping-add-form" class="shopping-add-form">
+          <input id="shopping-add-input" type="text" placeholder="食材・商品を追加…" autocomplete="off" />
+          <button type="submit" class="primary">追加</button>
+        </form>
+        <div id="shopping-items" class="shopping-items"></div>
+        <p id="shopping-empty" class="empty" hidden>リストはまだ空です。</p>
+        <button id="shopping-clear-done" class="shopping-clear-btn" type="button">完了済みを削除</button>
       </div>
     </div>
   </div>
