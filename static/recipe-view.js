@@ -84,17 +84,9 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
       if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
     };
   });
-  // 種別タブ — 週間献立に切り替えたら期間を今月へ自動拡張（今日/今週では食材が0になりやすい）
+  // 種別タブ
   $("recipe-type-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
-    btn.onclick = () => {
-      _activeType = btn.dataset.rtype;
-      _setActiveTab("recipe-type-tabs", btn);
-      if (_activeType === "weekly" && _activePeriod !== "month") {
-        _activePeriod = "month";
-        _setActiveTabByValue("recipe-period-tabs", "data-period", "month");
-      }
-      if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
-    };
+    btn.onclick = () => { _activeType = btn.dataset.rtype; _setActiveTab("recipe-type-tabs", btn); };
   });
   // 時短タブ
   $("recipe-time-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
@@ -199,9 +191,23 @@ function _updateFamilyToggleLabel() {
   }
 }
 
-// 選択期間の食材チップを描画する
+// 選択期間の食材チップを描画する。
+// 週間献立で品目ゼロの場合は次に広い期間へ自動拡張する（当日一括買いはそのまま使える）。
 function _renderIngredients() {
-  const items = _itemsForPeriod(_activePeriod);
+  let period = _activePeriod;
+  let items = _itemsForPeriod(period);
+
+  if (items.length === 0 && _activeType === "weekly") {
+    const fallback = period === "day" ? "week" : period === "week" ? "month" : null;
+    if (fallback) {
+      const fallbackItems = _itemsForPeriod(fallback);
+      if (fallbackItems.length > 0) {
+        period = fallback;
+        items = fallbackItems;
+      }
+    }
+  }
+
   const unique = [...new Set(items)];
   const chips = $("recipe-ingredients");
   if (unique.length === 0) {
@@ -209,8 +215,9 @@ function _renderIngredients() {
   } else {
     chips.innerHTML = unique.map((n) => `<span class="recipe-chip">${escapeHtml(n)}</span>`).join("");
   }
-  const periodLabel = _PERIOD_LABELS[_activePeriod] || "";
-  $("recipe-modal-title").textContent = `🍳 レシピ提案（${periodLabel}）`;
+  const periodLabel = _PERIOD_LABELS[period] || "";
+  const expanded = period !== _activePeriod ? `（${_PERIOD_LABELS[_activePeriod] || ""}に品目なし → ${periodLabel}に拡張）` : "";
+  $("recipe-modal-title").textContent = `🍳 レシピ提案（${periodLabel}${expanded}）`;
   $("recipe-result").hidden = true;
   $("recipe-status").hidden = true;
 }
