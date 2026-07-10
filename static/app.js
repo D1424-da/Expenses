@@ -28,7 +28,7 @@ import { firebaseConfig, OCR_API_BASE, CATEGORIES } from "./firebase-config.js";
 import { parseReceipt } from "./parser.js";
 import { log, logErr } from "./log.js";
 import {
-  $, yen, escapeHtml, monthKey, monthLabel, renderCatBars, bindModalDismiss,
+  $, yen, escapeHtml, dayKey, monthKey, monthLabel, renderCatBars, bindModalDismiss,
 } from "./dom-utils.js";
 import { requestBackendOcr, preprocessImage, runClientOcr, prewarmOcr } from "./ocr-client.js";
 import { TRUSTED_ENGINES, normalizeWithHistory } from "./history.js";
@@ -153,8 +153,6 @@ function setupApp() {
       onAddExpense: _addCalendarExpense,
       onEdit: editExpense,
       onDelete: deleteExpense,
-      onRecipeSuggest: (selectedDay, expenses) =>
-        openRecipeModal({ selectedDay, expenses, initialPeriod: "day" }),
     });
     initCompare({ fetchAllExpenses });
     initRecipe({ getToken: () => currentUser?.getIdToken(), fetchAllExpenses, getBudget });
@@ -176,7 +174,11 @@ function setupApp() {
     $("bnav-home").onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
     $("bnav-calendar").onclick = () => $("calendar").scrollIntoView({ behavior: "smooth" });
     $("bnav-shopping").onclick = () => $("shopping-btn").click();
-    $("bnav-saved").onclick = () => $("saved-recipes-btn").click();
+    $("bnav-recipe").onclick = () => openRecipeModal({
+      selectedDay: dayKey(new Date()),
+      expenses: currentExpenses,
+      initialPeriod: "month",
+    });
     bindModalDismiss();
 
     prewarmOcr();

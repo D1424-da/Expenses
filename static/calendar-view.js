@@ -7,18 +7,16 @@ import { log, logErr } from "./log.js";
 import { categoryBreakdown } from "./stats.js";
 import { CATEGORIES } from "./firebase-config.js";
 
-let _onAddExpense, _onEdit, _onDelete, _onRecipeSuggest;
+let _onAddExpense, _onEdit, _onDelete;
 let _expenses = [];
 let _mealPlans = {};
 let _selectedDay = null;
 let _weekBreakdowns = [];
 
-// ctx: { onAddExpense({date, store, amount, category}), onEdit(e), onDelete(id), onRecipeSuggest(selectedDay, expenses) }
-export function initCalendar({ onAddExpense, onEdit, onDelete, onRecipeSuggest }) {
+export function initCalendar({ onAddExpense, onEdit, onDelete }) {
   _onAddExpense = onAddExpense;
   _onEdit = onEdit;
   _onDelete = onDelete;
-  _onRecipeSuggest = onRecipeSuggest;
 
   for (const c of CATEGORIES) $("day-category").add(new Option(c, c));
   $("day-category").value = "食費";
@@ -209,17 +207,6 @@ function _renderDayModal() {
     list.appendChild(row);
   }
 
-  // 明細品目がある支出がひとつでもあればレシピ提案ボタンを表示
-  if (_onRecipeSuggest) {
-    const hasItems = items.some((e) => (e.items || []).some((it) => it.name));
-    if (hasItems) {
-      const btn = document.createElement("button");
-      btn.className = "recipe-open-btn";
-      btn.textContent = "🍳 レシピを提案";
-      btn.onclick = () => _onRecipeSuggest(_selectedDay, _expenses);
-      list.appendChild(btn);
-    }
-  }
 }
 
 async function _handleDayAdd(e) {
