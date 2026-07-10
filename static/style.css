@@ -574,6 +574,37 @@ button:not(.primary):hover { background: var(--stone); }
 .meal-row-tap { cursor: pointer; border-radius: 8px; padding: 4px 6px; margin: -4px -6px; }
 .meal-row-tap:hover { background: rgba(0,0,0,0.05); }
 .meal-recipe-detail { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 0.85rem; }
+
+/* 献立インライン編集エディタ */
+.meal-editor { display: flex; flex-direction: column; gap: 8px; }
+.meal-editor-row { display: flex; flex-direction: column; gap: 3px; }
+.meal-editor-label { font-size: 0.72rem; font-weight: 700; color: var(--sage); }
+.meal-editor-input-wrap { display: flex; align-items: center; gap: 5px; }
+.meal-editor-input {
+  flex: 1; min-width: 0;
+  padding: 7px 10px; font-size: 0.88rem;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--card); color: var(--ink);
+}
+.meal-editor-input:focus { outline: none; border-color: var(--sage); }
+.meal-del-btn, .meal-recipe-btn {
+  flex-shrink: 0; background: none; border: none; cursor: pointer;
+  font-size: 1rem; padding: 4px 5px; border-radius: 7px; line-height: 1;
+}
+.meal-del-btn:hover { background: var(--petal); }
+.meal-recipe-btn:hover { background: var(--sage-light); }
+
+/* カレンダー追加スロット選択パネル */
+.recipe-meal-slot-picker { padding: 12px 0 4px; border-top: 1px solid var(--border); }
+.meal-slot-title { font-size: 0.83rem; color: var(--muted); margin: 0 0 10px; }
+.meal-slot-btns { display: flex; gap: 8px; margin-bottom: 10px; }
+.meal-slot-btns button {
+  flex: 1; padding: 10px 6px; border: 1.5px solid var(--border);
+  border-radius: 10px; background: var(--card); color: var(--ink);
+  font-size: 0.85rem; cursor: pointer; font-weight: 600;
+}
+.meal-slot-btns button:hover { background: var(--sage-light); border-color: var(--sage); }
+
 .day-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .day-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 12px; background: var(--card); }
 .day-row-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }

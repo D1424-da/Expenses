@@ -289,6 +289,16 @@
           <button id="recipe-shopping-btn" type="button">🛒 リストに追加</button>
           <button id="recipe-calendar-btn" type="button" hidden>📅 カレンダーに反映</button>
         </div>
+        <!-- カレンダー食事スロット選択パネル（1食分をカレンダーに追加するとき） -->
+        <div id="recipe-meal-slot-picker" class="recipe-meal-slot-picker" hidden>
+          <p class="meal-slot-title">どの食事として追加しますか？</p>
+          <div class="meal-slot-btns">
+            <button data-slot="朝食" type="button">🌅 朝食</button>
+            <button data-slot="お弁当" type="button">🍱 お弁当</button>
+            <button data-slot="夕食" type="button">🌙 夕食</button>
+          </div>
+          <button id="recipe-meal-slot-cancel" type="button" class="btn-ghost">キャンセル</button>
+        </div>
         <!-- 料理ごと保存選択パネル -->
         <div id="recipe-dish-selector" class="recipe-dish-selector" hidden>
           <p class="dish-selector-title">保存する料理を選んでください</p>

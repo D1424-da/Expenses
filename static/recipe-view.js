@@ -4,7 +4,7 @@ import { log, logErr } from "./log.js";
 import { OCR_API_BASE } from "./firebase-config.js";
 import { saveRecipe } from "./saved-recipes.js";
 import { addItemsToList } from "./shopping-list.js";
-import { saveMealPlan } from "./meal-plan.js";
+import { saveMealPlan, saveMeal } from "./meal-plan.js";
 
 let _getToken;
 let _fetchAllExpenses;
@@ -139,8 +139,17 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
   $("recipe-dish-save-btn").onclick = _saveDishSelection;
   $("recipe-dish-cancel-btn").onclick = _hideDishSelector;
 
-  // カレンダーに反映ボタン（週間献立のみ表示）
+  // カレンダーに反映ボタン
   $("recipe-calendar-btn").onclick = _exportToCalendar;
+
+  // 食事スロット選択パネル（1食分をカレンダーに追加するとき）
+  $("recipe-meal-slot-cancel").onclick = () => {
+    $("recipe-meal-slot-picker").hidden = true;
+    $("recipe-post-actions").hidden = false;
+  };
+  $("recipe-meal-slot-picker").querySelectorAll("[data-slot]").forEach((btn) => {
+    btn.onclick = () => _saveMealSlot(btn.dataset.slot);
+  });
 
   // saved-recipes.js からレシピのヘルパー関数を参照できるようにする
   window.__recipeHelpers__ = { _markdownToHtml, _extractIngredients, _attachStores };
@@ -182,8 +191,9 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
   $("recipe-dish-selector").hidden = true;
   $("recipe-save-btn").textContent = "📚 保存";
   $("recipe-shopping-btn").textContent = "🛒 リストに追加";
-  $("recipe-calendar-btn").textContent = "📅 カレンダーに反映";
+  $("recipe-calendar-btn").textContent = "📅 カレンダーに追加";
   $("recipe-calendar-btn").hidden = true;
+  $("recipe-meal-slot-picker").hidden = true;
   // 前回使った人数を復元（なければ2）
   $("recipe-servings").value = localStorage.getItem("recipe_servings") || "2";
   // 時短タブ・使い切りをリセット
@@ -359,8 +369,9 @@ async function _suggest() {
     result.innerHTML = _markdownToHtml(recipe);
     result.hidden = false;
     $("recipe-post-actions").hidden = false;
-    // カレンダー反映ボタンは週間献立のときのみ表示
-    $("recipe-calendar-btn").hidden = _activeType !== "weekly";
+    $("recipe-calendar-btn").hidden = false;
+    $("recipe-calendar-btn").textContent =
+      _activeType === "weekly" ? "📅 カレンダーに反映" : "📅 カレンダーに追加";
   } catch (err) {
     logErr("レシピ提案エラー:", err.message, err);
     // 接続エラーの場合はコールドスタートを疑う
@@ -719,9 +730,9 @@ function _extractWeeklyMeals(md) {
 
     results.push({
       date: dateStr,
-      朝食: breakfastM ? breakfastM[1].trim() : "",
-      昼食: lunchM     ? lunchM[1].trim()     : "",
-      夕食: dinnerM    ? dinnerM[1].trim()    : "",
+      朝食:   breakfastM ? breakfastM[1].trim() : "",
+      お弁当: lunchM     ? lunchM[1].trim()     : "",
+      夕食:   dinnerM    ? dinnerM[1].trim()    : "",
       夕食レシピ,
     });
   }
@@ -729,23 +740,48 @@ function _extractWeeklyMeals(md) {
 }
 
 async function _exportToCalendar() {
-  const btn = $("recipe-calendar-btn");
-  btn.disabled = true;
+  if (_activeType === "weekly") {
+    const btn = $("recipe-calendar-btn");
+    btn.disabled = true;
+    try {
+      const meals = _extractWeeklyMeals(_lastMarkdown);
+      if (!meals.length) {
+        alert("献立情報を解析できませんでした。週間献立を再生成してください。");
+        return;
+      }
+      for (const { date, 朝食, お弁当, 夕食, 夕食レシピ } of meals) {
+        if (朝食 || お弁当 || 夕食) await saveMealPlan(date, { 朝食, お弁当, 夕食, 夕食レシピ });
+      }
+      btn.textContent = `✅ ${meals.length}日分を反映しました`;
+      setTimeout(() => { btn.textContent = "📅 カレンダーに反映"; btn.disabled = false; }, 3000);
+    } catch (err) {
+      logErr("献立カレンダー反映エラー:", err.message);
+      alert("カレンダーへの反映に失敗しました: " + err.message);
+      $("recipe-calendar-btn").disabled = false;
+    }
+  } else {
+    // 1食分: 食事スロットを選んでもらう
+    $("recipe-post-actions").hidden = true;
+    $("recipe-meal-slot-picker").hidden = false;
+  }
+}
+
+async function _saveMealSlot(slot) {
+  if (!_selectedDay) {
+    alert("カレンダーの日付をタップしてからレシピを開いてください。");
+    $("recipe-meal-slot-picker").hidden = true;
+    $("recipe-post-actions").hidden = false;
+    return;
+  }
+  const title = _extractTitle(_lastMarkdown);
   try {
-    const meals = _extractWeeklyMeals(_lastMarkdown);
-    if (!meals.length) {
-      alert("献立情報を解析できませんでした。週間献立を再生成してください。");
-      return;
-    }
-    for (const { date, 朝食, 昼食, 夕食, 夕食レシピ } of meals) {
-      if (朝食 || 昼食 || 夕食) await saveMealPlan(date, { 朝食, 昼食, 夕食, 夕食レシピ });
-    }
-    btn.textContent = `✅ ${meals.length}日分を反映しました`;
-    setTimeout(() => { btn.textContent = "📅 カレンダーに反映"; }, 3000);
+    await saveMeal(_selectedDay, slot, title, _lastMarkdown);
+    $("recipe-meal-slot-picker").hidden = true;
+    $("recipe-post-actions").hidden = false;
+    $("recipe-calendar-btn").textContent = `✅ ${slot}に追加しました`;
+    setTimeout(() => { $("recipe-calendar-btn").textContent = "📅 カレンダーに追加"; }, 3000);
   } catch (err) {
-    logErr("献立カレンダー反映エラー:", err.message);
-    alert("カレンダーへの反映に失敗しました: " + err.message);
-  } finally {
-    btn.disabled = false;
+    logErr("カレンダー追加エラー:", err.message);
+    alert("カレンダーへの追加に失敗しました: " + err.message);
   }
 }
