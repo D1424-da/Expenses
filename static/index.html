@@ -225,6 +225,15 @@
           <button id="recipe-save-btn" type="button">📚 保存</button>
           <button id="recipe-shopping-btn" type="button">🛒 リストに追加</button>
         </div>
+        <!-- 料理ごと保存選択パネル -->
+        <div id="recipe-dish-selector" class="recipe-dish-selector" hidden>
+          <p class="dish-selector-title">保存する料理を選んでください</p>
+          <div id="recipe-dish-list" class="recipe-dish-list"></div>
+          <div class="dish-selector-actions">
+            <button id="recipe-dish-cancel-btn" type="button" class="btn-ghost">キャンセル</button>
+            <button id="recipe-dish-save-btn" type="button" class="btn-primary">保存する</button>
+          </div>
+        </div>
       </div>
     </div>
     <!-- 週計タップ → その週のカテゴリ別内訳（明細カテゴリで集計） -->
