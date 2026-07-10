@@ -594,6 +594,21 @@ button:not(.primary):hover { background: var(--stone); }
 .recipe-result h4 { font-size: 0.9rem; font-weight: 700; margin: 10px 0 2px; }
 .recipe-result p { margin: 2px 0; }
 .recipe-result ul, .recipe-result ol { padding-left: 1.5em; margin: 2px 0 8px; }
+/* 概算コストバッジ */
+.recipe-cost-badge {
+  margin-top: 12px; padding: 12px 14px;
+  background: var(--sage-light); border-radius: 14px;
+  border-left: 4px solid var(--sage);
+}
+.cost-main { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px; }
+.cost-amount { font-size: 0.92rem; color: var(--ink-2); }
+.cost-amount strong { font-size: 1.05rem; color: var(--ink); }
+.cost-status { font-size: 0.8rem; font-weight: 700; border-radius: 100px; padding: 3px 10px; }
+.cost-ok   { background: #D1FAE5; color: #065F46; }
+.cost-over { background: #FEE2E2; color: #991B1B; }
+.cost-note { font-size: 0.74rem; color: var(--muted); margin: 0; line-height: 1.5; }
+.cost-no-history { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.6; }
+
 .recipe-post-actions { display: flex; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
 .recipe-post-actions button { flex: 1; font-size: 0.88rem; padding: 11px; }
 
