@@ -41,3 +41,22 @@ export function bindModalDismiss() {
     if (open) closeModal(open.id);
   });
 }
+
+// { カテゴリ: 金額 } をバーで描画する（サマリーと週計内訳で共用）
+export function renderCatBars(container, byCat) {
+  const entries = Object.entries(byCat)
+    .filter(([, a]) => a > 0)
+    .sort((a, b) => b[1] - a[1]);
+  const max = entries.reduce((m, [, a]) => Math.max(m, a), 0);
+  container.innerHTML = "";
+  for (const [cat, amt] of entries) {
+    const row = document.createElement("div");
+    row.className = "cat-row";
+    const pct = max > 0 ? Math.max(0, (amt / max) * 100) : 0;
+    row.innerHTML = `
+      <span class="cat-name">${escapeHtml(cat)}</span>
+      <span class="cat-bar-wrap"><span class="cat-bar" style="width:${pct}%"></span></span>
+      <span class="cat-amount">${yen(amt)}</span>`;
+    container.appendChild(row);
+  }
+}

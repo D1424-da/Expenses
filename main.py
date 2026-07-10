@@ -19,6 +19,7 @@ import os
 from pathlib import Path
 
 from fastapi import FastAPI, File, Header, HTTPException, Request, UploadFile
+from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -107,6 +108,33 @@ async def ocr_receipt(
     except Exception as exc:  # noqa: BLE001
         logger.exception("Tesseract OCR failed")
         raise HTTPException(500, "レシートの読み取りに失敗しました。") from exc
+
+
+class RecipeRequest(BaseModel):
+    items: list[str] = Field(..., min_length=1, max_length=30)
+    servings: int = Field(2, ge=1, le=20)
+
+
+@app.post("/api/recipe")
+async def suggest_recipe(
+    request: Request,
+    body: RecipeRequest,
+    authorization: str | None = Header(default=None),
+) -> JSONResponse:
+    """食材リストと人数からレシピを提案する（Gemini 使用）。"""
+    security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
+    _rate_limiter.check(security.client_ip(request))
+    if not body.items:
+        raise HTTPException(400, "食材リストが空です。")
+    from app import recipe as recipe_mod
+    try:
+        text = recipe_mod.suggest_recipes(body.items, body.servings)
+        return JSONResponse({"recipe": text})
+    except RuntimeError as exc:
+        raise HTTPException(503, "レシピ提案サービスが設定されていません（GEMINI_API_KEY を確認してください）。") from exc
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Recipe suggestion failed")
+        raise HTTPException(500, "レシピの提案に失敗しました。時間をおいて再試行してください。") from exc
 
 
 # ---- フロント配信（ローカル開発用。本番は Firebase Hosting を使う） ----------

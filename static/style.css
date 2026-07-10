@@ -403,3 +403,24 @@ button.primary:hover { filter: brightness(1.05); }
   .cal-amt, .cal-week { font-size: 0.62rem; }
   .cal-day { padding: 2px; }
 }
+
+/* ---- レシピ提案 ---- */
+.recipe-open-btn {
+  width: 100%; margin-top: 12px; padding: 10px;
+  background: none; border: 1.5px dashed var(--accent); color: var(--accent);
+  border-radius: 8px; cursor: pointer; font-size: 0.95rem;
+}
+.recipe-open-btn:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.recipe-meta { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.recipe-ingredients { display: flex; flex-wrap: wrap; gap: 6px; }
+.recipe-chip {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 20px; padding: 3px 10px; font-size: 0.85rem;
+}
+.recipe-servings-row { display: flex; align-items: center; gap: 10px; }
+.recipe-servings-row label { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+.recipe-servings-row input { width: 52px; text-align: center; }
+.recipe-result {
+  white-space: pre-wrap; line-height: 1.7; font-size: 0.92rem;
+  border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px;
+}
