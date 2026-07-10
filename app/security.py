@@ -62,6 +62,9 @@ class RateLimiter:
                 raise HTTPException(429, "リクエストが多すぎます。しばらく待って再試行してください。")
             dq.append(now)
             self._global.append(now)
+            # 空になったエントリを定期的に除去してメモリリークを防ぐ
+            if len(self._by_ip) > 1000:
+                self._by_ip = {k: v for k, v in self._by_ip.items() if v}
 
 
 def verify_firebase_token(authorization: str | None, project_id: str) -> None:

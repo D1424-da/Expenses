@@ -100,7 +100,7 @@ def parse_generate_content(result: dict) -> tuple[dict, str]:
     return structured, text
 
 
-def build_request_body(b64_image: str) -> dict:
+def build_request_body(b64_image: str, content_type: str = "image/jpeg") -> dict:
     """generateContent のリクエストボディ（Gemini/Vertex 共通）。
 
     role は Vertex AI では必須（"user"/"model"）。Gemini Developer API でも
@@ -110,7 +110,7 @@ def build_request_body(b64_image: str) -> dict:
         "contents": [{
             "role": "user",
             "parts": [
-                {"inline_data": {"mime_type": "image/jpeg", "data": b64_image}},
+                {"inline_data": {"mime_type": content_type, "data": b64_image}},
                 {"text": PROMPT},
             ],
         }],
@@ -118,7 +118,7 @@ def build_request_body(b64_image: str) -> dict:
     }
 
 
-def extract_receipt(image_bytes: bytes) -> dict:
+def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dict:
     """Gemini で画像から構造化レシートデータを抽出する。"""
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -129,6 +129,6 @@ def extract_receipt(image_bytes: bytes) -> dict:
         "https://generativelanguage.googleapis.com/v1beta/models/"
         f"{GEMINI_MODEL}:generateContent?key={api_key}"
     )
-    result = net.post_json(url, build_request_body(b64), service="Gemini API")
+    result = net.post_json(url, build_request_body(b64, content_type), service="Gemini API")
     structured, text = parse_generate_content(result)
     return normalize_receipt(structured, text)
