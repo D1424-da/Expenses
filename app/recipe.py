@@ -111,9 +111,9 @@ def suggest_recipes(
     }
     url = (
         "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{GEMINI_MODEL}:generateContent?key={api_key}"
+        f"{GEMINI_MODEL}:generateContent"
     )
-    result = net.post_json(url, body, service="Gemini Recipe API")
+    result = net.post_json(url, body, headers={"x-goog-api-key": api_key}, service="Gemini Recipe API")
     try:
         text = result["candidates"][0]["content"]["parts"][0]["text"]
     except (KeyError, IndexError, TypeError):

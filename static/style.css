@@ -18,6 +18,17 @@
   --r-btn:       13px;
   --r-input:     12px;
   --shadow:      0 2px 14px rgba(0,0,0,0.07);
+  /* セマンティックバッジ */
+  --badge-ok-bg:    #D1FAE5;
+  --badge-ok-ink:   #065F46;
+  --badge-mid-bg:   #FEF3C7;
+  --badge-mid-ink:  #92400E;
+  --badge-over-bg:  #FEE2E2;
+  --badge-over-ink: #991B1B;
+  /* ステータスパネル */
+  --status-loading-bg:  #EFF6FF;
+  --status-loading-ink: #1E40AF;
+  --status-error-bg:    #FFF5F5;
   /* backward-compat aliases */
   --bg:          #F6F4F1;
   --accent:      #4B7A5E;
@@ -36,10 +47,23 @@
     --ink-2:      #AEAEB2;
     --muted:      #636366;
     --border:     #2C2C2E;
+    --warn:       #FCA549;
+    --danger:     #FC7373;
     --shadow:     0 2px 14px rgba(0,0,0,0.3);
     --bg:         #0F0F11;
     --accent:     #5E9B74;
     --accent-weak:#162A20;
+    /* セマンティックバッジ（ダーク） */
+    --badge-ok-bg:    #052E16;
+    --badge-ok-ink:   #6EE7B7;
+    --badge-mid-bg:   #2D1B00;
+    --badge-mid-ink:  #FCD34D;
+    --badge-over-bg:  #2D0808;
+    --badge-over-ink: #FCA5A5;
+    /* ステータスパネル（ダーク） */
+    --status-loading-bg:  #172554;
+    --status-loading-ink: #93C5FD;
+    --status-error-bg:    #2D0808;
   }
 }
 
@@ -101,8 +125,8 @@ body {
   background: var(--card);
   border: none;
   color: var(--sage);
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   font-size: 1rem;
   cursor: pointer;
@@ -314,8 +338,8 @@ main {
   font-size: 0.86rem;
   line-height: 1.5;
 }
-.status.loading { background: #EFF6FF; color: #1E40AF; }
-.status.error { background: #FFF5F5; color: var(--danger); }
+.status.loading { background: var(--status-loading-bg); color: var(--status-loading-ink); }
+.status.error { background: var(--status-error-bg); color: var(--danger); }
 .status.ok { background: var(--sage-light); color: var(--sage); }
 
 /* ============================================================
@@ -460,12 +484,13 @@ button:not(.primary):hover { background: var(--stone); }
   background: var(--card); border-radius: var(--radius);
   padding: 20px; width: 100%; max-width: 560px; margin-top: 24px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  max-height: calc(100vh - 80px); overflow-y: auto;
 }
 .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .modal-head h2 { margin: 0; font-size: 1.05rem; font-weight: 700; }
 .modal-head button {
   background: var(--stone); border: none; font-size: 1rem; cursor: pointer; color: var(--muted);
-  width: 32px; height: 32px; border-radius: 50%; padding: 0;
+  width: 44px; height: 44px; border-radius: 50%; padding: 0;
   display: flex; align-items: center; justify-content: center;
 }
 .modal-head button:hover { background: var(--border); color: var(--ink); }
@@ -584,7 +609,7 @@ button:not(.primary):hover { background: var(--stone); }
 }
 .family-row span:first-child { flex: 1; }
 .family-row input {
-  width: 52px; text-align: center; padding: 7px 6px;
+  width: 56px; min-height: 44px; text-align: center; padding: 12px 6px;
   border: 1.5px solid var(--border); border-radius: 10px;
   background: var(--card); color: var(--ink);
   appearance: textfield; -moz-appearance: textfield;
@@ -604,8 +629,8 @@ button:not(.primary):hover { background: var(--stone); }
 .cost-amount { font-size: 0.92rem; color: var(--ink-2); }
 .cost-amount strong { font-size: 1.05rem; color: var(--ink); }
 .cost-status { font-size: 0.8rem; font-weight: 700; border-radius: 100px; padding: 3px 10px; }
-.cost-ok   { background: #D1FAE5; color: #065F46; }
-.cost-over { background: #FEE2E2; color: #991B1B; }
+.cost-ok   { background: var(--badge-ok-bg);   color: var(--badge-ok-ink); }
+.cost-over { background: var(--badge-over-bg); color: var(--badge-over-ink); }
 .cost-note { font-size: 0.74rem; color: var(--muted); margin: 0; line-height: 1.5; }
 .cost-no-history { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.6; }
 
@@ -628,13 +653,18 @@ button:not(.primary):hover { background: var(--stone); }
 }
 .dish-selector-actions { display: flex; gap: 8px; }
 .dish-selector-actions button { flex: 1; font-size: 0.88rem; padding: 11px; }
+/* 汎用ボタンバリアント */
+.btn-primary { background: var(--sage); color: #fff; border: none; border-radius: var(--r-btn); cursor: pointer; }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: var(--r-btn); cursor: pointer; }
+.btn-ghost:hover { background: var(--stone); color: var(--ink); }
 
 /* 難易度バッジ */
 .recipe-difficulty { display: flex; align-items: center; gap: 6px; margin: 2px 0 8px; font-size: 0.8rem; color: var(--muted); }
 .diff-badge { font-size: 0.84rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
-.diff-easy { background: #D1FAE5; color: #065F46; }
-.diff-mid  { background: #FEF3C7; color: #92400E; }
-.diff-hard { background: #FEE2E2; color: #991B1B; }
+.diff-easy { background: var(--badge-ok-bg);   color: var(--badge-ok-ink); }
+.diff-mid  { background: var(--badge-mid-bg);  color: var(--badge-mid-ink); }
+.diff-hard { background: var(--badge-over-bg); color: var(--badge-over-ink); }
 
 /* ============================================================
    BUDGET
@@ -687,10 +717,10 @@ button:not(.primary):hover { background: var(--stone); }
 .shopping-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
 .shopping-store-header {
   font-size: 0.78rem; font-weight: 700; color: var(--sage);
-  padding: 10px 4px 4px; letter-spacing: 0.03em;
-  border-top: 1px solid var(--border); margin-top: 4px;
+  background: var(--sage-light); border-radius: var(--r-btn);
+  padding: 6px 10px; margin-top: 10px; letter-spacing: 0.03em;
 }
-.shopping-store-header:first-child { border-top: none; margin-top: 0; padding-top: 4px; }
+.shopping-store-header:first-child { margin-top: 0; }
 .shopping-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 14px; background: var(--card); }
 .shopping-item.done { opacity: 0.45; }
 .shopping-item.done .shopping-check span { text-decoration: line-through; }

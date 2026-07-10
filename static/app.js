@@ -28,7 +28,7 @@ import { firebaseConfig, OCR_API_BASE, CATEGORIES } from "./firebase-config.js";
 import { parseReceipt } from "./parser.js";
 import { log, logErr } from "./log.js";
 import {
-  $, yen, monthKey, monthLabel, renderCatBars, bindModalDismiss,
+  $, yen, escapeHtml, monthKey, monthLabel, renderCatBars, bindModalDismiss,
 } from "./dom-utils.js";
 import { requestBackendOcr, preprocessImage, runClientOcr, prewarmOcr } from "./ocr-client.js";
 import { TRUSTED_ENGINES, normalizeWithHistory } from "./history.js";
@@ -276,8 +276,8 @@ async function _refreshAlerts() {
     el.innerHTML = `<div class="alert-title">🎉 今月のお得な買い物</div>` +
       alerts.map((a) =>
         `<div class="alert-row">
-          <span class="alert-name">${a.name}</span>
-          <span class="alert-detail">${a.store} <strong>${yen(a.price)}</strong>（過去最安！）</span>
+          <span class="alert-name">${escapeHtml(a.name)}</span>
+          <span class="alert-detail">${escapeHtml(a.store)} <strong>${yen(a.price)}</strong>（過去最安！）</span>
         </div>`,
       ).join("");
   } catch (_) {
