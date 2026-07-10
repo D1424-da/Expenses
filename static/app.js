@@ -155,7 +155,7 @@ function setupApp() {
         openRecipeModal({ selectedDay, expenses, initialPeriod: "day" }),
     });
     initCompare({ fetchAllExpenses });
-    initRecipe({ getToken: () => currentUser?.getIdToken() });
+    initRecipe({ getToken: () => currentUser?.getIdToken(), fetchAllExpenses });
     initBudget({ db, getUser: () => currentUser, categories: CATEGORIES, onUpdated: renderSummary });
     initTrend({ fetchMonthExpenses });
     initSavedRecipes({ db, getUser: () => currentUser });

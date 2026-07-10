@@ -554,8 +554,12 @@ button:not(.primary):hover { background: var(--stone); }
   background: none; cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--muted);
 }
 .recipe-tab.active { background: var(--sage); color: #fff; border-color: var(--sage); }
-.recipe-useup-row { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--ink); margin-bottom: 8px; flex-direction: row; }
-.recipe-useup-row input[type="checkbox"] { width: auto; accent-color: var(--sage); }
+.recipe-useup-row { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--ink); margin-bottom: 8px; cursor: pointer; }
+.recipe-useup-row input[type="checkbox"] {
+  width: 18px; height: 18px; flex-shrink: 0; padding: 0;
+  appearance: auto; -webkit-appearance: checkbox;
+  accent-color: var(--sage); cursor: pointer;
+}
 .recipe-ingredients { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; margin-bottom: 10px; }
 .recipe-chip { background: var(--sage-light); color: var(--sage); border-radius: 100px; padding: 4px 11px; font-size: 0.82rem; font-weight: 600; border: none; }
 .recipe-empty-note, .recipe-empty-hint { font-size: 0.83rem; color: var(--muted); }
@@ -569,6 +573,23 @@ button:not(.primary):hover { background: var(--stone); }
 .recipe-result ul, .recipe-result ol { padding-left: 1.5em; margin: 2px 0 8px; }
 .recipe-post-actions { display: flex; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
 .recipe-post-actions button { flex: 1; font-size: 0.88rem; padding: 11px; }
+
+/* 料理ごと保存パネル */
+.recipe-dish-selector { margin-top: 14px; padding: 14px; background: var(--sage-light); border-radius: 14px; }
+.dish-selector-title { font-size: 0.88rem; font-weight: 700; color: var(--sage); margin: 0 0 10px; }
+.recipe-dish-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.dish-select-row {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.9rem; color: var(--ink); cursor: pointer;
+  padding: 10px 12px; background: var(--card); border-radius: 11px;
+}
+.dish-select-row input[type="checkbox"] {
+  width: 18px; height: 18px; flex-shrink: 0; padding: 0;
+  appearance: auto; -webkit-appearance: checkbox;
+  accent-color: var(--sage); cursor: pointer;
+}
+.dish-selector-actions { display: flex; gap: 8px; }
+.dish-selector-actions button { flex: 1; font-size: 0.88rem; padding: 11px; }
 
 /* 難易度バッジ */
 .recipe-difficulty { display: flex; align-items: center; gap: 6px; margin: 2px 0 8px; font-size: 0.8rem; color: var(--muted); }
@@ -627,8 +648,15 @@ button:not(.primary):hover { background: var(--stone); }
 .shopping-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 14px; background: var(--card); }
 .shopping-item.done { opacity: 0.45; }
 .shopping-item.done .shopping-check span { text-decoration: line-through; }
-.shopping-check { display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer; font-size: 0.92rem; font-weight: 600; flex-direction: row; color: var(--ink); }
-.shopping-check input[type="checkbox"] { width: auto; flex-shrink: 0; accent-color: var(--sage); }
+.shopping-check { display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer; flex-direction: row; color: var(--ink); }
+.shopping-check input[type="checkbox"] {
+  width: 18px; height: 18px; flex-shrink: 0; padding: 0;
+  appearance: auto; -webkit-appearance: checkbox;
+  accent-color: var(--sage); cursor: pointer;
+}
+.shopping-check-text { display: flex; flex-direction: column; gap: 1px; }
+.shopping-check-name { font-size: 0.92rem; font-weight: 600; }
+.shopping-check-store { font-size: 0.75rem; color: var(--muted); }
 .shopping-del { background: none; border: none; color: var(--muted); font-size: 0.9rem; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
 .shopping-del:hover { color: var(--danger); }
 .shopping-clear-btn { width: 100%; background: none; border: 1.5px solid var(--border); color: var(--muted); font-size: 0.83rem; padding: 10px; margin-top: 4px; border-radius: var(--r-btn); }

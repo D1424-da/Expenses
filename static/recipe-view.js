@@ -6,6 +6,7 @@ import { saveRecipe } from "./saved-recipes.js";
 import { addItemsToList } from "./shopping-list.js";
 
 let _getToken;
+let _fetchAllExpenses;
 let _selectedDay = null;
 let _expenses    = [];
 let _activePeriod  = "day";
@@ -16,8 +17,9 @@ let _lastMarkdown  = "";
 let _lastItems     = [];
 let _lastServings  = 2;
 
-export function initRecipe({ getToken }) {
+export function initRecipe({ getToken, fetchAllExpenses }) {
   _getToken = getToken;
+  _fetchAllExpenses = fetchAllExpenses;
   $("recipe-close").onclick       = () => closeModal("recipe-modal");
   $("recipe-suggest-btn").onclick = _suggest;
 
@@ -34,21 +36,30 @@ export function initRecipe({ getToken }) {
     btn.onclick = () => { _maxMinutes = Number(btn.dataset.minutes); _setActiveTab("recipe-time-tabs", btn); };
   });
   // 使い切りチェックボックス
-  $("recipe-useup").onchange = (e) => { _useUp = e.target.checked; };
+  $("recipe-useup").addEventListener("change", (e) => { _useUp = e.target.checked; });
 
-  // 保存・リスト追加ボタン（レシピ表示後に現れる）
-  $("recipe-save-btn").onclick = async () => {
-    const title = _extractTitle(_lastMarkdown);
-    await saveRecipe({ title, markdown: _lastMarkdown, items: _lastItems, period: _activePeriod, rtype: _activeType, servings: _lastServings });
-    $("recipe-save-btn").textContent = "✅ 保存しました";
-    setTimeout(() => { $("recipe-save-btn").textContent = "📚 保存"; }, 2000);
-  };
+  // 保存ボタン → 料理選択パネルを表示
+  $("recipe-save-btn").onclick = () => _showDishSelector();
+
+  // 買い物リスト追加ボタン → 店名付きで追加
   $("recipe-shopping-btn").onclick = async () => {
-    const ingredients = _extractIngredients(_lastMarkdown);
-    const added = await addItemsToList(ingredients.length ? ingredients : _lastItems);
-    $("recipe-shopping-btn").textContent = `✅ ${added}品目を追加`;
-    setTimeout(() => { $("recipe-shopping-btn").textContent = "🛒 リストに追加"; }, 2000);
+    const btn = $("recipe-shopping-btn");
+    btn.disabled = true;
+    try {
+      const ingredients = _extractIngredients(_lastMarkdown);
+      const names = ingredients.length ? ingredients : _lastItems;
+      const itemsWithStore = await _attachStores(names);
+      const added = await addItemsToList(itemsWithStore);
+      btn.textContent = `✅ ${added}品目を追加`;
+      setTimeout(() => { btn.textContent = "🛒 リストに追加"; }, 2000);
+    } finally {
+      btn.disabled = false;
+    }
   };
+
+  // 料理選択パネルの「保存」ボタン
+  $("recipe-dish-save-btn").onclick = _saveDishSelection;
+  $("recipe-dish-cancel-btn").onclick = _hideDishSelector;
 
   // saved-recipes.js からレシピの Markdown → HTML 変換関数を参照できるようにする
   window.__recipeHelpers__ = { _markdownToHtml };
@@ -76,6 +87,7 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
   $("recipe-result").innerHTML = "";
   $("recipe-status").hidden = true;
   $("recipe-post-actions").hidden = true;
+  $("recipe-dish-selector").hidden = true;
   $("recipe-save-btn").textContent = "📚 保存";
   $("recipe-shopping-btn").textContent = "🛒 リストに追加";
   // 前回使った人数を復元（なければ2）
@@ -151,6 +163,7 @@ async function _suggest() {
   btn.disabled = true;
   _showStatus("loading", "🤖 レシピを考え中…");
   $("recipe-result").hidden = true;
+  $("recipe-dish-selector").hidden = true;
 
   try {
     const token = _getToken ? await _getToken() : "";
@@ -192,6 +205,114 @@ async function _suggest() {
     _showStatus("error", "レシピの取得に失敗しました: " + err.message);
   } finally {
     btn.disabled = false;
+  }
+}
+
+// ---- 料理選択パネル -------------------------------------------------------
+
+// markdownから個別料理を抽出する。
+// meal型: ## 見出し, weekly型: ### 見出し をそれぞれ1料理として扱う
+function _extractDishes(md, rtype) {
+  const headingRe = rtype === "weekly" ? /^### (.+)$/gm : /^## (.+)$/gm;
+  const dishes = [];
+  let match;
+  while ((match = headingRe.exec(md)) !== null) {
+    const title = match[1].replace(/\*\*/g, "").trim();
+    dishes.push({ title, start: match.index });
+  }
+  // 各料理の本文を切り出す
+  return dishes.map((d, i) => {
+    const end = i + 1 < dishes.length ? dishes[i + 1].start : md.length;
+    return { title: d.title, markdown: md.slice(d.start, end).trim() };
+  });
+}
+
+function _showDishSelector() {
+  const dishes = _extractDishes(_lastMarkdown, _activeType);
+  if (dishes.length <= 1) {
+    // 1品だけなら直接保存
+    _doSave([{ title: _extractTitle(_lastMarkdown), markdown: _lastMarkdown }]);
+    return;
+  }
+  const list = $("recipe-dish-list");
+  list.innerHTML = dishes.map((d, i) =>
+    `<label class="dish-select-row">
+      <input type="checkbox" data-idx="${i}" checked />
+      <span>${escapeHtml(d.title)}</span>
+    </label>`,
+  ).join("");
+  list.dataset.dishes = JSON.stringify(dishes.map((d) => d.title));
+  $("recipe-dish-selector").hidden = false;
+  $("recipe-post-actions").hidden = true;
+}
+
+function _hideDishSelector() {
+  $("recipe-dish-selector").hidden = true;
+  $("recipe-post-actions").hidden = false;
+}
+
+async function _saveDishSelection() {
+  const checkboxes = [...$("recipe-dish-list").querySelectorAll("input[type='checkbox']")];
+  const dishes = _extractDishes(_lastMarkdown, _activeType);
+  const selected = checkboxes
+    .map((cb, i) => ({ checked: cb.checked, dish: dishes[i] }))
+    .filter((x) => x.checked && x.dish)
+    .map((x) => x.dish);
+  if (!selected.length) {
+    alert("保存する料理を選んでください。");
+    return;
+  }
+  await _doSave(selected);
+  _hideDishSelector();
+}
+
+async function _doSave(dishes) {
+  const btn = $("recipe-save-btn");
+  btn.disabled = true;
+  try {
+    for (const d of dishes) {
+      await saveRecipe({
+        title: d.title,
+        markdown: d.markdown,
+        items: _lastItems,
+        period: _activePeriod,
+        rtype: _activeType,
+        servings: _lastServings,
+      });
+    }
+    btn.textContent = `✅ ${dishes.length}品を保存しました`;
+    setTimeout(() => { btn.textContent = "📚 保存"; }, 2500);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ---- 店名付き買い物リスト追加 --------------------------------------------
+
+// 過去の購入履歴から各食材の最安値の店名を返す
+async function _attachStores(names) {
+  try {
+    if (!_fetchAllExpenses) return names.map((n) => ({ name: n }));
+    const all = await _fetchAllExpenses();
+    // 食材名 → { store, minPrice }
+    const priceMap = new Map();
+    for (const exp of all) {
+      if (!exp.store || !exp.items) continue;
+      for (const it of exp.items) {
+        if (!it.name || !it.price) continue;
+        const key = it.name;
+        const cur = priceMap.get(key);
+        if (!cur || it.price < cur.price) {
+          priceMap.set(key, { store: exp.store, price: it.price });
+        }
+      }
+    }
+    return names.map((n) => {
+      const hit = priceMap.get(n);
+      return { name: n, store: hit?.store || "" };
+    });
+  } catch {
+    return names.map((n) => ({ name: n }));
   }
 }
 
@@ -279,4 +400,3 @@ function _showStatus(type, text) {
   s.textContent = text;
   s.hidden = false;
 }
-

@@ -40,12 +40,19 @@ export function stopSync() {
   _updateBadge();
 }
 
-// recipe-view から呼ぶ: 食材名リストをリストに追加（重複は除く）
-export async function addItemsToList(names) {
+// recipe-view から呼ぶ: 食材リストをリストに追加（重複は除く）
+// items: string[] または { name, store? }[] のどちらでも可
+export async function addItemsToList(items) {
+  const normalized = items.map((it) =>
+    typeof it === "string" ? { name: it } : it,
+  );
   const existing = new Set(_items.map((it) => it.name));
-  const newOnes  = names.filter((n) => n && !existing.has(n));
+  const newOnes  = normalized.filter((it) => it.name && !existing.has(it.name));
   if (!newOnes.length) return 0;
-  const merged = [..._items, ...newOnes.map((name) => ({ id: _uid(), name, done: false }))];
+  const merged = [
+    ..._items,
+    ...newOnes.map(({ name, store }) => ({ id: _uid(), name, store: store || "", done: false })),
+  ];
   await _persist(merged);
   return newOnes.length;
 }
@@ -71,7 +78,10 @@ function _render() {
     row.innerHTML = `
       <label class="shopping-check">
         <input type="checkbox" ${item.done ? "checked" : ""} />
-        <span>${escapeHtml(item.name)}</span>
+        <span class="shopping-check-text">
+          <span class="shopping-check-name">${escapeHtml(item.name)}</span>
+          ${item.store ? `<span class="shopping-check-store">🏪 ${escapeHtml(item.store)}</span>` : ""}
+        </span>
       </label>
       <button class="shopping-del" aria-label="削除" type="button">✕</button>`;
     row.querySelector("input").onchange   = () => _toggle(item.id);
