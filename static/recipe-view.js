@@ -61,8 +61,8 @@ export function initRecipe({ getToken, fetchAllExpenses }) {
   $("recipe-dish-save-btn").onclick = _saveDishSelection;
   $("recipe-dish-cancel-btn").onclick = _hideDishSelector;
 
-  // saved-recipes.js からレシピの Markdown → HTML 変換関数を参照できるようにする
-  window.__recipeHelpers__ = { _markdownToHtml };
+  // saved-recipes.js からレシピのヘルパー関数を参照できるようにする
+  window.__recipeHelpers__ = { _markdownToHtml, _extractIngredients, _attachStores };
 }
 
 /**

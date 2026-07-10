@@ -637,6 +637,8 @@ button:not(.primary):hover { background: var(--stone); }
 .sr-del-btn { color: var(--danger); }
 .back-btn { background: none; border: none; color: var(--sage); font-size: 0.88rem; cursor: pointer; padding: 4px 0; margin-bottom: 10px; font-weight: 600; }
 .saved-recipe-detail-title { margin: 4px 0 14px; font-size: 1rem; font-weight: 700; }
+.saved-recipe-detail-actions { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.saved-recipe-detail-actions button { width: 100%; font-size: 0.9rem; padding: 13px; }
 
 /* ============================================================
    SHOPPING LIST

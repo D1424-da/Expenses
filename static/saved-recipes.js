@@ -4,8 +4,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { $, escapeHtml, openModal, closeModal } from "./dom-utils.js";
 import { log, logErr } from "./log.js";
+import { addItemsToList } from "./shopping-list.js";
 
 let _db, _getUser;
+let _currentRecipe = null; // 現在詳細表示中のレシピ
 
 export function initSavedRecipes({ db, getUser }) {
   _db = db;
@@ -15,6 +17,8 @@ export function initSavedRecipes({ db, getUser }) {
   $("saved-recipe-back").onclick        = _showList;
   $("saved-recipe-detail").hidden       = true;
   $("saved-recipes-list-wrap").hidden   = false;
+
+  $("saved-recipe-shopping-btn").onclick = _addCurrentToShoppingList;
 }
 
 export async function saveRecipe({ title, markdown, items, period, rtype, servings }) {
@@ -79,13 +83,42 @@ async function _load() {
 }
 
 function _showDetail(r) {
+  _currentRecipe = r;
   const { _markdownToHtml } = window.__recipeHelpers__ || {};
   $("saved-recipe-content").innerHTML = _markdownToHtml
     ? _markdownToHtml(r.markdown || "")
     : `<pre>${escapeHtml(r.markdown || "")}</pre>`;
   $("saved-recipe-title-detail").textContent = r.title || "無題";
+  $("saved-recipe-shopping-btn").textContent = "🛒 買い物リストに追加";
   $("saved-recipes-list-wrap").hidden = true;
   $("saved-recipe-detail").hidden     = false;
+}
+
+async function _addCurrentToShoppingList() {
+  if (!_currentRecipe) return;
+  const btn = $("saved-recipe-shopping-btn");
+  btn.disabled = true;
+  try {
+    const { _extractIngredients, _attachStores } = window.__recipeHelpers__ || {};
+    const names = _extractIngredients
+      ? _extractIngredients(_currentRecipe.markdown || "")
+      : (_currentRecipe.items || []);
+    if (!names.length) {
+      btn.textContent = "⚠️ 食材が見つかりません";
+      setTimeout(() => { btn.textContent = "🛒 買い物リストに追加"; btn.disabled = false; }, 2000);
+      return;
+    }
+    const itemsWithStore = _attachStores ? await _attachStores(names) : names;
+    const added = await addItemsToList(itemsWithStore);
+    btn.textContent = `✅ ${added}品目を追加しました`;
+    setTimeout(() => { btn.textContent = "🛒 買い物リストに追加"; }, 2500);
+  } catch (err) {
+    logErr("買い物リスト追加エラー:", err.message, err);
+    btn.textContent = "⚠️ 追加に失敗しました";
+    setTimeout(() => { btn.textContent = "🛒 買い物リストに追加"; }, 2000);
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function _showList() {
