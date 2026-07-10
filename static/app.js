@@ -35,13 +35,14 @@ import { TRUSTED_ENGINES, normalizeWithHistory } from "./history.js";
 import { categoryBreakdown } from "./stats.js";
 import { initForm, fillForm, resetForm, editExpense, deleteExpense } from "./expense-form.js";
 import { renderList } from "./list-view.js";
-import { initCalendar, renderCalendar, maybeRefreshDayModal } from "./calendar-view.js";
+import { initCalendar, renderCalendar, maybeRefreshDayModal, updateMealPlans } from "./calendar-view.js";
 import { initCompare } from "./compare-view.js";
 import { initRecipe, openRecipeModal } from "./recipe-view.js";
 import { initBudget, loadBudget, getBudget, renderBudgetBars } from "./budget-view.js";
 import { initTrend } from "./trend-view.js";
 import { initSavedRecipes } from "./saved-recipes.js";
 import { initShoppingList, startSync as startShoppingSync, stopSync as stopShoppingSync } from "./shopping-list.js";
+import { initMealPlan, startMealPlanSync, stopMealPlanSync } from "./meal-plan.js";
 import { lowestPriceAlerts } from "./stats.js";
 
 window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
@@ -77,6 +78,7 @@ onAuthStateChanged(auth, (user) => {
   } else {
     if (unsubscribe) unsubscribe();
     stopShoppingSync();
+    stopMealPlanSync();
     $("app").hidden = true;
     $("login-screen").hidden = false;
   }
@@ -160,8 +162,9 @@ function setupApp() {
     initTrend({ fetchMonthExpenses });
     initSavedRecipes({ db, getUser: () => currentUser });
     initShoppingList({ db, getUser: () => currentUser });
+    initMealPlan({ db, getUser: () => currentUser });
 
-    $("logout").onclick = () => { stopShoppingSync(); signOut(auth); };
+    $("logout").onclick = () => { stopShoppingSync(); stopMealPlanSync(); signOut(auth); };
     $("prev-month").onclick = () => shiftMonth(-1);
     $("next-month").onclick = () => shiftMonth(1);
     $("file-input").onchange = handleFiles;
@@ -181,6 +184,11 @@ function setupApp() {
   }
   loadBudget().then(renderSummary);
   startShoppingSync();
+  startMealPlanSync((map) => {
+    updateMealPlans(map);
+    renderCalendar(currentExpenses, currentMonth);
+    maybeRefreshDayModal();
+  });
   renderMonth();
   subscribeMonth();
 }
