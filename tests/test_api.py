@@ -31,3 +31,21 @@ def test_looks_like_image_signatures():
     assert security.looks_like_image(b"\xff\xd8\xff\xe0rest")
     assert security.looks_like_image(b"\x89PNG\r\n\x1a\nrest")
     assert not security.looks_like_image(b"plain text bytes")
+
+
+def test_recipe_rejects_empty_items():
+    r = client.post("/api/recipe", json={"items": [], "servings": 2})
+    assert r.status_code in (400, 422)
+
+
+def test_recipe_rejects_invalid_servings():
+    r = client.post("/api/recipe", json={"items": ["卵"], "servings": 0})
+    assert r.status_code == 422
+    r = client.post("/api/recipe", json={"items": ["卵"], "servings": 21})
+    assert r.status_code == 422
+
+
+def test_recipe_returns_503_without_api_key(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    r = client.post("/api/recipe", json={"items": ["卵", "牛乳"], "servings": 2})
+    assert r.status_code == 503

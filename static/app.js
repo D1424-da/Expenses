@@ -36,6 +36,7 @@ import { initForm, fillForm, resetForm, editExpense, deleteExpense } from "./exp
 import { renderList } from "./list-view.js";
 import { initCalendar, renderCalendar, maybeRefreshDayModal } from "./calendar-view.js";
 import { initCompare } from "./compare-view.js";
+import { initRecipe, openRecipeModal } from "./recipe-view.js";
 
 window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
 window.addEventListener("unhandledrejection", (e) => logErr("未処理のPromise拒否:", e.reason));
@@ -105,8 +106,10 @@ function setupApp() {
       onAddExpense: _addCalendarExpense,
       onEdit: editExpense,
       onDelete: deleteExpense,
+      onRecipeSuggest: openRecipeModal,
     });
     initCompare({ fetchAllExpenses });
+    initRecipe({ getToken: () => currentUser?.getIdToken() });
 
     $("logout").onclick = () => signOut(auth);
     $("prev-month").onclick = () => shiftMonth(-1);
