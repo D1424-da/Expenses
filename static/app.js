@@ -176,6 +176,11 @@ function setupApp() {
     $("bnav-home").onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
     $("bnav-calendar").onclick = () => $("calendar").scrollIntoView({ behavior: "smooth" });
     $("bnav-shopping").onclick = () => $("shopping-btn").click();
+    $("bnav-recipe").onclick = () => openRecipeModal({
+      selectedDay: new Date().toISOString().slice(0, 10),
+      expenses: currentExpenses,
+      initialPeriod: "month",
+    });
     $("bnav-saved").onclick = () => $("saved-recipes-btn").click();
     bindModalDismiss();
 

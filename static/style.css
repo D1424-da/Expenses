@@ -776,7 +776,6 @@ button:not(.primary):hover { background: var(--stone); }
 .bnav-item:hover { color: var(--sage); }
 .bnav-icon { font-size: 1.25rem; line-height: 1; }
 .bnav-label { font-size: 0.6rem; font-weight: 700; letter-spacing: .02em; }
-.bnav-fab-spacer { flex: 1; } /* gap for the FAB */
 
 /* FAB */
 .fab {
