@@ -163,15 +163,28 @@
           <h2 id="recipe-modal-title">🍳 レシピ提案</h2>
           <button id="recipe-close" aria-label="閉じる">✕</button>
         </div>
-        <div class="recipe-meta">
-          <div id="recipe-ingredients" class="recipe-ingredients"></div>
-          <div class="recipe-servings-row">
-            <label>人数
-              <input type="number" id="recipe-servings" value="2" min="1" max="20" inputmode="numeric" />
-              人前
-            </label>
-            <button id="recipe-suggest-btn" type="button" class="primary">提案する</button>
+        <div class="recipe-row">
+          <span class="recipe-label">期間</span>
+          <div class="recipe-tabs" id="recipe-period-tabs" role="group" aria-label="期間選択">
+            <button class="recipe-tab" data-period="day">今日</button>
+            <button class="recipe-tab" data-period="week">今週</button>
+            <button class="recipe-tab" data-period="month">今月</button>
           </div>
+        </div>
+        <div id="recipe-ingredients" class="recipe-ingredients"></div>
+        <div class="recipe-row">
+          <span class="recipe-label">種類</span>
+          <div class="recipe-tabs" id="recipe-type-tabs" role="group" aria-label="レシピ種類">
+            <button class="recipe-tab" data-rtype="meal">1食分</button>
+            <button class="recipe-tab" data-rtype="weekly">週間献立</button>
+          </div>
+        </div>
+        <div class="recipe-servings-row">
+          <label>人数
+            <input type="number" id="recipe-servings" value="2" min="1" max="20" inputmode="numeric" />
+            人前
+          </label>
+          <button id="recipe-suggest-btn" type="button" class="primary">提案する</button>
         </div>
         <div id="recipe-status" class="status" hidden></div>
         <div id="recipe-result" class="recipe-result" hidden></div>

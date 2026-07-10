@@ -111,8 +111,9 @@ async def ocr_receipt(
 
 
 class RecipeRequest(BaseModel):
-    items: list[str] = Field(..., min_length=1, max_length=30)
+    items: list[str] = Field(..., min_length=1, max_length=50)
     servings: int = Field(2, ge=1, le=20)
+    recipe_type: str = Field("meal", pattern="^(meal|weekly)$")
 
 
 @app.post("/api/recipe")
@@ -128,7 +129,7 @@ async def suggest_recipe(
         raise HTTPException(400, "食材リストが空です。")
     from app import recipe as recipe_mod
     try:
-        text = recipe_mod.suggest_recipes(body.items, body.servings)
+        text = recipe_mod.suggest_recipes(body.items, body.servings, body.recipe_type)
         return JSONResponse({"recipe": text})
     except RuntimeError as exc:
         raise HTTPException(503, "レシピ提案サービスが設定されていません（GEMINI_API_KEY を確認してください）。") from exc
