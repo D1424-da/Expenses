@@ -588,6 +588,14 @@ button:not(.primary):hover { background: var(--stone); }
    ============================================================ */
 .recipe-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .recipe-label { font-size: 0.78rem; color: var(--muted); white-space: nowrap; min-width: 2.5em; font-weight: 600; }
+.recipe-date-range-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.recipe-date-range-row input[type="date"] {
+  flex: 1; padding: 5px 8px; font-size: 0.82rem; border: 1.5px solid var(--border);
+  border-radius: 8px; background: var(--bg); color: var(--ink); min-width: 0;
+}
+.recipe-date-sep { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
+.recipe-plan-start-hint { font-size: 0.75rem; color: var(--muted); }
+#recipe-plan-start { padding: 5px 8px; font-size: 0.82rem; border: 1.5px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--ink); }
 .recipe-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .recipe-tab {
   padding: 5px 13px; border-radius: 100px; border: 1.5px solid var(--border);

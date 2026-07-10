@@ -12,7 +12,9 @@ let _getBudget;
 let _expensesCache = null; // レシピモーダル1セッション中のキャッシュ
 let _selectedDay = null;
 let _expenses    = [];
-let _activePeriod  = "day";
+let _periodFrom  = "";   // "YYYY-MM-DD" 食材購入期間：開始
+let _periodTo    = "";   // "YYYY-MM-DD" 食材購入期間：終了
+let _activePeriod  = "day"; // 期間ショートカット（予算モードの除数計算に使用）
 let _activeType    = "meal";
 let _maxMinutes    = 0;    // 0 = 気にしない
 let _useUp         = false;
@@ -71,22 +73,38 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
     btn.onclick = () => {
       _budgetMode = btn.dataset.mode === "budget";
       _setActiveTab("recipe-mode-tabs", btn);
-      $("recipe-period-label").textContent = _budgetMode ? "残り予算の計算対象" : "利用する食材を購入した期間";
+      $("recipe-period-label").textContent = _budgetMode ? "残り予算の計算対象" : "食材の購入期間";
       $("recipe-budget-info").hidden = !_budgetMode;
       if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
     };
   });
-  // 期間タブ
+  // 期間タブ（ショートカット — 日付入力を自動設定する）
   $("recipe-period-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
     btn.onclick = () => {
-      _activePeriod = btn.dataset.period;
+      _applyPeriodShortcut(btn.dataset.period);
       _setActiveTab("recipe-period-tabs", btn);
       if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
     };
   });
+  // 日付範囲入力（手入力でも反映）
+  $("recipe-date-from").addEventListener("change", (e) => {
+    _periodFrom = e.target.value;
+    if (_periodTo < _periodFrom) { _periodTo = _periodFrom; $("recipe-date-to").value = _periodTo; }
+    if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
+  });
+  $("recipe-date-to").addEventListener("change", (e) => {
+    _periodTo = e.target.value;
+    if (_periodFrom > _periodTo) { _periodFrom = _periodTo; $("recipe-date-from").value = _periodFrom; }
+    if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
+  });
   // 種別タブ
   $("recipe-type-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
-    btn.onclick = () => { _activeType = btn.dataset.rtype; _setActiveTab("recipe-type-tabs", btn); };
+    btn.onclick = () => {
+      _activeType = btn.dataset.rtype;
+      _setActiveTab("recipe-type-tabs", btn);
+      $("recipe-plan-start-row").hidden = _activeType !== "weekly";
+      _renderIngredients();
+    };
   });
   // 時短タブ
   $("recipe-time-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
@@ -137,17 +155,21 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
 export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }) {
   _selectedDay = selectedDay;
   _expenses = expenses || [];
-  _activePeriod = initialPeriod;
   _activeType = "meal";
 
-  // タブ初期状態
-  _setActiveTabByValue("recipe-period-tabs", "data-period", _activePeriod);
+  // 期間ショートカット初期値を設定（日付入力も連動）
+  _applyPeriodShortcut(initialPeriod);
+  _setActiveTabByValue("recipe-period-tabs", "data-period", initialPeriod);
   _setActiveTabByValue("recipe-type-tabs", "data-rtype", _activeType);
+
+  // 週間献立開始日を選択日に初期化
+  $("recipe-plan-start").value = selectedDay || "";
+  $("recipe-plan-start-row").hidden = true;
 
   _budgetMode = false;
   _budgetSelectedItems = [];
   _setActiveTabByValue("recipe-mode-tabs", "data-mode", "history");
-  $("recipe-period-label").textContent = "利用する食材を購入した期間";
+  $("recipe-period-label").textContent = "食材の購入期間";
   $("recipe-budget-info").hidden = true;
 
   _lastMarkdown = "";
@@ -194,39 +216,55 @@ function _updateFamilyToggleLabel() {
   }
 }
 
-// 選択期間の食材チップを描画する。
-// 週間献立で品目ゼロの場合は次に広い期間へ自動拡張する（当日一括買いはそのまま使える）。
-function _renderIngredients() {
-  let period = _activePeriod;
-  let items = _itemsForPeriod(period);
-
-  if (items.length === 0 && _activeType === "weekly") {
-    const fallback = period === "day" ? "week" : period === "week" ? "month" : null;
-    if (fallback) {
-      const fallbackItems = _itemsForPeriod(fallback);
-      if (fallbackItems.length > 0) {
-        period = fallback;
-        items = fallbackItems;
-      }
-    }
+// 期間ショートカット（今日/今週/今月）をクリックしたとき日付入力に反映する。
+function _applyPeriodShortcut(period) {
+  if (!_selectedDay) return;
+  let from, to;
+  if (period === "day") {
+    from = to = _selectedDay;
+  } else if (period === "week") {
+    const d = new Date(_selectedDay + "T00:00:00");
+    const dow = d.getDay();
+    const sun = new Date(d); sun.setDate(d.getDate() - dow);
+    const sat = new Date(d); sat.setDate(d.getDate() + (6 - dow));
+    from = dayKey(sun); to = dayKey(sat);
+  } else { // month
+    const d = new Date(_selectedDay + "T00:00:00");
+    const y = d.getFullYear(), m = d.getMonth();
+    from = `${y}-${String(m + 1).padStart(2, "0")}-01`;
+    to   = dayKey(new Date(y, m + 1, 0));
   }
+  _periodFrom = from;
+  _periodTo   = to;
+  _activePeriod = period;
+  $("recipe-date-from").value = from;
+  $("recipe-date-to").value   = to;
+}
 
+// _periodFrom〜_periodTo に含まれる支出を返す。
+function _filterExpenses() {
+  if (!_periodFrom || !_periodTo) return [];
+  return _expenses.filter((e) => e.date && e.date >= _periodFrom && e.date <= _periodTo);
+}
+
+// 選択期間の食材チップを描画する。
+function _renderIngredients() {
+  const items = _itemsForPeriod();
   const unique = [...new Set(items)];
   const chips = $("recipe-ingredients");
   if (unique.length === 0) {
-    chips.innerHTML = `<span class="recipe-empty-hint">この期間に明細品目がありません</span>`;
+    chips.innerHTML = `<span class="recipe-empty-hint">この期間に明細品目がありません。期間を変更するか、「＋ 明細を追加」でレシートに品目を登録してください。</span>`;
   } else {
     chips.innerHTML = unique.map((n) => `<span class="recipe-chip">${escapeHtml(n)}</span>`).join("");
   }
-  const periodLabel = _PERIOD_LABELS[period] || "";
-  const expanded = period !== _activePeriod ? `（${_PERIOD_LABELS[_activePeriod] || ""}に品目なし → ${periodLabel}に拡張）` : "";
-  $("recipe-modal-title").textContent = `🍳 レシピ提案（${periodLabel}${expanded}）`;
+  const label = _periodFrom === _periodTo ? _periodFrom : `${_periodFrom}〜${_periodTo}`;
+  $("recipe-modal-title").textContent = `🍳 レシピ提案（${label}）`;
   $("recipe-result").hidden = true;
   $("recipe-status").hidden = true;
 }
 
-function _itemsForPeriod(period) {
-  return _filterExpensesByPeriod(period)
+function _itemsForPeriod() {
+  return _filterExpenses()
     .flatMap((e) => (e.items || []).map((it) => {
       if (!it.name || it.name.length < 1) return null;
       // 数量・単位がある場合は "牛肉 300g" "たまご 6個" 形式でAPIに渡す（精度向上）
@@ -234,24 +272,6 @@ function _itemsForPeriod(period) {
       if (it.qty != null) return `${it.name} ×${it.qty}`;
       return it.name;
     }).filter(Boolean));
-}
-
-function _filterExpensesByPeriod(period) {
-  if (!_selectedDay) return [];
-  if (period === "day") return _expenses.filter((e) => e.date === _selectedDay);
-  if (period === "week") {
-    const { start, end } = _weekRange(_selectedDay);
-    return _expenses.filter((e) => e.date && e.date >= start && e.date <= end);
-  }
-  return _expenses; // "month": 当月全件
-}
-
-function _weekRange(dayStr) {
-  const d = new Date(dayStr + "T00:00:00");
-  const dow = d.getDay();
-  const sun = new Date(d); sun.setDate(d.getDate() - dow);
-  const sat = new Date(d); sat.setDate(d.getDate() + (6 - dow));
-  return { start: dayKey(sun), end: dayKey(sat) };
 }
 
 async function _suggest() {
@@ -524,7 +544,8 @@ async function _renderBudgetIngredients() {
   chips.innerHTML = `<span class="recipe-empty-hint">💰 予算内の食材を計算中…</span>`;
   $("recipe-budget-status").textContent = "";
   $("recipe-budget-total").textContent  = "";
-  $("recipe-modal-title").textContent = `🍳 レシピ提案（予算モード・${_PERIOD_LABELS[_activePeriod] || ""}）`;
+  const _budgetPeriodLabel = _periodFrom === _periodTo ? _periodFrom : `${_periodFrom}〜${_periodTo}`;
+  $("recipe-modal-title").textContent = `🍳 レシピ提案（予算モード・${_budgetPeriodLabel}）`;
 
   const budget = _getBudget?.() || {};
   const foodBudget = budget["食費"] || 0;
@@ -535,12 +556,12 @@ async function _renderBudgetIngredients() {
     return;
   }
 
-  // 期間ごとの予算と支出を計算
+  // 期間ごとの予算と支出を計算（ショートカット由来の _activePeriod で月額比率を決定）
   const divisors = { month: 1, week: 4.3, day: 30 };
   const periodBudget = Math.round(foodBudget / (divisors[_activePeriod] || 1));
-  const periodLabel  = _PERIOD_LABELS[_activePeriod] || "";
+  const periodLabel  = _periodFrom === _periodTo ? _periodFrom : `${_periodFrom}〜${_periodTo}`;
 
-  const periodExpenses = _filterExpensesByPeriod(_activePeriod)
+  const periodExpenses = _filterExpenses()
     .filter((e) => !e.category || e.category === "食費");
   const spent = periodExpenses.reduce((s, e) => s + (e.amount || 0), 0);
   _budgetRemaining = Math.max(0, periodBudget - spent);
@@ -628,28 +649,21 @@ function _renderBudgetChips() {
   });
 
   const totalCost = _budgetSelectedItems.reduce((s, i) => s + i.estimatedPrice, 0);
-  const periodLabel = _PERIOD_LABELS[_activePeriod] || "";
-  $("recipe-budget-status").textContent = `${periodLabel}の食費残り ${yen(_budgetRemaining)}`;
+  const _chipPeriodLabel = _periodFrom === _periodTo ? _periodFrom : `${_periodFrom}〜${_periodTo}`;
+  $("recipe-budget-status").textContent = `${_chipPeriodLabel}の食費残り ${yen(_budgetRemaining)}`;
   $("recipe-budget-total").textContent  = `推定合計 ${yen(totalCost)}`;
 }
 
 // ---- 週間献立 → カレンダー --------------------------------------------------
 
 const _DAY_ORDER = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"];
-const _PERIOD_LABELS = { day: "今日", week: "今週", month: "今月" };
-
-// 選択日を含む週の月曜日を返す（週間献立のカレンダー反映起点）。
-function _getMondayOf(selectedDay) {
-  const d = new Date(selectedDay + "T00:00:00");
-  const dow = d.getDay(); // 0=Sun, 1=Mon, …, 6=Sat
-  d.setDate(d.getDate() + (dow === 0 ? -6 : 1 - dow));
-  return d;
-}
 
 // 週間献立マークダウンを {date, 朝食, 昼食, 夕食}[] に変換する。
-// "## 月曜日" セクションごとに3食を抽出し、_selectedDay の週の日付を割り当てる。
-function _extractWeeklyMeals(md, selectedDay) {
-  const monday = _getMondayOf(selectedDay);
+// "## 月曜日" セクションごとに3食を抽出し、献立開始日を起点に日付を割り当てる。
+// 月曜日=day0, 火曜日=day1 … 日曜日=day6 として開始日からのオフセットにマップする。
+function _extractWeeklyMeals(md) {
+  const planStartStr = $("recipe-plan-start").value || _selectedDay || "";
+  const planStart = new Date(planStartStr + "T00:00:00");
   const results = [];
 
   const sections = md.split(/^## /m).slice(1);
@@ -660,8 +674,8 @@ function _extractWeeklyMeals(md, selectedDay) {
     const dayIdx = _DAY_ORDER.indexOf(dayName);
     if (dayIdx === -1) continue;
 
-    const date = new Date(monday);
-    date.setDate(monday.getDate() + dayIdx);
+    const date = new Date(planStart);
+    date.setDate(planStart.getDate() + dayIdx);
     const dateStr = dayKey(date);
 
     const body = section.slice(headingEnd);
@@ -687,7 +701,7 @@ async function _exportToCalendar() {
   const btn = $("recipe-calendar-btn");
   btn.disabled = true;
   try {
-    const meals = _extractWeeklyMeals(_lastMarkdown, _selectedDay);
+    const meals = _extractWeeklyMeals(_lastMarkdown);
     if (!meals.length) {
       alert("献立情報を解析できませんでした。週間献立を再生成してください。");
       return;
