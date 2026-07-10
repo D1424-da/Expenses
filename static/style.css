@@ -795,6 +795,52 @@ button:not(.primary):hover { background: var(--stone); }
 .fab:hover { filter: brightness(1.1); }
 
 /* ============================================================
+   PC NAV BAR
+   ============================================================ */
+.pc-nav {
+  display: none;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 53px;
+  z-index: 9;
+}
+.pc-nav-inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 44px;
+}
+.pc-nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--r-btn);
+  white-space: nowrap;
+  position: relative;
+  transition: color .13s, background .13s;
+}
+.pc-nav-item:hover { color: var(--sage); background: var(--sage-light); }
+.pc-nav-item.pcnav-accent {
+  color: var(--sage);
+  background: var(--sage-light);
+}
+.pc-nav-item.pcnav-accent:hover { filter: brightness(0.95); }
+.pcnav-icon { font-size: 1rem; line-height: 1; }
+.pcnav-label { font-size: 0.8rem; }
+.pcnav-divider { width: 1px; height: 18px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+
+/* ============================================================
    SMALL MOBILE TWEAKS
    ============================================================ */
 @media (max-width: 520px) {
@@ -803,8 +849,8 @@ button:not(.primary):hover { background: var(--stone); }
   .cal-day, .cal-week { min-height: 44px; }
   .cal-amt, .cal-week { font-size: 0.6rem; }
   .cal-day { padding: 2px; }
-  /* hide text labels from topbar icon buttons on small screens */
-  #compare-btn { font-size: 0.82rem; }
+  /* モバイルでは保存レシピ・最安値をヘッダーから省略（ボトムナビ優先） */
+  #saved-recipes-btn, #compare-btn { display: none; }
 }
 
 /* ============================================================
@@ -813,6 +859,12 @@ button:not(.primary):hover { background: var(--stone); }
 @media (min-width: 768px) {
   /* hide mobile-only elements */
   .bottom-nav, .fab { display: none; }
+
+  /* PC navバーを表示 */
+  .pc-nav { display: block; }
+
+  /* PC navに移動したボタンをヘッダーから隠す */
+  #shopping-btn, #saved-recipes-btn, #compare-btn { display: none; }
 
   main {
     padding-bottom: 24px;
@@ -841,4 +893,5 @@ button:not(.primary):hover { background: var(--stone); }
 
 @media (min-width: 1024px) {
   main { max-width: 1040px; padding: 20px 24px 24px; }
+  .pc-nav-inner { padding: 0 24px; }
 }

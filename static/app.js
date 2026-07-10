@@ -179,6 +179,21 @@ function setupApp() {
       expenses: currentExpenses,
       initialPeriod: "month",
     });
+
+    // PC nav
+    $("pcnav-home").onclick     = () => window.scrollTo({ top: 0, behavior: "smooth" });
+    $("pcnav-calendar").onclick = () => $("calendar").scrollIntoView({ behavior: "smooth" });
+    $("pcnav-recipe").onclick   = () => openRecipeModal({
+      selectedDay: dayKey(new Date()),
+      expenses: currentExpenses,
+      initialPeriod: "month",
+    });
+    $("pcnav-shopping").onclick = () => $("shopping-btn").click();
+    $("pcnav-saved").onclick    = () => $("saved-recipes-btn").click();
+    $("pcnav-compare").onclick  = () => $("compare-btn").click();
+    $("pcnav-budget").onclick   = () => $("budget-btn").click();
+    $("pcnav-trend").onclick    = () => $("trend-btn").click();
+
     bindModalDismiss();
 
     prewarmOcr();

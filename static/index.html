@@ -44,6 +44,25 @@
       </div>
     </header>
 
+    <!-- PC専用ナビゲーションバー（モバイルでは非表示） -->
+    <nav class="pc-nav" aria-label="メインナビゲーション">
+      <div class="pc-nav-inner">
+        <button class="pc-nav-item" id="pcnav-home"><span class="pcnav-icon">🏠</span><span class="pcnav-label">ホーム</span></button>
+        <button class="pc-nav-item" id="pcnav-calendar"><span class="pcnav-icon">📅</span><span class="pcnav-label">カレンダー</span></button>
+        <button class="pc-nav-item pcnav-accent" id="pcnav-recipe"><span class="pcnav-icon">🍳</span><span class="pcnav-label">レシピ提案</span></button>
+        <div class="pcnav-divider"></div>
+        <button class="pc-nav-item" id="pcnav-shopping">
+          <span class="pcnav-icon">🛒</span><span class="pcnav-label">買い物リスト</span>
+          <span class="shopping-badge" id="shopping-badge-pc" hidden></span>
+        </button>
+        <button class="pc-nav-item" id="pcnav-saved"><span class="pcnav-icon">📚</span><span class="pcnav-label">保存レシピ</span></button>
+        <button class="pc-nav-item" id="pcnav-compare"><span class="pcnav-icon">🔎</span><span class="pcnav-label">最安値</span></button>
+        <div class="pcnav-divider"></div>
+        <button class="pc-nav-item" id="pcnav-budget"><span class="pcnav-icon">💰</span><span class="pcnav-label">予算</span></button>
+        <button class="pc-nav-item" id="pcnav-trend"><span class="pcnav-icon">📈</span><span class="pcnav-label">推移</span></button>
+      </div>
+    </nav>
+
     <main>
       <!-- サマリー -->
       <section class="summary card">
