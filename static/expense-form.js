@@ -8,7 +8,7 @@ import {
 import { CATEGORIES } from "./firebase-config.js";
 import { log, logErr } from "./log.js";
 import { $, todayStr, escapeHtml, closeModal } from "./dom-utils.js";
-import { invalidateHistoryDict } from "./history.js";
+import { invalidateHistoryDict, TRUSTED_ENGINES } from "./history.js";
 
 let _ctx;
 let _previewUrl = null;
@@ -169,7 +169,11 @@ async function _handleSubmit(e) {
       category: $("f-category").value,
       memo: $("f-memo").value.trim(),
       items: _collectItems(),
-      ocrEngine: engine || (id ? "" : "manual"),
+      // 編集時: 信頼エンジン由来ならそのまま保持、それ以外は "edited" に昇格させて
+      // 次回正規化の正解辞書に含める（楽天家計簿方式の学習）。
+      ocrEngine: id
+        ? (TRUSTED_ENGINES.includes(engine) ? engine : "edited")
+        : (engine || "manual"),
     };
     log(id ? "更新:" : "新規保存:", payload);
     if (id) {
