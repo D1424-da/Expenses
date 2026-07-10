@@ -330,10 +330,18 @@ async function _suggest() {
     }
 
     if (!res.ok) {
-      const msg = await res.text().catch(() => res.statusText);
-      // HTTPエラーの詳細をログに残しつつ、ユーザー向けには簡潔に表示
-      logErr("レシピAPI HTTPエラー:", res.status, msg);
-      const detail = msg.replace(/<[^>]*>/g, "").trim().slice(0, 200); // HTMLタグ除去
+      const raw = await res.text().catch(() => "");
+      logErr("レシピAPI HTTPエラー:", res.status, raw);
+      // FastAPI は {"detail": "..."} 形式でエラーを返す
+      let detail = raw;
+      try { detail = JSON.parse(raw)?.detail || raw; } catch { /* raw のまま */ }
+      detail = String(detail).replace(/<[^>]*>/g, "").trim().slice(0, 300);
+      if (res.status === 401 || res.status === 403) {
+        throw new Error("認証エラーです。一度ログアウトして再ログインしてください。");
+      }
+      if (res.status === 503 && detail.includes("GEMINI_API_KEY")) {
+        throw new Error("レシピ機能のAPIキーがバックエンドに設定されていません（Render の環境変数 GEMINI_API_KEY を確認してください）。");
+      }
       throw new Error(`HTTP ${res.status}${detail ? " — " + detail : ""}`);
     }
     const { recipe } = await res.json();
@@ -355,7 +363,10 @@ async function _suggest() {
     $("recipe-calendar-btn").hidden = _activeType !== "weekly";
   } catch (err) {
     logErr("レシピ提案エラー:", err.message, err);
-    _showStatus("error", "レシピの取得に失敗しました: " + err.message);
+    // 接続エラーの場合はコールドスタートを疑う
+    const isNetworkErr = err.message.includes("fetch") || err.message.includes("network") || err.message.includes("Network");
+    const hint = isNetworkErr ? "\n\n（バックエンドが起動中の場合は30秒ほど待ってから再試行してください）" : "";
+    _showStatus("error", `レシピの取得に失敗しました。\n${err.message}${hint}`);
   } finally {
     btn.disabled = false;
   }
