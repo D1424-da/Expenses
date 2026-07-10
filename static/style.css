@@ -868,6 +868,9 @@ button:not(.primary):hover { background: var(--stone); }
   .cal-day { padding: 2px; }
   /* モバイルでは保存レシピ・最安値をヘッダーから省略（ボトムナビ優先） */
   #saved-recipes-btn, #compare-btn { display: none; }
+  /* お得情報をカテゴリバーより先に表示（埋もれ防止） */
+  .summary-body { display: flex; flex-direction: column; }
+  #lowest-alerts { order: -1; margin-top: 0; margin-bottom: 12px; }
 }
 
 /* ============================================================

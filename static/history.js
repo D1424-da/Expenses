@@ -4,7 +4,8 @@
 import { log, logErr } from "./log.js";
 
 // 正解として信頼する高精度AIエンジン。これ以外（vision/tesseract/paddle）は正規化対象。
-export const TRUSTED_ENGINES = ["gemini", "vertex"];
+// "edited" = ユーザーが手動で修正した記録。次回正規化の基準として採用する。
+export const TRUSTED_ENGINES = ["gemini", "vertex", "edited"];
 
 // 照合用にゆらぎを吸収したキーへ正規化（全角半角・大小・記号/空白除去）。
 function normKey(s) {
