@@ -106,7 +106,8 @@ function setupApp() {
       onAddExpense: _addCalendarExpense,
       onEdit: editExpense,
       onDelete: deleteExpense,
-      onRecipeSuggest: openRecipeModal,
+      onRecipeSuggest: (selectedDay, expenses) =>
+        openRecipeModal({ selectedDay, expenses, initialPeriod: "day" }),
     });
     initCompare({ fetchAllExpenses });
     initRecipe({ getToken: () => currentUser?.getIdToken() });

@@ -12,7 +12,7 @@ let _expenses = [];
 let _selectedDay = null;
 let _weekBreakdowns = [];
 
-// ctx: { onAddExpense({date, store, amount, category}), onEdit(e), onDelete(id), onRecipeSuggest(items) }
+// ctx: { onAddExpense({date, store, amount, category}), onEdit(e), onDelete(id), onRecipeSuggest(selectedDay, expenses) }
 export function initCalendar({ onAddExpense, onEdit, onDelete, onRecipeSuggest }) {
   _onAddExpense = onAddExpense;
   _onEdit = onEdit;
@@ -166,12 +166,12 @@ function _renderDayModal() {
 
   // 明細品目がある支出がひとつでもあればレシピ提案ボタンを表示
   if (_onRecipeSuggest) {
-    const allItems = items.flatMap((e) => (e.items || []).map((it) => it.name).filter(Boolean));
-    if (allItems.length > 0) {
+    const hasItems = items.some((e) => (e.items || []).some((it) => it.name));
+    if (hasItems) {
       const btn = document.createElement("button");
       btn.className = "recipe-open-btn";
-      btn.textContent = "🍳 この日の品目でレシピを提案";
-      btn.onclick = () => _onRecipeSuggest(allItems);
+      btn.textContent = "🍳 レシピを提案";
+      btn.onclick = () => _onRecipeSuggest(_selectedDay, _expenses);
       list.appendChild(btn);
     }
   }

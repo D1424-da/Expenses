@@ -1,7 +1,8 @@
 """Gemini を使ったレシピ提案。
 
-レシート明細から取り出した食材リストと人数を受け取り、
-家庭向けのレシピを2〜3品テキストで返す。
+食材リスト・人数・提案種別（1食分 or 週間献立）を受け取り、
+家庭向けのレシピをマークダウンテキストで返す。
+量が不明な食材はGeminiに家庭的な目安量で補完させる。
 """
 from __future__ import annotations
 
@@ -11,28 +12,58 @@ from app import net
 
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 
-_PROMPT = """\
+_COMMON_NOTE = (
+    "食材の量が不明な場合は、家庭での一般的な使用量を想定してください。"
+)
+
+_PROMPTS: dict[str, str] = {
+    "meal": """\
 以下の食材を使って、{servings}人前の料理を2〜3品提案してください。
+{note}
 
 食材: {items}
 
-各料理について以下を簡潔に記載してください（マークダウン形式）。
+各料理について以下をマークダウン形式で簡潔に記載してください。
+
 ## 料理名
-**使う食材**: （上記リストから使うもの）
+**使う食材**: （上記リストから使うもの＋目安量）
 **作り方**:
 1. ...
 2. ...
 
-家庭で作りやすいシンプルなレシピを優先してください。"""
+家庭で作りやすいシンプルなレシピを優先してください。""",
+
+    "weekly": """\
+以下の食材を使って、{servings}人前の1週間分の献立（月〜日）を提案してください。
+{note}
+食材が余らないよう、できるだけ使い切れる献立にしてください。
+
+食材: {items}
+
+以下のマークダウン形式で記載してください。
+
+## 月曜日
+- **朝食**: ...
+- **昼食**: ...
+- **夕食**: ...（メインの料理名と主な食材）
+
+## 火曜日
+...（以下同様）""",
+}
 
 
-def suggest_recipes(items: list[str], servings: int) -> str:
+def suggest_recipes(items: list[str], servings: int, recipe_type: str = "meal") -> str:
     """食材リストと人数からレシピ提案テキストを返す。"""
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY が設定されていません。")
 
-    prompt = _PROMPT.format(servings=servings, items="、".join(items))
+    template = _PROMPTS.get(recipe_type, _PROMPTS["meal"])
+    prompt = template.format(
+        servings=servings,
+        items="、".join(items),
+        note=_COMMON_NOTE,
+    )
     body = {
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.7},
