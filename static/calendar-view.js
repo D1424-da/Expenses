@@ -6,6 +6,7 @@ import { $, yen, dayKey, escapeHtml, openModal, closeModal, renderCatBars, WEEKD
 import { log, logErr } from "./log.js";
 import { categoryBreakdown } from "./stats.js";
 import { CATEGORIES } from "./firebase-config.js";
+import { saveMeal, deleteMeal } from "./meal-plan.js";
 
 let _onAddExpense, _onEdit, _onDelete;
 let _expenses = [];
@@ -66,7 +67,8 @@ export function renderCalendar(expenses, month) {
         key === todayKey ? "cal-today" : "",
         amt > 0 ? "cal-has" : "",
       ].filter(Boolean).join(" ");
-      const hasMeal = inMonth && _mealPlans[key];
+      const _mp = _mealPlans[key];
+      const hasMeal = inMonth && _mp && (_mp.朝食 || _mp.お弁当 || _mp.昼食 || _mp.夕食);
       rowHtml += `<div class="${cls}" data-day="${key}" ${inMonth ? "" : "data-out"}>
           <span class="cal-num">${cursor.getDate()}</span>
           ${amt > 0 ? `<span class="cal-amt">${yen(amt)}</span>` : ""}
@@ -148,41 +150,13 @@ function _renderDayModal() {
     .sort((a, b) => (b.amount || 0) - (a.amount || 0));
   $("day-total").textContent = yen(items.reduce((s, e) => s + (e.amount || 0), 0));
 
-  // 献立がある日は内容を表示（支出の有無に関わらず先に描画）
-  const mealPlanEl = $("day-meal-plan");
+  // 献立（常に表示・各食事をインライン編集可能）
+  const mealPlanEl    = $("day-meal-plan");
   const mealContentEl = $("day-meal-content");
-  const plan = _mealPlans[_selectedDay];
-  if (plan && (plan.朝食 || plan.昼食 || plan.夕食)) {
-    const hasDinnerRecipe = !!(plan.夕食 && plan.夕食レシピ);
-    mealContentEl.innerHTML = [
-      plan.朝食 ? `<div class="meal-row"><span class="meal-label">朝食</span><span class="meal-text">${escapeHtml(plan.朝食)}</span></div>` : "",
-      plan.昼食 ? `<div class="meal-row"><span class="meal-label">昼食</span><span class="meal-text">${escapeHtml(plan.昼食)}</span></div>` : "",
-      plan.夕食 ? `<div class="meal-row${hasDinnerRecipe ? " meal-row-tap" : ""}" data-dinner>
-        <span class="meal-label">夕食</span>
-        <span class="meal-text">${escapeHtml(plan.夕食)}</span>
-        ${hasDinnerRecipe ? `<span class="meal-arrow">▶</span>` : ""}
-      </div>
-      ${hasDinnerRecipe ? `<div class="meal-recipe-detail recipe-result" hidden></div>` : ""}` : "",
-    ].join("");
-    if (hasDinnerRecipe) {
-      const dinnerRow = mealContentEl.querySelector("[data-dinner]");
-      const detailEl  = mealContentEl.querySelector(".meal-recipe-detail");
-      dinnerRow.onclick = () => {
-        if (detailEl.hidden) {
-          const render = window.__recipeHelpers__?._markdownToHtml;
-          detailEl.innerHTML = render
-            ? render(plan.夕食レシピ)
-            : `<pre style="white-space:pre-wrap;font-size:.85rem">${escapeHtml(plan.夕食レシピ)}</pre>`;
-        }
-        detailEl.hidden = !detailEl.hidden;
-        dinnerRow.querySelector(".meal-arrow").textContent = detailEl.hidden ? "▶" : "▼";
-      };
-    }
-    mealPlanEl.hidden = false;
-  } else {
-    mealPlanEl.hidden = true;
-    mealContentEl.innerHTML = "";
-  }
+  const plan = _mealPlans[_selectedDay] || {};
+  mealContentEl.innerHTML = "";
+  mealContentEl.appendChild(_buildMealEditor(plan));
+  mealPlanEl.hidden = false;
 
   // 支出リスト
   const list = $("day-list");
@@ -207,6 +181,116 @@ function _renderDayModal() {
     list.appendChild(row);
   }
 
+}
+
+// 献立の3食をインライン編集できる DOM を組み立てる。
+// blur で自動保存、🗑️ で1食削除、📖 でレシピ展開。
+function _buildMealEditor(plan) {
+  const SLOTS = [
+    { slot: "朝食",   icon: "🌅", ph: "例：目玉焼き・ご飯" },
+    { slot: "お弁当", icon: "🍱", ph: "例：唐揚げ・卵焼き　/ 給食 / 外食" },
+    { slot: "夕食",   icon: "🌙", ph: "例：カレーライス" },
+  ];
+
+  const wrap = document.createElement("div");
+  wrap.className = "meal-editor";
+
+  for (const { slot, icon, ph } of SLOTS) {
+    // 旧データの「昼食」フィールドはお弁当欄に引き継ぐ
+    const memo   = plan[slot] || (slot === "お弁当" ? (plan["昼食"] || "") : "");
+    const recipe = plan[`${slot}レシピ`] || null;
+
+    const row = document.createElement("div");
+    row.className = "meal-editor-row";
+
+    const lbl = document.createElement("span");
+    lbl.className = "meal-editor-label";
+    lbl.textContent = `${icon} ${slot}`;
+    row.appendChild(lbl);
+
+    const inputWrap = document.createElement("div");
+    inputWrap.className = "meal-editor-input-wrap";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "meal-editor-input";
+    input.value = memo;
+    input.placeholder = ph;
+    input.setAttribute("aria-label", slot);
+    inputWrap.appendChild(input);
+
+    // レシピ展開ボタン＋詳細パネル
+    let detailEl = null;
+    if (recipe) {
+      const recipeBtn = document.createElement("button");
+      recipeBtn.type = "button";
+      recipeBtn.className = "meal-recipe-btn";
+      recipeBtn.textContent = "📖";
+      recipeBtn.title = "レシピを見る";
+      inputWrap.appendChild(recipeBtn);
+
+      detailEl = document.createElement("div");
+      detailEl.className = "meal-recipe-detail recipe-result";
+      detailEl.hidden = true;
+
+      recipeBtn.onclick = () => {
+        if (detailEl.hidden) {
+          const render = window.__recipeHelpers__?._markdownToHtml;
+          detailEl.innerHTML = render
+            ? render(recipe)
+            : `<pre style="white-space:pre-wrap;font-size:.85rem">${escapeHtml(recipe)}</pre>`;
+        }
+        detailEl.hidden = !detailEl.hidden;
+        recipeBtn.textContent = detailEl.hidden ? "📖" : "📖▼";
+      };
+    }
+
+    // 削除ボタン
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.className = "meal-del-btn";
+    delBtn.textContent = "🗑️";
+    delBtn.title = `${slot}を削除`;
+    delBtn.hidden = !memo;
+    inputWrap.appendChild(delBtn);
+
+    row.appendChild(inputWrap);
+    wrap.appendChild(row);
+    if (detailEl) wrap.appendChild(detailEl);
+
+    // blur → 自動保存
+    let _savedVal = memo;
+    input.addEventListener("blur", async () => {
+      const newVal = input.value.trim();
+      if (newVal === _savedVal) return;
+      try {
+        if (newVal) {
+          await saveMeal(_selectedDay, slot, newVal);
+        } else {
+          await deleteMeal(_selectedDay, slot);
+        }
+        _savedVal = newVal;
+        delBtn.hidden = !newVal;
+      } catch (err) {
+        logErr("献立保存エラー:", err.message);
+      }
+    });
+
+    // 削除ボタン
+    delBtn.onclick = async () => {
+      input.value = "";
+      _savedVal = "";
+      delBtn.hidden = true;
+      if (detailEl) detailEl.hidden = true;
+      try {
+        await deleteMeal(_selectedDay, slot);
+      } catch (err) {
+        logErr("献立削除エラー:", err.message);
+      }
+    };
+  }
+
+  return wrap;
 }
 
 async function _handleDayAdd(e) {
