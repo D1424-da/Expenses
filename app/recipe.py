@@ -62,12 +62,28 @@ _PROMPTS: dict[str, str] = {
 }
 
 
+def _family_note(family: dict | None) -> str:
+    """家族構成を自然な日本語に変換する。"""
+    if not family:
+        return ""
+    parts = []
+    if family.get("adults_m"):  parts.append(f"大人（男）{family['adults_m']}人")
+    if family.get("adults_f"):  parts.append(f"大人（女）{family['adults_f']}人")
+    if family.get("toddlers"):  parts.append(f"幼児{family['toddlers']}人")
+    if family.get("elementary"):parts.append(f"小学生{family['elementary']}人")
+    if family.get("junior_high"):parts.append(f"中学生・高校生{family['junior_high']}人")
+    if not parts:
+        return ""
+    return "家族構成: " + "、".join(parts) + "。この構成に合った料理（辛さ・量・食感など）を提案してください。"
+
+
 def suggest_recipes(
     items: list[str],
     servings: int,
     recipe_type: str = "meal",
     max_minutes: int | None = None,
     use_up: bool = False,
+    family: dict | None = None,
 ) -> str:
     """食材リストと人数からレシピ提案テキストを返す。"""
     api_key = os.environ.get("GEMINI_API_KEY")
@@ -79,6 +95,9 @@ def suggest_recipes(
         notes.append(_NOTES["time"].format(max_minutes=max_minutes))
     if use_up:
         notes.append(_NOTES["use_up"])
+    family_note = _family_note(family)
+    if family_note:
+        notes.append(family_note)
 
     template = _PROMPTS.get(recipe_type, _PROMPTS["meal"])
     prompt = template.format(

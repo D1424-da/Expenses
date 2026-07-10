@@ -70,23 +70,40 @@ function _render() {
   if (!_items.length) { emptyEl.hidden = false; return; }
   emptyEl.hidden = true;
 
-  // 未完了を上、完了を下に表示
+  // 店舗別にグループ化（未完了→完了の順、店舗なしは最後）
+  const groups = new Map();
   const sorted = [..._items].sort((a, b) => Number(a.done) - Number(b.done));
   for (const item of sorted) {
-    const row = document.createElement("div");
-    row.className = "shopping-item" + (item.done ? " done" : "");
-    row.innerHTML = `
-      <label class="shopping-check">
-        <input type="checkbox" ${item.done ? "checked" : ""} />
-        <span class="shopping-check-text">
+    const key = item.store || "";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  // 店舗あり → 名前順 → 店舗なし
+  const storeKeys = [...groups.keys()].sort((a, b) => {
+    if (!a) return 1; if (!b) return -1;
+    return a.localeCompare(b, "ja");
+  });
+
+  for (const storeKey of storeKeys) {
+    // 店舗ヘッダー
+    const header = document.createElement("div");
+    header.className = "shopping-store-header";
+    header.textContent = storeKey ? `🏪 ${storeKey}` : "🛒 店舗未設定";
+    listEl.appendChild(header);
+
+    for (const item of groups.get(storeKey)) {
+      const row = document.createElement("div");
+      row.className = "shopping-item" + (item.done ? " done" : "");
+      row.innerHTML = `
+        <label class="shopping-check">
+          <input type="checkbox" ${item.done ? "checked" : ""} />
           <span class="shopping-check-name">${escapeHtml(item.name)}</span>
-          ${item.store ? `<span class="shopping-check-store">🏪 ${escapeHtml(item.store)}</span>` : ""}
-        </span>
-      </label>
-      <button class="shopping-del" aria-label="削除" type="button">✕</button>`;
-    row.querySelector("input").onchange   = () => _toggle(item.id);
-    row.querySelector(".shopping-del").onclick = () => _remove(item.id);
-    listEl.appendChild(row);
+        </label>
+        <button class="shopping-del" aria-label="削除" type="button">✕</button>`;
+      row.querySelector("input").onchange   = () => _toggle(item.id);
+      row.querySelector(".shopping-del").onclick = () => _remove(item.id);
+      listEl.appendChild(row);
+    }
   }
 }
 
