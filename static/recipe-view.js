@@ -78,7 +78,8 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
   $("recipe-post-actions").hidden = true;
   $("recipe-save-btn").textContent = "📚 保存";
   $("recipe-shopping-btn").textContent = "🛒 リストに追加";
-  $("recipe-servings").value = "2";
+  // 前回使った人数を復元（なければ2）
+  $("recipe-servings").value = localStorage.getItem("recipe_servings") || "2";
   // 時短タブ・使い切りをリセット
   _maxMinutes = 0;
   _useUp = false;
@@ -180,6 +181,7 @@ async function _suggest() {
     _lastMarkdown = recipe;
     _lastItems    = items;
     _lastServings = servings;
+    localStorage.setItem("recipe_servings", servings);
     $("recipe-status").hidden = true;
     const result = $("recipe-result");
     result.innerHTML = _markdownToHtml(recipe);
@@ -195,6 +197,7 @@ async function _suggest() {
 
 // Markdown → HTML 変換（見出し・太字・番号リスト・箇条書き）。
 // <li> は必ず <ol>/<ul> で囲む（囲みなしだとブラウザでマーカーが表示されない）。
+// **難易度**: ★★☆ 行は専用バッジに変換する。
 function _markdownToHtml(md) {
   const bold = (s) => s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   const lines = md.split("\n");
@@ -218,6 +221,13 @@ function _markdownToHtml(md) {
     } else if ((m = line.match(/^- (.+)$/))) {
       if (listTag !== "ul") { closeList(); out.push("<ul>"); listTag = "ul"; }
       out.push(`<li>${bold(m[1])}</li>`);
+    } else if ((m = line.match(/^\*\*難易度\*\*[：:]\s*(.+)$/))) {
+      // ★の数で色を変える
+      closeList();
+      const stars = m[1].trim();
+      const level = (stars.match(/★/g) || []).length;
+      const cls = level === 1 ? "diff-easy" : level === 2 ? "diff-mid" : "diff-hard";
+      out.push(`<div class="recipe-difficulty"><span class="diff-badge ${cls}">${stars}</span> 難易度</div>`);
     } else if (line.trim()) {
       closeList();
       out.push(`<p>${bold(line)}</p>`);
