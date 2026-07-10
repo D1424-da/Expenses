@@ -11,7 +11,8 @@ export function initCompare({ fetchAllExpenses }) {
   _fetchAll = fetchAllExpenses;
   $("compare-btn").onclick = _open;
   $("compare-close").onclick = () => closeModal("compare-modal");
-  $("compare-search").oninput = _render;
+  let _debounce = null;
+  $("compare-search").oninput = () => { clearTimeout(_debounce); _debounce = setTimeout(_render, 200); };
 }
 
 async function _open() {

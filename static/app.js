@@ -167,8 +167,6 @@ function setupApp() {
     $("next-month").onclick = () => shiftMonth(1);
     $("file-input").onchange = handleFiles;
     $("camera-input").onchange = handleFiles;
-    $("file-input").onclick = prewarmOcr;
-    $("camera-input").onclick = prewarmOcr;
     $("skip-btn").onclick = skipCurrent;
     $("fab-camera").onclick = () => $("camera-input").click();
     $("bnav-home").onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
@@ -261,9 +259,10 @@ function subscribeMonth() {
       currentExpenses = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       log("Firestore更新:", currentExpenses.length, "件");
       renderList(currentExpenses, { onEdit: editExpense, onDelete: deleteExpense });
-      renderSummary();
       renderCalendar(currentExpenses, currentMonth);
       maybeRefreshDayModal();
+      // サマリー（非同期の全件フェッチを含む）は描画フレームの後に遅延実行
+      requestAnimationFrame(renderSummary);
     },
     (err) => {
       logErr("Firestore購読エラー:", err.code, err.message, err);
@@ -320,13 +319,14 @@ async function _addCalendarExpense({ date, store, amount, category }) {
     createdAt: serverTimestamp(),
   });
   log("カレンダーから追加:", date, amount);
-  _allExpensesCache = null;
+  // キャッシュに追記して全件再フェッチを回避（onSnapshot で currentExpenses は自動更新される）
+  if (_allExpensesCache) _allExpensesCache.push({ date, store, branch: "", amount, category, memo: "", items: [], ocrEngine: "manual" });
   _jumpToMonthOf(date);
 }
 
 // ---- フォーム保存後のコールバック（expense-form のコールバック） ------------
 function _onFormSaved(dateStr, wasEdit) {
-  _allExpensesCache = null;
+  // キャッシュは保持（軽微な陳腐化を許容し全件再フェッチを避ける）
   _jumpToMonthOf(dateStr);
   if (wasEdit) $("expense-list").scrollIntoView({ behavior: "smooth" });
   if (!_advanceQueue()) $("ocr-status").hidden = true;
