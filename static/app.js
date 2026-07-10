@@ -130,6 +130,11 @@ function setupApp() {
     $("file-input").onclick = prewarmOcr;
     $("camera-input").onclick = prewarmOcr;
     $("skip-btn").onclick = skipCurrent;
+    $("fab-camera").onclick = () => $("camera-input").click();
+    $("bnav-home").onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+    $("bnav-calendar").onclick = () => $("calendar").scrollIntoView({ behavior: "smooth" });
+    $("bnav-shopping").onclick = () => $("shopping-btn").click();
+    $("bnav-saved").onclick = () => $("saved-recipes-btn").click();
     bindModalDismiss();
 
     prewarmOcr();

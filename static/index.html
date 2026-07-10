@@ -41,19 +41,23 @@
     <main>
       <!-- サマリー -->
       <section class="summary card">
-        <div class="summary-top">
-          <div class="summary-total">
-            <span class="label">今月の支出</span>
-            <span id="summary-total" class="value">¥0</span>
-            <span id="summary-count" class="sub"></span>
-          </div>
-          <div class="summary-actions">
-            <button id="budget-btn" class="summary-action-btn" title="予算設定">💰 予算</button>
-            <button id="trend-btn" class="summary-action-btn" title="支出推移">📈 推移</button>
+        <div class="summary-hero">
+          <div class="summary-top">
+            <div class="summary-total">
+              <span class="label">今月の支出</span>
+              <span id="summary-total" class="value">¥0</span>
+              <span id="summary-count" class="sub"></span>
+            </div>
+            <div class="summary-actions">
+              <button id="budget-btn" class="summary-action-btn" title="予算設定">💰 予算</button>
+              <button id="trend-btn" class="summary-action-btn" title="📈 推移">📈 推移</button>
+            </div>
           </div>
         </div>
-        <div id="category-bars" class="category-bars"></div>
-        <div id="lowest-alerts" class="lowest-alerts" hidden></div>
+        <div class="summary-body">
+          <div id="category-bars" class="category-bars"></div>
+          <div id="lowest-alerts" class="lowest-alerts" hidden></div>
+        </div>
       </section>
 
       <!-- カレンダー（日ごとの買い物金額＋週間合計） -->
@@ -290,6 +294,31 @@
         <button id="shopping-clear-done" class="shopping-clear-btn" type="button">完了済みを削除</button>
       </div>
     </div>
+  </div>
+
+    <!-- FAB（モバイル：カメラ起動） -->
+    <button class="fab" id="fab-camera" aria-label="レシートを撮影">📷</button>
+
+    <!-- ボトムナビ（モバイルのみ） -->
+    <nav class="bottom-nav" aria-label="メインナビゲーション">
+      <button class="bnav-item" id="bnav-home" aria-label="ホーム">
+        <span class="bnav-icon">🏠</span>
+        <span class="bnav-label">ホーム</span>
+      </button>
+      <button class="bnav-item" id="bnav-calendar" aria-label="カレンダー">
+        <span class="bnav-icon">📅</span>
+        <span class="bnav-label">カレンダー</span>
+      </button>
+      <div class="bnav-fab-spacer"></div>
+      <button class="bnav-item" id="bnav-shopping" aria-label="買い物リスト">
+        <span class="bnav-icon">🛒</span>
+        <span class="bnav-label">買い物</span>
+      </button>
+      <button class="bnav-item" id="bnav-saved" aria-label="保存済みレシピ">
+        <span class="bnav-icon">📚</span>
+        <span class="bnav-label">レシピ</span>
+      </button>
+    </nav>
   </div>
 
   <!-- ブラウザ内OCRは PaddleOCR(ppu-paddle-ocr + onnxruntime-web) を app.js から
