@@ -1,8 +1,29 @@
-// 支出の推移グラフ（過去6ヶ月）— SVG で描画、外部ライブラリ不使用。
+// 支出の推移グラフ（過去6ヶ月）— カテゴリ別積み上げ棒グラフ、SVG描画。
 import { $, yen, openModal, closeModal } from "./dom-utils.js";
+import { CATEGORIES } from "./firebase-config.js";
+import { categoryBreakdown } from "./stats.js";
 import { log, logErr } from "./log.js";
 
-let _fetchMonthExpenses; // (Date) => Promise<expense[]>
+let _fetchMonthExpenses;
+
+// CATEGORIES の順番に対応したパレット（10色）
+const CAT_COLORS = [
+  "#4B7A5E", // 食費       — セージグリーン
+  "#7C6FAC", // 日用品     — パープル
+  "#E07060", // 外食       — コーラル
+  "#4A90C4", // 交通費     — ブルー
+  "#E8A44A", // 医療費     — アンバー
+  "#C47DB8", // 娯楽       — モーブ
+  "#6DB8B8", // 衣服       — ティール
+  "#D4B84A", // 光熱費     — ゴールド
+  "#7C9AC4", // 通信費     — スチールブルー
+  "#9E9E9E", // その他     — グレー
+];
+
+function _catColor(cat) {
+  const idx = CATEGORIES.indexOf(cat);
+  return idx >= 0 ? CAT_COLORS[idx] : "#AAAAAA";
+}
 
 export function initTrend({ fetchMonthExpenses }) {
   _fetchMonthExpenses = fetchMonthExpenses;
@@ -19,22 +40,28 @@ async function _open() {
 
   try {
     const now = new Date();
-    // 今月を含む過去6ヶ月を新しい順で収集
     const months = Array.from({ length: 6 }, (_, i) =>
       new Date(now.getFullYear(), now.getMonth() - (5 - i), 1),
     );
     const data = await Promise.all(
       months.map(async (m) => {
         const expenses = await _fetchMonthExpenses(m);
-        return {
-          label: `${m.getMonth() + 1}月`,
-          total: expenses.reduce((s, e) => s + (e.amount || 0), 0),
-        };
+        const byCat = categoryBreakdown(expenses);
+        const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
+        return { label: `${m.getMonth() + 1}月`, total, byCat };
       }),
     );
     log("支出推移:", data.map((d) => `${d.label}:${d.total}`).join(" "));
     loading.hidden = true;
+
+    // SVG積み上げ棒グラフ
     chart.appendChild(_drawSvg(data));
+
+    // カテゴリ凡例（使われているカテゴリのみ）
+    const usedCats = CATEGORIES.filter((c) =>
+      data.some((d) => (d.byCat[c] || 0) > 0),
+    );
+    if (usedCats.length) chart.appendChild(_drawLegend(usedCats, data));
   } catch (err) {
     logErr("推移グラフエラー:", err.message, err);
     loading.hidden = true;
@@ -64,32 +91,64 @@ function _drawSvg(data) {
     _text(svg, ns, pad.left - 6, y + 4, _yLabel(val), 9, "end", "var(--muted)");
   }
 
-  // バー + ラベル
+  // 積み上げバー + ラベル
   data.forEach((d, i) => {
-    const x    = pad.left + step * i + (step - barW) / 2;
-    const barH = max > 0 ? (d.total / max) * innerH : 0;
-    const y    = pad.top + innerH - barH;
+    const x = pad.left + step * i + (step - barW) / 2;
     const isLast = i === data.length - 1;
 
-    const rect = document.createElementNS(ns, "rect");
-    rect.setAttribute("x", x);
-    rect.setAttribute("y", y);
-    rect.setAttribute("width", barW);
-    rect.setAttribute("height", barH);
-    rect.setAttribute("fill", isLast ? "var(--accent)" : "color-mix(in srgb, var(--accent) 55%, transparent)");
-    rect.setAttribute("rx", "3");
-    svg.appendChild(rect);
+    // カテゴリを積み上げ（使用額のあるものだけ）
+    let stackY = pad.top + innerH; // 下から積み上げ
+    const segments = CATEGORIES
+      .map((cat) => ({ cat, amt: d.byCat[cat] || 0 }))
+      .filter((s) => s.amt > 0);
+
+    // 未分類があれば末尾に追加
+    const uncatAmt = d.byCat["未分類"] || 0;
+    if (uncatAmt > 0) segments.push({ cat: "未分類", amt: uncatAmt });
+
+    for (const { cat, amt } of segments) {
+      const segH = max > 0 ? (amt / max) * innerH : 0;
+      stackY -= segH;
+      const rect = document.createElementNS(ns, "rect");
+      rect.setAttribute("x", x);
+      rect.setAttribute("y", stackY);
+      rect.setAttribute("width", barW);
+      rect.setAttribute("height", segH);
+      const base = _catColor(cat);
+      rect.setAttribute("fill", isLast ? base : base + "99"); // 過去月は半透明
+      rect.setAttribute("rx", "2");
+      svg.appendChild(rect);
+    }
 
     // 月ラベル
     _text(svg, ns, x + barW / 2, H - pad.bottom + 14, d.label, 11, "middle", "var(--muted)");
 
-    // 金額（バー上部）
+    // 合計金額（バー上部）
     if (d.total > 0) {
-      _text(svg, ns, x + barW / 2, y - 5, _yLabel(d.total), 9, "middle", "var(--text)");
+      const topY = pad.top + innerH - (d.total / max) * innerH;
+      _text(svg, ns, x + barW / 2, topY - 5, _yLabel(d.total), 9, "middle", "var(--text)");
     }
   });
 
   return svg;
+}
+
+function _drawLegend(usedCats, data) {
+  // 最終月の金額を凡例に添える
+  const last = data[data.length - 1];
+  const wrap = document.createElement("div");
+  wrap.className = "trend-legend";
+  for (const cat of usedCats) {
+    const amt = last.byCat[cat] || 0;
+    const item = document.createElement("div");
+    item.className = "trend-legend-item";
+    item.innerHTML = `
+      <span class="trend-legend-dot" style="background:${_catColor(cat)}"></span>
+      <span class="trend-legend-cat">${cat}</span>
+      <span class="trend-legend-amt">${amt > 0 ? yen(amt) : "—"}</span>`;
+    wrap.appendChild(item);
+  }
+  return wrap;
 }
 
 function _yLabel(v) {
