@@ -60,12 +60,27 @@ export function median(nums) {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
+// 全期間の支出から商品名ごとの過去最安値マップを構築する。
+// 戻り値: Map<normKey, number>（normName(品名) → 最安値）
+export function buildPriceHistory(allExpenses) {
+  const history = new Map();
+  for (const e of allExpenses) {
+    for (const it of e.items || []) {
+      if (!it.name || !it.price) continue;
+      const key = normName(it.name);
+      const cur = history.get(key);
+      if (cur === undefined || it.price < cur) history.set(key, it.price);
+    }
+  }
+  return history;
+}
+
 // 今月の支出から「過去最安値で買えた商品」を抽出してアラートリストを返す。
-// allExpenses: 全期間の支出（compare-view が取得済みのもの）
+// priceHistory: buildPriceHistory() が返す Map<normKey, number>
 // thisMonthExpenses: 今月の支出
-// 戻り値: [{ name, store, price, prevMin, savedPer }] （価格差が大きい順）
-export function lowestPriceAlerts(allExpenses, thisMonthExpenses) {
-  // 今月の明細品目を収集（品名 → [{store, price, date}]）
+// 戻り値: [{ name, store, price, prevMin }]
+export function lowestPriceAlerts(priceHistory, thisMonthExpenses) {
+  // 今月の明細品目を収集（品名 → {name, entries}）
   const thisMonth = new Map();
   for (const e of thisMonthExpenses) {
     for (const it of e.items || []) {
@@ -77,20 +92,9 @@ export function lowestPriceAlerts(allExpenses, thisMonthExpenses) {
   }
   if (!thisMonth.size) return [];
 
-  // 全期間の明細から過去最安を計算（今月分を含む）
-  const history = new Map();
-  for (const e of allExpenses) {
-    for (const it of e.items || []) {
-      if (!it.name || !it.price) continue;
-      const key = normName(it.name);
-      if (!history.has(key)) history.set(key, Infinity);
-      history.set(key, Math.min(history.get(key), it.price));
-    }
-  }
-
   const alerts = [];
   for (const [key, { name, entries }] of thisMonth) {
-    const allTimeMin = history.get(key) ?? Infinity;
+    const allTimeMin = priceHistory.get(key) ?? Infinity;
     for (const e of entries) {
       if (e.price <= allTimeMin && e.price > 0) {
         alerts.push({ name, store: e.store, price: e.price, prevMin: allTimeMin });
