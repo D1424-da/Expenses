@@ -58,9 +58,16 @@ function _renderRow(e, indented, onEdit, onDelete) {
   row.className = "expense-item" + (indented ? " ei-indent" : "");
   const memo = e.memo ? ` · ${escapeHtml(e.memo)}` : "";
   const cat = e.category ? `<span class="ei-cat">${escapeHtml(e.category)}</span>` : "";
+  const itemsHtml = (e.items || []).length
+    ? `<ul class="ei-items">${(e.items).map((it) => {
+        const qty = it.qty != null ? `<span class="ei-item-qty">${it.qty}${escapeHtml(it.unit || "")}</span>` : "";
+        return `<li><span class="ei-item-name">${escapeHtml(it.name)}</span>${qty}<span class="ei-item-price">${yen(it.price)}</span></li>`;
+      }).join("")}</ul>`
+    : "";
   row.innerHTML = `
     <div class="ei-main">
       <div class="ei-meta">${cat}${escapeHtml(e.date)}${memo}</div>
+      ${itemsHtml}
     </div>
     <div class="ei-amount">${yen(e.amount)}</div>
     <div class="ei-actions">
