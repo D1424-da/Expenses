@@ -116,11 +116,11 @@ function _showPreview(url) {
 
 function _renderItems(items) {
   $("items-list").innerHTML = "";
-  for (const it of items) _addItemRow(it.name, it.price, it.category);
+  for (const it of items) _addItemRow(it.name, it.price, it.category, it.qty, it.unit);
   _updateItemsCount();
 }
 
-function _addItemRow(name = "", price = 0, category = "") {
+function _addItemRow(name = "", price = 0, category = "", qty = "", unit = "") {
   const row = document.createElement("div");
   row.className = "item-row";
   let selected = category || $("f-category").value || "その他";
@@ -129,10 +129,17 @@ function _addItemRow(name = "", price = 0, category = "") {
     (c) => `<option value="${c}"${c === selected ? " selected" : ""}>${c}</option>`,
   ).join("");
   row.innerHTML = `
-    <input type="text" class="item-name" value="${escapeHtml(name)}" placeholder="品目" />
-    <input type="number" class="item-price" value="${price || 0}" min="0" step="1" inputmode="numeric" />
-    <select class="item-category" aria-label="明細カテゴリ">${options}</select>
-    <button type="button" aria-label="削除">✕</button>`;
+    <div class="item-row-main">
+      <input type="text" class="item-name" value="${escapeHtml(name)}" placeholder="品目" />
+      <input type="number" class="item-price" value="${price || 0}" min="0" step="1" inputmode="numeric" />
+      <select class="item-category" aria-label="明細カテゴリ">${options}</select>
+      <button type="button" aria-label="削除">✕</button>
+    </div>
+    <div class="item-row-qty">
+      <input type="number" class="item-qty" value="${qty ?? ""}" min="0" step="0.1" inputmode="decimal" placeholder="数量" />
+      <input type="text" class="item-unit" value="${escapeHtml(unit ?? "")}" placeholder="g / 個 / 袋" maxlength="6" />
+      <span class="item-qty-label">↑ 入力するとレシピ精度が上がります（任意）</span>
+    </div>`;
   row.querySelector("button").onclick = () => { row.remove(); _updateItemsCount(); };
   $("items-list").appendChild(row);
   _updateItemsCount();
@@ -140,16 +147,26 @@ function _addItemRow(name = "", price = 0, category = "") {
 
 function _collectItems() {
   return [...document.querySelectorAll(".item-row")]
-    .map((r) => ({
-      name: r.querySelector(".item-name").value.trim(),
-      price: Number(r.querySelector(".item-price").value) || 0,
-      category: r.querySelector(".item-category").value,
-    }))
+    .map((r) => {
+      const qtyVal = r.querySelector(".item-qty").value;
+      const unitVal = r.querySelector(".item-unit").value.trim();
+      const item = {
+        name: r.querySelector(".item-name").value.trim(),
+        price: Number(r.querySelector(".item-price").value) || 0,
+        category: r.querySelector(".item-category").value,
+      };
+      if (qtyVal !== "") item.qty = Number(qtyVal);
+      if (unitVal) item.unit = unitVal;
+      return item;
+    })
     .filter((it) => it.name || it.price);
 }
 
 function _updateItemsCount() {
-  $("items-count").textContent = document.querySelectorAll(".item-row").length;
+  const count = document.querySelectorAll(".item-row").length;
+  $("items-count").textContent = count;
+  const hint = $("items-qty-global-hint");
+  if (hint) hint.hidden = count === 0;
 }
 
 async function _handleSubmit(e) {
