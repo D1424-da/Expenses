@@ -35,12 +35,12 @@
           <span id="current-month"></span>
           <button id="next-month" aria-label="次の月">›</button>
         </div>
-        <button id="shopping-btn" class="logout-btn" title="買い物リスト">
+        <button id="shopping-btn" class="topbar-btn" title="買い物リスト">
           🛒<span id="shopping-badge" class="shopping-badge" hidden></span>
         </button>
-        <button id="saved-recipes-btn" class="logout-btn" title="保存済みレシピ">📚</button>
-        <button id="compare-btn" class="logout-btn" title="商品の最安値">🔎 最安値</button>
-        <button id="logout" class="logout-btn" title="ログアウト">ログアウト</button>
+        <button id="saved-recipes-btn" class="topbar-btn" title="保存済みレシピ">📚</button>
+        <button id="compare-btn" class="topbar-btn" title="商品の最安値">🔎 最安値</button>
+        <button id="logout" class="topbar-btn topbar-btn--logout" title="ログアウト">ログアウト</button>
       </div>
     </header>
 
@@ -334,7 +334,7 @@
         <p class="hint">カテゴリごとに月の目標金額を設定します。0 または空欄は「予算なし」です。</p>
         <form id="budget-form">
           <div id="budget-inputs" class="budget-inputs"></div>
-          <button type="submit" class="primary" style="margin-top:12px">保存する</button>
+          <button type="submit" class="primary">保存する</button>
         </form>
       </div>
     </div>
@@ -386,7 +386,6 @@
         <button id="shopping-clear-done" class="shopping-clear-btn" type="button">完了済みを削除</button>
       </div>
     </div>
-  </div>
 
     <!-- FAB（モバイル：カメラ起動） -->
     <button class="fab" id="fab-camera" aria-label="レシートを撮影">📷</button>

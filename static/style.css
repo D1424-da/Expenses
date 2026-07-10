@@ -4,35 +4,34 @@
 :root {
   --sage:        #4B7A5E;
   --sage-light:  #EAF3EE;
+  --sage-deep:   #1E4D38;
   --petal:       #FAEAE7;
   --petal-ink:   #B85C50;
   --stone:       #F6F4F1;
   --card:        #FFFFFF;
   --ink:         #1C1C1E;
   --ink-2:       #3A3A3C;
-  --muted:       #8E8E93;
+  --muted:       #6C6C70;
   --border:      #E5E5EA;
   --warn:        #D97706;
   --danger:      #DC2626;
   --radius:      20px;
   --r-btn:       13px;
   --r-input:     12px;
+  --r-card-sm:   14px;
   --shadow:      0 2px 14px rgba(0,0,0,0.07);
   /* セマンティックバッジ */
   --badge-ok-bg:    #D1FAE5;
   --badge-ok-ink:   #065F46;
   --badge-mid-bg:   #FEF3C7;
   --badge-mid-ink:  #92400E;
+  --badge-mid-br:   #FDE68A;
   --badge-over-bg:  #FEE2E2;
   --badge-over-ink: #991B1B;
   /* ステータスパネル */
   --status-loading-bg:  #EFF6FF;
   --status-loading-ink: #1E40AF;
   --status-error-bg:    #FFF5F5;
-  /* backward-compat aliases */
-  --bg:          #F6F4F1;
-  --accent:      #4B7A5E;
-  --accent-weak: #EAF3EE;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -41,6 +40,7 @@
     --card:       #1C1C1E;
     --sage:       #5E9B74;
     --sage-light: #162A20;
+    --sage-deep:  #0D2B1E;
     --petal:      #3A1F1C;
     --petal-ink:  #E07060;
     --ink:        #F2F2F7;
@@ -50,14 +50,12 @@
     --warn:       #FCA549;
     --danger:     #FC7373;
     --shadow:     0 2px 14px rgba(0,0,0,0.3);
-    --bg:         #0F0F11;
-    --accent:     #5E9B74;
-    --accent-weak:#162A20;
     /* セマンティックバッジ（ダーク） */
     --badge-ok-bg:    #052E16;
     --badge-ok-ink:   #6EE7B7;
     --badge-mid-bg:   #2D1B00;
     --badge-mid-ink:  #FCD34D;
+    --badge-mid-br:   #78350F;
     --badge-over-bg:  #2D0808;
     --badge-over-ink: #FCA5A5;
     /* ステータスパネル（ダーク） */
@@ -143,7 +141,7 @@ body {
   min-width: 52px;
   text-align: center;
 }
-.logout-btn {
+.topbar-btn {
   background: var(--stone);
   border: 1px solid var(--border);
   color: var(--ink-2);
@@ -154,7 +152,8 @@ body {
   cursor: pointer;
   white-space: nowrap;
 }
-.logout-btn:hover { background: var(--border); }
+.topbar-btn:hover { background: var(--border); }
+.topbar-btn--logout { color: var(--muted); }
 
 #shopping-btn, #saved-recipes-btn, #compare-btn {
   background: var(--stone);
@@ -401,6 +400,7 @@ button {
 button.primary { background: var(--sage); color: #fff; border-color: var(--sage); flex: 1; font-weight: 700; }
 button.primary:hover { filter: brightness(1.07); }
 button:not(.primary):hover { background: var(--stone); }
+button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 
 /* ============================================================
    EXPENSE LIST
@@ -424,9 +424,9 @@ button:not(.primary):hover { background: var(--stone); }
 .branch-head .bh-total { font-weight: 600; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .expense-item {
   display: flex; align-items: center; gap: 12px; padding: 12px 14px;
-  border: 1.5px solid var(--border); border-radius: 14px; background: var(--card);
+  border: 1.5px solid var(--border); border-radius: var(--r-card-sm); background: var(--card);
 }
-.expense-item.ei-indent { margin-left: 10px; border-left: 3px solid var(--border); border-radius: 0 14px 14px 0; }
+.expense-item.ei-indent { margin-left: 10px; border-left: 3px solid var(--border); border-radius: 0 var(--r-card-sm) var(--r-card-sm) 0; }
 .expense-item .ei-thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: var(--stone); flex-shrink: 0; }
 .expense-item .ei-main { flex: 1; min-width: 0; }
 .expense-item .ei-meta { font-size: 0.75rem; color: var(--muted); }
@@ -456,16 +456,16 @@ button:not(.primary):hover { background: var(--stone); }
 .login-screen {
   position: fixed; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(160deg, var(--sage), #1E4D38);
+  background: linear-gradient(160deg, var(--sage), var(--sage-deep));
   padding: 24px;
 }
 .login-card {
-  background: #fff; border-radius: 24px; padding: 40px 28px;
+  background: var(--card); border-radius: var(--radius); padding: 40px 28px;
   text-align: center; max-width: 360px; width: 100%;
   box-shadow: 0 16px 40px rgba(0,0,0,0.18);
 }
-.login-card h1 { margin: 0 0 10px; font-size: 1.5rem; color: var(--ink); }
-.login-card p { color: var(--muted); margin: 0 0 28px; font-size: 0.9rem; line-height: 1.6; }
+.login-card h1 { margin: 0 0 10px; font-size: 1.9rem; font-weight: 900; color: var(--ink); }
+.login-card p { color: var(--muted); margin: 0 0 28px; font-size: 0.88rem; line-height: 1.75; }
 .google-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   width: 100%; padding: 14px; font-size: 0.96rem; font-weight: 700;
@@ -480,15 +480,15 @@ button:not(.primary):hover { background: var(--stone); }
 }
 .login-error { color: var(--danger); font-size: 0.83rem; margin-top: 14px; }
 .inapp-warning {
-  background: #FFF8E6; border: 1.5px solid #F59E0B; border-radius: 14px;
+  background: var(--badge-mid-bg); border: 1.5px solid var(--badge-mid-br); border-radius: var(--r-card-sm);
   padding: 16px 14px; margin-bottom: 20px; text-align: left;
 }
-.inapp-warning p { color: #92400E; margin: 0 0 8px; font-size: 0.88rem; line-height: 1.6; }
+.inapp-warning p { color: var(--badge-mid-ink); margin: 0 0 8px; font-size: 0.88rem; line-height: 1.6; }
 .inapp-warning p:last-of-type { margin-bottom: 12px; }
-.inapp-hint strong { color: #B45309; }
+.inapp-hint strong { color: var(--warn); }
 .copy-url-btn {
   width: 100%; padding: 11px; font-size: 0.9rem; font-weight: 700;
-  background: #F59E0B; color: #fff; border: none; border-radius: 11px; cursor: pointer;
+  background: var(--warn); color: #fff; border: none; border-radius: 11px; cursor: pointer;
   font-family: inherit;
 }
 .copy-url-btn:active { opacity: 0.85; }
@@ -522,7 +522,7 @@ button:not(.primary):hover { background: var(--stone); }
    ============================================================ */
 #compare-search { margin: 0 0 12px; }
 .compare-list { display: flex; flex-direction: column; gap: 10px; }
-.cmp-item { border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 14px; }
+.cmp-item { border: 1.5px solid var(--border); border-radius: var(--r-card-sm); padding: 12px 14px; }
 .cmp-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
 .cmp-name { font-weight: 700; }
 .cmp-best { color: var(--sage); font-weight: 700; white-space: nowrap; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
@@ -533,7 +533,7 @@ button:not(.primary):hover { background: var(--stone); }
 .cmp-branch { color: var(--muted); font-weight: 400; font-size: 0.78rem; }
 .cmp-row { display: flex; flex-direction: column; gap: 1px; }
 .cmp-low { font-size: 0.72rem; color: var(--muted); padding-left: 10px; }
-.cmp-tag { background: #FDE68A; color: #92400E; border-radius: 4px; padding: 0 4px; margin-left: 2px; font-size: 0.68rem; font-weight: 700; }
+.cmp-tag { background: var(--badge-mid-bg); color: var(--badge-mid-ink); border-radius: 4px; padding: 0 4px; margin-left: 2px; font-size: 0.68rem; font-weight: 700; }
 .cmp-sale { color: #D97706; font-weight: 700; font-size: 0.78rem; white-space: nowrap; }
 
 /* ============================================================
@@ -617,7 +617,7 @@ button:not(.primary):hover { background: var(--stone); }
 .meal-slot-btns button:hover { background: var(--sage-light); border-color: var(--sage); }
 
 .day-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.day-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 12px; background: var(--card); }
+.day-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--r-card-sm); background: var(--card); }
 .day-row-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
 .day-row-store { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
 .day-row-amt { font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -634,11 +634,11 @@ button:not(.primary):hover { background: var(--stone); }
 .recipe-date-range-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
 .recipe-date-range-row input[type="date"] {
   flex: 1; padding: 5px 8px; font-size: 0.82rem; border: 1.5px solid var(--border);
-  border-radius: 8px; background: var(--bg); color: var(--ink); min-width: 0;
+  border-radius: 8px; background: var(--stone); color: var(--ink); min-width: 0;
 }
 .recipe-date-sep { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
 .recipe-plan-start-hint { font-size: 0.75rem; color: var(--muted); }
-#recipe-plan-start { padding: 5px 8px; font-size: 0.82rem; border: 1.5px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--ink); }
+#recipe-plan-start { padding: 5px 8px; font-size: 0.82rem; border: 1.5px solid var(--border); border-radius: 8px; background: var(--stone); color: var(--ink); }
 .recipe-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .recipe-tab {
   padding: 5px 13px; border-radius: 100px; border: 1.5px solid var(--border);
@@ -735,6 +735,7 @@ button:not(.primary):hover { background: var(--stone); }
 /* ============================================================
    BUDGET
    ============================================================ */
+#budget-form { display: flex; flex-direction: column; gap: 12px; }
 .budget-inputs { display: flex; flex-direction: column; gap: 10px; }
 .budget-input-row { display: flex; align-items: center; gap: 10px; }
 .budget-cat-label { width: 80px; flex-shrink: 0; font-size: 0.86rem; font-weight: 600; }
@@ -779,7 +780,7 @@ button:not(.primary):hover { background: var(--stone); }
    SAVED RECIPES
    ============================================================ */
 .saved-recipes-list { display: flex; flex-direction: column; gap: 10px; }
-.saved-recipe-card { border: 1.5px solid var(--border); border-radius: 14px; padding: 14px; }
+.saved-recipe-card { border: 1.5px solid var(--border); border-radius: var(--r-card-sm); padding: 14px; }
 .saved-recipe-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
 .saved-recipe-title { font-weight: 700; }
 .saved-recipe-meta { font-size: 0.75rem; color: var(--muted); }
