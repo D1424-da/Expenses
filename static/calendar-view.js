@@ -155,11 +155,31 @@ function _renderDayModal() {
   const mealContentEl = $("day-meal-content");
   const plan = _mealPlans[_selectedDay];
   if (plan && (plan.朝食 || plan.昼食 || plan.夕食)) {
+    const hasDinnerRecipe = !!(plan.夕食 && plan.夕食レシピ);
     mealContentEl.innerHTML = [
       plan.朝食 ? `<div class="meal-row"><span class="meal-label">朝食</span><span class="meal-text">${escapeHtml(plan.朝食)}</span></div>` : "",
       plan.昼食 ? `<div class="meal-row"><span class="meal-label">昼食</span><span class="meal-text">${escapeHtml(plan.昼食)}</span></div>` : "",
-      plan.夕食 ? `<div class="meal-row"><span class="meal-label">夕食</span><span class="meal-text">${escapeHtml(plan.夕食)}</span></div>` : "",
+      plan.夕食 ? `<div class="meal-row${hasDinnerRecipe ? " meal-row-tap" : ""}" data-dinner>
+        <span class="meal-label">夕食</span>
+        <span class="meal-text">${escapeHtml(plan.夕食)}</span>
+        ${hasDinnerRecipe ? `<span class="meal-arrow">▶</span>` : ""}
+      </div>
+      ${hasDinnerRecipe ? `<div class="meal-recipe-detail recipe-result" hidden></div>` : ""}` : "",
     ].join("");
+    if (hasDinnerRecipe) {
+      const dinnerRow = mealContentEl.querySelector("[data-dinner]");
+      const detailEl  = mealContentEl.querySelector(".meal-recipe-detail");
+      dinnerRow.onclick = () => {
+        if (detailEl.hidden) {
+          const render = window.__recipeHelpers__?._markdownToHtml;
+          detailEl.innerHTML = render
+            ? render(plan.夕食レシピ)
+            : `<pre style="white-space:pre-wrap;font-size:.85rem">${escapeHtml(plan.夕食レシピ)}</pre>`;
+        }
+        detailEl.hidden = !detailEl.hidden;
+        dinnerRow.querySelector(".meal-arrow").textContent = detailEl.hidden ? "▶" : "▼";
+      };
+    }
     mealPlanEl.hidden = false;
   } else {
     mealPlanEl.hidden = true;
