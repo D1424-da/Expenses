@@ -18,6 +18,8 @@ import logging
 import os
 from pathlib import Path
 
+from typing import Annotated
+
 from fastapi import FastAPI, File, Header, HTTPException, Request, UploadFile
 from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
@@ -119,7 +121,7 @@ class FamilyComposition(BaseModel):
 
 
 class RecipeRequest(BaseModel):
-    items: list[str] = Field(..., min_length=1, max_length=50)
+    items: list[Annotated[str, Field(max_length=200)]] = Field(..., min_length=1, max_length=50)
     servings: int = Field(2, ge=1, le=20)
     recipe_type: str = Field("meal", pattern="^(meal|weekly)$")
     max_minutes: int | None = Field(None, ge=5, le=180)

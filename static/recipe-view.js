@@ -1,5 +1,5 @@
 // レシピ提案モーダル。期間・種別・時短・使い切りを選んでGeminiに送る。
-import { $, escapeHtml, dayKey, openModal, closeModal } from "./dom-utils.js";
+import { $, escapeHtml, yen, dayKey, openModal, closeModal } from "./dom-utils.js";
 import { log, logErr } from "./log.js";
 import { OCR_API_BASE } from "./firebase-config.js";
 import { saveRecipe } from "./saved-recipes.js";
@@ -9,6 +9,7 @@ let _getToken;
 let _fetchAllExpenses;
 let _getBudget;
 let _lastCostInfo = null;
+let _expensesCache = null; // レシピモーダル1セッション中のキャッシュ
 let _selectedDay = null;
 let _expenses    = [];
 let _activePeriod  = "day";
@@ -89,7 +90,7 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
       const names = ingredients.length ? ingredients : _lastItems;
       const itemsWithStore = await _attachStores(names);
       const added = await addItemsToList(itemsWithStore);
-      const costStr = _lastCostInfo?.total ? `（推定合計 ${_yen(_lastCostInfo.total)}）` : "";
+      const costStr = _lastCostInfo?.total ? `（推定合計 ${yen(_lastCostInfo.total)}）` : "";
       btn.textContent = `✅ ${added}品目を追加${costStr}`;
       setTimeout(() => { btn.textContent = "🛒 リストに追加"; }, 3000);
     } finally {
@@ -124,6 +125,7 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
   _lastMarkdown = "";
   _lastItems = [];
   _lastCostInfo = null;
+  _expensesCache = null;
   $("recipe-result").hidden = true;
   $("recipe-result").innerHTML = "";
   $("recipe-cost-badge").hidden = true;
@@ -268,7 +270,7 @@ async function _suggest() {
     _estimateCost(ingredients.length ? ingredients : items, servings).then((info) => {
       _lastCostInfo = info;
       _renderCostBadge(info);
-    });
+    }).catch((err) => logErr("コスト推定エラー:", err.message));
     $("recipe-post-actions").hidden = false;
   } catch (err) {
     logErr("レシピ提案エラー:", err.message, err);
@@ -361,14 +363,13 @@ async function _doSave(dishes) {
 
 // ---- 概算コスト推定・表示 ------------------------------------------------
 
-function _yen(n) { return "¥" + Math.round(n).toLocaleString("ja-JP"); }
-
 // 過去の購入履歴から食材の最新価格を引いて合計コストを推定する。
 // 購入単位（パックサイズ等）が不明なため、あくまで目安。
 async function _estimateCost(ingredientNames, servings) {
   if (!_fetchAllExpenses || !ingredientNames.length) return null;
   try {
-    const all = await _fetchAllExpenses();
+    _expensesCache = _expensesCache ?? await _fetchAllExpenses();
+    const all = _expensesCache;
     if (!all.length) return { noHistory: true };
 
     // 食材名 → 最新購入価格（日付降順で最初に見つかったもの）
@@ -377,7 +378,7 @@ async function _estimateCost(ingredientNames, servings) {
     for (const exp of byDate) {
       if (!exp.items) continue;
       for (const it of exp.items) {
-        if (it.name && it.price && !priceMap.has(it.name)) {
+        if (it.name && it.price != null && !priceMap.has(it.name)) {
           priceMap.set(it.name, it.price);
         }
       }
@@ -425,14 +426,14 @@ function _renderCostBadge(info) {
   if (perMeal > 0) {
     const cls   = overBudget ? "cost-over" : "cost-ok";
     const label = overBudget
-      ? `⚠️ 1食目安（${_yen(perMeal)}）を超えています`
-      : `✅ 1食目安（${_yen(perMeal)}）内におさまります`;
+      ? `⚠️ 1食目安（${yen(perMeal)}）を超えています`
+      : `✅ 1食目安（${yen(perMeal)}）内におさまります`;
     budgetHtml = `<span class="cost-status ${cls}">${label}</span>`;
   }
 
   el.innerHTML = `
     <div class="cost-main">
-      <span class="cost-amount">推定コスト <strong>${_yen(total)}</strong></span>
+      <span class="cost-amount">推定コスト <strong>${yen(total)}</strong></span>
       ${budgetHtml}
     </div>
     <p class="cost-note">※ 購入履歴から算出（${matched}/${totalItems}品目一致・${matchPct}%）。パックサイズや数量は考慮していないため目安です。</p>
@@ -446,13 +447,14 @@ function _renderCostBadge(info) {
 async function _attachStores(names) {
   try {
     if (!_fetchAllExpenses) return names.map((n) => ({ name: n }));
-    const all = await _fetchAllExpenses();
+    _expensesCache = _expensesCache ?? await _fetchAllExpenses();
+    const all = _expensesCache;
     // 食材名 → { store, minPrice }
     const priceMap = new Map();
     for (const exp of all) {
       if (!exp.store || !exp.items) continue;
       for (const it of exp.items) {
-        if (!it.name || !it.price) continue;
+        if (!it.name || it.price == null) continue;
         const key = it.name;
         const cur = priceMap.get(key);
         if (!cur || it.price < cur.price) {
@@ -530,7 +532,7 @@ function _extractIngredients(md) {
         .replace(/\s*[\d一二三四五六七八九十百]+\s*[gGkKmlg個本枚杯食片束パック袋缶大小さじtsp]+[程度くらい以上以下]*\s*/g, "")
         .replace(/\*\*/g, "")
         .trim();
-      if (name.length >= 2) items.push(name);
+      if (name.length >= 1) items.push(name);
     });
   }
   return [...new Set(items)];

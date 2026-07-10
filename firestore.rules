@@ -25,18 +25,23 @@ service cloud.firestore {
     }
 
     // 設定（予算・買い物リスト）。ドキュメントIDは決め打ち（budget / shoppingList）。
+    function validSetting(d) {
+      return !('items' in d) || (d.items is list && d.items.size() <= 200);
+    }
     match /users/{userId}/settings/{settingId} {
-      allow read, write: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && validSetting(request.resource.data);
     }
 
     // 保存済みレシピ。
+    function validRecipe(d) {
+      return d.title is string && d.title.size() <= 200
+        && d.markdown is string && d.markdown.size() <= 50000
+        && (!('items' in d) || (d.items is list && d.items.size() <= 100));
+    }
     match /users/{userId}/savedRecipes/{recipeId} {
       allow read, delete: if isOwner(userId);
-      allow create: if isOwner(userId)
-        && request.resource.data.title is string
-        && request.resource.data.title.size() <= 200
-        && request.resource.data.markdown is string
-        && request.resource.data.markdown.size() <= 50000;
+      allow create, update: if isOwner(userId) && validRecipe(request.resource.data);
     }
   }
 }

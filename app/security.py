@@ -26,10 +26,11 @@ def looks_like_image(b: bytes) -> bool:
 
 
 def client_ip(request: Request) -> str:
-    # Render などのプロキシ経由。XFF の先頭を採用。
+    # Render などのリバースプロキシは信頼できる実IP を XFF の末尾に追記する。
+    # 先頭はクライアント申告値で偽装可能なため使わない。
     xff = request.headers.get("x-forwarded-for")
     if xff:
-        return xff.split(",")[0].strip()
+        return xff.split(",")[-1].strip()
     return request.client.host if request.client else "unknown"
 
 
@@ -71,8 +72,10 @@ def verify_firebase_token(authorization: str | None, project_id: str) -> None:
     """project_id 設定時のみ、Firebase ID トークンを検証する。
 
     未設定なら認証はスキップ（レート制限のみで保護）。
+    本番環境では必ず FIREBASE_PROJECT_ID を設定すること。
     """
     if not project_id:
+        logger.warning("FIREBASE_PROJECT_ID が未設定のため認証をスキップしています。本番環境では設定してください。")
         return
     token = ""
     if authorization and authorization.lower().startswith("bearer "):
