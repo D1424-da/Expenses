@@ -52,16 +52,13 @@ app = FastAPI(title="レシートOCRサービス")
 def _allowed_origins() -> list[str]:
     """CORS_ORIGINS（カンマ区切り）から許可オリジンを組み立てる。
 
-    Firebase Hosting 等、別オリジンのフロントから呼べるようにするための設定。
-    未設定時は「許可なし」にフェイルクローズ（誤って全許可にしない）。
+    Firebase Auth + レート制限で保護されているため、デフォルトは全オリジン許可。
+    特定オリジンに絞りたい場合は CORS_ORIGINS 環境変数でカンマ区切りで指定する。
     """
-    origins = os.environ.get("CORS_ORIGINS", "").strip()
+    origins = os.environ.get("CORS_ORIGINS", "*").strip()
     if origins == "*":
         return ["*"]
-    if origins:
-        return [o.strip() for o in origins.split(",") if o.strip()]
-    logger.warning("CORS_ORIGINS 未設定。ブラウザからのクロスオリジン呼び出しは拒否されます。")
-    return []
+    return [o.strip() for o in origins.split(",") if o.strip()]
 
 
 app.add_middleware(
