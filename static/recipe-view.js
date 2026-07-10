@@ -109,6 +109,9 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
       const added = await addItemsToList(itemsWithStore);
       btn.textContent = `✅ ${added}品目を追加`;
       setTimeout(() => { btn.textContent = "🛒 リストに追加"; }, 3000);
+    } catch (err) {
+      logErr("買い物リスト追加エラー:", err.message, err);
+      alert("買い物リストへの追加に失敗しました: " + err.message);
     } finally {
       btn.disabled = false;
     }
@@ -337,11 +340,10 @@ function _extractDishes(md, rtype) {
   });
 }
 
-function _showDishSelector() {
+async function _showDishSelector() {
   const dishes = _extractDishes(_lastMarkdown, _activeType);
   if (dishes.length <= 1) {
-    // 1品だけなら直接保存
-    _doSave([{ title: _extractTitle(_lastMarkdown), markdown: _lastMarkdown }]);
+    await _doSave([{ title: _extractTitle(_lastMarkdown), markdown: _lastMarkdown }]);
     return;
   }
   const list = $("recipe-dish-list");
@@ -424,7 +426,8 @@ async function _attachStores(names) {
       const hit = priceMap.get(n);
       return { name: n, store: hit?.store || "" };
     });
-  } catch {
+  } catch (err) {
+    logErr("店名付きリスト取得エラー:", err.message, err);
     return names.map((n) => ({ name: n }));
   }
 }
