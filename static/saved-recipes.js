@@ -100,9 +100,11 @@ async function _addCurrentToShoppingList() {
   btn.disabled = true;
   try {
     const { _extractIngredients, _attachStores } = window.__recipeHelpers__ || {};
-    const names = _extractIngredients
+    let names = _extractIngredients
       ? _extractIngredients(_currentRecipe.markdown || "")
-      : (_currentRecipe.items || []);
+      : [];
+    // **使う食材**: 行がなければ保存時の items[] にフォールバック
+    if (!names.length) names = _currentRecipe.items || [];
     if (!names.length) {
       btn.textContent = "⚠️ 食材が見つかりません";
       setTimeout(() => { btn.textContent = "🛒 買い物リストに追加"; btn.disabled = false; }, 2000);
