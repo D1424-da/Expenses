@@ -16,7 +16,8 @@
 //   log.js           : デバッグログ
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+  getRedirectResult, signOut, onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, collection, addDoc,
@@ -81,14 +82,32 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+// スマホ（モバイル）では signInWithRedirect、PCでは signInWithPopup を使う。
+// WebView/in-app browser では popup が Google ポリシーでブロックされるため。
+const _isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+getRedirectResult(auth).then((result) => {
+  if (result?.user) log("リダイレクトログイン成功:", result.user.email);
+}).catch((err) => {
+  if (err.code === "auth/credential-already-in-use") return;
+  logErr("getRedirectResult エラー:", err.code, err.message);
+  const el = $("login-error");
+  el.textContent = "ログインに失敗しました: " + (err.code || err.message);
+  el.hidden = false;
+});
+
 $("google-login").onclick = async () => {
-  log("ログインボタン押下 → signInWithPopup 開始");
+  log("ログインボタン押下:", _isMobile ? "redirect" : "popup");
   $("login-error").hidden = true;
   try {
-    const result = await signInWithPopup(auth, provider);
-    log("ポップアップログイン成功:", result.user.email);
+    if (_isMobile) {
+      await signInWithRedirect(auth, provider);
+    } else {
+      const result = await signInWithPopup(auth, provider);
+      log("ポップアップログイン成功:", result.user.email);
+    }
   } catch (err) {
-    logErr("signInWithPopup でエラー:", err.code, err.message, err);
+    logErr("ログインエラー:", err.code, err.message, err);
     const el = $("login-error");
     el.textContent = "ログインに失敗しました: " + (err.code || err.message);
     el.hidden = false;
