@@ -81,6 +81,8 @@
         <div class="pcnav-divider"></div>
         <button class="pc-nav-item" id="pcnav-budget"><span class="pcnav-icon">💰</span><span class="pcnav-label">予算</span></button>
         <button class="pc-nav-item" id="pcnav-trend"><span class="pcnav-icon">📈</span><span class="pcnav-label">月別グラフ</span></button>
+        <div class="pcnav-divider"></div>
+        <button class="pc-nav-item" id="pcnav-household"><span class="pcnav-icon">👨‍👩‍👧</span><span class="pcnav-label">世帯グループ</span></button>
       </div>
     </nav>
 
@@ -528,8 +530,6 @@
             <button id="account-portal-btn" class="account-action-btn account-action-btn--sub" type="button">サブスクリプションを管理・解約する</button>
             <p class="account-portal-hint">Stripe の管理ページへ移動します。解約・領収書の確認ができます。</p>
           </div>
-          <!-- 世帯グループ -->
-          <button id="account-household-btn" class="account-action-btn account-action-btn--ghost" type="button">👨‍👩‍👧 世帯グループを管理</button>
           <!-- ログアウト -->
           <button id="logout" class="account-action-btn account-action-btn--logout" type="button">ログアウト</button>
         </div>
@@ -556,6 +556,10 @@
       <button class="bnav-item" id="bnav-recipe" aria-label="レシピを提案">
         <span class="bnav-icon">🍳</span>
         <span class="bnav-label">レシピ提案</span>
+      </button>
+      <button class="bnav-item" id="bnav-household" aria-label="世帯グループ">
+        <span class="bnav-icon">👨‍👩‍👧</span>
+        <span class="bnav-label">世帯</span>
       </button>
     </nav>
   </div>

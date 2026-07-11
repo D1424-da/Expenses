@@ -28,7 +28,7 @@ import { firebaseConfig, OCR_API_BASE, CATEGORIES } from "./firebase-config.js";
 import { parseReceipt } from "./parser.js";
 import { log, logErr } from "./log.js";
 import {
-  $, yen, escapeHtml, dayKey, monthKey, monthLabel, renderCatBars, bindModalDismiss, openModal,
+  $, yen, escapeHtml, dayKey, monthKey, monthLabel, renderCatBars, bindModalDismiss, openModal, closeModal,
 } from "./dom-utils.js";
 import { requestBackendOcr, preprocessImage, runClientOcr, prewarmOcr } from "./ocr-client.js";
 import { TRUSTED_ENGINES, normalizeWithHistory } from "./history.js";
@@ -109,7 +109,6 @@ onAuthStateChanged(auth, (user) => {
     stopBillingSync();
     // B-1: ログアウト時にキャッシュをクリアして他ユーザーへのデータ漏洩を防ぐ
     _allExpensesCache = null;
-    _priceHistoryCache = null;
     resetList();
     clearHousehold();
     dbClearHousehold();
@@ -247,10 +246,6 @@ async function setupApp() {
     $("account-close").onclick = () => closeModal("account-modal");
     $("account-upgrade-btn").onclick = () => { closeModal("account-modal"); openModal("upgrade-modal"); };
     $("account-portal-btn").onclick = () => openPortal();
-    $("account-household-btn").onclick = () => {
-      closeModal("account-modal");
-      openHousehold().catch((err) => { logErr("世帯モーダルエラー:", err.message); });
-    };
     $("logout").onclick = () => { stopShoppingSync(); stopMealPlanSync(); signOut(auth); };
     $("prev-month").onclick = () => shiftMonth(-1);
     $("next-month").onclick = () => shiftMonth(1);
@@ -266,6 +261,7 @@ async function setupApp() {
       expenses: currentExpenses,
       initialPeriod: "month",
     });
+    $("bnav-household").onclick = () => openHousehold().catch((err) => { logErr("世帯モーダルエラー:", err.message); });
 
     // G-1: CSV エクスポート
     $("export-btn").onclick = _exportCsv;
@@ -283,7 +279,7 @@ async function setupApp() {
     $("pcnav-compare").onclick    = () => $("compare-btn").click();
     $("pcnav-budget").onclick     = () => $("budget-btn").click();
     $("pcnav-trend").onclick      = () => $("trend-btn").click();
-    if ($("pcnav-household")) $("pcnav-household").onclick = () => openModal("household-modal");
+    if ($("pcnav-household")) $("pcnav-household").onclick = () => openHousehold().catch((err) => { logErr("世帯モーダルエラー:", err.message); });
 
     bindModalDismiss();
 
@@ -397,7 +393,6 @@ function renderSummary() {
 }
 
 let _allExpensesCache = null;
-let _priceHistoryCache = null;
 
 // 今月（実際のカレンダー月）の記録件数を返す。制限判定・バー表示に使う。
 // 閲覧中の月ではなく常に「今月」を基準にすることで、過去月ナビゲートによる
@@ -419,9 +414,14 @@ async function _refreshAlerts() {
   try {
     if (!_allExpensesCache) {
       _allExpensesCache = await fetchAllExpenses();
-      _priceHistoryCache = buildPriceHistory(_allExpensesCache);
     }
-    const alerts = lowestPriceAlerts(_priceHistoryCache, currentExpenses);
+    // 今月を除いた過去履歴でのみ最安値を算出（今月の購入と比較する）
+    const curMonthKey = monthKey(currentMonth);
+    const pastExpenses = _allExpensesCache.filter(
+      (e) => typeof e.date === "string" && !e.date.startsWith(curMonthKey),
+    );
+    const pastPriceHistory = buildPriceHistory(pastExpenses);
+    const alerts = lowestPriceAlerts(pastPriceHistory, currentExpenses);
     if (!alerts.length) { el.hidden = true; return; }
     el.hidden = false;
     const foodCats = new Set(["食費", "外食"]);
@@ -453,7 +453,6 @@ async function _addCalendarExpense({ date, store, amount, category }) {
   // キャッシュに追記して全件再フェッチを回避（onSnapshot で currentExpenses は自動更新される）
   if (_allExpensesCache) {
     _allExpensesCache.push({ date, store, branch: "", amount, category, memo: "", items: [], ocrEngine: "manual" });
-    _priceHistoryCache = buildPriceHistory(_allExpensesCache);
   }
   _jumpToMonthOf(date);
 }
@@ -462,14 +461,12 @@ async function _addCalendarExpense({ date, store, amount, category }) {
 async function _deleteAndClearCache(id) {
   await deleteExpense(id);
   _allExpensesCache = null;
-  _priceHistoryCache = null;
 }
 
 // ---- フォーム保存後のコールバック（expense-form のコールバック） ------------
 function _onFormSaved(dateStr, wasEdit) {
   // D-1: 編集・追加後にキャッシュを破棄（次回アラート表示時に正確な価格を反映）
   _allExpensesCache = null;
-  _priceHistoryCache = null;
   _jumpToMonthOf(dateStr);
   if (wasEdit) $("expense-list").scrollIntoView({ behavior: "smooth" });
   if (!_advanceQueue()) $("ocr-status").hidden = true;
@@ -480,7 +477,6 @@ async function _onHouseholdChanged() {
   if (!currentUser) return;
   // Firestore リスナーを張り直して正しいコレクションを購読する
   _allExpensesCache = null;
-  _priceHistoryCache = null;
   if (unsubscribe) { unsubscribe(); unsubscribe = null; }
   stopShoppingSync();
   stopMealPlanSync();
