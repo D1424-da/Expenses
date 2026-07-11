@@ -613,6 +613,17 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   color: var(--muted) !important;
   line-height: 1.6 !important;
 }
+.login-blog-link {
+  margin-top: 10px;
+  font-size: .73rem;
+  text-align: center;
+  color: var(--muted);
+}
+.login-blog-link a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.login-blog-link a:hover { text-decoration: underline; }
 .google-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   width: 100%; padding: 17px; font-size: 1rem; font-weight: 700;

@@ -6,7 +6,6 @@ import { CATEGORIES } from "./firebase-config.js";
 // イベントデリゲーション用: id → expense オブジェクトのマップ
 let _expenseById = new Map();
 let _onEdit, _onDelete, _onInlineSave;
-let _delegated = false;
 
 // 絞り込み状態
 let _filterText = "";
@@ -35,7 +34,7 @@ export function renderList(expenses, { onEdit, onDelete, onInlineSave }) {
 
   // リスナーはリスト要素に1度だけ登録（innerHTML 書き換えで消えない）
   const list = $("expense-list");
-  if (!_delegated) {
+  if (!list._delegated) {
     list.addEventListener("click", (ev) => {
       const btn = ev.target.closest("[data-act]");
       if (!btn) return;
@@ -47,7 +46,7 @@ export function renderList(expenses, { onEdit, onDelete, onInlineSave }) {
       }
       if (btn.dataset.act === "del") _onDelete?.(id);
     });
-    _delegated = true;
+    list._delegated = true;
   }
 
   _render(expenses);
@@ -212,6 +211,8 @@ function _showInlineEdit(id, rowEl) {
     const btn = ev.currentTarget;
     btn.disabled = true;
     btn.textContent = "保存中…";
+    const cancelBtn = rowEl.querySelector(".ei-cancel-btn");
+    if (cancelBtn) cancelBtn.disabled = true;
     try {
       const payload = {
         date:     rowEl.querySelector(".ei-f-date").value,
@@ -222,11 +223,16 @@ function _showInlineEdit(id, rowEl) {
         memo:     rowEl.querySelector(".ei-f-memo").value.trim(),
       };
       await _onInlineSave?.(id, payload);
-      _expenseById.set(id, { ...e, ...payload });
+      const updatedE = { ...e, ...payload };
+      _expenseById.set(id, updatedE);
+      const idx = _lastExpenses.findIndex((x) => x.id === id);
+      if (idx >= 0) _lastExpenses[idx] = updatedE;
+      _render(_lastExpenses);
     } catch (err) {
       alert("保存に失敗しました: " + (err.message || err));
       btn.disabled = false;
       btn.textContent = "更新";
+      if (cancelBtn) cancelBtn.disabled = false;
     }
   };
 
