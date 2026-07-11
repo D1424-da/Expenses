@@ -270,7 +270,6 @@ function _openDayModal(key) {
   $("day-category").value = "食費";
   _renderDayModal();
   openModal("day-modal");
-  $("day-amount").focus();
 }
 
 function _navigateDay(delta) {
@@ -334,16 +333,31 @@ function _renderDayModal() {
 function _buildDayRow(e) {
   const row = document.createElement("div");
   row.className = "day-row";
+  const items = e.items || [];
+  const itemsHtml = items.length
+    ? `<details class="ei-details">
+        <summary class="ei-details-summary">明細 ${items.length}件</summary>
+        <ul class="ei-items">${items.map((it) => {
+          const qty = it.qty != null
+            ? `<span class="ei-item-qty">${escapeHtml(String(it.qty))}${escapeHtml(it.unit || "")}</span>`
+            : "";
+          return `<li><span class="ei-item-name">${escapeHtml(it.name)}</span>${qty}<span class="ei-item-price">${yen(it.price)}</span></li>`;
+        }).join("")}</ul>
+      </details>`
+    : "";
   row.innerHTML = `
-    <div class="day-row-main">
-      <span class="ei-cat">${escapeHtml(e.category)}</span>
-      <span class="day-row-store">${escapeHtml(e.store || "(店名なし)")}</span>
+    <div class="day-row-top">
+      <div class="day-row-main">
+        <span class="ei-cat">${escapeHtml(e.category)}</span>
+        <span class="day-row-store">${escapeHtml(e.store || "(店名なし)")}</span>
+      </div>
+      <span class="day-row-amt">${yen(e.amount)}</span>
+      <div class="ei-actions">
+        <button data-act="edit" data-id="${e.id}" aria-label="編集">✏️</button>
+        <button data-act="del"  data-id="${e.id}" aria-label="削除">🗑️</button>
+      </div>
     </div>
-    <span class="day-row-amt">${yen(e.amount)}</span>
-    <div class="ei-actions">
-      <button data-act="edit" data-id="${e.id}" aria-label="編集">✏️</button>
-      <button data-act="del"  data-id="${e.id}" aria-label="削除">🗑️</button>
-    </div>`;
+    ${itemsHtml}`;
   return row;
 }
 

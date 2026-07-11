@@ -861,12 +861,34 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .meal-slot-btns button:hover { background: var(--sage-light); border-color: var(--sage); }
 
 .day-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.day-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--r-card-sm); background: var(--card); }
+.day-row { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--r-card-sm); background: var(--card); }
+.day-row-top { display: flex; align-items: center; gap: 8px; }
 .day-row-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
 .day-row-store { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
 .day-row-amt { font-weight: 700; font-variant-numeric: tabular-nums; }
 .day-row button { background: none; border: none; cursor: pointer; font-size: 1rem; min-width: 40px; min-height: 40px; border-radius: 10px; flex-shrink: 0; color: var(--muted); }
 .day-row button:active { background: var(--stone); }
+/* 日付モーダル内の明細アコーディオン */
+.day-row .ei-details { margin-top: 4px; }
+.day-row .ei-details-summary {
+  font-size: 0.75rem; color: var(--sage); font-weight: 600;
+  cursor: pointer; list-style: none; display: flex; align-items: center; gap: 4px;
+  user-select: none;
+}
+.day-row .ei-details-summary::before { content: "▶"; font-size: .6rem; transition: transform .15s; }
+.day-row .ei-details[open] > .ei-details-summary::before { transform: rotate(90deg); }
+.day-row .ei-details-summary::-webkit-details-marker { display: none; }
+.day-row .ei-items {
+  list-style: none; margin: 6px 0 0; padding: 0;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.day-row .ei-items li {
+  display: flex; align-items: baseline; gap: 6px;
+  font-size: 0.78rem; color: var(--ink-2);
+}
+.day-row .ei-items .ei-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.day-row .ei-items .ei-item-qty { color: var(--ink-2); white-space: nowrap; }
+.day-row .ei-items .ei-item-price { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-2); }
 .day-form { border-top: 1px solid var(--border); padding-top: 14px; }
 .day-form h3 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 700; }
 
@@ -1184,7 +1206,7 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
    ============================================================ */
 @media (min-width: 768px) {
   /* hide mobile-only elements */
-  .bottom-nav, .fab { display: none; }
+  .bottom-nav, .fab, .cam-only { display: none; }
 
   /* PC navバーを表示 */
   .pc-nav { display: block; }
