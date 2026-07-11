@@ -3,6 +3,7 @@ import {
   collection, addDoc, getDocs, deleteDoc, doc, orderBy, query, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { $, escapeHtml, openModal, closeModal } from "./dom-utils.js";
+import { dbBase } from "./db-paths.js";
 import { log, logErr } from "./log.js";
 import { addItemsToList } from "./shopping-list.js";
 
@@ -25,7 +26,7 @@ export async function saveRecipe({ title, markdown, items, period, rtype, servin
   const user = _getUser();
   if (!user) return;
   try {
-    const col = collection(_db, "users", user.uid, "savedRecipes");
+    const col = collection(_db, ...dbBase(), "savedRecipes");
     await addDoc(col, { title, markdown, items: items || [], period, rtype, servings, savedAt: serverTimestamp() });
     log("レシピ保存:", title);
   } catch (err) {
@@ -50,7 +51,7 @@ async function _load() {
   if (!user) return;
   try {
     const q = query(
-      collection(_db, "users", user.uid, "savedRecipes"),
+      collection(_db, ...dbBase(), "savedRecipes"),
       orderBy("savedAt", "desc"),
     );
     const snap = await getDocs(q);
@@ -133,7 +134,7 @@ async function _delete(id, card) {
   const user = _getUser();
   if (!user) return;
   try {
-    await deleteDoc(doc(_db, "users", user.uid, "savedRecipes", id));
+    await deleteDoc(doc(_db, ...dbBase(), "savedRecipes", id));
     card.remove();
     if (!$("saved-recipes-list").children.length) $("saved-recipes-empty").hidden = false;
   } catch (err) {

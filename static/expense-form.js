@@ -6,6 +6,7 @@ import {
   doc, addDoc, updateDoc, deleteDoc, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { CATEGORIES } from "./firebase-config.js";
+import { dbBase } from "./db-paths.js";
 import { log, logErr } from "./log.js";
 import { $, todayStr, escapeHtml, closeModal } from "./dom-utils.js";
 import { invalidateHistoryDict, TRUSTED_ENGINES } from "./history.js";
@@ -76,8 +77,7 @@ export function editExpense(e) {
 export async function deleteExpense(id) {
   if (!confirm("この記録を削除しますか?")) return;
   try {
-    const user = _ctx.getUser();
-    await deleteDoc(doc(_ctx.db, "users", user.uid, "expenses", id));
+    await deleteDoc(doc(_ctx.db, ...dbBase(), "expenses", id));
   } catch (err) {
     alert("削除に失敗しました: " + err.message);
   }
@@ -193,7 +193,7 @@ async function _handleSubmit(e) {
     };
     log(id ? "更新:" : "新規保存:", payload);
     if (id) {
-      await updateDoc(doc(_ctx.db, "users", user.uid, "expenses", id), payload);
+      await updateDoc(doc(_ctx.db, ...dbBase(), "expenses", id), payload);
     } else {
       await addDoc(_ctx.expensesCol(), {
         ...payload,

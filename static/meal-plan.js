@@ -2,6 +2,7 @@
 import {
   collection, doc, setDoc, deleteDoc, updateDoc, deleteField, onSnapshot,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { dbBase } from "./db-paths.js";
 import { logErr } from "./log.js";
 
 let _db, _getUser;
@@ -18,7 +19,7 @@ export function startMealPlanSync(onUpdate) {
   const user = _getUser();
   if (!user) return;
   _unsub = onSnapshot(
-    collection(_db, "users", user.uid, "mealPlans"),
+    collection(_db, ...dbBase(), "mealPlans"),
     (snap) => {
       const map = {};
       snap.forEach((d) => { map[d.id] = d.data(); });
@@ -37,7 +38,7 @@ export async function saveMealPlan(date, meals) {
   const user = _getUser();
   if (!user) return;
   await setDoc(
-    doc(_db, "users", user.uid, "mealPlans", date),
+    doc(_db, ...dbBase(), "mealPlans", date),
     { ...meals, date, savedAt: new Date().toISOString() },
   );
 }
@@ -45,7 +46,7 @@ export async function saveMealPlan(date, meals) {
 export async function deleteMealPlan(date) {
   const user = _getUser();
   if (!user) return;
-  await deleteDoc(doc(_db, "users", user.uid, "mealPlans", date));
+  await deleteDoc(doc(_db, ...dbBase(), "mealPlans", date));
 }
 
 // 1食分だけ保存（他の食事には影響しない）
@@ -54,7 +55,7 @@ export async function saveMeal(date, slot, memo, recipe = null) {
   const user = _getUser();
   if (!user) return;
   await setDoc(
-    doc(_db, "users", user.uid, "mealPlans", date),
+    doc(_db, ...dbBase(), "mealPlans", date),
     { [slot]: memo, [`${slot}レシピ`]: recipe, date, savedAt: new Date().toISOString() },
     { merge: true },
   );
@@ -66,7 +67,7 @@ export async function deleteMeal(date, slot) {
   if (!user) return;
   try {
     await updateDoc(
-      doc(_db, "users", user.uid, "mealPlans", date),
+      doc(_db, ...dbBase(), "mealPlans", date),
       { [slot]: deleteField(), [`${slot}レシピ`]: deleteField() },
     );
   } catch (err) {

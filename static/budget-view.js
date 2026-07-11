@@ -1,20 +1,24 @@
 // 月次予算の設定・管理とカテゴリ別進捗バーの描画。
+// G-4: 月ごとに異なる予算を設定できる（settings/budget_{monthKey}）。
+//      月の予算が未設定なら直近の settings/budget をテンプレとして読み込む。
 import {
   doc, getDoc, setDoc,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { $, yen, escapeHtml, openModal, closeModal } from "./dom-utils.js";
+import { $, yen, escapeHtml, openModal, closeModal, monthKey } from "./dom-utils.js";
+import { dbBase } from "./db-paths.js";
 import { log, logErr } from "./log.js";
 
-let _db, _getUser, _categories;
+let _db, _getUser, _categories, _getCurrentMonth;
 let _budget = {}; // { 食費: 30000, ... }
 let _budgetLoaded = false;
 let _onUpdated; // () => void — 予算保存後に呼んでサマリーを再描画させる
 
-export function initBudget({ db, getUser, categories, onUpdated }) {
+export function initBudget({ db, getUser, categories, onUpdated, getCurrentMonth }) {
   _db = db;
   _getUser = getUser;
   _categories = categories;
   _onUpdated = onUpdated;
+  _getCurrentMonth = getCurrentMonth || (() => new Date());
   $("budget-close").onclick = () => closeModal("budget-modal");
   $("budget-btn").onclick   = _openSettings;
   $("budget-form").onsubmit = _save;
@@ -26,10 +30,18 @@ export async function loadBudget() {
   const user = _getUser();
   if (!user) return;
   try {
-    const snap = await getDoc(_settingsRef(user.uid, "budget"));
-    _budget = snap.exists() ? (snap.data().limits || {}) : {};
+    const mkey = monthKey(_getCurrentMonth());
+    // 今月の予算を優先して読む
+    const monthSnap = await getDoc(_settingsRef(`budget_${mkey}`));
+    if (monthSnap.exists()) {
+      _budget = monthSnap.data().limits || {};
+    } else {
+      // 今月分がなければグローバル予算（直近の保存）をテンプレとして使う
+      const globalSnap = await getDoc(_settingsRef("budget"));
+      _budget = globalSnap.exists() ? (globalSnap.data().limits || {}) : {};
+    }
     _budgetLoaded = true;
-    log("予算読み込み:", _budget);
+    log("予算読み込み:", mkey, _budget);
   } catch (err) {
     logErr("予算読み込みエラー:", err.message, err);
   }
@@ -79,8 +91,11 @@ export function renderBudgetBars(expenses, container) {
 }
 
 async function _openSettings() {
-  if (!_budgetLoaded) await loadBudget(); // 未取得のときのみ Firestore を読む
+  _budgetLoaded = false; // 月が変わっている可能性があるので毎回再読み込み
+  await loadBudget();
+  const mkey = monthKey(_getCurrentMonth());
   openModal("budget-modal");
+  $("budget-modal-month").textContent = mkey.replace("-", "年") + "月の予算";
   const inputs = $("budget-inputs");
   inputs.innerHTML = "";
   for (const cat of _categories) {
@@ -110,9 +125,13 @@ async function _save(e) {
       const v = Number(el.value) || 0;
       if (v > 0) limits[el.dataset.cat] = v;
     });
-    await setDoc(_settingsRef(user.uid, "budget"), { limits });
+    const mkey = monthKey(_getCurrentMonth());
+    // 今月分として保存
+    await setDoc(_settingsRef(`budget_${mkey}`), { limits });
+    // グローバル予算も更新（来月以降のテンプレになる）
+    await setDoc(_settingsRef("budget"), { limits });
     _budget = limits;
-    log("予算保存:", limits);
+    log("予算保存:", mkey, limits);
     closeModal("budget-modal");
     _onUpdated?.();
   } catch (err) {
@@ -123,6 +142,6 @@ async function _save(e) {
   }
 }
 
-function _settingsRef(uid, key) {
-  return doc(_db, "users", uid, "settings", key);
+function _settingsRef(key) {
+  return doc(_db, ...dbBase(), "settings", key);
 }
