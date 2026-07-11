@@ -123,7 +123,8 @@ const _ua = navigator.userAgent;
 const _isInAppBrowser = /Line\/|FBAN|FBAV|Instagram|MicroMessenger/i.test(_ua);
 const _isMobile = /Android|iPhone|iPad|iPod/i.test(_ua);
 // Safari は ITP でリダイレクト認証が失敗するため、ポップアップを使う。
-const _isSafari = /^((?!chrome|android).)*safari/i.test(_ua);
+// iOS Chrome は UA に "CriOS" を含み "chrome" は含まないため、明示的に除外する。
+const _isSafari = /Safari/i.test(_ua) && !/Chrome|CriOS|Android/i.test(_ua);
 
 if (_isInAppBrowser) {
   log("インアプリブラウザを検知:", _ua);
@@ -206,7 +207,7 @@ async function setupApp() {
       getUser: () => currentUser,
       expensesCol,
       onSaved: _onFormSaved,
-      onBeforeSave: () => checkGate(currentExpenses.length),
+      onBeforeSave: () => checkGate(_thisMonthCount()),
     });
     initCalendar({
       onAddExpense: _addCalendarExpense,
@@ -369,7 +370,7 @@ function renderSummary() {
   $("summary-total").textContent = yen(total);
   $("summary-count").textContent = currentExpenses.length
     ? `${currentExpenses.length}件の記録` : "記録なし";
-  renderUsageBar(currentExpenses.length);
+  renderUsageBar(_thisMonthCount());
 
   const bars = $("category-bars");
   const usedBudget = renderBudgetBars(currentExpenses, bars);
@@ -381,6 +382,20 @@ function renderSummary() {
 
 let _allExpensesCache = null;
 let _priceHistoryCache = null;
+
+// 今月（実際のカレンダー月）の記録件数を返す。制限判定・バー表示に使う。
+// 閲覧中の月ではなく常に「今月」を基準にすることで、過去月ナビゲートによる
+// 制限回避を防ぐ。
+function _thisMonthCount() {
+  const todayKey = monthKey(new Date());
+  if (monthKey(currentMonth) === todayKey) return currentExpenses.length;
+  if (_allExpensesCache) {
+    return _allExpensesCache.filter(
+      (e) => typeof e.date === "string" && e.date.startsWith(todayKey)
+    ).length;
+  }
+  return 0; // キャッシュ未ロード時は許可側に倒す
+}
 
 async function _refreshAlerts() {
   const el = $("lowest-alerts");
@@ -407,6 +422,7 @@ async function _refreshAlerts() {
 
 // ---- カレンダーからの直接追加（calendar-view のコールバック） --------------
 async function _addCalendarExpense({ date, store, amount, category }) {
+  if (!checkGate(_thisMonthCount())) return;
   await addDoc(expensesCol(), {
     date, store, branch: "", amount, category,
     memo: "", items: [], rawText: "", ocrEngine: "manual",

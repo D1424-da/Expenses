@@ -68,15 +68,15 @@ class RateLimiter:
                 self._by_ip = {k: v for k, v in self._by_ip.items() if v}
 
 
-def verify_firebase_token(authorization: str | None, project_id: str) -> None:
-    """project_id 設定時のみ、Firebase ID トークンを検証する。
+def verify_firebase_token(authorization: str | None, project_id: str) -> str | None:
+    """project_id 設定時のみ、Firebase ID トークンを検証して uid を返す。
 
-    未設定なら認証はスキップ（レート制限のみで保護）。
+    未設定なら認証はスキップ（レート制限のみで保護）して None を返す。
     本番環境では必ず FIREBASE_PROJECT_ID を設定すること。
     """
     if not project_id:
         logger.warning("FIREBASE_PROJECT_ID が未設定のため認証をスキップしています。本番環境では設定してください。")
-        return
+        return None
     token = ""
     if authorization and authorization.lower().startswith("bearer "):
         token = authorization[7:].strip()
@@ -85,9 +85,10 @@ def verify_firebase_token(authorization: str | None, project_id: str) -> None:
     try:
         from google.auth.transport import requests as ga_requests
         from google.oauth2 import id_token as google_id_token
-        google_id_token.verify_firebase_token(
+        claims = google_id_token.verify_firebase_token(
             token, ga_requests.Request(), audience=project_id
         )
+        return claims["sub"]  # Firebase UID
     except HTTPException:
         raise
     except Exception:  # noqa: BLE001 — 検証失敗は一律 401（詳細はサーバーログのみ）

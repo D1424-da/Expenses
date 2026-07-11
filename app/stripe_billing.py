@@ -162,11 +162,12 @@ def _persist_subscription(uid: str, subscription: dict, customer_id: str | None)
         .collection("settings")
         .document("subscription")
     )
+    # merge=True: plan:'beta' など既存フィールドを上書きしない
     ref.set({
         "status": status,
         "stripeCustomerId": customer_id,
         "stripeSubscriptionId": subscription.get("id"),
         "currentPeriodEnd": period_end,
         "updatedAt": admin_fs.SERVER_TIMESTAMP,
-    })
+    }, merge=True)
     logger.info("Firestore subscription updated: uid=%s status=%s", uid, status)
