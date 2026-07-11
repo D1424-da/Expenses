@@ -472,6 +472,60 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .expense-item .ei-items .ei-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .expense-item .ei-items .ei-item-qty { color: var(--ink-2); white-space: nowrap; }
 .expense-item .ei-items .ei-item-price { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-2); }
+
+/* 支店タグ（支店単一 entry のとき branch-head を出さず行内に表示） */
+.ei-branch {
+  display: inline-block; font-size: 0.7rem;
+  background: var(--sage-light); color: var(--sage-deep);
+  padding: 1px 5px; border-radius: 6px; white-space: nowrap; margin-right: 2px;
+}
+
+/* インライン編集フォーム（一覧・日付モーダル共通） */
+.ei-inline-form { width: 100%; padding: 4px 0; }
+.day-inline-form { padding: 0; }
+.ei-inline-row {
+  display: flex; gap: 6px; margin-bottom: 6px;
+}
+.ei-inline-row input, .ei-inline-row select {
+  flex: 1; min-width: 0;
+  font-size: 0.85rem; padding: 7px 9px;
+  border: 1.5px solid var(--border); border-radius: var(--r-input);
+  background: var(--stone); color: var(--ink); outline: none;
+}
+.ei-inline-row input:focus, .ei-inline-row select:focus {
+  border-color: var(--sage); box-shadow: 0 0 0 3px var(--sage-light);
+}
+.ei-inline-items-note {
+  font-size: 0.72rem; color: var(--muted); margin-bottom: 6px; padding-left: 2px;
+}
+.ei-inline-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.ei-inline-actions .primary { font-size: 0.85rem; padding: 7px 16px; }
+.ei-inline-actions .ei-cancel-btn {
+  font-size: 0.85rem; padding: 7px 12px;
+  background: none; border: 1.5px solid var(--border); border-radius: var(--r-btn);
+  color: var(--ink-2); cursor: pointer;
+}
+.ei-inline-actions .ei-full-edit-btn {
+  font-size: 0.82rem; padding: 6px 10px;
+  background: none; border: 1.5px solid var(--border); border-radius: var(--r-btn);
+  color: var(--muted); cursor: pointer; margin-left: auto;
+}
+.ei-inline-actions .ei-cancel-btn:hover,
+.ei-inline-actions .ei-full-edit-btn:hover { background: var(--stone); }
+
+/* 日付モーダルの前後日ナビ */
+.day-nav {
+  display: flex; gap: 8px; margin-bottom: 12px;
+}
+.day-nav button {
+  flex: 1; font-size: 0.88rem; padding: 7px 12px;
+  background: var(--stone); border: 1.5px solid var(--border);
+  border-radius: var(--r-btn); cursor: pointer; color: var(--ink-2);
+  transition: background 0.15s;
+}
+.day-nav button:hover:not(:disabled) { background: var(--sage-light); color: var(--sage-deep); }
+.day-nav button:disabled { opacity: 0.38; cursor: default; }
+
 .empty {
   color: var(--muted);
   text-align: center;

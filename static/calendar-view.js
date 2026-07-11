@@ -8,7 +8,7 @@ import { categoryBreakdown } from "./stats.js";
 import { CATEGORIES } from "./firebase-config.js";
 import { saveMeal, deleteMeal } from "./meal-plan.js";
 
-let _onAddExpense, _onEdit, _onDelete;
+let _onAddExpense, _onEdit, _onDelete, _onInlineSave;
 let _expenses  = [];
 let _mealPlans = {};
 let _selectedDay = null;
@@ -22,16 +22,19 @@ let _renderedMonth = null; // { year, month } — 最後に全再構築した月
 let _dayEls  = new Map(); // dateKey → { dayEl, amtEl, mealEl, lastAmt, lastMeal }
 let _weekEls = [];        // [{ el, lastTotal }] — 週計セルへの参照
 
-export function initCalendar({ onAddExpense, onEdit, onDelete }) {
+export function initCalendar({ onAddExpense, onEdit, onDelete, onInlineSave }) {
   _onAddExpense = onAddExpense;
   _onEdit = onEdit;
   _onDelete = onDelete;
+  _onInlineSave = onInlineSave;
 
   for (const c of CATEGORIES) $("day-category").add(new Option(c, c));
   $("day-category").value = "食費";
   $("day-close").onclick  = () => closeModal("day-modal");
   $("day-form").onsubmit  = _handleDayAdd;
   $("week-close").onclick = () => closeModal("week-modal");
+  $("day-prev").onclick   = () => _navigateDay(-1);
+  $("day-next").onclick   = () => _navigateDay(1);
 
   // カレンダー全体に1つデリゲーションリスナーを置く（innerHTML 差し替え後も有効）
   $("calendar").addEventListener("click", (ev) => {
@@ -270,10 +273,26 @@ function _openDayModal(key) {
   $("day-amount").focus();
 }
 
+function _navigateDay(delta) {
+  if (!_selectedDay) return;
+  const [y, m, d] = _selectedDay.split("-").map(Number);
+  const date = new Date(y, m - 1, d + delta);
+  // 同月内のみナビゲート
+  if (date.getFullYear() === y && date.getMonth() === m - 1) {
+    _selectedDay = dayKey(date);
+    _renderDayModal();
+  }
+}
+
 function _renderDayModal() {
   if (!_selectedDay) return;
   const [y, m, d] = _selectedDay.split("-").map(Number);
   $("day-modal-title").textContent = `${y}年${m}月${d}日の買い物`;
+
+  // 前後日ナビ（月の端でボタンを無効化）
+  const lastDay = new Date(y, m, 0).getDate();
+  $("day-prev").disabled = d <= 1;
+  $("day-next").disabled = d >= lastDay;
 
   const items = _expenses
     .filter((e) => e.date === _selectedDay)
@@ -300,27 +319,102 @@ function _renderDayModal() {
       const btn = ev.target.closest("[data-act]");
       if (!btn) return;
       const id = btn.dataset.id;
-      if (btn.dataset.act === "edit") _onEdit?.(_dayExpenseById.get(id));
-      if (btn.dataset.act === "del")  _onDelete?.(id);
+      if (btn.dataset.act === "edit") {
+        const rowEl = btn.closest(".day-row");
+        _showDayInlineEdit(id, rowEl);
+      }
+      if (btn.dataset.act === "del") _onDelete?.(id);
     });
     list._delegated = true;
   }
 
-  for (const e of items) {
-    const row = document.createElement("div");
-    row.className = "day-row";
-    row.innerHTML = `
-      <div class="day-row-main">
-        <span class="ei-cat">${escapeHtml(e.category)}</span>
-        <span class="day-row-store">${escapeHtml(e.store || "(店名なし)")}</span>
+  for (const e of items) list.appendChild(_buildDayRow(e));
+}
+
+function _buildDayRow(e) {
+  const row = document.createElement("div");
+  row.className = "day-row";
+  row.innerHTML = `
+    <div class="day-row-main">
+      <span class="ei-cat">${escapeHtml(e.category)}</span>
+      <span class="day-row-store">${escapeHtml(e.store || "(店名なし)")}</span>
+    </div>
+    <span class="day-row-amt">${yen(e.amount)}</span>
+    <div class="ei-actions">
+      <button data-act="edit" data-id="${e.id}" aria-label="編集">✏️</button>
+      <button data-act="del"  data-id="${e.id}" aria-label="削除">🗑️</button>
+    </div>`;
+  return row;
+}
+
+function _showDayInlineEdit(id, rowEl) {
+  const e = _dayExpenseById.get(id);
+  if (!e) return;
+
+  const catOpts = CATEGORIES.map(
+    (c) => `<option value="${escapeHtml(c)}"${c === e.category ? " selected" : ""}>${escapeHtml(c)}</option>`,
+  ).join("");
+
+  rowEl.innerHTML = `
+    <div class="ei-inline-form day-inline-form">
+      <div class="ei-inline-row">
+        <input type="number" class="ei-f-amount" value="${e.amount || 0}" min="0" step="1" inputmode="numeric" placeholder="金額" />
+        <select class="ei-f-cat">${catOpts}</select>
       </div>
-      <span class="day-row-amt">${yen(e.amount)}</span>
-      <div class="ei-actions">
-        <button data-act="edit" data-id="${e.id}" aria-label="編集">✏️</button>
-        <button data-act="del"  data-id="${e.id}" aria-label="削除">🗑️</button>
-      </div>`;
-    list.appendChild(row);
-  }
+      <div class="ei-inline-row">
+        <input type="text" class="ei-f-store" value="${escapeHtml(e.store || "")}" placeholder="店名" />
+        <input type="text" class="ei-f-memo" value="${escapeHtml(e.memo || "")}" placeholder="メモ（任意）" />
+      </div>
+      ${(e.items || []).length ? `<div class="ei-inline-items-note">明細 ${e.items.length}件（明細も編集する場合は「明細も編集」から）</div>` : ""}
+      <div class="ei-inline-actions">
+        <button class="ei-save-btn primary" type="button">更新</button>
+        <button class="ei-cancel-btn" type="button">キャンセル</button>
+        ${(e.items || []).length ? `<button class="ei-full-edit-btn" type="button">明細も編集 ›</button>` : ""}
+      </div>
+    </div>`;
+
+  rowEl.querySelector(".ei-f-amount").focus();
+
+  rowEl.querySelector(".ei-save-btn").onclick = async (ev) => {
+    const btn = ev.currentTarget;
+    btn.disabled = true;
+    btn.textContent = "保存中…";
+    try {
+      const payload = {
+        date:     e.date,
+        amount:   Number(rowEl.querySelector(".ei-f-amount").value) || 0,
+        store:    rowEl.querySelector(".ei-f-store").value.trim(),
+        branch:   e.branch || "",
+        category: rowEl.querySelector(".ei-f-cat").value,
+        memo:     rowEl.querySelector(".ei-f-memo").value.trim(),
+        items:    e.items || [],
+      };
+      await _onInlineSave?.(id, payload);
+      const updated = { ...e, ...payload };
+      _dayExpenseById.set(id, updated);
+      // _expenses の対応エントリも即時更新してモーダルが最新データで再描画できるようにする
+      const idx = _expenses.findIndex((x) => x.id === id);
+      if (idx >= 0) _expenses[idx] = updated;
+      const newRow = _buildDayRow(updated);
+      rowEl.replaceWith(newRow);
+      // 合計を再計算
+      const total = [..._dayExpenseById.values()].reduce((s, x) => s + (x.amount || 0), 0);
+      $("day-total").textContent = yen(total);
+    } catch (err) {
+      logErr("インライン保存エラー:", err.message);
+      alert("保存に失敗しました: " + (err.message || err));
+      btn.disabled = false;
+      btn.textContent = "更新";
+    }
+  };
+
+  rowEl.querySelector(".ei-cancel-btn").onclick = () => {
+    const restored = _buildDayRow(e);
+    rowEl.replaceWith(restored);
+  };
+
+  const fullEditBtn = rowEl.querySelector(".ei-full-edit-btn");
+  if (fullEditBtn) fullEditBtn.onclick = () => _onEdit?.(e);
 }
 
 

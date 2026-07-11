@@ -33,7 +33,7 @@ import {
 import { requestBackendOcr, preprocessImage, runClientOcr, prewarmOcr } from "./ocr-client.js";
 import { TRUSTED_ENGINES, normalizeWithHistory } from "./history.js";
 import { categoryBreakdown, buildPriceHistory, lowestPriceAlerts } from "./stats.js";
-import { initForm, fillForm, resetForm, editExpense, deleteExpense } from "./expense-form.js";
+import { initForm, fillForm, resetForm, editExpense, deleteExpense, inlineSave } from "./expense-form.js";
 import { renderList, setFilter, resetList } from "./list-view.js";
 import { initCalendar, renderCalendar, maybeRefreshDayModal, updateMealPlans } from "./calendar-view.js";
 import { initCompare } from "./compare-view.js";
@@ -213,6 +213,7 @@ async function setupApp() {
       onAddExpense: _addCalendarExpense,
       onEdit: editExpense,
       onDelete: _deleteAndClearCache,
+      onInlineSave: _inlineSave,
     });
     initCompare({ fetchAllExpenses });
     initRecipe({ getToken: () => currentUser?.getIdToken(), fetchAllExpenses, getBudget });
@@ -360,7 +361,7 @@ function subscribeMonth() {
     (snap) => {
       currentExpenses = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       log("Firestore更新:", currentExpenses.length, "件");
-      renderList(currentExpenses, { onEdit: editExpense, onDelete: _deleteAndClearCache });
+      renderList(currentExpenses, { onEdit: editExpense, onDelete: _deleteAndClearCache, onInlineSave: _inlineSave });
       renderCalendar(currentExpenses, currentMonth);
       maybeRefreshDayModal();
       // サマリー（非同期の全件フェッチを含む）は描画フレームの後に遅延実行
@@ -460,6 +461,11 @@ async function _addCalendarExpense({ date, store, amount, category }) {
 // D-1: 削除時もキャッシュを破棄して最安値アラートが陳腐化しないようにする
 async function _deleteAndClearCache(id) {
   await deleteExpense(id);
+  _allExpensesCache = null;
+}
+
+async function _inlineSave(id, payload) {
+  await inlineSave(id, payload);
   _allExpensesCache = null;
 }
 
