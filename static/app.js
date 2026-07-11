@@ -80,6 +80,7 @@ const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: "select_account" });
 log("Firebase初期化完了", {
   projectId: firebaseConfig.projectId,
   authDomain: firebaseConfig.authDomain,
@@ -246,7 +247,10 @@ async function setupApp() {
     $("account-close").onclick = () => closeModal("account-modal");
     $("account-upgrade-btn").onclick = () => { closeModal("account-modal"); openModal("upgrade-modal"); };
     $("account-portal-btn").onclick = () => openPortal();
-    $("account-household-btn").onclick = () => { closeModal("account-modal"); openHousehold(); };
+    $("account-household-btn").onclick = () => {
+      closeModal("account-modal");
+      openHousehold().catch((err) => { logErr("世帯モーダルエラー:", err.message); });
+    };
     $("logout").onclick = () => { stopShoppingSync(); stopMealPlanSync(); signOut(auth); };
     $("prev-month").onclick = () => shiftMonth(-1);
     $("next-month").onclick = () => shiftMonth(1);
@@ -420,13 +424,18 @@ async function _refreshAlerts() {
     const alerts = lowestPriceAlerts(_priceHistoryCache, currentExpenses);
     if (!alerts.length) { el.hidden = true; return; }
     el.hidden = false;
-    el.innerHTML = `<div class="alert-title">🎉 今月のお得な買い物</div>` +
-      alerts.map((a) =>
-        `<div class="alert-row">
-          <span class="alert-name">${escapeHtml(a.name)}</span>
-          <span class="alert-detail">${escapeHtml(a.store)} <strong>${yen(a.price)}</strong>（過去最安！）</span>
-        </div>`,
-      ).join("");
+    const foodCats = new Set(["食費", "外食"]);
+    const food  = alerts.filter((a) => foodCats.has(a.category));
+    const daily = alerts.filter((a) => !foodCats.has(a.category));
+    const _alertRows = (arr) => arr.map((a) =>
+      `<div class="alert-row">
+        <span class="alert-name">${escapeHtml(a.name)}</span>
+        <span class="alert-detail">${escapeHtml(a.store)} <strong>${yen(a.price)}</strong>（過去最安！）</span>
+      </div>`).join("");
+    let html = `<div class="alert-title">🎉 今月のお得な買い物</div>`;
+    if (food.length)  html += `<div class="alert-section">🍱 食料品</div>${_alertRows(food)}`;
+    if (daily.length) html += `<div class="alert-section">🧴 日用品</div>${_alertRows(daily)}`;
+    el.innerHTML = html;
   } catch (_) {
     el.hidden = true;
   }

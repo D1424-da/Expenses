@@ -55,7 +55,7 @@ export function clearHousehold() {
 
 export async function openHousehold() {
   openModal("household-modal");
-  await _refresh();
+  try { await _refresh(); } catch (e) { logErr("世帯状態の読み込みエラー:", e.message); }
 }
 
 async function _refresh() {
