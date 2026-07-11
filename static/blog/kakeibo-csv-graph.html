@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>家計簿CSVエクスポート＆グラフで支出を見える化｜カテゴリ別・月別の家計分析術【2026年版】</title>
+  <meta name="description" content="家計簿データをCSV出力してExcelで分析する方法、またはWebアプリの自動グラフ表示で支出を見える化する方法を解説。カテゴリ別・月別支出の分析で節約ポイントを発見。" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4)}}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#1a3040 0%,#0d1a28 100%);padding:64px 24px 80px;position:relative;overflow:hidden}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(255,255,255,.15);color:#a8d8bb;border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;line-height:1.35;margin-bottom:24px}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
+    .sn{font-size:2rem;font-weight:800;color:var(--gm);line-height:1.1}
+    .su{font-size:.85rem;color:var(--im);margin-top:4px}
+    .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:32px 0}
+    .cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+    .ci{font-size:1.8rem;margin-bottom:10px;display:block}
+    .ct{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px}
+    .cd{font-size:.82rem;color:var(--is);line-height:1.6}
+    .cb{background:var(--gd);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}}
+    @media(max-width:600px){.hn{display:none}.sg{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a href="/" class="hl">取本 <span>とほん</span></a>
+  <nav class="hn"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金</a></nav>
+  <a href="/index.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <div class="bc"><a href="/">ホーム</a><span>›</span><a href="/blog.html">ブログ</a><span>›</span><span>家計簿CSV・グラフ分析</span></div>
+    <span class="ac">CSV出力・支出分析</span>
+    <h1>家計簿CSVエクスポート＆グラフで支出を見える化｜カテゴリ別・月別の家計分析術【2026年版】</h1>
+    <div class="am"><span>📅 2026年3月12日</span><span>⏱ 読了時間：約6分</span><span>👁 2,310 views</span></div>
+  </div>
+</section>
+
+<div class="cw">
+<article class="ab">
+<p class="ld">「毎月の支出を記録しているのに、お金がどこに消えたかわからない」——そんな方に必要なのが<strong>家計の見える化</strong>です。グラフとCSV出力を活用すれば、ただ記録するだけでなく、節約すべきポイントを自動的に発見できます。この記事では家計簿のCSVエクスポートとグラフ機能を使った支出分析の方法を解説します。</p>
+
+<h2 id="why-graph">グラフで家計を見える化する意味</h2>
+<p>数字の羅列は頭に入りにくいですが、グラフは一目で「どこにお金を使っているか」を理解させてくれます。</p>
+
+<div class="sg">
+  <div class="sc"><div class="sn">3秒</div><div class="su">グラフなら支出パターンを把握できる時間</div></div>
+  <div class="sc"><div class="sn">1/3</div><div class="su">無駄と気づいていない支出の割合（調査より）</div></div>
+  <div class="sc"><div class="sn">月平均</div><div class="su">¥18,000節約に成功した家庭の共通点：グラフを見ていた</div></div>
+</div>
+
+<h3>カテゴリ別グラフで「使いすぎ」を発見</h3>
+<p>食費・外食費・日用品費・交際費……カテゴリ別の円グラフや棒グラフを見ると、<strong>予想外に大きな割合を占めているカテゴリ</strong>に気づけます。「外食費がまさか食費の半分も占めているとは思わなかった」という発見が節約の第一歩です。</p>
+
+<h3>月別グラフで「特別出費」を把握</h3>
+<p>複数月のデータを折れ線グラフや棒グラフで比較すると、特定の月だけ支出が増えているパターンが見えてきます。ボーナス月の散財、年度替わりの出費、旅行月の増加——これらを<strong>事前に予算として織り込む</strong>ことで、慌てずに済みます。</p>
+
+<h2 id="csv">家計簿のCSV出力で何ができるか</h2>
+<p>CSVとは「カンマ区切りのテキストファイル」のこと。ExcelやGoogleスプレッドシートで開けるため、自分でカスタム分析ができます。</p>
+
+<div class="cg">
+  <div class="cc">
+    <span class="ci">📊</span>
+    <div class="ct">CSVをExcelで開くと</div>
+    <div class="cd">ピボットテーブルで集計・独自のグラフ作成・過去データとの比較・フィルタリングと並べ替え・印刷して家族に共有</div>
+  </div>
+  <div class="cc">
+    <span class="ci">🔢</span>
+    <div class="ct">CSVデータに含まれる項目</div>
+    <div class="cd">日付・店舗名・金額・カテゴリ・メモ・品目明細（対応サービスの場合）</div>
+  </div>
+</div>
+
+<h3>CSVで年間家計レポートを作る方法</h3>
+<ol>
+  <li>家計簿アプリから全期間のCSVをエクスポート</li>
+  <li>ExcelまたはGoogleスプレッドシートで開く</li>
+  <li>ピボットテーブルを挿入 → 行に「月」、値に「金額の合計」を設定</li>
+  <li>グラフを挿入 → 棒グラフや折れ線グラフを選択</li>
+  <li>カテゴリ列でフィルタして「食費だけの推移」なども確認できる</li>
+</ol>
+
+<div class="tb"><div class="tl">TIP</div><p>取本（とほん）はプレミアムプランでCSV一括エクスポートに対応。店舗名・カテゴリ・品目明細まで含まれるため、Excelでの詳細分析に役立ちます。</p></div>
+
+<h2 id="category">カテゴリ別分析でわかること</h2>
+
+<h3>食費の細分化</h3>
+<p>「食費」をスーパー・コンビニ・外食・テイクアウト・デリバリーに分けて記録すると、<strong>デリバリー費用が月2万円を超えていた</strong>など、漠然と「食費が多い」と感じていた原因を特定できます。</p>
+
+<h3>固定費と変動費の分離</h3>
+<p>家賃・保険・サブスクリプションなどの固定費は毎月ほぼ同額。変動費（食費・外食・娯楽）を別グラフで見ることで、<strong>本当に削減できる部分</strong>がわかります。</p>
+
+<h3>時間帯・曜日別の分析（応用）</h3>
+<p>CSVデータを使えば「平日の夕方に衝動買いが多い」「週末に外食費が集中している」など、行動パターンと支出の関係も分析できます。</p>
+
+<h2 id="monthly">月別支出グラフの読み方</h2>
+<p>月別グラフでは次の3点に着目しましょう。</p>
+<ul>
+  <li><strong>平均値からの乖離</strong>：12か月の平均より大幅に増えた月は何があったか</li>
+  <li><strong>トレンド</strong>：毎月少しずつ増えているカテゴリは習慣が変化している証拠</li>
+  <li><strong>季節性</strong>：夏・冬に増える費用を来年の予算設定に活かす</li>
+</ul>
+
+<h2 id="tohon">取本のグラフ・CSV機能</h2>
+<ul>
+  <li>カテゴリ別支出バー：今月の支出がリアルタイムでグラフ表示</li>
+  <li>月別推移グラフ：過去12か月の支出変化を折れ線で確認</li>
+  <li>CSV出力：プレミアムプランで全データを一括エクスポート</li>
+  <li>予算設定：カテゴリごとに月次目標を設定して達成率を視覚化</li>
+</ul>
+
+<div class="cb">
+  <h3>支出を見える化して節約を加速する</h3>
+  <p>取本のグラフ機能で、今月どこにお金が消えたかをすぐ確認。</p>
+  <a href="/index.html" class="bc2">無料で始める →</a>
+</div>
+</article>
+
+<aside class="sb">
+  <div class="sbc">
+    <h4>目次</h4>
+    <ul class="toc">
+      <li><a href="#why-graph">グラフで見える化する意味</a></li>
+      <li><a href="#csv">CSV出力で何ができるか</a></li>
+      <li><a href="#category">カテゴリ別分析でわかること</a></li>
+      <li><a href="#monthly">月別グラフの読み方</a></li>
+      <li><a href="#tohon">取本のグラフ・CSV機能</a></li>
+    </ul>
+  </div>
+  <div class="sbc">
+    <h4>関連記事</h4>
+    <a href="/blog/excel-kakeibo-auto.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#3a2a1a 0%,#281a0d 100%)">📊</div>
+      <div><div class="rt">ExcelからWebアプリ家計簿へ｜自動集計・CSV出力</div><div class="rm">2026年7月6日</div></div>
+    </a>
+    <a href="/blog/web-kakeibo-free.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#1a2c4a 0%,#0d1a28 100%)">🌐</div>
+      <div><div class="rt">インストール不要！無料で使えるブラウザ家計簿Webアプリ</div><div class="rm">2026年7月10日</div></div>
+    </a>
+  </div>
+</aside>
+</div>
+
+<footer class="ft">
+  <div class="fl">
+    <a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金</a><a href="/lp.html">サービス紹介</a>
+  </div>
+  <p>© 2026 取本（とほん）— レシートを撮るだけの家計簿Webアプリ</p>
+</footer>
+</body>
+</html>
