@@ -83,6 +83,14 @@ export async function deleteExpense(id) {
   }
 }
 
+export async function inlineSave(id, payload) {
+  await updateDoc(doc(_ctx.db, ...dbBase(), "expenses", id), {
+    ...payload,
+    ocrEngine: "edited",
+  });
+  invalidateHistoryDict();
+}
+
 export function setFormMode(mode, e) {
   const editing = mode === "edit";
   $("form-card").classList.toggle("editing", editing);
