@@ -24,6 +24,7 @@ STRIPE_SECRET_KEY     = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 STRIPE_PRICE_ID       = os.environ.get("STRIPE_PRICE_ID", "")
 APP_URL               = os.environ.get("APP_URL", "https://expenses-9af61.web.app")
+BETA_CODES            = {c.strip().upper() for c in os.environ.get("BETA_CODES", "").split(",") if c.strip()}
 
 # ---- Firebase Admin SDK（遅延初期化） ---------------------------------------
 
@@ -122,6 +123,30 @@ async def handle_webhook(payload: bytes, sig_header: str) -> dict:
                 _persist_subscription(uid, sub, sub.get("customer"))
 
     return {"received": True}
+
+
+async def redeem_beta_code(uid: str, code: str) -> bool:
+    """ベータ招待コードを検証し、有効なら無料プレミアムを付与する。"""
+    if not BETA_CODES:
+        raise HTTPException(503, "招待コード機能が設定されていません（BETA_CODES）。")
+    if code.strip().upper() not in BETA_CODES:
+        return False
+    from firebase_admin import firestore as admin_fs
+    db = _get_firestore()
+    ref = (
+        db.collection("users")
+        .document(uid)
+        .collection("settings")
+        .document("subscription")
+    )
+    ref.set({
+        "status": "active",
+        "plan": "beta",
+        "currentPeriodEnd": 9999999999,
+        "updatedAt": admin_fs.SERVER_TIMESTAMP,
+    })
+    logger.info("Beta code redeemed: uid=%s", uid)
+    return True
 
 
 def _persist_subscription(uid: str, subscription: dict, customer_id: str | None) -> None:

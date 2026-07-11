@@ -177,6 +177,26 @@ async def stripe_checkout(
     return JSONResponse({"url": url})
 
 
+class BetaRedeemRequest(BaseModel):
+    code: str = Field(..., max_length=50)
+
+
+@app.post("/api/beta/redeem")
+async def beta_redeem(
+    body: BetaRedeemRequest,
+    authorization: str | None = Header(default=None),
+) -> JSONResponse:
+    """招待コードを検証し、有効なら無料プレミアムを付与する。Firebase 認証必須。"""
+    uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
+    if not uid:
+        raise HTTPException(401, "認証が必要です。")
+    from app import stripe_billing
+    ok = await stripe_billing.redeem_beta_code(uid, body.code)
+    if not ok:
+        raise HTTPException(400, "無効なコードです。")
+    return JSONResponse({"ok": True})
+
+
 @app.post("/api/stripe/webhook")
 async def stripe_webhook(
     request: Request,
