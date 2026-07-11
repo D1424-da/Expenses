@@ -29,9 +29,20 @@
 <body>
   <!-- ログイン画面（未ログイン時に表示） -->
   <div id="login-screen" class="login-screen" hidden>
+    <!-- 上部：ブランドエリア -->
+    <div class="login-brand">
+      <div class="login-brand-logo">取本</div>
+      <div class="login-brand-sub">とほん</div>
+      <p class="login-brand-tagline">レシートを撮るだけで<br />家計が見える</p>
+      <ul class="login-features">
+        <li><span class="lf-icon">📷</span>AI がレシートを自動読み取り</li>
+        <li><span class="lf-icon">💰</span>月次予算・カテゴリ集計</li>
+        <li><span class="lf-icon">🔎</span>最安値アラート・レシピ提案</li>
+      </ul>
+    </div>
+    <!-- 下部：ログインカード -->
     <div class="login-card">
-      <h1>🧾 レシート家計簿</h1>
-      <p>レシートを撮るだけで記録。<br />どの端末からでも同じデータを確認できます。</p>
+      <p class="login-card-title">無料で始める</p>
       <!-- LINE/Instagram等のインアプリブラウザ用の警告（app.jsで制御） -->
       <div id="inapp-warning" class="inapp-warning" hidden>
         <p>⚠️ LINEなどのアプリ内ブラウザでは<br />Googleログインができません。</p>
@@ -42,6 +53,7 @@
         <span class="g-icon">G</span> Google でログイン
       </button>
       <p id="login-error" class="login-error" hidden></p>
+      <p class="login-trust">クレジットカード不要・月10件まで永久無料</p>
     </div>
   </div>
 
