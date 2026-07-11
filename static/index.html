@@ -4,6 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>レシート家計簿</title>
+  <meta name="description" content="レシートを撮るだけで家計簿を自動入力。AI-OCRで店名・金額・品目を読み取り、月次予算・最安値アラート・レシピ提案まで対応。" />
+
+  <!-- Google Search Console 所有権確認 -->
+  <meta name=google-site-verification=8_G9TeYLqQrvZRTtXOrlCEoyOcc_1PzWsxofIMvMaQ8/>
+
+  <!-- GA4 (Google Analytics) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-YTNPDRH19H');
+
+    // カスタムイベントをグローバルに公開（app.js から呼ぶ）
+    window.trackEvent = function(name, params) {
+      if (typeof gtag === 'function') gtag('event', name, params || {});
+    };
+  </script>
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -42,6 +61,7 @@
         <button id="compare-btn" class="topbar-btn" title="商品の最安値">🔎 最安値</button>
         <button id="household-btn" class="topbar-btn" title="世帯グループ">👨‍👩‍👧</button>
         <button id="export-btn" class="topbar-btn" title="CSVでエクスポート">📥 CSV</button>
+        <span id="premium-badge" class="premium-badge" hidden title="プレミアムプラン">✨ PRO</span>
         <button id="logout" class="topbar-btn topbar-btn--logout" title="ログアウト">ログアウト</button>
       </div>
     </header>
@@ -85,6 +105,11 @@
         <div class="summary-body">
           <div id="category-bars" class="category-bars"></div>
           <div id="lowest-alerts" class="lowest-alerts" hidden></div>
+          <!-- 無料プランの使用量バー -->
+          <div id="usage-bar" class="usage-bar" hidden>
+            <span class="usage-count"></span>
+            <button class="usage-upgrade" type="button" hidden>✨ アップグレード</button>
+          </div>
         </div>
       </section>
 
@@ -426,6 +451,42 @@
         <!-- グループ参加済み時 -->
         <div id="household-leave-sec" class="household-section" hidden>
           <button id="household-leave-btn" class="household-leave-btn" type="button">グループから退出</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- アップグレードモーダル（無料プラン上限到達時） -->
+    <div id="upgrade-modal" class="modal" hidden>
+      <div class="modal-box upgrade-modal-box" role="dialog" aria-modal="true" aria-label="プレミアムプラン">
+        <div class="modal-head">
+          <h2>✨ プレミアムプランへ</h2>
+          <button id="upgrade-close" aria-label="閉じる">✕</button>
+        </div>
+        <div class="upgrade-content">
+          <p class="upgrade-limit-msg">今月の無料記録（10件）に達しました。<br />プレミアムプランにアップグレードすると記録件数が無制限になります。</p>
+          <div class="upgrade-plans">
+            <div class="upgrade-plan">
+              <div class="plan-name">無料プラン</div>
+              <ul class="plan-features">
+                <li>月10件まで記録</li>
+                <li>AI OCR・集計・カレンダー</li>
+              </ul>
+            </div>
+            <div class="upgrade-plan upgrade-plan--featured">
+              <div class="plan-badge">おすすめ</div>
+              <div class="plan-name">プレミアム <span class="plan-price">¥480<span class="plan-period">/月</span></span></div>
+              <ul class="plan-features">
+                <li>✅ 記録件数 <strong>無制限</strong></li>
+                <li>✅ AI レシートOCR</li>
+                <li>✅ レシピ提案</li>
+                <li>✅ 世帯共有</li>
+                <li>✅ CSVエクスポート</li>
+                <li>✅ 最安値アラート</li>
+              </ul>
+            </div>
+          </div>
+          <button id="upgrade-checkout-btn" class="primary upgrade-btn" type="button">今すぐアップグレード</button>
+          <p class="upgrade-hint">Stripe の安全な決済ページへ移動します。<br />クレジットカード対応。いつでもキャンセル可能です。</p>
         </div>
       </div>
     </div>

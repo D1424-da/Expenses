@@ -25,6 +25,7 @@ from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi import Body
 
 from app import engines, security
 
@@ -153,6 +154,43 @@ async def suggest_recipe(
     except Exception as exc:  # noqa: BLE001
         logger.exception("Recipe suggestion failed")
         raise HTTPException(500, "レシピの提案に失敗しました。時間をおいて再試行してください。") from exc
+
+
+# ---- Stripe サブスクリプション ------------------------------------------------
+
+class CheckoutRequest(BaseModel):
+    email: str = Field(..., max_length=254)
+
+
+@app.post("/api/stripe/checkout")
+async def stripe_checkout(
+    request: Request,
+    body: CheckoutRequest,
+    authorization: str | None = Header(default=None),
+) -> JSONResponse:
+    """Stripe Checkout セッションを作成し URL を返す。Firebase 認証必須。"""
+    uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
+    if not uid:
+        raise HTTPException(401, "認証が必要です。")
+    from app import stripe_billing
+    url = await stripe_billing.create_checkout_session(uid, body.email)
+    return JSONResponse({"url": url})
+
+
+@app.post("/api/stripe/webhook")
+async def stripe_webhook(
+    request: Request,
+    stripe_signature: str | None = Header(default=None, alias="stripe-signature"),
+) -> JSONResponse:
+    """Stripe からの Webhook を受け取り、Firestore のサブスクリプション状態を更新する。
+    署名検証のため生ボディが必要（JSONパースしないこと）。
+    """
+    payload = await request.body()
+    if not stripe_signature:
+        raise HTTPException(400, "Stripe-Signature ヘッダーがありません。")
+    from app import stripe_billing
+    result = await stripe_billing.handle_webhook(payload, stripe_signature)
+    return JSONResponse(result)
 
 
 # ---- フロント配信（ローカル開発用。本番は Firebase Hosting を使う） ----------
