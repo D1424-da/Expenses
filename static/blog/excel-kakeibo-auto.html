@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ExcelよりラクなWebアプリ家計簿｜自動集計・CSV出力・テンプレート不要で管理する方法</title>
+  <meta name="description" content="Excel家計簿テンプレートの限界とWebアプリへの移行メリットを解説。自動集計・グラフ・CSV出力ができるExcel代替の家計簿Webアプリの使い方。" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .ah{background:linear-gradient(135deg,#3a2a1a 0%,#281a0d 100%);padding:64px 24px 80px;position:relative;overflow:hidden}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(255,255,255,.15);color:#a8d8bb;border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;line-height:1.35;margin-bottom:24px}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .wbox{background:#fff8f0;border:1px solid #f8d4b0;border-left:4px solid var(--or);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    @media(prefers-color-scheme:dark){.wbox{background:#1a1208;border-color:#5a3010}}
+    .wl{font-size:.75rem;font-weight:700;color:var(--or);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+    .wbox p{margin:0;color:var(--is);font-size:.9rem}
+    .cmp{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:32px 0}
+    .cmp-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh)}
+    .cmp-label{font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+    .cmp-label.ex{color:#b04444}
+    .cmp-label.wa{color:var(--gm)}
+    .cmp-items{list-style:none;padding:0}
+    .cmp-items li{padding:6px 0;border-bottom:1px solid var(--bd);font-size:.875rem;color:var(--is);display:flex;gap:8px;align-items:flex-start}
+    .cmp-items li:last-child{border-bottom:none}
+    .cmp-items .icon{flex-shrink:0}
+    .cb{background:var(--gd);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.cmp{grid-template-columns:1fr}}
+    @media(max-width:600px){.hn{display:none}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a href="/" class="hl">取本 <span>とほん</span></a>
+  <nav class="hn"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金</a></nav>
+  <a href="/index.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <div class="bc"><a href="/">ホーム</a><span>›</span><a href="/blog.html">ブログ</a><span>›</span><span>Excel代替</span></div>
+    <span class="ac">Excel代替・家計簿CSV</span>
+    <h1>ExcelよりラクなWebアプリ家計簿<br>自動集計・CSV出力・テンプレート不要で家計管理</h1>
+    <div class="am"><span>📅 2026年7月6日</span><span>⏱ 読了時間：約5分</span><span>👁 4,280 views</span></div>
+  </div>
+</section>
+
+<div class="cw">
+<article class="ab">
+<p class="ld">「家計簿はExcelで管理している」という方は多いですが、「毎月数式を修正するのが面倒」「グラフ作成が手間」「スマホで編集できない」という悩みはありませんか？Webアプリの家計簿に移行すれば、これらの課題をすべて解決できます。ExcelとWebアプリの違いを比較しながら、乗り換えのメリットを徹底解説します。</p>
+
+<h2 id="excel-limit">Excel家計簿の限界と課題</h2>
+<p>Excel（またはGoogleスプレッドシート）で家計管理している方が感じるよくある課題です。</p>
+
+<div class="wbox">
+  <div class="wl">Excel家計簿あるある</div>
+  <p>数式が壊れた・グラフが更新されない・月が変わるたびにシートをコピーする・スマホで編集しにくい・ファイルを共有するたびに上書き合戦になる…</p>
+</div>
+
+<div class="cmp">
+  <div class="cmp-card">
+    <div class="cmp-label ex">Excel家計簿の課題</div>
+    <ul class="cmp-items">
+      <li><span class="icon">✗</span>毎月シートのコピー・数式メンテが必要</li>
+      <li><span class="icon">✗</span>グラフ・集計は手動更新</li>
+      <li><span class="icon">✗</span>スマホから入力しにくい</li>
+      <li><span class="icon">✗</span>レシートの手入力に時間がかかる</li>
+      <li><span class="icon">✗</span>カテゴリ分類を毎回考える必要</li>
+      <li><span class="icon">✗</span>複数人で使うと競合が起きる</li>
+    </ul>
+  </div>
+  <div class="cmp-card">
+    <div class="cmp-label wa">Webアプリ（取本）のメリット</div>
+    <ul class="cmp-items">
+      <li><span class="icon">✓</span>レシートを撮るだけで自動入力</li>
+      <li><span class="icon">✓</span>グラフ・集計はリアルタイム自動更新</li>
+      <li><span class="icon">✓</span>PC・スマホどちらからでも使える</li>
+      <li><span class="icon">✓</span>AIがカテゴリを自動分類</li>
+      <li><span class="icon">✓</span>家族で同時アクセス・リアルタイム共有</li>
+      <li><span class="icon">✓</span>CSV出力でExcel連携も維持できる</li>
+    </ul>
+  </div>
+</div>
+
+<h2 id="csv-feature">CSV出力機能でExcelとの共存も可能</h2>
+<p>「Excelをゼロにはできない」という方もご安心ください。取本はCSV形式でのデータエクスポートに対応しており、<strong>取本で入力→CSVでエクスポート→Excelで追加分析</strong>という使い方ができます。</p>
+
+<h3>CSVで出力できるデータ</h3>
+<ul>
+  <li>日付・店名・カテゴリ・金額（一覧）</li>
+  <li>月次サマリー（カテゴリ別集計）</li>
+  <li>指定期間内の支出データ一括エクスポート</li>
+</ul>
+
+<div class="tb"><div class="tl">活用例</div><p>確定申告や医療費控除の申請時に、医療費カテゴリのCSVをエクスポートして一覧を作成→Excelで合計金額を確認、という使い方が人気です。</p></div>
+
+<h2 id="auto-graph">自動グラフ機能で毎月の集計作業をゼロに</h2>
+<p>Excelでは「ピボットテーブルの更新」「グラフの範囲変更」など、月が変わるたびに手作業が発生します。取本は入力するたびにリアルタイムでグラフが更新されるため、集計作業は一切不要です。</p>
+<ul>
+  <li><strong>カテゴリ別円グラフ</strong>：食費・日用品・外食などの比率が一目でわかる</li>
+  <li><strong>月別推移グラフ</strong>：過去6ヶ月・12ヶ月の支出トレンドを折れ線グラフで表示</li>
+  <li><strong>予算進捗バー</strong>：今月の残り予算をリアルタイム表示</li>
+</ul>
+
+<h2 id="template-free">テンプレート不要！毎月ゼロから設定する必要なし</h2>
+<p>Excelの家計簿テンプレートは月ごとにシートをコピーし、前月のデータを消して…という作業が必要です。Webアプリは毎月自動的に新しい月のデータが追加されるため、テンプレートの管理は一切不要です。</p>
+
+<h2 id="migration">ExcelからWebアプリへの乗り換え方法</h2>
+<ol>
+  <li><strong>取本に無料登録</strong>（Googleアカウント連携で30秒）</li>
+  <li><strong>カテゴリを設定</strong>（デフォルトカテゴリがあるのでそのまま使用も可）</li>
+  <li><strong>今月から入力開始</strong>（過去データは必要であればCSVインポート）</li>
+  <li><strong>Excelは「バックアップ用」に残す</strong>（CSVエクスポートで定期的に保存）</li>
+</ol>
+
+<div class="cb">
+  <h3>Excelよりラクな家計管理を体験</h3>
+  <p>レシートを撮るだけで自動入力・自動集計。テンプレート不要・数式メンテ不要。まずは無料でお試しください。</p>
+  <a href="/index.html" class="bc2">無料で試してみる →</a>
+</div>
+</article>
+
+<aside class="sb">
+  <div class="sbc">
+    <h4>目次</h4>
+    <ul class="toc">
+      <li><a href="#excel-limit">Excel家計簿の限界と課題</a></li>
+      <li><a href="#csv-feature">CSV出力でExcelと共存</a></li>
+      <li><a href="#auto-graph">自動グラフで集計作業ゼロ</a></li>
+      <li><a href="#template-free">テンプレート不要の理由</a></li>
+      <li><a href="#migration">乗り換え方法</a></li>
+    </ul>
+  </div>
+  <div class="sbc">
+    <h4>関連記事</h4>
+    <a href="/blog/pc-kakeibo-browser.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#2a1a4a 0%,#1a0d28 100%)">💻</div>
+      <div><div class="rt">パソコンで使う家計簿2026年版｜広告なし・ログイン不要</div><div class="rm">2026年7月8日</div></div>
+    </a>
+    <a href="/blog/graph-spending-analysis.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#1a3a1a 0%,#0d2818 100%)">📈</div>
+      <div><div class="rt">グラフと支出分析で家計の無駄を発見する方法</div><div class="rm">2026年6月22日</div></div>
+    </a>
+    <a href="/blog/web-kakeibo-free.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#1a2c4a 0%,#0d1a28 100%)">🌐</div>
+      <div><div class="rt">インストール不要！無料ブラウザ家計簿Webアプリ</div><div class="rm">2026年7月10日</div></div>
+    </a>
+  </div>
+  <div class="sbc" style="background:var(--gd);border-color:transparent">
+    <h4 style="color:#fff;border-color:rgba(255,255,255,.2)">Excelより簡単に</h4>
+    <p style="font-size:.85rem;color:#a8d8bb;margin-bottom:16px">レシート撮影→自動入力→自動グラフ。テンプレート不要。</p>
+    <a href="/index.html" style="display:block;background:var(--or);color:#fff;text-align:center;border-radius:100px;padding:10px 20px;font-size:.875rem;font-weight:700;text-decoration:none">今すぐ無料登録 →</a>
+  </div>
+</aside>
+</div>
+
+<footer class="ft">
+  <div class="fl"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金プラン</a></div>
+  <p>© 2026 取本（とほん） · AIレシート家計簿</p>
+</footer>
+</body>
+</html>

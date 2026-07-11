@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>インストール不要！無料で使えるブラウザ家計簿Webアプリ完全ガイド【2026年版】</title>
+  <meta name="description" content="インストール不要・ログイン不要でブラウザからすぐ使える無料家計簿Webアプリを徹底解説。スマホ・PCどちらでも使えるオンライン家計簿の選び方と活用法。" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#1a2c4a 0%,#0d1a28 100%);padding:64px 24px 80px;position:relative;overflow:hidden}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(255,255,255,.15);color:#a8d8bb;border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;line-height:1.35;margin-bottom:24px}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
+    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
+    .su{font-size:.85rem;color:var(--im);margin-top:4px}
+    .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:32px 0}
+    .cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+    .ci{font-size:1.8rem;margin-bottom:10px;display:block}
+    .ct{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px}
+    .cd{font-size:.82rem;color:var(--is);line-height:1.6}
+    .cb{background:var(--gd);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}}
+    @media(max-width:600px){.hn{display:none}.sg{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a href="/" class="hl">取本 <span>とほん</span></a>
+  <nav class="hn"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金</a></nav>
+  <a href="/index.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <div class="bc"><a href="/">ホーム</a><span>›</span><a href="/blog.html">ブログ</a><span>›</span><span>家計簿Webアプリ</span></div>
+    <span class="ac">家計簿Webアプリ</span>
+    <h1>インストール不要！無料で使えるブラウザ家計簿Webアプリ完全ガイド【2026年版】</h1>
+    <div class="am"><span>📅 2026年7月10日</span><span>⏱ 読了時間：約6分</span><span>👁 2,840 views</span></div>
+  </div>
+</section>
+
+<div class="cw">
+<article class="ab">
+<p class="ld">「家計簿アプリをインストールしたくない」「ブラウザからすぐ使いたい」というニーズが急増しています。スマホのストレージを使わず、PCでもスマホでも同じデータを見られる家計簿Webアプリは、現代の家計管理に最適な選択肢です。この記事では、インストール不要・無料で使える家計簿Webアプリの特徴と選び方を徹底解説します。</p>
+
+<h2 id="what-is-web-kakeibo">家計簿Webアプリとは？アプリとの違い</h2>
+<p>家計簿Webアプリとは、スマホやPCにインストールすることなく、<strong>ブラウザ（Safari・Chrome・Edgeなど）からアクセスして使う家計簿</strong>のことです。インストール型アプリとの主な違いは次のとおりです。</p>
+
+<div class="cg">
+  <div class="cc">
+    <span class="ci">🌐</span>
+    <div class="ct">Webアプリのメリット</div>
+    <div class="cd">インストール不要・ストレージゼロ・PCとスマホで自動同期・URLを開けばすぐ使える・アップデート不要</div>
+  </div>
+  <div class="cc">
+    <span class="ci">📱</span>
+    <div class="ct">インストール型アプリのメリット</div>
+    <div class="cd">オフライン利用可能・プッシュ通知・カメラへのアクセスが容易・スマホ最適化UI</div>
+  </div>
+</div>
+
+<p>日常的にPCで家計管理したい方、複数デバイスをまたいで使いたい方には<strong>ブラウザ家計簿（Webアプリ）</strong>が圧倒的に使いやすいです。</p>
+
+<h2 id="merit">無料の家計簿Webアプリを選ぶ3つのメリット</h2>
+
+<div class="sg">
+  <div class="sc"><div class="sn">0円</div><div class="su">ずっと無料で使える（基本機能）</div></div>
+  <div class="sc"><div class="sn">0MB</div><div class="su">スマホのストレージ使用量</div></div>
+  <div class="sc"><div class="sn">即日</div><div class="su">登録当日から使い始められる</div></div>
+</div>
+
+<h3>どのデバイスからでもアクセスできる</h3>
+<p>ブラウザ家計簿の最大の強みは<strong>デバイスを選ばない</strong>点です。朝は自宅のPCで先月の支出を確認し、昼は職場のPCでレシートを入力し、夜はスマホで今日の支出を追加する…というマルチデバイス利用が自然にできます。</p>
+
+<h3>ソフトのインストール・更新作業がゼロ</h3>
+<p>インストール型ソフトは定期的なアップデートが必要です。Webアプリはサーバー側で更新されるため、<strong>ユーザーは常に最新バージョン</strong>を自動的に使えます。</p>
+
+<h3>職場・外出先でも使える</h3>
+<p>会社のPCや外出先の端末からもアクセス可能。経費の立替分をその場で入力しておけるため、レシートを失くすリスクも減ります。</p>
+
+<div class="tb"><div class="tl">POINT</div><p>取本（とほん）はPWA（Progressive Web App）対応のため、スマホのホーム画面に追加するとアプリのような感覚で使えます。インストール不要なのに、アプリ感覚の操作性を実現しています。</p></div>
+
+<h2 id="choose">ブラウザ家計簿の選び方：チェックすべき5つのポイント</h2>
+
+<h3>1. ログイン不要か・データ保存はどうなるか</h3>
+<p>「ログインしたくない」という方向けに、アカウント登録なしで使える家計簿サービスもあります。ただし、<strong>ログイン不要の場合はデータがブラウザのローカルストレージに保存</strong>されるため、ブラウザを変えるとデータが消える点に注意が必要です。複数デバイスで使いたい方はアカウント登録（無料）がおすすめです。</p>
+
+<h3>2. 広告の有無</h3>
+<p>無料の家計簿サービスは広告収入で運営しているものが多いです。広告が多いと使いにくく感じることも。<strong>広告なしの家計簿Webアプリ</strong>を選ぶか、有料プランで広告非表示にできるサービスを選びましょう。</p>
+
+<h3>3. スマホ・PCどちらでも快適に使えるか</h3>
+<p>レスポンシブデザイン対応かどうかを確認しましょう。PCで横長の表示、スマホでは縦長の表示に自動対応するサービスが使いやすいです。</p>
+
+<h3>4. CSV出力・データエクスポートができるか</h3>
+<p>万が一サービスが終了しても、データを手元に残せるようCSV出力機能があるか確認しましょう。自分のデータを人質に取られないためにも重要なポイントです。</p>
+
+<h3>5. 継続して使えるサービスか</h3>
+<p>完全無料のサービスは突然終了するリスクがあります。有料プランがあり、事業として継続的に運営されているサービスを選ぶと長く使い続けられます。</p>
+
+<h2 id="tohon">取本（とほん）がブラウザ家計簿に選ばれる理由</h2>
+<p>取本はインストール不要・ブラウザから即日利用できる家計簿Webアプリです。特に次の点が支持されています。</p>
+<ul>
+  <li><strong>レシートをスキャンするだけ</strong>でAIが自動入力（入力の手間ゼロ）</li>
+  <li><strong>広告なし</strong>の快適なUI（無料プランでも広告表示なし）</li>
+  <li>PC・スマホ・タブレット全対応のレスポンシブデザイン</li>
+  <li>Googleアカウントでワンクリックログイン（30秒で登録完了）</li>
+  <li>CSV出力対応でデータの持ち出しが自由</li>
+</ul>
+
+<h2 id="start">今すぐ始めるための3ステップ</h2>
+<ol>
+  <li>ブラウザで取本にアクセス（インストール不要）</li>
+  <li>Googleアカウントでログイン（30秒）またはゲストモードで試す</li>
+  <li>最初のレシートをカメラで撮影→AIが自動入力</li>
+</ol>
+
+<div class="cb">
+  <h3>ブラウザから今すぐ無料で始める</h3>
+  <p>インストール不要・クレジットカード不要。このページを見ているそのブラウザで、今すぐ家計管理を始められます。</p>
+  <a href="/index.html" class="bc2">無料で始める →</a>
+</div>
+</article>
+
+<aside class="sb">
+  <div class="sbc">
+    <h4>目次</h4>
+    <ul class="toc">
+      <li><a href="#what-is-web-kakeibo">家計簿Webアプリとは？</a></li>
+      <li><a href="#merit">無料Webアプリのメリット3選</a></li>
+      <li><a href="#choose">選び方5つのポイント</a></li>
+      <li><a href="#tohon">取本が選ばれる理由</a></li>
+      <li><a href="#start">今すぐ始める3ステップ</a></li>
+    </ul>
+  </div>
+  <div class="sbc">
+    <h4>関連記事</h4>
+    <a href="/blog/pc-kakeibo-browser.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#2a1a4a 0%,#1a0d28 100%)">💻</div>
+      <div><div class="rt">パソコン向け家計簿アプリ2026年版｜広告なし・ログイン不要</div><div class="rm">2026年7月8日</div></div>
+    </a>
+    <a href="/blog/excel-kakeibo-auto.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#3a2a1a 0%,#281a0d 100%)">📊</div>
+      <div><div class="rt">ExcelからWebアプリ家計簿へ｜自動集計・CSV出力</div><div class="rm">2026年7月6日</div></div>
+    </a>
+    <a href="/blog/receipt-kakeibo-basics.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#1E5C3A 0%,#0a2c1a 100%)">🧾</div>
+      <div><div class="rt">レシートを撮るだけ！AI家計簿で始める節約習慣</div><div class="rm">2026年7月1日</div></div>
+    </a>
+  </div>
+  <div class="sbc" style="background:var(--gd);border-color:transparent">
+    <h4 style="color:#fff;border-color:rgba(255,255,255,.2)">無料で始める</h4>
+    <p style="font-size:.85rem;color:#a8d8bb;margin-bottom:16px">ブラウザからインストール不要で今すぐ使える家計簿Webアプリ。</p>
+    <a href="/index.html" style="display:block;background:var(--or);color:#fff;text-align:center;border-radius:100px;padding:10px 20px;font-size:.875rem;font-weight:700;text-decoration:none">今すぐ無料登録 →</a>
+  </div>
+</aside>
+</div>
+
+<footer class="ft">
+  <div class="fl"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金プラン</a></div>
+  <p>© 2026 取本（とほん） · AIレシート家計簿</p>
+</footer>
+</body>
+</html>

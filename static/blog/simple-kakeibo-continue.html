@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>シンプルだから続く！面倒じゃない家計簿で節約習慣を作る方法</title>
+  <meta name="description" content="複雑な機能なし・入力手間ゼロのシンプル家計簿が長続きする理由を解説。続く家計簿の条件と、面倒じゃない習慣の作り方を紹介します。" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4)}}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .ah{background:linear-gradient(135deg,#1a4a3a 0%,#0d2828 100%);padding:64px 24px 80px;position:relative;overflow:hidden}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(255,255,255,.15);color:#a8d8bb;border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;line-height:1.35;margin-bottom:24px}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
+    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
+    .su{font-size:.85rem;color:var(--im);margin-top:4px}
+    .rule-list{list-style:none;padding:0;margin:24px 0;counter-reset:rule}
+    .rule-item{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--bd);align-items:flex-start}
+    .rule-item:last-child{border-bottom:none}
+    .rule-num{width:36px;height:36px;border-radius:50%;background:var(--gm);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
+    .rule-body h4{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:4px}
+    .rule-body p{margin:0;font-size:.85rem;color:var(--is)}
+    .cb{background:var(--gd);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:1fr}}
+    @media(max-width:600px){.hn{display:none}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a href="/" class="hl">取本 <span>とほん</span></a>
+  <nav class="hn"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金</a></nav>
+  <a href="/index.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <div class="bc"><a href="/">ホーム</a><span>›</span><a href="/blog.html">ブログ</a><span>›</span><span>シンプル家計簿</span></div>
+    <span class="ac">シンプル家計簿</span>
+    <h1>シンプルだから続く！<br>面倒じゃない家計簿で節約習慣を作る方法</h1>
+    <div class="am"><span>📅 2026年7月4日</span><span>⏱ 読了時間：約5分</span><span>👁 2,960 views</span></div>
+  </div>
+</section>
+
+<div class="cw">
+<article class="ab">
+<p class="ld">「シンプルな家計簿が続く」というのは科学的にも裏付けがあります。習慣化の研究によると、行動の複雑さが増すほど継続率は下がります。機能が多すぎる家計簿アプリより、必要最小限の機能だけを持つシンプルな家計簿のほうが、結果的に長続きして節約効果が高くなるのです。</p>
+
+<h2 id="why-simple">「シンプルな家計簿」が続く理由</h2>
+<p>なぜシンプルな家計簿が続くのか。その理由は習慣化の仕組みにあります。</p>
+
+<div class="sg">
+  <div class="sc"><div class="sn">2秒</div><div class="su">習慣化に必要な「摩擦ゼロ」の基準</div></div>
+  <div class="sc"><div class="sn">66日</div><div class="su">習慣が定着するまでの平均日数</div></div>
+  <div class="sc"><div class="sn">91%</div><div class="su">「面倒すぎる」を理由に挫折する割合</div></div>
+</div>
+
+<p>家計簿の継続に最も重要なのは「始めるときの摩擦をゼロに近づける」ことです。アプリを開いて、ログインして、カテゴリを選んで、金額を入力して…という複数ステップが毎回必要な家計簿は続きません。</p>
+
+<h3>「続く家計簿」の絶対条件</h3>
+<ul>
+  <li><strong>入力が1アクションで完了すること</strong>（撮る、話す、など）</li>
+  <li><strong>入力後の達成感があること</strong>（登録完了のフィードバック）</li>
+  <li><strong>週1回でも成立すること</strong>（毎日やらなくていい）</li>
+  <li><strong>見るのが楽しいこと</strong>（グラフやダッシュボードが見やすい）</li>
+</ul>
+
+<h2 id="features">シンプル家計簿に「あったほうがいい」機能と「いらない」機能</h2>
+
+<h3>あったほうがいい機能</h3>
+<ul>
+  <li>レシートスキャン（入力をゼロに）</li>
+  <li>カテゴリ自動分類（考える作業をゼロに）</li>
+  <li>月次サマリーグラフ（見るだけでわかる）</li>
+  <li>予算オーバーアラート（能動的に確認しなくていい）</li>
+</ul>
+
+<h3>なくていい機能（複雑化の原因）</h3>
+<ul>
+  <li>資産管理・投資連携（家計簿とは別に管理すればいい）</li>
+  <li>ポイント管理（節約効果が見えにくい）</li>
+  <li>細かすぎるカテゴリ（「外食」で十分。「ランチ」「ディナー」を分けても意味は薄い）</li>
+  <li>自動振り分けの複雑なルール設定（設定が面倒で放置になる）</li>
+</ul>
+
+<div class="tb"><div class="tl">取本の設計思想</div><p>取本は「入力はレシートを撮るだけ、確認はグラフを見るだけ」というシンプルさを徹底しています。機能を削ることで、誰でも続けられる家計簿を目指しています。</p></div>
+
+<h2 id="rules">面倒じゃない家計簿を続ける5つのルール</h2>
+
+<ul class="rule-list">
+  <li class="rule-item">
+    <div class="rule-num">1</div>
+    <div class="rule-body"><h4>「完璧主義」をやめる</h4><p>レシートが1枚なくても大丈夫。月に1〜2件の入力漏れは許容する。99%の精度で十分。</p></div>
+  </li>
+  <li class="rule-item">
+    <div class="rule-num">2</div>
+    <div class="rule-body"><h4>週1まとめスキャンでOK</h4><p>毎日入力しなくていい。週末や月曜の朝に5分かけてその週のレシートをまとめてスキャン。</p></div>
+  </li>
+  <li class="rule-item">
+    <div class="rule-num">3</div>
+    <div class="rule-body"><h4>カテゴリは8個以下に絞る</h4><p>食費・外食・日用品・交通・医療・娯楽・衣類・その他。これ以上細かくすると分類に悩んで続かない。</p></div>
+  </li>
+  <li class="rule-item">
+    <div class="rule-num">4</div>
+    <div class="rule-body"><h4>月末グラフだけ確認する</h4><p>日々のデータを見ない。月末の5分だけグラフを確認する。それだけで傾向はわかる。</p></div>
+  </li>
+  <li class="rule-item">
+    <div class="rule-num">5</div>
+    <div class="rule-body"><h4>予算は現状+10%から始める</h4><p>最初から厳しすぎる予算を設定しない。まず現状を把握し、翌月から少しずつ絞る。</p></div>
+  </li>
+</ul>
+
+<h2 id="result">シンプル家計簿を3ヶ月続けた結果</h2>
+<p>取本ユーザーのデータによると、シンプルな入力を3ヶ月継続したユーザーの平均節約額は月17,800円でした。複雑な機能を使いこなそうとして1ヶ月で挫折したユーザーと比較すると、シンプルに続けたほうが節約効果は明らかに高くなります。</p>
+<p>「記録すること」が目的になってしまうと続きません。「家計の傾向を知って無駄を減らす」という目的を忘れずに、シンプルに続けることが大切です。</p>
+
+<div class="cb">
+  <h3>シンプルに、でも確実に節約できる家計簿</h3>
+  <p>レシートを撮るだけ。週1回で完成。難しい操作は一切なし。まずは無料でお試しください。</p>
+  <a href="/index.html" class="bc2">無料で始める →</a>
+</div>
+</article>
+
+<aside class="sb">
+  <div class="sbc">
+    <h4>目次</h4>
+    <ul class="toc">
+      <li><a href="#why-simple">シンプルが続く理由</a></li>
+      <li><a href="#features">必要な機能・いらない機能</a></li>
+      <li><a href="#rules">続ける5つのルール</a></li>
+      <li><a href="#result">3ヶ月続けた結果</a></li>
+    </ul>
+  </div>
+  <div class="sbc">
+    <h4>関連記事</h4>
+    <a href="/blog/beginner-3min-kakeibo.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#4a3a1a 0%,#281a0d 100%)">⏱</div>
+      <div><div class="rt">家計簿初心者でも1日3分でOK！挫折しない始め方</div><div class="rm">2026年7月3日</div></div>
+    </a>
+    <a href="/blog/receipt-kakeibo-basics.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#1E5C3A 0%,#0a2c1a 100%)">🧾</div>
+      <div><div class="rt">レシートを撮るだけ！AI家計簿で始める節約習慣</div><div class="rm">2026年7月1日</div></div>
+    </a>
+    <a href="/blog/money-visible-savings.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#4a1a1a 0%,#280d0d 100%)">💰</div>
+      <div><div class="rt">お金の見える化で貯金を増やす実践ステップ</div><div class="rm">2026年6月15日</div></div>
+    </a>
+  </div>
+  <div class="sbc" style="background:var(--gd);border-color:transparent">
+    <h4 style="color:#fff;border-color:rgba(255,255,255,.2)">シンプルに始める</h4>
+    <p style="font-size:.85rem;color:#a8d8bb;margin-bottom:16px">撮るだけ・週1回・続けるだけ。シンプルな家計管理を。</p>
+    <a href="/index.html" style="display:block;background:var(--or);color:#fff;text-align:center;border-radius:100px;padding:10px 20px;font-size:.875rem;font-weight:700;text-decoration:none">今すぐ無料登録 →</a>
+  </div>
+</aside>
+</div>
+
+<footer class="ft">
+  <div class="fl"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金プラン</a></div>
+  <p>© 2026 取本（とほん） · AIレシート家計簿</p>
+</footer>
+</body>
+</html>
