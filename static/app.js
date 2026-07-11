@@ -47,7 +47,7 @@ import { dbSetUser, dbClearHousehold, dbBase } from "./db-paths.js";
 import { initHousehold, loadHousehold, clearHousehold } from "./household.js";
 import {
   initBilling, startBillingSync, stopBillingSync,
-  checkGate, renderUsageBar, FREE_LIMIT,
+  checkGate, renderUsageBar, FREE_LIMIT, isPremium, openPortal,
 } from "./stripe-billing.js";
 
 window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
@@ -235,6 +235,18 @@ async function setupApp() {
     initBilling({ db, getUser: () => currentUser });
     $("usage-bar").querySelector(".usage-upgrade").onclick = () => openModal("upgrade-modal");
 
+    // アカウントモーダル
+    $("account-btn").onclick = () => {
+      $("account-user-email").textContent = currentUser?.email ?? "";
+      const premium = isPremium();
+      $("account-plan-free").hidden = premium;
+      $("account-plan-premium").hidden = !premium;
+      openModal("account-modal");
+    };
+    $("account-close").onclick = () => closeModal("account-modal");
+    $("account-upgrade-btn").onclick = () => { closeModal("account-modal"); openModal("upgrade-modal"); };
+    $("account-portal-btn").onclick = () => openPortal();
+    $("account-household-btn").onclick = () => { closeModal("account-modal"); openModal("household-modal"); };
     $("logout").onclick = () => { stopShoppingSync(); stopMealPlanSync(); signOut(auth); };
     $("prev-month").onclick = () => shiftMonth(-1);
     $("next-month").onclick = () => shiftMonth(1);
@@ -267,7 +279,7 @@ async function setupApp() {
     $("pcnav-compare").onclick    = () => $("compare-btn").click();
     $("pcnav-budget").onclick     = () => $("budget-btn").click();
     $("pcnav-trend").onclick      = () => $("trend-btn").click();
-    $("pcnav-household").onclick  = () => $("household-btn").click();
+    if ($("pcnav-household")) $("pcnav-household").onclick = () => openModal("household-modal");
 
     bindModalDismiss();
 

@@ -54,20 +54,14 @@
     <header class="topbar">
       <h1>とほん</h1>
       <div class="topbar-right">
-        <div class="month-picker">
-          <button id="prev-month" aria-label="前の月">‹</button>
-          <span id="current-month"></span>
-          <button id="next-month" aria-label="次の月">›</button>
-        </div>
         <button id="shopping-btn" class="topbar-btn" title="買い物リスト">
           🛒<span id="shopping-badge" class="shopping-badge" hidden></span>
         </button>
         <button id="saved-recipes-btn" class="topbar-btn" title="保存済みレシピ">📚</button>
         <button id="compare-btn" class="topbar-btn" title="価格比較">🔎 価格比較</button>
-        <button id="household-btn" class="topbar-btn" title="世帯グループ">👨‍👩‍👧</button>
         <button id="export-btn" class="topbar-btn" title="CSVでエクスポート">📥 CSV</button>
         <span id="premium-badge" class="premium-badge" hidden title="プレミアムプラン">✨ PRO</span>
-        <button id="logout" class="topbar-btn topbar-btn--logout" title="ログアウト">ログアウト</button>
+        <button id="account-btn" class="topbar-btn topbar-btn--account" title="アカウント">⚙️</button>
       </div>
     </header>
 
@@ -87,7 +81,6 @@
         <div class="pcnav-divider"></div>
         <button class="pc-nav-item" id="pcnav-budget"><span class="pcnav-icon">💰</span><span class="pcnav-label">予算</span></button>
         <button class="pc-nav-item" id="pcnav-trend"><span class="pcnav-icon">📈</span><span class="pcnav-label">月別グラフ</span></button>
-        <button class="pc-nav-item" id="pcnav-household"><span class="pcnav-icon">👨‍👩‍👧</span><span class="pcnav-label">世帯</span></button>
       </div>
     </nav>
 
@@ -105,6 +98,12 @@
               <button id="budget-btn" class="summary-action-btn" title="予算設定">💰 予算</button>
               <button id="trend-btn" class="summary-action-btn" title="月別グラフ">📈 グラフ</button>
             </div>
+          </div>
+          <!-- 月切り替えナビ -->
+          <div class="month-picker">
+            <button id="prev-month" aria-label="前の月">‹</button>
+            <span id="current-month"></span>
+            <button id="next-month" aria-label="次の月">›</button>
           </div>
         </div>
         <div class="summary-body">
@@ -500,6 +499,39 @@
             </div>
             <p id="beta-code-msg" hidden></p>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- アカウント・設定モーダル -->
+    <div id="account-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="アカウント設定">
+        <div class="modal-head">
+          <h2>⚙️ アカウント</h2>
+          <button id="account-close" aria-label="閉じる">✕</button>
+        </div>
+        <div class="account-content">
+          <div class="account-user-row">
+            <span id="account-user-email" class="account-email"></span>
+          </div>
+          <!-- プラン状態 -->
+          <div id="account-plan-free" class="account-plan-box account-plan-free">
+            <div class="account-plan-label">現在のプラン</div>
+            <div class="account-plan-name">無料プラン</div>
+            <p class="account-plan-desc">月10件まで記録できます。</p>
+            <button id="account-upgrade-btn" class="primary account-action-btn" type="button">✨ プレミアムにアップグレード</button>
+          </div>
+          <div id="account-plan-premium" class="account-plan-box account-plan-premium" hidden>
+            <div class="account-plan-label">現在のプラン</div>
+            <div class="account-plan-name">✨ プレミアムプラン</div>
+            <p class="account-plan-desc">記録件数無制限・すべての機能が使えます。</p>
+            <button id="account-portal-btn" class="account-action-btn account-action-btn--sub" type="button">サブスクリプションを管理・解約する</button>
+            <p class="account-portal-hint">Stripe の管理ページへ移動します。解約・領収書の確認ができます。</p>
+          </div>
+          <!-- 世帯グループ -->
+          <button id="account-household-btn" class="account-action-btn account-action-btn--ghost" type="button">👨‍👩‍👧 世帯グループを管理</button>
+          <!-- ログアウト -->
+          <button id="logout" class="account-action-btn account-action-btn--logout" type="button">ログアウト</button>
         </div>
       </div>
     </div>

@@ -132,6 +132,27 @@ async function _redeemBetaCode() {
   }
 }
 
+export async function openPortal() {
+  const user = _getUser();
+  if (!user) return;
+  try {
+    const token = await user.getIdToken();
+    const res = await fetch(`${OCR_API_BASE}/api/stripe/portal`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.detail || `HTTP ${res.status}`);
+    }
+    const { url } = await res.json();
+    location.href = url;
+  } catch (err) {
+    logErr("ポータルエラー:", err.message);
+    alert("管理ページへの移動に失敗しました: " + err.message);
+  }
+}
+
 async function _startCheckout() {
   const user = _getUser();
   if (!user) return;

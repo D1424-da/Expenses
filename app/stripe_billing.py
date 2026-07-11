@@ -88,6 +88,24 @@ async def create_checkout_session(uid: str, email: str) -> str:
     return session.url
 
 
+async def create_portal_session(uid: str) -> str:
+    """Stripe カスタマーポータルセッションを作成して URL を返す（解約・領収書確認用）。"""
+    stripe = _stripe()
+    db = _get_firestore()
+    ref = db.collection("users").document(uid).collection("settings").document("subscription")
+    snap = ref.get()
+    if not snap.exists:
+        raise HTTPException(404, "サブスクリプション情報が見つかりません。")
+    customer_id = snap.to_dict().get("stripeCustomerId")
+    if not customer_id:
+        raise HTTPException(404, "Stripe 顧客 ID が見つかりません。")
+    session = stripe.billing_portal.Session.create(
+        customer=customer_id,
+        return_url=f"{APP_URL}/",
+    )
+    return session.url
+
+
 async def handle_webhook(payload: bytes, sig_header: str) -> dict:
     """Stripe Webhook を検証し、サブスクリプション状態を Firestore に反映する。"""
     if not STRIPE_WEBHOOK_SECRET:
