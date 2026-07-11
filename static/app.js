@@ -34,7 +34,7 @@ import { requestBackendOcr, preprocessImage, runClientOcr, prewarmOcr } from "./
 import { TRUSTED_ENGINES, normalizeWithHistory } from "./history.js";
 import { categoryBreakdown, buildPriceHistory, lowestPriceAlerts } from "./stats.js";
 import { initForm, fillForm, resetForm, editExpense, deleteExpense } from "./expense-form.js";
-import { renderList, setFilter } from "./list-view.js";
+import { renderList, setFilter, resetList } from "./list-view.js";
 import { initCalendar, renderCalendar, maybeRefreshDayModal, updateMealPlans } from "./calendar-view.js";
 import { initCompare } from "./compare-view.js";
 import { initRecipe, openRecipeModal } from "./recipe-view.js";
@@ -83,6 +83,7 @@ onAuthStateChanged(auth, (user) => {
     // B-1: ログアウト時にキャッシュをクリアして他ユーザーへのデータ漏洩を防ぐ
     _allExpensesCache = null;
     _priceHistoryCache = null;
+    resetList();
     clearHousehold();
     dbClearHousehold();
     $("app").hidden = true;
@@ -144,7 +145,10 @@ $("google-login").onclick = async () => {
 
 // ---- アプリ初期化 ----------------------------------------------------------
 let appInitialized = false;
+let _setupRunning = false;
 async function setupApp() {
+  if (_setupRunning) return;
+  _setupRunning = true;
   // G-5: ログインユーザーを db-paths.js に登録し、世帯メンバーシップを確認
   dbSetUser(currentUser.uid);
   try {
@@ -242,15 +246,20 @@ async function setupApp() {
     prewarmOcr();
     appInitialized = true;
   }
-  loadBudget().then(renderSummary);
-  startShoppingSync();
-  startMealPlanSync((map) => {
-    updateMealPlans(map);
-    renderCalendar(currentExpenses, currentMonth);
-    maybeRefreshDayModal();
-  });
-  renderMonth();
-  subscribeMonth();
+  try {
+    await loadBudget();
+    renderSummary();
+    startShoppingSync();
+    startMealPlanSync((map) => {
+      updateMealPlans(map);
+      renderCalendar(currentExpenses, currentMonth);
+      maybeRefreshDayModal();
+    });
+    renderMonth();
+    subscribeMonth();
+  } finally {
+    _setupRunning = false;
+  }
 }
 
 function shiftMonth(delta) {
@@ -278,7 +287,7 @@ async function fetchMonthExpenses(month) {
   const next  = new Date(month.getFullYear(), month.getMonth() + 1, 1);
   const end   = monthKey(next) + "-01";
   const q = query(
-    collection(db, ...dbBase(), "expenses"),
+    expensesCol(),
     where("date", ">=", start),
     where("date", "<",  end),
   );
@@ -292,7 +301,7 @@ function subscribeMonth() {
   const next = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
   const end = monthKey(next) + "-01";
   const q = query(
-    collection(db, ...dbBase(), "expenses"),
+    expensesCol(),
     where("date", ">=", start),
     where("date", "<", end),
     orderBy("date", "desc"),
@@ -303,7 +312,7 @@ function subscribeMonth() {
     (snap) => {
       currentExpenses = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       log("Firestore更新:", currentExpenses.length, "件");
-      renderList(currentExpenses, { onEdit: editExpense, onDelete: deleteExpense });
+      renderList(currentExpenses, { onEdit: editExpense, onDelete: _deleteAndClearCache });
       renderCalendar(currentExpenses, currentMonth);
       maybeRefreshDayModal();
       // サマリー（非同期の全件フェッチを含む）は描画フレームの後に遅延実行
@@ -377,10 +386,10 @@ async function _addCalendarExpense({ date, store, amount, category }) {
 }
 
 // D-1: 削除時もキャッシュを破棄して最安値アラートが陳腐化しないようにする
-function _deleteAndClearCache(id) {
+async function _deleteAndClearCache(id) {
+  await deleteExpense(id);
   _allExpensesCache = null;
   _priceHistoryCache = null;
-  deleteExpense(id);
 }
 
 // ---- フォーム保存後のコールバック（expense-form のコールバック） ------------
@@ -394,14 +403,16 @@ function _onFormSaved(dateStr, wasEdit) {
 }
 
 // ---- G-5: 世帯切替後のリセット ---------------------------------------------
-function _onHouseholdChanged() {
+async function _onHouseholdChanged() {
+  if (!currentUser) return;
   // Firestore リスナーを張り直して正しいコレクションを購読する
   _allExpensesCache = null;
   _priceHistoryCache = null;
   if (unsubscribe) { unsubscribe(); unsubscribe = null; }
   stopShoppingSync();
   stopMealPlanSync();
-  loadBudget().then(renderSummary);
+  await loadBudget();
+  renderSummary();
   startShoppingSync();
   startMealPlanSync((map) => {
     updateMealPlans(map);
@@ -426,9 +437,9 @@ async function _exportCsv() {
       if (!items.length) {
         rows.push([e.date, e.store || "", e.branch || "", e.amount, e.category || "", e.memo || "", "", "", e.ocrEngine || ""]);
       } else {
-        for (const it of items) {
-          rows.push([e.date, e.store || "", e.branch || "", e.amount, e.category || "", e.memo || "", it.name || "", it.price || "", e.ocrEngine || ""]);
-        }
+        items.forEach((it, i) => {
+          rows.push([e.date, e.store || "", e.branch || "", i === 0 ? e.amount : "", e.category || "", e.memo || "", it.name || "", it.price || "", i === 0 ? e.ocrEngine || "" : ""]);
+        });
       }
     }
     const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\r\n");
@@ -437,7 +448,9 @@ async function _exportCsv() {
     const a = document.createElement("a");
     a.href = url;
     a.download = `家計簿_${monthKey(new Date())}.csv`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
     log("CSVエクスポート:", all.length, "件");
   } catch (err) {
