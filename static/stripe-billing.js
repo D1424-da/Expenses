@@ -19,8 +19,12 @@ export function initBilling({ db, getUser }) {
   _db = db;
   _getUser = getUser;
 
-  $("upgrade-close").onclick   = () => closeModal("upgrade-modal");
+  $("upgrade-close").onclick        = () => closeModal("upgrade-modal");
   $("upgrade-checkout-btn").onclick = _startCheckout;
+  $("beta-code-btn").onclick        = _redeemBetaCode;
+  $("beta-code-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); _redeemBetaCode(); }
+  });
 }
 
 // ログイン時に呼ぶ。Firestore のサブスクリプション状態をリアルタイムで購読する。
@@ -49,6 +53,7 @@ export function stopBillingSync() {
 // サブスクリプションが有効かどうかを返す。
 export function isPremium() {
   if (!_sub) return false;
+  if (_sub.plan === "beta") return true;
   if (_sub.status !== "active") return false;
   const end = _sub.currentPeriodEnd;
   if (end && typeof end === "number" && end < Date.now() / 1000) return false;
@@ -86,6 +91,43 @@ function _updatePremiumBadge() {
   const badge = $("premium-badge");
   if (!badge) return;
   badge.hidden = !isPremium();
+}
+
+async function _redeemBetaCode() {
+  const input = $("beta-code-input");
+  const msg   = $("beta-code-msg");
+  const btn   = $("beta-code-btn");
+  const code  = input.value.trim();
+  if (!code) return;
+
+  btn.disabled = true;
+  msg.hidden = true;
+
+  try {
+    const user = _getUser();
+    if (!user) throw new Error("ログインが必要です。");
+    const token = await user.getIdToken();
+    const res = await fetch(`${OCR_API_BASE}/api/beta/redeem`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ code }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.detail || `HTTP ${res.status}`);
+    }
+    msg.textContent = "✅ 招待コードが適用されました！プレミアム機能が使えます。";
+    msg.style.color = "var(--c-ok, green)";
+    msg.hidden = false;
+    input.value = "";
+    setTimeout(() => closeModal("upgrade-modal"), 1500);
+  } catch (err) {
+    logErr("ベータコードエラー:", err.message);
+    msg.textContent = "❌ " + err.message;
+    msg.style.color = "var(--c-err, red)";
+    msg.hidden = false;
+    btn.disabled = false;
+  }
 }
 
 async function _startCheckout() {
