@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ログイン不要・登録なしで使えるオンライン家計簿｜取本（とほん）【2026年版】</title>
+  <meta name="description" content="アカウント登録なし・ログイン不要で今すぐ使えるオンライン家計簿を解説。ブラウザだけで家計管理できる理由と、Googleアカウントで30秒スタートできる取本の特徴を紹介。" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#1a3a2c 0%,#0d2118 100%);padding:64px 24px 80px;position:relative;overflow:hidden}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(255,255,255,.15);color:#a8d8bb;border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;line-height:1.35;margin-bottom:24px}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
+    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
+    .su{font-size:.85rem;color:var(--im);margin-top:4px}
+    .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:32px 0}
+    .cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+    .ci{font-size:1.8rem;margin-bottom:10px;display:block}
+    .ct{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px}
+    .cd{font-size:.82rem;color:var(--is);line-height:1.6}
+    .cb{background:var(--gd);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}}
+    @media(max-width:600px){.hn{display:none}.sg{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a href="/" class="hl">取本 <span>とほん</span></a>
+  <nav class="hn"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金</a></nav>
+  <a href="/index.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <div class="bc"><a href="/">ホーム</a><span>›</span><a href="/blog.html">ブログ</a><span>›</span><span>ログイン不要の家計簿</span></div>
+    <span class="ac">オンライン家計簿</span>
+    <h1>登録・ログイン不要ですぐ使える<br>オンライン家計簿の選び方【2026年版】</h1>
+    <div class="am"><span>📅 2026年4月8日</span><span>⏱ 読了時間：約5分</span></div>
+  </div>
+</section>
+
+<div class="cw">
+<article class="ab">
+<p class="ld">「とりあえず今日から家計簿をつけたい」「アカウント登録が面倒で後回しにしてしまう」——そんな方に向けて、ログイン不要・登録なしでもすぐ使えるオンライン家計簿の選び方と、登録するなら30秒で始められるGoogleログイン型の利便性を徹底比較します。</p>
+
+<h2 id="types">「ログイン不要」家計簿の種類</h2>
+<p>ひとくちに「ログイン不要の家計簿」といっても、実態は大きく2種類あります。</p>
+
+<h3>①完全ローカル型（データがブラウザ内のみ）</h3>
+<p>ブラウザのlocalStorageやIndexedDBにデータを保存するタイプ。アカウント不要で即スタートできる反面、<strong>ブラウザを変えるとデータが消え</strong>、PCとスマホで同期できません。バックアップも手動CSVになりがちです。</p>
+
+<h3>②Googleログイン型（クラウド同期あり）</h3>
+<p>Googleアカウントで30秒ログインすれば、あとはどのデバイスからでもデータが同期されます。取本（とほん）はこのタイプで、<strong>パスワード設定不要・Googleアカウントがあればすぐ始められる</strong>のが特徴です。月10件まで永久無料なので、お試し感覚でスタートできます。</p>
+
+<div class="sg">
+  <div class="sc"><div class="sn">30秒</div><div class="su">Googleログインで開始</div></div>
+  <div class="sc"><div class="sn">10件</div><div class="su">月間無料で記録可能</div></div>
+  <div class="sc"><div class="sn">0円</div><div class="su">基本機能の利用料金</div></div>
+</div>
+
+<h2 id="merit">オンライン家計簿が便利な理由</h2>
+<p>スマホアプリをインストールせず、ブラウザだけで家計管理できるオンライン家計簿のメリットをまとめます。</p>
+
+<div class="cg">
+  <div class="cc"><span class="ci">📱</span><div class="ct">どのデバイスからでもアクセス</div><div class="cd">スマホ・タブレット・PCのブラウザから同じデータを確認。外出先でレシートを記録して、帰宅後PCで月次集計を確認できます。</div></div>
+  <div class="cc"><span class="ci">🔄</span><div class="ct">リアルタイムで自動同期</div><div class="cd">家族が外でレシートを記録すれば、自宅のPCにも即時反映。共有家計簿として夫婦・家族で使えます。</div></div>
+  <div class="cc"><span class="ci">💾</span><div class="ct">データが消えない安心感</div><div class="cd">スマホが壊れても、機種変更しても、クラウドにデータが残ります。ローカル保存型と違い、ブラウザのキャッシュクリアでも失われません。</div></div>
+  <div class="cc"><span class="ci">🍳</span><div class="ct">AIレシピ提案も使える</div><div class="cd">取本では買い物したもの（レシートの品目）からAIが自動でレシピを提案。今日買ってきた食材で「今夜何を作るか」を即解決します。</div></div>
+</div>
+
+<h2 id="recipe-feature">買い物データがすぐ献立に変わる</h2>
+<p>取本のオンライン家計簿には、家計管理だけでなく<strong>買い物したものからレシピを自動作成する機能</strong>が搭載されています。スーパーのレシートをカメラで撮るだけでAIが品目を読み取り、購入した食材をもとにその日の夕食メニューを提案してくれます。</p>
+
+<div class="tb">
+  <div class="tl">POINT</div>
+  <p>「鶏むね肉・もやし・しょうが」を買ったとAIが認識すると、「鶏もやし炒め」や「鶏むね肉の生姜焼き」などをすぐに提案。冷蔵庫の残り物も加えて献立を最適化できます。</p>
+</div>
+
+<p>このレシピ提案機能は<strong>インターネット接続さえあればブラウザから利用可能</strong>。追加インストール不要で、家計管理と献立管理が一つのアプリで完結します。</p>
+
+<h2 id="how-to-start">今すぐ始める方法</h2>
+<ol>
+  <li>このページ右上の「無料で始める」ボタンをクリック</li>
+  <li>「Google でログイン」ボタンを押す（30秒で完了）</li>
+  <li>スマホのカメラでレシートを撮影、またはPCから手入力</li>
+  <li>AIが品目を認識して自動でレシピ提案</li>
+</ol>
+
+<p>パスワード設定は不要。Googleアカウントがあれば、面倒な会員登録フォームの入力は一切ありません。</p>
+
+<div class="cb">
+  <h3>今日から家計管理を始めよう</h3>
+  <p>登録30秒・月10件まで永久無料。Googleアカウントがあればすぐスタートできます。</p>
+  <a href="/index.html" class="bc2">無料で始める →</a>
+</div>
+
+<h2 id="faq">よくある質問</h2>
+<h3>Q. 本当にメールアドレス登録は不要ですか？</h3>
+<p>はい。取本はGoogleアカウントでのログインのみ対応しており、メールアドレスや独自パスワードの登録は必要ありません。Googleアカウント（Gmailなど）があればすぐ使えます。</p>
+
+<h3>Q. データはどこに保存されますか？</h3>
+<p>Googleのクラウドデータベース（Firebase Firestore）に安全に保存されます。デバイスを変えても、ブラウザを変えても、同じデータにアクセスできます。</p>
+
+<h3>Q. 無料でどこまで使えますか？</h3>
+<p>月10件まで永久無料で家計記録・レシートOCR・レシピ提案がすべて使えます。月11件以上記録したい場合はプレミアムプラン（月額380円）へのアップグレードが必要です。</p>
+</article>
+
+<aside class="sb">
+  <div class="sbc">
+    <h4>目次</h4>
+    <ul class="toc">
+      <li><a href="#types">ログイン不要家計簿の種類</a></li>
+      <li><a href="#merit">オンライン家計簿のメリット</a></li>
+      <li><a href="#recipe-feature">買い物データがレシピに</a></li>
+      <li><a href="#how-to-start">今すぐ始める方法</a></li>
+      <li><a href="#faq">よくある質問</a></li>
+    </ul>
+  </div>
+  <div class="sbc">
+    <h4>関連記事</h4>
+    <a href="/blog/web-kakeibo-free.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#1a2c4a,#0d1a28)">🌐</div>
+      <div><div class="rt">無料で使えるブラウザ家計簿Webアプリ完全ガイド</div><div class="rm">家計簿Webアプリ</div></div>
+    </a>
+    <a href="/blog/pc-kakeibo-browser.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#1a3a2c,#0d2818)">💻</div>
+      <div><div class="rt">PC・ブラウザで使う家計簿の選び方</div><div class="rm">パソコン家計簿</div></div>
+    </a>
+    <a href="/blog/no-ads-kakeibo.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#3a2c1a,#281a0d)">🚫</div>
+      <div><div class="rt">広告なし・無料の家計簿アプリ</div><div class="rm">広告なし家計簿</div></div>
+    </a>
+  </div>
+</aside>
+</div>
+
+<footer class="ft">
+  <div class="fl">
+    <a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金プラン</a><a href="/#faq">よくある質問</a>
+  </div>
+  <p>© 2026 取本（とほん） · AIレシート家計簿</p>
+</footer>
+</body>
+</html>

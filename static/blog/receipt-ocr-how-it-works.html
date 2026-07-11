@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>レシートOCRの仕組みと活用法｜スキャンで家計簿を自動入力する方法</title>
+  <meta name="description" content="レシートOCRの仕組みと家計簿への活用方法を解説。レシートを撮影するだけで自動入力される仕組み、精度向上のコツ、取本（とほん）のレシート読み取りからレシピ自動作成までを紹介。" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    :root[data-theme="light"]{--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--gp:#F0F8F2}
+    :root[data-theme="dark"]{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#1a2c3a 0%,#0d1a28 100%);padding:64px 24px 80px;position:relative;overflow:hidden}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(255,255,255,.15);color:#a8d8bb;border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;line-height:1.35;margin-bottom:24px}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .flow{display:flex;flex-direction:column;gap:0;margin:32px 0}
+    .flow-step{display:flex;gap:20px;align-items:flex-start;padding:20px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh);position:relative}
+    .flow-step+.flow-step{margin-top:4px}
+    .flow-step+.flow-step::before{content:"↓";position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:1.2rem;color:var(--gm);background:var(--bg);padding:0 8px}
+    .flow-icon{font-size:1.8rem;flex-shrink:0;width:48px;text-align:center}
+    .flow-body strong{display:block;font-weight:700;color:var(--ink);margin-bottom:4px}
+    .flow-body span{font-size:.85rem;color:var(--is);line-height:1.6}
+    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
+    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
+    .su{font-size:.85rem;color:var(--im);margin-top:4px}
+    .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:32px 0}
+    .cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+    .ci{font-size:1.8rem;margin-bottom:10px;display:block}
+    .ct{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px}
+    .cd{font-size:.82rem;color:var(--is);line-height:1.6}
+    .cb{background:var(--gd);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}}
+    @media(max-width:600px){.hn{display:none}.sg{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a href="/" class="hl">取本 <span>とほん</span></a>
+  <nav class="hn">
+    <a href="/blog.html">ブログ</a>
+    <a href="/lp.html">アプリについて</a>
+  </nav>
+  <a href="/index.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <nav class="bc">
+      <a href="/">取本</a><span>/</span>
+      <a href="/blog.html">ブログ</a><span>/</span>
+      <span>レシートOCRの仕組みと活用法</span>
+    </nav>
+    <span class="ac">レシート入力・OCR</span>
+    <h1>レシートOCRの仕組みと活用法<br>スキャンで家計簿を自動入力する方法</h1>
+    <div class="am">
+      <span>2026年6月17日</span>
+      <span>読了目安：8分</span>
+    </div>
+  </div>
+</section>
+
+<div class="cw">
+  <article class="ab">
+    <p class="ld">「手入力が面倒で家計簿が続かない」という悩みを解決するのがレシートOCR機能です。レシートを撮影するだけで店名・金額・購入品目が自動入力される仕組みを解説します。取本（とほん）では読み取ったレシートの商品リストから<strong>レシピを自動作成</strong>する機能と組み合わせることで、記録から献立管理まで一気に完結します。</p>
+
+    <h2 id="what-is-ocr">レシートOCRとは</h2>
+    <p>OCR（Optical Character Recognition）とは、画像に写っている文字を認識してテキストデータに変換する技術です。レシートOCRでは、スマートフォンのカメラで撮影したレシートの画像を解析し、<strong>店名・日付・合計金額・商品名・単価・数量</strong>などの情報を自動的に抽出します。</p>
+
+    <div class="sg">
+      <div class="sc">
+        <div class="sn">10秒</div>
+        <div class="su">レシート撮影から<br>データ取得完了までの時間</div>
+      </div>
+      <div class="sc">
+        <div class="sn">95%+</div>
+        <div class="su">最新レシートOCRの<br>文字認識精度</div>
+      </div>
+      <div class="sc">
+        <div class="sn">3分→10秒</div>
+        <div class="su">手入力からOCRへの<br>1レシートあたり時間削減</div>
+      </div>
+    </div>
+
+    <h2 id="how-it-works">レシートOCRの仕組み</h2>
+    <p>レシートOCRは複数の処理ステップを経てデータを抽出します。</p>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-icon">📸</div>
+        <div class="flow-body">
+          <strong>撮影・画像取得</strong>
+          <span>スマートフォンのカメラでレシートを撮影。アプリが画像を受け取る。</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-icon">🔧</div>
+        <div class="flow-body">
+          <strong>画像前処理</strong>
+          <span>歪み補正・コントラスト強調・ノイズ除去など、認識精度を上げる処理を自動で実施。</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-icon">🔍</div>
+        <div class="flow-body">
+          <strong>文字認識（OCR処理）</strong>
+          <span>AIが文字領域を検出し、深層学習モデルで各文字を認識。日本語の商品名も高精度で読み取る。</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-icon">🗂️</div>
+        <div class="flow-body">
+          <strong>構造解析・カテゴリ分類</strong>
+          <span>「どこが金額か」「どこが商品名か」を判別し、食品・日用品などにカテゴリ自動分類。</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-icon">📊</div>
+        <div class="flow-body">
+          <strong>家計簿・レシピへのデータ連携</strong>
+          <span>整形されたデータが家計簿に自動入力。取本では食材リストからレシピも自動提案。</span>
+        </div>
+      </div>
+    </div>
+
+    <h2 id="accuracy-tips">認識精度を上げる撮影のコツ</h2>
+    <p>OCRの精度はレシートの状態と撮影方法に大きく影響されます。</p>
+    <div class="cg">
+      <div class="cc">
+        <span class="ci">💡</span>
+        <div class="ct">明るい場所で撮る</div>
+        <div class="cd">蛍光灯の下や窓際など、影が入らない明るい場所で撮影。暗所はフラッシュを使用。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">📐</span>
+        <div class="ct">真上から撮影する</div>
+        <div class="cd">斜めから撮ると歪みが生じ認識率が低下。レシートと平行になるよう真上から撮影。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">📄</span>
+        <div class="ct">レシートをしわなく広げる</div>
+        <div class="cd">くしゃくしゃのレシートは認識率が下がる。財布からすぐに取り出して撮影するのが理想。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">🎯</span>
+        <div class="ct">全体が枠に収まるようにする</div>
+        <div class="cd">レシート全体が画面内に収まっていることを確認してから撮影。端が切れると下部の情報が失われる。</div>
+      </div>
+    </div>
+
+    <h2 id="tohon-feature">取本のレシートOCRからレシピ自動作成まで</h2>
+    <p>取本のレシートOCR機能は、単なる「手入力の代替」を超えた使い方ができます。</p>
+
+    <div class="tb">
+      <div class="tl">取本の注目機能</div>
+      <p>レシートを撮影すると商品名・単価・個数が自動入力されます。そのまま「今日の買い物リスト」として登録すると、<strong>購入した食材からレシピを自動作成する機能</strong>が起動。「玉ねぎ・豚バラ・じゃがいも・にんじん」を買ったなら、カレー・肉じゃが・ポトフなど複数のレシピが提案されます。レシート撮影がそのまま献立作りに繋がる、取本ならではの連携機能です。</p>
+    </div>
+
+    <h3>食材以外の情報も活用できる</h3>
+    <p>レシートには食材以外にも日用品・雑貨・飲料など様々な商品が含まれます。取本はこれらを自動でカテゴリ分類し、月次の支出分析に活かせます。「今月の食品費と日用品費を分けて見たい」というニーズにも応えます。</p>
+
+    <h2 id="vs-manual">OCR vs 手入力：どちらがおすすめ？</h2>
+    <p>取本ではOCRによる自動入力と手動入力の両方に対応しています。それぞれのシーンに合わせて使い分けることが、長続きする家計管理のコツです。</p>
+    <ul>
+      <li><strong>スーパー・コンビニのレシートがある場合</strong>：OCRで一括入力。撮影後は確認・修正のみ</li>
+      <li><strong>現金払いでレシートなし</strong>：金額・店名・カテゴリを手動入力（3項目だけ）</li>
+      <li><strong>電子マネー・クレジット払い</strong>：明細画面を参照しながら手動または一括インポート</li>
+    </ul>
+
+    <div class="cb">
+      <h3>取本（とほん）でレシートをスキャンしてみる</h3>
+      <p>レシート撮影 → 自動入力 → レシピ提案まで、すべて無料。<br>Googleアカウントで今すぐ試せます。</p>
+      <a href="/index.html" class="bc2">無料で試してみる</a>
+    </div>
+
+    <h2 id="summary">まとめ</h2>
+    <p>レシートOCRは、手入力の手間を大幅に削減して家計管理を続けやすくする技術です。取本では、レシートOCRで取得した食材データをそのまま<strong>レシピ自動作成機能</strong>に連携させることで、「買い物記録 → 家計管理 → 献立計画」を一気に自動化できます。「面倒だから続かない」という問題を根本から解決する仕組みです。</p>
+  </article>
+
+  <aside class="sb">
+    <div class="sbc">
+      <h4>目次</h4>
+      <ul class="toc">
+        <li><a href="#what-is-ocr">レシートOCRとは</a></li>
+        <li><a href="#how-it-works">レシートOCRの仕組み</a></li>
+        <li><a href="#accuracy-tips">認識精度を上げる撮影のコツ</a></li>
+        <li><a href="#tohon-feature">取本のOCRからレシピ自動作成まで</a></li>
+        <li><a href="#vs-manual">OCR vs 手入力</a></li>
+        <li><a href="#summary">まとめ</a></li>
+      </ul>
+    </div>
+    <div class="sbc">
+      <h4>関連記事</h4>
+      <a href="/blog/receipt-kakeibo-basics.html" class="ra">
+        <div class="ri" style="background:#e8f5ee">🧾</div>
+        <div>
+          <div class="rt">レシート家計簿の基本</div>
+          <div class="rm">撮影から記録まで完全解説</div>
+        </div>
+      </a>
+      <a href="/blog/shopping-to-recipe.html" class="ra">
+        <div class="ri" style="background:#f3e5f5">🍳</div>
+        <div>
+          <div class="rt">買い物からレシピを自動作成</div>
+          <div class="rm">取本の注目機能を詳解</div>
+        </div>
+      </a>
+      <a href="/blog/simple-kakeibo-continue.html" class="ra">
+        <div class="ri" style="background:#e3f2fd">✅</div>
+        <div>
+          <div class="rt">シンプル家計簿で続ける方法</div>
+          <div class="rm">挫折しない入力習慣の作り方</div>
+        </div>
+      </a>
+    </div>
+  </aside>
+</div>
+
+<footer class="ft">
+  <nav class="fl">
+    <a href="/">取本 TOP</a>
+    <a href="/lp.html">アプリについて</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/index.html">ログイン</a>
+  </nav>
+  <p>© 2026 取本（とほん）</p>
+</footer>
+</body>
+</html>
