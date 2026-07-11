@@ -525,22 +525,71 @@
     .footer-links a:hover { color: #a8d8bb; }
     .footer-copy { font-size: .78rem; color: #3d5c4a; }
 
+    /* ── MOBILE BOTTOM CTA ── */
+    .mobile-cta-bar {
+      display: none;
+    }
+    @media (max-width: 768px) {
+      .mobile-cta-bar {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 200;
+        background: rgba(14,40,22,.95);
+        backdrop-filter: blur(12px);
+        padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+        gap: 12px;
+        align-items: center;
+        box-shadow: 0 -4px 24px rgba(0,0,0,.3);
+        border-top: 1px solid rgba(93,232,152,.15);
+      }
+      .mobile-cta-text {
+        flex: 1;
+        font-size: .78rem;
+        color: #7db899;
+        line-height: 1.4;
+      }
+      .mobile-cta-text strong { display: block; color: #c5dece; font-size: .85rem; }
+      .mobile-cta-btn {
+        background: var(--orange);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        padding: 12px 22px;
+        font-size: .9rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+        box-shadow: 0 4px 16px rgba(232,98,26,.5);
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+      }
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
-      .hero-inner { grid-template-columns: 1fr; text-align: center; gap: 40px; }
+      body { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+      .hero-inner { grid-template-columns: 1fr; text-align: center; gap: 24px; }
       .hero-actions { justify-content: center; }
       .hero-visual { order: -1; }
-      .phone { width: 170px; height: 320px; }
-      .ps-total-amount { font-size: 16px; }
+      .hero { padding: 40px 20px 100px; }
+      .phone { width: 160px; height: 300px; }
+      .ps-total-amount { font-size: 15px; }
+      .hero h1 { font-size: 1.75rem; margin-bottom: 14px; }
+      .hero-sub { font-size: .9rem; margin-bottom: 24px; }
+      .btn-primary, .btn-ghost { padding: 14px 28px; font-size: .95rem; min-height: 48px; }
       .steps-grid { grid-template-columns: 1fr; }
       .steps-grid::before { display: none; }
       .features-grid { grid-template-columns: 1fr 1fr; }
       .pricing-grid { grid-template-columns: 1fr; max-width: 380px; }
+      .section { padding: 56px 20px; }
+      .header-cta { display: none; }
     }
     @media (max-width: 480px) {
       .features-grid { grid-template-columns: 1fr; }
-      .section { padding: 60px 20px; }
-      .hero { padding: 60px 20px 100px; }
+      .feature-card { padding: 20px; }
     }
   </style>
 </head>
@@ -755,6 +804,15 @@
     <p class="cta-note">スマートフォン・PC どちらでも利用できます</p>
   </div>
 </section>
+
+<!-- MOBILE FIXED CTA -->
+<div class="mobile-cta-bar">
+  <div class="mobile-cta-text">
+    <strong>無料で今すぐ始める</strong>
+    カード不要・30秒で登録
+  </div>
+  <a class="mobile-cta-btn" href="/index.html">始める →</a>
+</div>
 
 <!-- FOOTER -->
 <footer class="footer">
