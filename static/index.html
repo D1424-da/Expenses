@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>レシート家計簿</title>
+  <title>とほん | レシート家計簿</title>
   <meta name="description" content="レシートを撮るだけで家計簿を自動入力。AI-OCRで店名・金額・品目を読み取り、月次予算・最安値アラート・レシピ提案まで対応。" />
 
   <!-- Google Search Console 所有権確認 -->
@@ -52,7 +52,7 @@
   <!-- アプリ本体（ログイン後に表示） -->
   <div id="app" hidden>
     <header class="topbar">
-      <h1>🧾 レシート家計簿</h1>
+      <h1>とほん</h1>
       <div class="topbar-right">
         <div class="month-picker">
           <button id="prev-month" aria-label="前の月">‹</button>
@@ -63,7 +63,7 @@
           🛒<span id="shopping-badge" class="shopping-badge" hidden></span>
         </button>
         <button id="saved-recipes-btn" class="topbar-btn" title="保存済みレシピ">📚</button>
-        <button id="compare-btn" class="topbar-btn" title="商品の最安値">🔎 最安値</button>
+        <button id="compare-btn" class="topbar-btn" title="価格比較">🔎 価格比較</button>
         <button id="household-btn" class="topbar-btn" title="世帯グループ">👨‍👩‍👧</button>
         <button id="export-btn" class="topbar-btn" title="CSVでエクスポート">📥 CSV</button>
         <span id="premium-badge" class="premium-badge" hidden title="プレミアムプラン">✨ PRO</span>
@@ -83,10 +83,10 @@
           <span class="shopping-badge" id="shopping-badge-pc" hidden></span>
         </button>
         <button class="pc-nav-item" id="pcnav-saved"><span class="pcnav-icon">📚</span><span class="pcnav-label">保存レシピ</span></button>
-        <button class="pc-nav-item" id="pcnav-compare"><span class="pcnav-icon">🔎</span><span class="pcnav-label">最安値</span></button>
+        <button class="pc-nav-item" id="pcnav-compare"><span class="pcnav-icon">🔎</span><span class="pcnav-label">価格比較</span></button>
         <div class="pcnav-divider"></div>
         <button class="pc-nav-item" id="pcnav-budget"><span class="pcnav-icon">💰</span><span class="pcnav-label">予算</span></button>
-        <button class="pc-nav-item" id="pcnav-trend"><span class="pcnav-icon">📈</span><span class="pcnav-label">推移</span></button>
+        <button class="pc-nav-item" id="pcnav-trend"><span class="pcnav-icon">📈</span><span class="pcnav-label">月別グラフ</span></button>
         <button class="pc-nav-item" id="pcnav-household"><span class="pcnav-icon">👨‍👩‍👧</span><span class="pcnav-label">世帯</span></button>
       </div>
     </nav>
@@ -97,13 +97,13 @@
         <div class="summary-hero">
           <div class="summary-top">
             <div class="summary-total">
-              <span class="label">今月の支出</span>
+              <span class="label">今月 使ったお金</span>
               <span id="summary-total" class="value">¥0</span>
               <span id="summary-count" class="sub"></span>
             </div>
             <div class="summary-actions">
               <button id="budget-btn" class="summary-action-btn" title="予算設定">💰 予算</button>
-              <button id="trend-btn" class="summary-action-btn" title="📈 推移">📈 推移</button>
+              <button id="trend-btn" class="summary-action-btn" title="月別グラフ">📈 グラフ</button>
             </div>
           </div>
         </div>
@@ -113,7 +113,7 @@
           <!-- 無料プランの使用量バー -->
           <div id="usage-bar" class="usage-bar" hidden>
             <span class="usage-count"></span>
-            <button class="usage-upgrade" type="button" hidden>✨ アップグレード</button>
+            <button class="usage-upgrade" type="button" hidden>✨ もっと記録する</button>
           </div>
         </div>
       </section>
@@ -122,18 +122,18 @@
       <section class="card calendar-card">
         <div class="list-head">
           <h2>📅 買い物カレンダー</h2>
-          <span class="hint cal-hint">日付をタップで入力・週計をタップで内訳</span>
+          <span class="hint cal-hint">日付をタップして記録 · 週の合計も確認できます</span>
         </div>
         <div id="calendar" class="calendar"></div>
       </section>
 
       <!-- レシート読み取り -->
       <section class="card capture">
-        <h2>レシートを撮影 / 選択</h2>
-        <p class="hint">その場で撮影するか、撮影済みの写真を複数選んで取り込めます。読み取り後に内容を確認して保存できます。</p>
+        <h2>レシートで記録する</h2>
+        <p class="hint">写真を1枚撮るだけ。金額と品目をAIが自動で読み取ります。</p>
         <div class="capture-buttons">
           <label class="file-button">
-            📷 撮影する
+            📷 今すぐ撮影
             <input id="camera-input" type="file" accept="image/*" capture="environment" hidden />
           </label>
           <label class="file-button secondary">
@@ -146,7 +146,7 @@
 
       <!-- 入力フォーム（OCR結果の確認・修正 / 手入力） -->
       <section class="card form-card" id="form-card">
-        <h2 id="form-title">手入力で追加</h2>
+        <h2 id="form-title">手で入力する</h2>
         <p id="edit-banner" class="edit-banner" hidden></p>
         <form id="expense-form">
           <input type="hidden" id="f-id" />
@@ -190,7 +190,7 @@
       <!-- 店舗別一覧 -->
       <section class="card list-card">
         <div class="list-head">
-          <h2>店舗別一覧</h2>
+          <h2>今月の買い物</h2>
         </div>
         <div class="list-filter-row">
           <input id="list-search" type="search" placeholder="店名・商品名・メモで検索…" autocomplete="off" />
@@ -200,7 +200,7 @@
         </div>
         <p id="list-filter-count" class="list-filter-count" hidden></p>
         <div id="expense-list" class="expense-list"></div>
-        <p id="empty-msg" class="empty" hidden>この月の記録はまだありません。</p>
+        <p id="empty-msg" class="empty" hidden>まだ記録がありません。<br />レシートを撮って始めましょう 📸</p>
       </section>
     </main>
 
@@ -208,10 +208,10 @@
     <div id="compare-modal" class="modal" hidden>
       <div class="modal-box" role="dialog" aria-modal="true" aria-label="商品の最安値">
         <div class="modal-head">
-          <h2>🔎 商品の最安値</h2>
+          <h2>🔎 価格比較</h2>
           <button id="compare-close" aria-label="閉じる">✕</button>
         </div>
-        <p class="hint">保存した明細を商品名でまとめ、最安の店を表示します。</p>
+        <p class="hint">購入した商品を店舗間で比較して、一番お得なお店を確認できます。</p>
         <input id="compare-search" type="search" placeholder="商品名で検索（空欄で全件）" />
         <div id="compare-list" class="compare-list"></div>
       </div>
@@ -233,7 +233,7 @@
         </div>
         <div id="day-list" class="day-list"></div>
         <form id="day-form" class="day-form">
-          <h3>この日に追加</h3>
+          <h3>この日に記録する</h3>
           <div class="row">
             <label>金額(円)<input type="number" id="day-amount" min="0" step="1" inputmode="numeric" placeholder="例: 1280" /></label>
             <label>カテゴリ<select id="day-category"></select></label>
@@ -368,7 +368,7 @@
     <div id="budget-modal" class="modal" hidden>
       <div class="modal-box" role="dialog" aria-modal="true" aria-label="月次予算設定">
         <div class="modal-head">
-          <h2>💰 <span id="budget-modal-month">月次予算</span></h2>
+          <h2>💰 <span id="budget-modal-month">今月の予算</span></h2>
           <button id="budget-close" aria-label="閉じる">✕</button>
         </div>
         <p class="hint">カテゴリごとに月の目標金額を設定します。0 または空欄は「予算なし」です。</p>
@@ -382,7 +382,7 @@
     <div id="trend-modal" class="modal" hidden>
       <div class="modal-box" role="dialog" aria-modal="true" aria-label="支出推移">
         <div class="modal-head">
-          <h2>📈 支出推移</h2>
+          <h2>📈 月別グラフ</h2>
           <button id="trend-close" aria-label="閉じる">✕</button>
         </div>
         <p id="trend-loading" class="hint">読み込み中…</p>
@@ -464,11 +464,11 @@
     <div id="upgrade-modal" class="modal" hidden>
       <div class="modal-box upgrade-modal-box" role="dialog" aria-modal="true" aria-label="プレミアムプラン">
         <div class="modal-head">
-          <h2>✨ プレミアムプランへ</h2>
+          <h2>✨ もっと使いたい方へ</h2>
           <button id="upgrade-close" aria-label="閉じる">✕</button>
         </div>
         <div class="upgrade-content">
-          <p class="upgrade-limit-msg">今月の無料記録（10件）に達しました。<br />プレミアムプランにアップグレードすると記録件数が無制限になります。</p>
+          <p class="upgrade-limit-msg">今月の無料記録（10件）に達しました。<br />プレミアムにすると、記録し放題になります。</p>
           <div class="upgrade-plans">
             <div class="upgrade-plan">
               <div class="plan-name">無料プラン</div>
