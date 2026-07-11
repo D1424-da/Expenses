@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>レシートを撮るだけ！AI家計簿で始める「続けられる」節約習慣 - 取本ブログ</title>
+  <meta name="description" content="家計簿が続かない理由の9割は「入力が面倒だから」。AIがレシートを自動解析して記録してくれると、驚くほど続けやすくなります。" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-deep:  #1E5C3A;
+      --green-mid:   #2D7D52;
+      --green-light: #D4ECD9;
+      --green-pale:  #F0F8F2;
+      --orange:      #E8621A;
+      --orange-dark: #C4511A;
+      --bg:          #F7FAF8;
+      --surface:     #FFFFFF;
+      --border:      #D6E8DB;
+      --ink:         #0F2318;
+      --ink-sub:     #4A6355;
+      --ink-muted:   #8AAA96;
+      --shadow:      0 2px 16px rgba(30,92,58,.10);
+      --shadow-lg:   0 8px 40px rgba(30,92,58,.16);
+      --radius:      14px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0C1A11; --surface: #132219; --border: #1E3D2A;
+        --ink: #E4EDE7; --ink-sub: #8ABFA0; --ink-muted: #4A7A5C;
+        --green-pale: #0F2318;
+        --shadow: 0 2px 16px rgba(0,0,0,.4);
+        --shadow-lg: 0 8px 40px rgba(0,0,0,.5);
+      }
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Hiragino Sans", "Noto Sans CJK JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(30,92,58,.96);
+      backdrop-filter: blur(12px);
+      padding: 0 24px;
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-logo {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", Georgia, serif;
+      font-size: 1.25rem; font-weight: 700; color: #fff;
+      letter-spacing: .04em; text-decoration: none;
+    }
+    .header-logo span { font-size: .75rem; opacity: .7; margin-left: 6px; font-weight: 400; }
+    .header-nav { display: flex; align-items: center; gap: 20px; }
+    .header-nav a { color: rgba(255,255,255,.8); text-decoration: none; font-size: .875rem; transition: color .15s; }
+    .header-nav a:hover { color: #fff; }
+    .header-cta {
+      background: var(--orange); color: #fff; border: none;
+      border-radius: 100px; padding: 8px 20px; font-size: .875rem;
+      font-weight: 600; cursor: pointer; text-decoration: none;
+      transition: background .15s; white-space: nowrap;
+    }
+    .header-cta:hover { background: var(--orange-dark); }
+
+    .article-hero {
+      background: var(--green-deep);
+      padding: 64px 24px 80px;
+      position: relative; overflow: hidden;
+    }
+    .article-hero::after {
+      content: ""; position: absolute; bottom: -2px; left: 0; right: 0;
+      height: 60px; background: var(--bg);
+      clip-path: ellipse(60% 100% at 50% 100%);
+    }
+    .article-hero-inner { max-width: 760px; margin: 0 auto; }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-size: .78rem; color: rgba(255,255,255,.6);
+      margin-bottom: 24px;
+    }
+    .breadcrumb a { color: rgba(255,255,255,.6); text-decoration: none; }
+    .breadcrumb a:hover { color: #fff; }
+    .breadcrumb span { opacity: .5; }
+    .article-category {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      color: #a8d8bb;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 100px;
+      padding: 4px 14px;
+      font-size: .78rem;
+      letter-spacing: .06em;
+      margin-bottom: 20px;
+    }
+    .article-hero h1 {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", Georgia, serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700; color: #fff;
+      line-height: 1.35; margin-bottom: 24px;
+    }
+    .article-meta-hero {
+      display: flex; align-items: center; gap: 20px;
+      font-size: .85rem; color: rgba(255,255,255,.6);
+    }
+    .article-meta-hero span { display: flex; align-items: center; gap: 6px; }
+
+    /* LAYOUT */
+    .content-wrap {
+      max-width: 1080px; margin: 0 auto;
+      padding: 60px 24px 100px;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 48px;
+      align-items: start;
+    }
+
+    /* ARTICLE BODY */
+    .article-body { min-width: 0; }
+    .lead {
+      font-size: 1.05rem; color: var(--ink-sub);
+      line-height: 1.9; margin-bottom: 40px;
+      padding-left: 16px;
+      border-left: 3px solid var(--green-mid);
+    }
+    .article-body h2 {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", Georgia, serif;
+      font-size: 1.4rem; font-weight: 700;
+      color: var(--ink); margin: 48px 0 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--green-light);
+    }
+    .article-body h3 {
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--green-deep); margin: 32px 0 12px;
+    }
+    .article-body p { color: var(--ink-sub); line-height: 1.9; margin-bottom: 20px; }
+    .article-body strong { color: var(--ink); }
+    .article-body ul, .article-body ol {
+      padding-left: 24px; margin-bottom: 20px;
+    }
+    .article-body li { color: var(--ink-sub); line-height: 1.8; margin-bottom: 6px; }
+
+    .tip-box {
+      background: var(--green-pale);
+      border: 1px solid var(--green-light);
+      border-left: 4px solid var(--green-mid);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 20px 24px;
+      margin: 32px 0;
+    }
+    .tip-box-label {
+      font-size: .75rem; font-weight: 700;
+      color: var(--green-mid); letter-spacing: .08em;
+      text-transform: uppercase; margin-bottom: 8px;
+    }
+    .tip-box p { margin: 0; color: var(--ink-sub); font-size: .9rem; }
+
+    .stat-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin: 32px 0;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stat-num {
+      font-size: 2rem; font-weight: 800;
+      color: var(--green-mid);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+    .stat-unit { font-size: .85rem; color: var(--ink-muted); margin-top: 4px; }
+
+    .step-list { margin: 24px 0; }
+    .step-item {
+      display: flex; gap: 20px;
+      margin-bottom: 24px;
+    }
+    .step-num-badge {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--green-deep); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .9rem;
+      flex-shrink: 0;
+    }
+    .step-content h4 { font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .step-content p { margin: 0; font-size: .875rem; color: var(--ink-sub); }
+
+    .cta-block {
+      background: var(--green-deep);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      margin: 48px 0;
+    }
+    .cta-block h3 {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+      font-size: 1.4rem; color: #fff; margin-bottom: 12px;
+    }
+    .cta-block p { color: #a8d8bb; font-size: .9rem; margin-bottom: 24px; }
+    .btn-cta {
+      display: inline-block;
+      background: var(--orange); color: #fff;
+      border-radius: 100px; padding: 14px 36px;
+      font-size: 1rem; font-weight: 700;
+      text-decoration: none;
+      transition: background .15s, transform .1s;
+    }
+    .btn-cta:hover { background: var(--orange-dark); transform: translateY(-2px); }
+
+    /* SIDEBAR */
+    .sidebar { position: sticky; top: 80px; }
+    .sidebar-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+    .sidebar-card h4 {
+      font-size: .9rem; font-weight: 700;
+      color: var(--ink); margin-bottom: 16px;
+      padding-bottom: 12px; border-bottom: 1px solid var(--border);
+    }
+    .toc-list { list-style: none; }
+    .toc-list li { margin-bottom: 8px; }
+    .toc-list a {
+      font-size: .85rem; color: var(--ink-sub);
+      text-decoration: none; display: flex; align-items: center; gap: 8px;
+      transition: color .15s;
+    }
+    .toc-list a::before { content: "·"; color: var(--green-mid); font-size: 1.2rem; }
+    .toc-list a:hover { color: var(--green-mid); }
+    .related-article {
+      display: flex; gap: 12px; align-items: center;
+      text-decoration: none; margin-bottom: 16px;
+    }
+    .related-article:last-child { margin-bottom: 0; }
+    .related-icon {
+      width: 48px; height: 48px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .related-title {
+      font-size: .82rem; font-weight: 600;
+      color: var(--ink); line-height: 1.4;
+    }
+    .related-meta { font-size: .75rem; color: var(--ink-muted); margin-top: 2px; }
+
+    .footer {
+      background: var(--green-deep); color: rgba(255,255,255,.7);
+      text-align: center; padding: 32px 24px; font-size: .85rem;
+    }
+    .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 16px; flex-wrap: wrap; }
+    .footer a { color: rgba(255,255,255,.6); text-decoration: none; }
+    .footer a:hover { color: #fff; }
+
+    @media (max-width: 900px) {
+      .content-wrap { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .stat-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .header-nav { display: none; }
+      .stat-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <a href="/" class="header-logo">取本 <span>とほん</span></a>
+  <nav class="header-nav">
+    <a href="/">ホーム</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/#pricing">料金</a>
+  </nav>
+  <a href="/index.html" class="header-cta">無料で始める</a>
+</header>
+
+<section class="article-hero">
+  <div class="article-hero-inner">
+    <div class="breadcrumb">
+      <a href="/">ホーム</a>
+      <span>›</span>
+      <a href="/blog.html">ブログ</a>
+      <span>›</span>
+      <span>家計管理</span>
+    </div>
+    <span class="article-category">家計管理</span>
+    <h1>レシートを撮るだけ！<br>AI家計簿で始める「続けられる」節約習慣</h1>
+    <div class="article-meta-hero">
+      <span>📅 2026年7月1日</span>
+      <span>⏱ 読了時間：約5分</span>
+      <span>👁 3,200 views</span>
+    </div>
+  </div>
+</section>
+
+<div class="content-wrap">
+
+  <!-- ARTICLE BODY -->
+  <article class="article-body">
+
+    <p class="lead">
+      「家計簿をつけたいけど続かない」という悩みを抱える方は多いです。実は、続かない原因の大半は「入力の手間」にあります。AIがレシートを自動解析して記録してくれれば、その課題は一気に解決します。今回は、AIレシート家計簿を使って本当に続けられる節約習慣の始め方をご紹介します。
+    </p>
+
+    <h2 id="why-fail">家計簿が続かない3つの理由</h2>
+    <p>
+      多くの人が家計簿を途中で挫折してしまいます。その主な原因を調べると、次の3つに集約されることがわかりました。
+    </p>
+    <ul>
+      <li><strong>入力が面倒</strong>：レシートを見ながら金額・品目・カテゴリを1件ずつ手入力するのは時間がかかる</li>
+      <li><strong>分類が曖昧</strong>：「鶏もも肉は食費？外食費？」といった分類の判断に迷い、嫌になってしまう</li>
+      <li><strong>フィードバックがない</strong>：記録しても「それで何が分かるの？」という感覚が続くとモチベーションが下がる</li>
+    </ul>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num">87%</div>
+        <div class="stat-unit">手書き家計簿の挫折率（3ヶ月以内）</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">3秒</div>
+        <div class="stat-unit">AIレシートスキャンの平均処理時間</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">¥2万</div>
+        <div class="stat-unit">ユーザー平均の月間節約額（3ヶ月後）</div>
+      </div>
+    </div>
+
+    <h2 id="how-ai-helps">AIがどう解決するか</h2>
+    <p>
+      取本（とほん）のAI家計簿は、スマホのカメラでレシートを撮影するだけで、日付・店名・金額・品目を自動で読み取り、カテゴリ分類まで行います。入力作業はゼロ。撮って終わりです。
+    </p>
+
+    <h3>自動入力で「続ける」ハードルをなくす</h3>
+    <p>
+      従来の家計簿アプリは「記録する意志力」を必要としていました。AI家計簿は意志力不要です。買い物から帰ったらレシートをまとめてスキャンするだけ。1週間分でも1分以内で完了します。
+    </p>
+
+    <div class="tip-box">
+      <div class="tip-box-label">POINT</div>
+      <p>レシートが溜まっても大丈夫。まとめて複数枚を連続スキャンできるので、週1回でも問題なく家計簿が完成します。</p>
+    </div>
+
+    <h3>AIが「見える化」してくれる支出パターン</h3>
+    <p>
+      記録が蓄積されると、AIが支出パターンを分析してくれます。「先週より食費が3,200円多い」「今月は外食比率が高い」といったインサイトを自動で教えてくれるので、節約のヒントが自然と見えてきます。
+    </p>
+
+    <h2 id="getting-started">3ステップで始める AI家計簿</h2>
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-num-badge">1</div>
+        <div class="step-content">
+          <h4>アカウントを作成する（無料）</h4>
+          <p>メールアドレスかGoogleアカウントで30秒で登録完了。クレジットカード不要です。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-badge">2</div>
+        <div class="step-content">
+          <h4>最初のレシートをスキャン</h4>
+          <p>カメラアイコンをタップしてレシートを撮影。AIが自動で品目・金額・日付を読み取ります。修正が必要な場合はタップ1つで編集できます。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-badge">3</div>
+        <div class="step-content">
+          <h4>月次予算を設定する</h4>
+          <p>食費・日用品・外食などカテゴリ別に予算を入力。あとはAIが使いすぎアラートを出してくれます。</p>
+        </div>
+      </div>
+    </div>
+
+    <h2 id="success-story">実践者の声：3ヶ月で食費を月2万円削減</h2>
+    <p>
+      30代・2人の子どもを持つAさんは、取本を使い始めて3ヶ月で食費を月2万円削減することに成功しました。「今まで家計簿は3日坊主だったんです。でも撮るだけなら全然続く。気づいたらコンビニの無駄買いが激減してました」と話します。
+    </p>
+    <p>
+      特に効果を感じたのは、月末のグラフを見る習慣。「食費のグラフを見ると、どの週に使いすぎたかがひと目で分かる。娘の誕生日週がやっぱり高い（笑）、とか。それが分かると次の週で調整できる」とのこと。
+    </p>
+
+    <div class="tip-box">
+      <div class="tip-box-label">節約のポイント</div>
+      <p>「記録する」ことが目的ではなく「傾向を知る」ことが目的です。AIが傾向を教えてくれるので、意識するだけで自然と支出が最適化されていきます。</p>
+    </div>
+
+    <h2 id="tips">続けるためのコツ</h2>
+    <p>AIがあっても、少しのコツで継続率がぐっと上がります。</p>
+    <ol>
+      <li><strong>「完璧主義」をやめる</strong>：レシートが1枚なくても大丈夫。大まかに把握できれば十分です</li>
+      <li><strong>週1まとめスキャンを習慣にする</strong>：月曜の朝などに曜日を決めてまとめてスキャン</li>
+      <li><strong>グラフを見る時間を作る</strong>：月末5分だけダッシュボードを確認する習慣をつける</li>
+      <li><strong>予算は少し緩めに設定する</strong>：厳しすぎる予算はストレスのもと。まず現状把握から始めましょう</li>
+    </ol>
+
+    <div class="cta-block">
+      <h3>まずは無料で試してみませんか？</h3>
+      <p>クレジットカード不要・完全無料。今すぐレシートをスキャンして、家計の「見える化」を体験してください。</p>
+      <a href="/index.html" class="btn-cta">無料で始める →</a>
+    </div>
+
+  </article>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <h4>目次</h4>
+      <ul class="toc-list">
+        <li><a href="#why-fail">家計簿が続かない3つの理由</a></li>
+        <li><a href="#how-ai-helps">AIがどう解決するか</a></li>
+        <li><a href="#getting-started">3ステップで始めるAI家計簿</a></li>
+        <li><a href="#success-story">実践者の声</a></li>
+        <li><a href="#tips">続けるためのコツ</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-card">
+      <h4>関連記事</h4>
+      <a href="/blog/food-cost-cut-20000.html" class="related-article">
+        <div class="related-icon" style="background: linear-gradient(135deg, #1a4a2e 0%, #0d2618 100%);">🛒</div>
+        <div>
+          <div class="related-title">食費を月2万円削減した主婦の「買い物リスト」術</div>
+          <div class="related-meta">2026年6月25日</div>
+        </div>
+      </a>
+      <a href="/blog/ai-recipe-weekly-plan.html" class="related-article">
+        <div class="related-icon" style="background: linear-gradient(135deg, #2c3a1a 0%, #1a2a0d 100%);">🍳</div>
+        <div>
+          <div class="related-title">AIが食材から1週間の献立を自動提案</div>
+          <div class="related-meta">2026年6月18日</div>
+        </div>
+      </a>
+      <a href="/blog/budget-category-tips.html" class="related-article">
+        <div class="related-icon" style="background: linear-gradient(135deg, #1a2c3a 0%, #0d1a28 100%);">📊</div>
+        <div>
+          <div class="related-title">カテゴリ別予算の設定方法と目安</div>
+          <div class="related-meta">2026年6月10日</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="sidebar-card" style="background: var(--green-deep); border-color: transparent;">
+      <h4 style="color: #fff; border-color: rgba(255,255,255,.2);">無料で始める</h4>
+      <p style="font-size: .85rem; color: #a8d8bb; margin-bottom: 16px;">レシートを撮るだけで家計が自動管理。完全無料で使い始められます。</p>
+      <a href="/index.html" style="display:block; background: var(--orange); color: #fff; text-align: center; border-radius: 100px; padding: 10px 20px; font-size: .875rem; font-weight: 700; text-decoration: none; transition: background .15s;" onmouseover="this.style.background='#C4511A'" onmouseout="this.style.background='#E8621A'">今すぐ無料登録 →</a>
+    </div>
+  </aside>
+
+</div>
+
+<footer class="footer">
+  <div class="footer-links">
+    <a href="/">ホーム</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/#pricing">料金プラン</a>
+  </div>
+  <p>© 2026 取本（とほん） · AIレシート家計簿</p>
+</footer>
+
+</body>
+</html>
