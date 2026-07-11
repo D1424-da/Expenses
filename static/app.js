@@ -122,6 +122,8 @@ onAuthStateChanged(auth, (user) => {
 const _ua = navigator.userAgent;
 const _isInAppBrowser = /Line\/|FBAN|FBAV|Instagram|MicroMessenger/i.test(_ua);
 const _isMobile = /Android|iPhone|iPad|iPod/i.test(_ua);
+// Safari は ITP でリダイレクト認証が失敗するため、ポップアップを使う。
+const _isSafari = /^((?!chrome|android).)*safari/i.test(_ua);
 
 if (_isInAppBrowser) {
   log("インアプリブラウザを検知:", _ua);
@@ -146,16 +148,19 @@ getRedirectResult(auth).then((result) => {
 }).catch((err) => {
   if (err.code === "auth/credential-already-in-use") return;
   logErr("getRedirectResult エラー:", err.code, err.message);
+  // Safari では redirect を使わないのでエラー表示しない
+  if (_isSafari) return;
   const el = $("login-error");
   el.textContent = "ログインに失敗しました: " + (err.code || err.message);
   el.hidden = false;
 });
 
 $("google-login").onclick = async () => {
-  log("ログインボタン押下:", _isMobile ? "redirect" : "popup");
+  const useRedirect = _isMobile && !_isSafari;
+  log("ログインボタン押下:", useRedirect ? "redirect" : "popup");
   $("login-error").hidden = true;
   try {
-    if (_isMobile) {
+    if (useRedirect) {
       await signInWithRedirect(auth, provider);
     } else {
       const result = await signInWithPopup(auth, provider);
