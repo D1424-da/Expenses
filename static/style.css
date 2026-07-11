@@ -98,12 +98,13 @@ body {
   box-shadow: 0 1px 8px rgba(0,0,0,0.05);
 }
 .topbar h1 {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   margin: 0;
   color: var(--sage);
   font-weight: 800;
-  letter-spacing: -.02em;
+  letter-spacing: .02em;
   white-space: nowrap;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif;
 }
 .topbar-right {
   display: flex;
@@ -311,6 +312,7 @@ main {
 /* ============================================================
    CAPTURE
    ============================================================ */
+.capture h2 { color: var(--sage); }
 .capture-buttons { display: flex; gap: 10px; margin-top: 12px; }
 .file-button {
   display: inline-flex;
@@ -319,17 +321,25 @@ main {
   gap: 6px;
   background: var(--sage);
   color: #fff;
-  padding: 14px 18px;
+  padding: 16px 18px;
   border-radius: var(--radius);
   font-weight: 700;
   cursor: pointer;
   text-align: center;
   flex: 1;
-  font-size: 0.92rem;
+  font-size: 1rem;
   border: none;
+  letter-spacing: .01em;
 }
 .file-button:hover { filter: brightness(1.07); }
-.file-button.secondary { background: var(--sage-light); color: var(--sage); }
+.file-button:active { filter: brightness(0.95); transform: scale(0.99); }
+.file-button.secondary {
+  background: var(--sage-light);
+  color: var(--sage);
+  font-size: 0.88rem;
+  padding: 14px 14px;
+  flex: 0.8;
+}
 .status {
   margin-top: 12px;
   padding: 12px 14px;
@@ -448,7 +458,13 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .expense-item .ei-items .ei-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .expense-item .ei-items .ei-item-qty { color: var(--muted); white-space: nowrap; }
 .expense-item .ei-items .ei-item-price { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--muted); }
-.empty { color: var(--muted); text-align: center; padding: 20px; font-size: 0.88rem; }
+.empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 24px 20px;
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
 
 /* ============================================================
    LOGIN
@@ -1088,8 +1104,8 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   .cal-day, .cal-week { min-height: 44px; }
   .cal-amt, .cal-week { font-size: 0.6rem; }
   .cal-day { padding: 2px; }
-  /* モバイルでは保存レシピ・最安値をヘッダーから省略（ボトムナビ優先） */
-  #saved-recipes-btn, #compare-btn { display: none; }
+  /* モバイルでは保存レシピ・最安値・CSV・買い物をヘッダーから省略（ボトムナビ・PCナビ優先） */
+  #saved-recipes-btn, #compare-btn, #export-btn, #shopping-btn { display: none; }
   /* お得情報をカテゴリバーより先に表示（埋もれ防止） */
   .summary-body { display: flex; flex-direction: column; }
   #lowest-alerts { order: -1; margin-top: 0; margin-bottom: 12px; }
