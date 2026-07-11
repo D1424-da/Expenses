@@ -53,7 +53,7 @@ export function clearHousehold() {
   dbClearHousehold();
 }
 
-async function _open() {
+export async function openHousehold() {
   openModal("household-modal");
   await _refresh();
 }

@@ -44,7 +44,7 @@ import { initSavedRecipes } from "./saved-recipes.js";
 import { initShoppingList, startSync as startShoppingSync, stopSync as stopShoppingSync } from "./shopping-list.js";
 import { initMealPlan, startMealPlanSync, stopMealPlanSync } from "./meal-plan.js";
 import { dbSetUser, dbClearHousehold, dbBase } from "./db-paths.js";
-import { initHousehold, loadHousehold, clearHousehold } from "./household.js";
+import { initHousehold, loadHousehold, clearHousehold, openHousehold } from "./household.js";
 import {
   initBilling, startBillingSync, stopBillingSync,
   checkGate, renderUsageBar, FREE_LIMIT, isPremium, openPortal,
@@ -246,7 +246,7 @@ async function setupApp() {
     $("account-close").onclick = () => closeModal("account-modal");
     $("account-upgrade-btn").onclick = () => { closeModal("account-modal"); openModal("upgrade-modal"); };
     $("account-portal-btn").onclick = () => openPortal();
-    $("account-household-btn").onclick = () => { closeModal("account-modal"); openModal("household-modal"); };
+    $("account-household-btn").onclick = () => { closeModal("account-modal"); openHousehold(); };
     $("logout").onclick = () => { stopShoppingSync(); stopMealPlanSync(); signOut(auth); };
     $("prev-month").onclick = () => shiftMonth(-1);
     $("next-month").onclick = () => shiftMonth(1);
