@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>カテゴリ別予算管理のコツ｜食費・固定費・娯楽費を賢く配分する方法</title>
+  <meta name="description" content="カテゴリ別予算管理の設定方法と無理なく続けるコツを解説。食費・固定費・娯楽費などの予算配分の基準、オーバーを防ぐ仕組み、取本（とほん）での予算設定と食費節約への活用を紹介。" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    :root[data-theme="light"]{--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--gp:#F0F8F2}
+    :root[data-theme="dark"]{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#1a2c3a 0%,#0d1a28 100%);padding:64px 24px 80px;position:relative;overflow:hidden}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(255,255,255,.15);color:#a8d8bb;border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;line-height:1.35;margin-bottom:24px}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .budget-table{width:100%;border-collapse:collapse;margin:24px 0;font-size:.9rem}
+    .budget-table th{background:var(--gm);color:#fff;padding:10px 14px;text-align:left}
+    .budget-table td{padding:10px 14px;border-bottom:1px solid var(--bd);color:var(--is)}
+    .budget-table tr:nth-child(even) td{background:var(--gp)}
+    .budget-table .pct{font-weight:700;color:var(--gm);font-variant-numeric:tabular-nums}
+    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
+    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
+    .su{font-size:.85rem;color:var(--im);margin-top:4px}
+    .bar-wrap{margin:32px 0}
+    .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    .bar-label{width:80px;font-size:.82rem;color:var(--is);flex-shrink:0;text-align:right}
+    .bar-bg{flex:1;background:var(--gl);border-radius:100px;height:18px;position:relative;overflow:hidden}
+    .bar-fill{height:100%;border-radius:100px;background:var(--gm);transition:width .3s}
+    .bar-pct{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:.78rem;font-weight:700;color:#fff}
+    .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:32px 0}
+    .cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+    .ci{font-size:1.8rem;margin-bottom:10px;display:block}
+    .ct{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px}
+    .cd{font-size:.82rem;color:var(--is);line-height:1.6}
+    .cb{background:var(--gd);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}}
+    @media(max-width:600px){.hn{display:none}.sg{grid-template-columns:1fr}.budget-table{font-size:.8rem}.bar-label{width:60px}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a href="/" class="hl">取本 <span>とほん</span></a>
+  <nav class="hn">
+    <a href="/blog.html">ブログ</a>
+    <a href="/lp.html">アプリについて</a>
+  </nav>
+  <a href="/index.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <nav class="bc">
+      <a href="/">取本</a><span>/</span>
+      <a href="/blog.html">ブログ</a><span>/</span>
+      <span>カテゴリ別予算管理のコツ</span>
+    </nav>
+    <span class="ac">予算管理・家計設計</span>
+    <h1>カテゴリ別予算管理のコツ<br>食費・固定費・娯楽費を賢く配分する方法</h1>
+    <div class="am">
+      <span>2026年6月24日</span>
+      <span>読了目安：8分</span>
+    </div>
+  </div>
+</section>
+
+<div class="cw">
+  <article class="ab">
+    <p class="ld">「毎月なぜかお金が足りない」「どのカテゴリに使いすぎているかわからない」という方へ。カテゴリ別に予算を設定することで、家計の全体像が見えて無駄遣いを自然に防げます。この記事では予算設定の考え方から取本（とほん）での実践的な活用法まで解説します。</p>
+
+    <h2 id="why-category">なぜカテゴリ別予算が必要なのか</h2>
+    <p>「月の予算30万円以内」という大きな枠だけでは管理しきれません。食費を削るつもりが外食に使ってしまい、娯楽費を節約したつもりが通信費に気づかず積み重なる——こういった「気づかない浪費」を防ぐには、カテゴリごとの枠を決めておくことが有効です。</p>
+
+    <div class="sg">
+      <div class="sc">
+        <div class="sn">76%</div>
+        <div class="su">カテゴリ別予算設定後に<br>「支出が減った」と回答</div>
+      </div>
+      <div class="sc">
+        <div class="sn">¥23,000</div>
+        <div class="su">カテゴリ別管理での<br>月平均削減額（4人家族）</div>
+      </div>
+      <div class="sc">
+        <div class="sn">2ヶ月</div>
+        <div class="su">適切な予算設定が<br>固まるまでの平均期間</div>
+      </div>
+    </div>
+
+    <h2 id="allocation">収入別の予算配分の目安</h2>
+    <p>収入に対する各カテゴリの理想的な配分比率を参考にしてください。家族構成・地域・ライフスタイルによって異なりますが、最初の目安として活用できます。</p>
+
+    <div class="bar-wrap">
+      <div class="bar-row">
+        <div class="bar-label">住居費</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:30%"></div><span class="bar-pct">30%</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">食費</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:20%"></div><span class="bar-pct">20%</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">貯蓄</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:15%"></div><span class="bar-pct">15%</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">光熱費</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:8%"></div><span class="bar-pct">8%</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">通信費</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:5%"></div><span class="bar-pct">5%</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">娯楽費</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:8%"></div><span class="bar-pct">8%</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">その他</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:14%"></div><span class="bar-pct">14%</span></div>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table class="budget-table">
+        <thead>
+          <tr><th>カテゴリ</th><th>月収20万円</th><th>月収30万円</th><th>月収40万円</th><th>目安比率</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>住居費（家賃・ローン）</td><td>60,000円</td><td>90,000円</td><td>120,000円</td><td class="pct">30%</td></tr>
+          <tr><td>食費（外食含む）</td><td>40,000円</td><td>60,000円</td><td>80,000円</td><td class="pct">20%</td></tr>
+          <tr><td>先取り貯蓄</td><td>30,000円</td><td>45,000円</td><td>60,000円</td><td class="pct">15%</td></tr>
+          <tr><td>光熱費</td><td>16,000円</td><td>24,000円</td><td>32,000円</td><td class="pct">8%</td></tr>
+          <tr><td>通信費</td><td>10,000円</td><td>15,000円</td><td>20,000円</td><td class="pct">5%</td></tr>
+          <tr><td>娯楽・被服・その他</td><td>44,000円</td><td>66,000円</td><td>88,000円</td><td class="pct">22%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="food-budget">食費予算を守るための仕組み</h2>
+    <p>カテゴリ別予算の中でも、最も守りにくいのが食費です。食費はほぼ毎日の支出で、外食・コンビニ・スーパーと複数のルートがあるため、気づかないうちにオーバーしやすいカテゴリです。</p>
+
+    <h3>食費予算を守る3つの方法</h3>
+    <div class="cg">
+      <div class="cc">
+        <span class="ci">🗓️</span>
+        <div class="ct">週単位で予算を分割する</div>
+        <div class="cd">月4〜5週に分けて週あたりの上限を計算。月初に使いすぎると月末が苦しくなるのを防ぐ。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">🧾</span>
+        <div class="ct">レシートをその日に記録する</div>
+        <div class="cd">「週累計いくら使っているか」をリアルタイムで把握することで、残り予算を意識した買い物ができる。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">🍳</span>
+        <div class="ct">レシピから逆算して買い物する</div>
+        <div class="cd">取本のレシピ自動作成機能で、食材から料理を提案。「何を買えばいいか」が明確になり衝動買いを防ぐ。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">🚫</span>
+        <div class="ct">外食費は別カテゴリで管理する</div>
+        <div class="cd">食費と外食費を分けることで、「外食が多かった」のか「食材費が多かった」のかを正確に把握できる。</div>
+      </div>
+    </div>
+
+    <div class="tb">
+      <div class="tl">取本の食費管理×レシピ連携</div>
+      <p>取本では食費・外食費・日用品など細かいカテゴリで記録でき、月別のカテゴリ別グラフで予算消化率を確認できます。さらに購入した食材から<strong>レシピを自動作成する機能</strong>により、予算内の食材を最大限に活かした献立が立てられます。「予算が少ないから何も作れない」ではなく、「今ある食材でこんなに作れる！」という発見が食費節約のモチベーションを高めます。</p>
+    </div>
+
+    <h2 id="tips">予算設定で失敗しないコツ</h2>
+    <ul>
+      <li><strong>最初は現状の110%を予算にする</strong>：今の支出より10%高い金額を設定。最初から厳しい予算は失敗のもと</li>
+      <li><strong>3ヶ月後に見直す</strong>：設定した予算が現実に合っているか、3ヶ月後に必ず見直す</li>
+      <li><strong>イレギュラー費用を忘れない</strong>：冠婚葬祭・医療費など年数回の大きな支出を月割りで予算に組み込む</li>
+      <li><strong>予算を「罰則」にしない</strong>：オーバーしたときに罰則感を持つと続かない。あくまで「目安」として使う</li>
+    </ul>
+
+    <div class="cb">
+      <h3>取本（とほん）でカテゴリ予算を設定する</h3>
+      <p>カテゴリ別記録・グラフ・レシピ提案がひとつに。<br>無理なく続けられる予算管理を始めましょう。</p>
+      <a href="/index.html" class="bc2">無料で使い始める</a>
+    </div>
+
+    <h2 id="summary">まとめ</h2>
+    <p>カテゴリ別予算管理は、漠然とした「節約しよう」を「食費を〇万円以内に」という具体的な行動に変える仕組みです。収入の20%を食費の目安にし、外食費は別管理にすることで食費の実態が明確になります。取本の<strong>買い物からレシピを自動作成する機能</strong>と組み合わせれば、設定した予算の中で最大の満足感を得られる食生活を実現できます。</p>
+  </article>
+
+  <aside class="sb">
+    <div class="sbc">
+      <h4>目次</h4>
+      <ul class="toc">
+        <li><a href="#why-category">なぜカテゴリ別予算が必要なのか</a></li>
+        <li><a href="#allocation">収入別の予算配分の目安</a></li>
+        <li><a href="#food-budget">食費予算を守るための仕組み</a></li>
+        <li><a href="#tips">予算設定で失敗しないコツ</a></li>
+        <li><a href="#summary">まとめ</a></li>
+      </ul>
+    </div>
+    <div class="sbc">
+      <h4>関連記事</h4>
+      <a href="/blog/spending-analysis.html" class="ra">
+        <div class="ri" style="background:#e8f5ee">📊</div>
+        <div>
+          <div class="rt">支出管理アプリで家計分析</div>
+          <div class="rm">月別・カテゴリ別で見える化</div>
+        </div>
+      </a>
+      <a href="/blog/household-review-monthly.html" class="ra">
+        <div class="ri" style="background:#e3f2fd">📅</div>
+        <div>
+          <div class="rt">月次家計レビューの習慣化</div>
+          <div class="rm">毎月30分で改善を継続</div>
+        </div>
+      </a>
+      <a href="/blog/savings-improvement.html" class="ra">
+        <div class="ri" style="background:#fff8e1">💰</div>
+        <div>
+          <div class="rt">節約アプリで貯金を増やす方法</div>
+          <div class="rm">家計改善の実践ガイド</div>
+        </div>
+      </a>
+    </div>
+  </aside>
+</div>
+
+<footer class="ft">
+  <nav class="fl">
+    <a href="/">取本 TOP</a>
+    <a href="/lp.html">アプリについて</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/index.html">ログイン</a>
+  </nav>
+  <p>© 2026 取本（とほん）</p>
+</footer>
+</body>
+</html>

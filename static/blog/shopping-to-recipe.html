@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>買い物した食材からレシピを自動作成｜取本の最強機能を徹底解説</title>
+  <meta name="description" content="スーパーで買い物した食材からレシピを自動で作成する機能を徹底解説。食材ロスゼロ・献立に悩まない・食費節約の3つを同時に実現する取本（とほん）の核心機能。実際の使い方と節約効果も紹介。" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    :root[data-theme="light"]{--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--gp:#F0F8F2}
+    :root[data-theme="dark"]{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#0d3024 0%,#061a0e 100%);padding:80px 24px 100px;position:relative;overflow:hidden}
+    .ah::before{content:"";position:absolute;top:-60px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(45,125,82,.3) 0%,transparent 70%);border-radius:50%}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto;position:relative;z-index:1}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(45,125,82,.4);color:#a8d8bb;border:1px solid rgba(45,125,82,.6);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:700;color:#fff;line-height:1.3;margin-bottom:20px;text-shadow:0 2px 20px rgba(0,0,0,.4)}
+    .ah .tagline{font-size:1rem;color:rgba(255,255,255,.7);margin-bottom:24px;line-height:1.7}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
+    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
+    .su{font-size:.85rem;color:var(--im);margin-top:4px}
+    .demo-box{background:var(--sf);border:2px solid var(--gm);border-radius:20px;padding:32px;margin:32px 0;box-shadow:var(--sl)}
+    .demo-title{font-size:.78rem;font-weight:700;color:var(--gm);letter-spacing:.1em;margin-bottom:20px}
+    .demo-ingredients{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
+    .demo-tag{background:var(--gl);color:var(--gd);border-radius:100px;padding:6px 14px;font-size:.85rem;font-weight:600}
+    .demo-arrow{text-align:center;font-size:1.5rem;color:var(--gm);margin:16px 0}
+    .demo-recipes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .demo-recipe{background:var(--gp);border:1px solid var(--gl);border-radius:var(--r);padding:14px;text-align:center}
+    .demo-recipe-icon{font-size:1.6rem;display:block;margin-bottom:6px}
+    .demo-recipe-name{font-size:.82rem;font-weight:700;color:var(--ink)}
+    .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:32px 0}
+    .cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+    .ci{font-size:1.8rem;margin-bottom:10px;display:block}
+    .ct{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px}
+    .cd{font-size:.82rem;color:var(--is);line-height:1.6}
+    .flow{display:flex;gap:0;margin:32px 0;overflow-x:auto;padding-bottom:8px}
+    .flow-item{flex:1;min-width:140px;text-align:center;padding:20px 10px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);position:relative;margin-right:28px;box-shadow:var(--sh)}
+    .flow-item:last-child{margin-right:0}
+    .flow-item::after{content:"→";position:absolute;right:-22px;top:50%;transform:translateY(-50%);color:var(--gm);font-size:1.2rem;font-weight:700}
+    .flow-item:last-child::after{display:none}
+    .flow-icon{font-size:1.8rem;display:block;margin-bottom:10px}
+    .flow-step{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.06em;margin-bottom:4px}
+    .flow-desc{font-size:.8rem;color:var(--is);line-height:1.5}
+    .voice{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;margin:16px 0;box-shadow:var(--sh);position:relative}
+    .voice::before{content:"\"";font-family:serif;font-size:3rem;color:var(--gl);position:absolute;top:-4px;left:16px;line-height:1}
+    .voice-text{padding-top:20px;font-size:.9rem;color:var(--is);line-height:1.8;font-style:italic}
+    .voice-attr{margin-top:12px;font-size:.8rem;color:var(--im);font-style:normal}
+    .cb{background:linear-gradient(135deg,#1E5C3A 0%,#0d3024 100%);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.5rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:16px 44px;font-size:1.05rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s;box-shadow:0 4px 20px rgba(232,98,26,.4)}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}.demo-recipes{grid-template-columns:1fr 1fr}}
+    @media(max-width:600px){.hn{display:none}.sg{grid-template-columns:1fr}.demo-recipes{grid-template-columns:1fr}.flow{flex-direction:column}.flow-item{margin-right:0;margin-bottom:24px}.flow-item::after{content:"↓";right:50%;top:auto;bottom:-22px;transform:translateX(50%)}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a href="/" class="hl">取本 <span>とほん</span></a>
+  <nav class="hn">
+    <a href="/blog.html">ブログ</a>
+    <a href="/lp.html">アプリについて</a>
+  </nav>
+  <a href="/index.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <nav class="bc">
+      <a href="/">取本</a><span>/</span>
+      <a href="/blog.html">ブログ</a><span>/</span>
+      <span>買い物からレシピを自動作成</span>
+    </nav>
+    <span class="ac">取本の最強機能</span>
+    <h1>買い物した食材から<br>レシピを自動作成する</h1>
+    <p class="tagline">食材ロスをなくし、献立に悩まず、食費を節約する——<br>取本（とほん）の核心機能を徹底解説します。</p>
+    <div class="am">
+      <span>2026年7月9日</span>
+      <span>読了目安：10分</span>
+    </div>
+  </div>
+</section>
+
+<div class="cw">
+  <article class="ab">
+    <p class="ld">「買った野菜が余った」「今夜何を作ればいいかわからない」「外食が増えて食費がオーバー」——これらの悩みをまとめて解決するのが、取本の<strong>買い物した食材からレシピを自動作成する機能</strong>です。家計管理アプリとしては異例のこの機能が、どのように食生活と家計を変えるかをくわしく解説します。</p>
+
+    <h2 id="problem">食費が高くなる根本原因</h2>
+    <p>多くの家庭で食費が高くなる原因は、「献立を決めずに買い物する」という一点に集約されます。献立が決まっていないと：</p>
+    <ul>
+      <li>必要なもの以上に食材を買ってしまう（余剰在庫の発生）</li>
+      <li>余った食材を使い切れず捨ててしまう（食品ロス）</li>
+      <li>「何を作ればいいかわからない」で外食・テイクアウトに頼る</li>
+      <li>同じ食材を二重に買ってしまう（冷蔵庫の把握不足）</li>
+    </ul>
+    <p>これらの無駄を合計すると、月に<strong>8,000〜20,000円</strong>もの食費を無駄にしている家庭は珍しくありません。</p>
+
+    <div class="sg">
+      <div class="sc">
+        <div class="sn">643万t</div>
+        <div class="su">日本の年間食品ロス量<br>（農林水産省2023年）</div>
+      </div>
+      <div class="sc">
+        <div class="sn">¥51,000</div>
+        <div class="su">4人家族の年間<br>食品ロス換算額（推計）</div>
+      </div>
+      <div class="sc">
+        <div class="sn">30%</div>
+        <div class="su">「献立が決まっていない」<br>外食理由として最多</div>
+      </div>
+    </div>
+
+    <h2 id="how-it-works">レシピ自動作成機能の仕組み</h2>
+    <p>取本のレシピ自動作成機能は、<strong>買い物の記録→食材リストの把握→レシピの提案</strong>という3ステップで動きます。</p>
+
+    <div class="flow">
+      <div class="flow-item">
+        <span class="flow-icon">🛒</span>
+        <div class="flow-step">STEP 1</div>
+        <div class="flow-desc">スーパーで買い物。レシートを撮影またはアイテムを入力</div>
+      </div>
+      <div class="flow-item">
+        <span class="flow-icon">📋</span>
+        <div class="flow-step">STEP 2</div>
+        <div class="flow-desc">購入した食材がリスト化される。何をいくつ買ったか自動記録</div>
+      </div>
+      <div class="flow-item">
+        <span class="flow-icon">🤖</span>
+        <div class="flow-step">STEP 3</div>
+        <div class="flow-desc">AIがリストを解析し、その食材で作れるレシピを複数提案</div>
+      </div>
+      <div class="flow-item">
+        <span class="flow-icon">🍳</span>
+        <div class="flow-step">STEP 4</div>
+        <div class="flow-desc">気に入ったレシピで調理。食材を使い切って食品ロスゼロ</div>
+      </div>
+    </div>
+
+    <h2 id="demo">実際の使用例：スーパーから帰ったら</h2>
+    <p>たとえば今日のスーパーで「豚こま・キャベツ・玉ねぎ・にんにく・卵・牛乳」を購入したとします。</p>
+
+    <div class="demo-box">
+      <div class="demo-title">今日の買い物リスト</div>
+      <div class="demo-ingredients">
+        <span class="demo-tag">豚こま切れ 400g</span>
+        <span class="demo-tag">キャベツ 1/2個</span>
+        <span class="demo-tag">玉ねぎ 2個</span>
+        <span class="demo-tag">にんにく 1片</span>
+        <span class="demo-tag">卵 6個</span>
+        <span class="demo-tag">牛乳 1L</span>
+      </div>
+      <div class="demo-arrow">↓ レシピ自動提案</div>
+      <div class="demo-recipes">
+        <div class="demo-recipe">
+          <span class="demo-recipe-icon">🥬</span>
+          <div class="demo-recipe-name">豚キャベツ炒め</div>
+        </div>
+        <div class="demo-recipe">
+          <span class="demo-recipe-icon">🍲</span>
+          <div class="demo-recipe-name">豚汁</div>
+        </div>
+        <div class="demo-recipe">
+          <span class="demo-recipe-icon">🍛</span>
+          <div class="demo-recipe-name">ポークカレー</div>
+        </div>
+        <div class="demo-recipe">
+          <span class="demo-recipe-icon">🥚</span>
+          <div class="demo-recipe-name">オムレツ</div>
+        </div>
+        <div class="demo-recipe">
+          <span class="demo-recipe-icon">🍝</span>
+          <div class="demo-recipe-name">ナポリタン風</div>
+        </div>
+        <div class="demo-recipe">
+          <span class="demo-recipe-icon">🥘</span>
+          <div class="demo-recipe-name">シチュー</div>
+        </div>
+      </div>
+    </div>
+
+    <p>これだけの選択肢があれば、「今夜は豚キャベツ炒めにしよう。明日は残りの豚こまで豚汁を作れば週末のランチにもなる」と数日分の献立を自然に組み立てられます。</p>
+
+    <h2 id="benefits">3つの同時解決</h2>
+    <div class="cg">
+      <div class="cc">
+        <span class="ci">♻️</span>
+        <div class="ct">食品ロスがゼロに</div>
+        <div class="cd">買った食材をすべて使い切るレシピを提案するので、野菜が冷蔵庫で腐る、食材を余らせて捨てる——というサイクルが断ち切れます。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">🧠</span>
+        <div class="ct">献立を考える必要がない</div>
+        <div class="cd">「今日は何を作ろう？」という毎日の悩みがなくなります。買い物帰りにアプリを開けば、答えがすぐそこにあります。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">💰</span>
+        <div class="ct">食費が自然に減る</div>
+        <div class="cd">食材ロスの削減 + 外食回数の減少 = 月1〜2万円の食費節約。取本ユーザーの平均的な節約効果です。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">🍽️</span>
+        <div class="ct">食生活が豊かになる</div>
+        <div class="cd">「どんな料理か知らなかった」新レシピに挑戦できる。毎日の食卓がバリエーション豊かになります。</div>
+      </div>
+    </div>
+
+    <h2 id="voices">ユーザーの声</h2>
+    <div class="voice">
+      <p class="voice-text">以前は毎週「今夜どうしよう」で悩んで、結局デリバリーを頼んでいました。取本を使い始めてから、スーパーから帰ってアプリを見るだけで献立が決まるので、外食・デリバリーをほぼゼロにできました。食費が月2万円近く減りました。</p>
+      <div class="voice-attr">— 30代・2人暮らし</div>
+    </div>
+    <div class="voice">
+      <p class="voice-text">子育て中で忙しく、同じ料理ばかりになっていました。レシピ提案のおかげで新しい料理に挑戦できるようになり、子供にも喜ばれています。食材を使い切る意識が芽生えて、冷蔵庫の中がすっきりしました。</p>
+      <div class="voice-attr">— 40代・4人家族</div>
+    </div>
+
+    <h2 id="plus-kakeibo">家計管理との連携が最大の強み</h2>
+    <p>他のレシピアプリと取本が決定的に異なるのは、<strong>家計管理と完全に統合されている</strong>点です。</p>
+
+    <div class="tb">
+      <div class="tl">取本ならではの連携</div>
+      <p>レシピ自動作成の前提として、買い物の明細（店名・商品・金額）が家計簿に記録されます。つまり「何を買ったか」と「いくら使ったか」が同時に記録され、月次の支出分析にも活用できます。レシピが献立を決め、その結果外食が減り、食費が下がる——この流れがすべてひとつのアプリで完結します。</p>
+    </div>
+
+    <h2 id="how-to-start">始め方：3分でセットアップ完了</h2>
+    <ol>
+      <li>Googleアカウントで取本にログイン（アカウント作成不要）</li>
+      <li>今日の買い物をレシート撮影または商品名・金額を入力</li>
+      <li>「レシピ提案」ボタンをタップ——すぐに複数のレシピが表示されます</li>
+    </ol>
+
+    <div class="cb">
+      <h3>買い物した食材でレシピを作ってみる</h3>
+      <p>今すぐ試せます。Googleアカウントがあれば登録不要。<br>まず一度、今日の買い物を入力してみてください。</p>
+      <a href="/index.html" class="bc2">無料で今すぐ試す</a>
+    </div>
+
+    <h2 id="summary">まとめ</h2>
+    <p>取本の「買い物した食材からレシピを自動作成する機能」は、食材ロスの削減・献立の自動化・食費節約の3つを同時に実現する、他にはない機能です。スーパーで何を買ったかを記録するだけで、今夜の献立が自動で決まり、食材を使い切れる。この仕組みが毎月の食費を確実に下げ、家計全体を改善していきます。家計管理アプリを選ぶなら、この機能があるかどうかが重要な基準になるでしょう。</p>
+  </article>
+
+  <aside class="sb">
+    <div class="sbc">
+      <h4>目次</h4>
+      <ul class="toc">
+        <li><a href="#problem">食費が高くなる根本原因</a></li>
+        <li><a href="#how-it-works">レシピ自動作成機能の仕組み</a></li>
+        <li><a href="#demo">実際の使用例</a></li>
+        <li><a href="#benefits">3つの同時解決</a></li>
+        <li><a href="#voices">ユーザーの声</a></li>
+        <li><a href="#plus-kakeibo">家計管理との連携</a></li>
+        <li><a href="#how-to-start">始め方</a></li>
+        <li><a href="#summary">まとめ</a></li>
+      </ul>
+    </div>
+    <div class="sbc">
+      <h4>関連記事</h4>
+      <a href="/blog/food-cost-cut-20000.html" class="ra">
+        <div class="ri" style="background:#fff3e0">🥗</div>
+        <div>
+          <div class="rt">食費を月2万円削減する方法</div>
+          <div class="rm">取本の節約ノウハウ</div>
+        </div>
+      </a>
+      <a href="/blog/price-compare-supermarket.html" class="ra">
+        <div class="ri" style="background:#e8f5ee">🛒</div>
+        <div>
+          <div class="rt">スーパーの価格比較で食費を節約</div>
+          <div class="rm">安い店・特売の賢い活用法</div>
+        </div>
+      </a>
+      <a href="/blog/receipt-ocr-how-it-works.html" class="ra">
+        <div class="ri" style="background:#e3f2fd">📸</div>
+        <div>
+          <div class="rt">レシートOCRの仕組みと活用法</div>
+          <div class="rm">撮影するだけで自動入力</div>
+        </div>
+      </a>
+      <a href="/blog/ai-recipe-weekly-plan.html" class="ra">
+        <div class="ri" style="background:#f3e5f5">🤖</div>
+        <div>
+          <div class="rt">AIで週間献立を自動作成</div>
+          <div class="rm">食費節約の新常識</div>
+        </div>
+      </a>
+    </div>
+  </aside>
+</div>
+
+<footer class="ft">
+  <nav class="fl">
+    <a href="/">取本 TOP</a>
+    <a href="/lp.html">アプリについて</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/index.html">ログイン</a>
+  </nav>
+  <p>© 2026 取本（とほん）</p>
+</footer>
+</body>
+</html>

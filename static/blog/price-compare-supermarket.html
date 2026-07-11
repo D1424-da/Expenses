@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>スーパーの価格比較で食費を節約｜安い店・特売の賢い活用法</title>
+  <meta name="description" content="スーパーの価格比較で食費を賢く節約する方法を解説。安いスーパーの見分け方、特売品の活用、購入価格の記録・比較機能を持つ取本（とほん）でさらに節約を加速。" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    :root[data-theme="light"]{--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--gp:#F0F8F2;--sh:0 2px 16px rgba(30,92,58,.10)}
+    :root[data-theme="dark"]{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4)}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#1a2c3a 0%,#0d1a28 100%);padding:64px 24px 80px;position:relative;overflow:hidden}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(255,255,255,.15);color:#a8d8bb;border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;line-height:1.35;margin-bottom:24px}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
+    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
+    .su{font-size:.85rem;color:var(--im);margin-top:4px}
+    .price-table{width:100%;border-collapse:collapse;margin:24px 0;font-size:.9rem}
+    .price-table th{background:var(--gm);color:#fff;padding:10px 14px;text-align:left}
+    .price-table td{padding:10px 14px;border-bottom:1px solid var(--bd);color:var(--is)}
+    .price-table tr:nth-child(even) td{background:var(--gp)}
+    .price-table .best{color:var(--gm);font-weight:700}
+    .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:32px 0}
+    .cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+    .ci{font-size:1.8rem;margin-bottom:10px;display:block}
+    .ct{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px}
+    .cd{font-size:.82rem;color:var(--is);line-height:1.6}
+    .cb{background:var(--gd);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}}
+    @media(max-width:600px){.hn{display:none}.sg{grid-template-columns:1fr}.price-table{font-size:.8rem}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a href="/" class="hl">取本 <span>とほん</span></a>
+  <nav class="hn">
+    <a href="/blog.html">ブログ</a>
+    <a href="/lp.html">アプリについて</a>
+  </nav>
+  <a href="/index.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <nav class="bc">
+      <a href="/">取本</a><span>/</span>
+      <a href="/blog.html">ブログ</a><span>/</span>
+      <span>スーパー価格比較</span>
+    </nav>
+    <span class="ac">節約・買い物術</span>
+    <h1>スーパーの価格比較で食費を節約<br>安い店・特売の賢い活用法</h1>
+    <div class="am">
+      <span>2026年5月28日</span>
+      <span>読了目安：7分</span>
+    </div>
+  </div>
+</section>
+
+<div class="cw">
+  <article class="ab">
+    <p class="ld">「どのスーパーが安いか知りたい」「特売を上手に活用したい」という方へ。スーパーごとの価格差を把握し、賢く使い分けることで食費を大幅削減できます。取本（とほん）の購入履歴・価格記録機能を活用すれば、自分だけの価格比較データが蓄積され、さらに<strong>買い物した食材からレシピを自動作成</strong>できるので食材ロスも防げます。</p>
+
+    <h2 id="price-diff">スーパー間の価格差はどのくらいある？</h2>
+    <p>同じ商品でも、スーパーによって価格は大きく異なります。例えば、鶏もも肉100gの価格は、ディスカウントスーパーと高級スーパーで2〜3倍の差があることも珍しくありません。</p>
+
+    <div class="sg">
+      <div class="sc">
+        <div class="sn">最大3倍</div>
+        <div class="su">同一商品のスーパー間<br>価格差（生鮮食品）</div>
+      </div>
+      <div class="sc">
+        <div class="sn">¥8,500</div>
+        <div class="su">スーパーを使い分けた場合の<br>月間節約額（4人家族）</div>
+      </div>
+      <div class="sc">
+        <div class="sn">週2回</div>
+        <div class="su">食費節約に最適な<br>まとめ買い頻度</div>
+      </div>
+    </div>
+
+    <h2 id="supermarket-types">スーパーのタイプと特徴を知る</h2>
+    <p>スーパーには様々なタイプがあり、それぞれ得意な商品・価格帯が異なります。賢い使い分けが節約の第一歩です。</p>
+
+    <div style="overflow-x:auto">
+      <table class="price-table">
+        <thead>
+          <tr><th>スーパーのタイプ</th><th>得意カテゴリ</th><th>価格帯</th><th>活用シーン</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>ディスカウント系</strong><br>（業務スーパー等）</td>
+            <td>冷凍食品・乾物・調味料</td>
+            <td class="best">最安値</td>
+            <td>まとめ買い・ストック品</td>
+          </tr>
+          <tr>
+            <td><strong>量販系チェーン</strong><br>（イオン・西友等）</td>
+            <td>全般・特売品</td>
+            <td>安〜普通</td>
+            <td>週1〜2回のメイン買い物</td>
+          </tr>
+          <tr>
+            <td><strong>地域密着型</strong><br>（地元スーパー）</td>
+            <td>生鮮食品・惣菜</td>
+            <td>普通</td>
+            <td>新鮮な野菜・肉の購入</td>
+          </tr>
+          <tr>
+            <td><strong>コンビニ</strong></td>
+            <td>加工食品・飲料</td>
+            <td>高め</td>
+            <td>緊急時のみ（割高に注意）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="how-to-compare">価格比較の賢いやり方</h2>
+    <h3>よく買う商品の価格を記録する</h3>
+    <p>価格比較を始めるには、まず自分がよく購入する商品の価格を記録することが大切です。「卵10個 A店 198円、B店 248円」のように購入するたびに記録しておくと、どの店が安いか自然に見えてきます。</p>
+
+    <div class="tb">
+      <div class="tl">取本の価格記録機能</div>
+      <p>取本では買い物の明細を商品単位で記録できます。同じ商品を複数の店で購入した履歴が蓄積されると、<strong>過去の最安値を通知するアラート機能</strong>が働き、「この商品は先月○○で100円安く買えていた」ことが一目でわかります。自然と価格比較データが育っていきます。</p>
+    </div>
+
+    <h3>特売のタイミングを把握する</h3>
+    <p>多くのスーパーは曜日や週によって特売品が変わります。例えば「水曜は野菜半額」「第2・4土曜は肉の特売」などのパターンを把握し、特売日に合わせてまとめ買いするのが効果的です。</p>
+    <ul>
+      <li><strong>月初</strong>：新商品投入・月初特売が多い</li>
+      <li><strong>閉店前</strong>：生鮮食品・惣菜が値引きされることが多い</li>
+      <li><strong>季節の変わり目</strong>：旬の食材が最も安い</li>
+    </ul>
+
+    <h2 id="recipe-from-bargain">特売品をムダなく使い切るには</h2>
+    <p>特売品を大量に買っても、使い切れなければ意味がありません。「安かったから買ったけど使い切れなかった」という経験は多いはず。ここで取本の核心機能が活きます。</p>
+
+    <div class="cg">
+      <div class="cc">
+        <span class="ci">🛒</span>
+        <div class="ct">買い物を記録する</div>
+        <div class="cd">特売で購入した「豚こま切れ300g、白菜1/2個、豆腐2丁」を取本に入力するだけ。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">🍳</span>
+        <div class="ct">レシピが自動提案される</div>
+        <div class="cd">購入した食材を使ったレシピを自動で提案。豚汁・白菜炒め・麻婆豆腐など複数の献立候補が表示。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">📆</span>
+        <div class="ct">数日分の献立を作れる</div>
+        <div class="cd">まとめ買いした食材で3〜4日分の献立が自然と立てられ、食材を使い切れる。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">💰</span>
+        <div class="ct">食材ロスゼロで節約最大化</div>
+        <div class="cd">特売価格 × 食材ロスなし = 最大の節約効果。これが取本が実現するスマートな食費管理。</div>
+      </div>
+    </div>
+
+    <h2 id="tips">価格比較で失敗しないための注意点</h2>
+    <p>価格比較・特売活用には落とし穴もあります。</p>
+    <ul>
+      <li><strong>「安さに騙されない」</strong>：安くても食べきれない量を買うのは損。家族の消費量に合わせた購入を</li>
+      <li><strong>交通費を計算に入れる</strong>：安いスーパーが遠ければ、ガソリン代・交通費が上乗せされ結果的に高くなることも</li>
+      <li><strong>品質チェック</strong>：特売品は賞味期限が近い場合があるので確認を</li>
+      <li><strong>衝動買いに注意</strong>：「安いから」という理由だけで不要なものを買わない</li>
+    </ul>
+
+    <div class="cb">
+      <h3>取本（とほん）で価格比較を自動化する</h3>
+      <p>買い物記録 → 価格履歴蓄積 → レシピ自動提案。<br>すべて無料でお使いいただけます。</p>
+      <a href="/index.html" class="bc2">無料で使い始める</a>
+    </div>
+
+    <h2 id="summary">まとめ</h2>
+    <p>スーパーの価格比較で食費を節約するには、①スーパーの特徴を把握して使い分ける、②よく買う商品の価格を記録する、③特売日・まとめ買いを活用する、の3点が基本です。取本の購入履歴・価格記録機能と<strong>買い物からレシピを自動作成する機能</strong>を組み合わせれば、「安く買って使い切る」という理想の買い物サイクルが自然と身につきます。</p>
+  </article>
+
+  <aside class="sb">
+    <div class="sbc">
+      <h4>目次</h4>
+      <ul class="toc">
+        <li><a href="#price-diff">スーパー間の価格差はどのくらい？</a></li>
+        <li><a href="#supermarket-types">スーパーのタイプと特徴</a></li>
+        <li><a href="#how-to-compare">価格比較の賢いやり方</a></li>
+        <li><a href="#recipe-from-bargain">特売品をムダなく使い切るには</a></li>
+        <li><a href="#tips">失敗しないための注意点</a></li>
+        <li><a href="#summary">まとめ</a></li>
+      </ul>
+    </div>
+    <div class="sbc">
+      <h4>関連記事</h4>
+      <a href="/blog/savings-improvement.html" class="ra">
+        <div class="ri" style="background:#e8f5ee">💰</div>
+        <div>
+          <div class="rt">節約アプリで貯金を増やす方法</div>
+          <div class="rm">家計改善の実践ガイド</div>
+        </div>
+      </a>
+      <a href="/blog/food-cost-cut-20000.html" class="ra">
+        <div class="ri" style="background:#fff3e0">🥗</div>
+        <div>
+          <div class="rt">食費を月2万円削減する方法</div>
+          <div class="rm">取本の節約ノウハウ</div>
+        </div>
+      </a>
+      <a href="/blog/shopping-to-recipe.html" class="ra">
+        <div class="ri" style="background:#f3e5f5">🍳</div>
+        <div>
+          <div class="rt">買い物からレシピを自動作成</div>
+          <div class="rm">取本の注目機能を詳解</div>
+        </div>
+      </a>
+    </div>
+  </aside>
+</div>
+
+<footer class="ft">
+  <nav class="fl">
+    <a href="/">取本 TOP</a>
+    <a href="/lp.html">アプリについて</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/index.html">ログイン</a>
+  </nav>
+  <p>© 2026 取本（とほん）</p>
+</footer>
+</body>
+</html>
