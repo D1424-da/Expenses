@@ -369,6 +369,21 @@ function _showDayInlineEdit(id, rowEl) {
     (c) => `<option value="${escapeHtml(c)}"${c === e.category ? " selected" : ""}>${escapeHtml(c)}</option>`,
   ).join("");
 
+  const items = e.items || [];
+  const itemsAccordion = items.length ? `
+    <details class="ei-items-edit-details">
+      <summary class="ei-items-edit-summary">明細も編集（${items.length}件）</summary>
+      <div class="ei-items-edit-body">
+        ${items.map((it) => `
+          <div class="ei-item-edit-row">
+            <input type="text" class="ei-item-n" value="${escapeHtml(it.name || "")}" placeholder="商品名" />
+            <input type="number" class="ei-item-p" value="${it.price != null ? it.price : ""}" inputmode="numeric" placeholder="金額" min="0" step="1" />
+            <button type="button" class="ei-item-rm" aria-label="削除">✕</button>
+          </div>`).join("")}
+        <button type="button" class="ei-item-add">＋ 追加</button>
+      </div>
+    </details>` : "";
+
   rowEl.innerHTML = `
     <div class="ei-inline-form day-inline-form">
       <div class="ei-inline-row">
@@ -379,15 +394,36 @@ function _showDayInlineEdit(id, rowEl) {
         <input type="text" class="ei-f-store" value="${escapeHtml(e.store || "")}" placeholder="店名" />
         <input type="text" class="ei-f-memo" value="${escapeHtml(e.memo || "")}" placeholder="メモ（任意）" />
       </div>
-      ${(e.items || []).length ? `<div class="ei-inline-items-note">明細 ${e.items.length}件（明細も編集する場合は「明細も編集」から）</div>` : ""}
+      ${itemsAccordion}
       <div class="ei-inline-actions">
         <button class="ei-save-btn primary" type="button">更新</button>
         <button class="ei-cancel-btn" type="button">キャンセル</button>
-        ${(e.items || []).length ? `<button class="ei-full-edit-btn" type="button">明細も編集 ›</button>` : ""}
       </div>
     </div>`;
 
   rowEl.querySelector(".ei-f-amount").focus();
+
+  // 明細アコーディオン内の追加・削除
+  const details = rowEl.querySelector(".ei-items-edit-details");
+  if (details) {
+    details.addEventListener("click", (ev) => {
+      if (ev.target.closest(".ei-item-rm")) {
+        ev.preventDefault();
+        ev.target.closest(".ei-item-edit-row").remove();
+        return;
+      }
+      if (ev.target.closest(".ei-item-add")) {
+        ev.preventDefault();
+        const body = details.querySelector(".ei-items-edit-body");
+        const addBtn = details.querySelector(".ei-item-add");
+        const newRow = document.createElement("div");
+        newRow.className = "ei-item-edit-row";
+        newRow.innerHTML = `<input type="text" class="ei-item-n" placeholder="商品名" /><input type="number" class="ei-item-p" inputmode="numeric" placeholder="金額" min="0" step="1" /><button type="button" class="ei-item-rm" aria-label="削除">✕</button>`;
+        body.insertBefore(newRow, addBtn);
+        newRow.querySelector(".ei-item-n").focus();
+      }
+    });
+  }
 
   rowEl.querySelector(".ei-save-btn").onclick = async (ev) => {
     const btn = ev.currentTarget;
@@ -402,6 +438,14 @@ function _showDayInlineEdit(id, rowEl) {
         category: rowEl.querySelector(".ei-f-cat").value,
         memo:     rowEl.querySelector(".ei-f-memo").value.trim(),
       };
+      // 明細アコーディオンがあれば現在の入力状態を保存
+      if (details) {
+        payload.items = [...rowEl.querySelectorAll(".ei-item-edit-row")].map((row, idx) => {
+          const name  = row.querySelector(".ei-item-n")?.value.trim() || "";
+          const price = Number(row.querySelector(".ei-item-p")?.value) || 0;
+          return { ...(items[idx] || {}), name, price };
+        }).filter((it) => it.name);
+      }
       await _onInlineSave?.(id, payload);
       const updated = { ...e, ...payload };
       _dayExpenseById.set(id, updated);
@@ -425,9 +469,6 @@ function _showDayInlineEdit(id, rowEl) {
     const restored = _buildDayRow(e);
     rowEl.replaceWith(restored);
   };
-
-  const fullEditBtn = rowEl.querySelector(".ei-full-edit-btn");
-  if (fullEditBtn) fullEditBtn.onclick = () => _onEdit?.(e);
 }
 
 

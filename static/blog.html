@@ -3,669 +3,699 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ブログ - 取本（とほん）家計管理のヒント</title>
-  <meta name="description" content="家計管理・節約・レシート活用に関するお役立ち情報をお届けします。取本（とほん）公式ブログ。" />
+  <title>ブログ - カケイシピ｜家計管理×レシピ自動作成</title>
+  <meta name="description" content="家計管理・節約・レシピ活用に関するお役立ち情報をお届けします。カケイシピ公式ブログ。レシートからレシピ、予算からお買い物リストまで。" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── TOKEN LAYER ── */
     :root {
-      --green-deep:  #1E5C3A;
-      --green-mid:   #2D7D52;
-      --green-light: #D4ECD9;
-      --green-pale:  #F0F8F2;
-      --orange:      #E8621A;
-      --orange-dark: #C4511A;
-      --bg:          #F7FAF8;
-      --surface:     #FFFFFF;
-      --border:      #D6E8DB;
-      --ink:         #0F2318;
-      --ink-sub:     #4A6355;
-      --ink-muted:   #8AAA96;
-      --shadow:      0 2px 16px rgba(30,92,58,.10);
-      --shadow-lg:   0 8px 40px rgba(30,92,58,.16);
-      --radius:      14px;
+      --g1: #1A5240;   /* forest green – money/trust */
+      --g2: #2A7A5E;   /* mid green */
+      --g3: #C8E8DD;   /* pale green */
+      --g4: #EBF5F1;   /* ghost green */
+      --sf: #D4900A;   /* saffron – cooking/warmth */
+      --sf2: #B87A00;
+      --sf3: #FEF3DA;
+      --bg: #F7F8F4;
+      --sur: #FFFFFF;
+      --bd: #D8E8E0;
+      --ink: #12200F;
+      --ink2: #3D5C47;
+      --mute: #7A9B87;
+      --sh: 0 2px 12px rgba(26,82,64,.09);
+      --shl: 0 8px 36px rgba(26,82,64,.15);
+      --r: 12px;
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg:        #0C1A11;
-        --surface:   #132219;
-        --border:    #1E3D2A;
-        --ink:       #E4EDE7;
-        --ink-sub:   #8ABFA0;
-        --ink-muted: #4A7A5C;
-        --green-pale:#0F2318;
-        --shadow:    0 2px 16px rgba(0,0,0,.4);
-        --shadow-lg: 0 8px 40px rgba(0,0,0,.5);
+        --bg: #0A1910;
+        --sur: #0F2418;
+        --bd: #1A3D28;
+        --ink: #DFF0E4;
+        --ink2: #80B896;
+        --mute: #4A7A5C;
+        --g4: #0D2015;
+        --g3: #1A3D28;
+        --sf3: #1E1400;
+        --sh: 0 2px 12px rgba(0,0,0,.4);
+        --shl: 0 8px 36px rgba(0,0,0,.5);
       }
     }
     :root[data-theme="dark"] {
-      --bg:        #0C1A11;
-      --surface:   #132219;
-      --border:    #1E3D2A;
-      --ink:       #E4EDE7;
-      --ink-sub:   #8ABFA0;
-      --ink-muted: #4A7A5C;
-      --green-pale:#0F2318;
-      --shadow:    0 2px 16px rgba(0,0,0,.4);
-      --shadow-lg: 0 8px 40px rgba(0,0,0,.5);
+      --bg: #0A1910; --sur: #0F2418; --bd: #1A3D28;
+      --ink: #DFF0E4; --ink2: #80B896; --mute: #4A7A5C;
+      --g4: #0D2015; --g3: #1A3D28; --sf3: #1E1400;
+      --sh: 0 2px 12px rgba(0,0,0,.4); --shl: 0 8px 36px rgba(0,0,0,.5);
     }
     :root[data-theme="light"] {
-      --green-deep:  #1E5C3A;
-      --green-mid:   #2D7D52;
-      --green-light: #D4ECD9;
-      --green-pale:  #F0F8F2;
-      --orange:      #E8621A;
-      --orange-dark: #C4511A;
-      --bg:          #F7FAF8;
-      --surface:     #FFFFFF;
-      --border:      #D6E8DB;
-      --ink:         #0F2318;
-      --ink-sub:     #4A6355;
-      --ink-muted:   #8AAA96;
-      --shadow:      0 2px 16px rgba(30,92,58,.10);
-      --shadow-lg:   0 8px 40px rgba(30,92,58,.16);
+      --bg: #F7F8F4; --sur: #FFFFFF; --bd: #D8E8E0;
+      --ink: #12200F; --ink2: #3D5C47; --mute: #7A9B87;
+      --g4: #EBF5F1; --g3: #C8E8DD; --sf3: #FEF3DA;
+      --sh: 0 2px 12px rgba(26,82,64,.09); --shl: 0 8px 36px rgba(26,82,64,.15);
     }
 
     html { scroll-behavior: smooth; }
-
     body {
-      font-family: "Hiragino Sans", "Noto Sans CJK JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+      font-family: "Hiragino Sans", "Noto Sans CJK JP", "Yu Gothic UI", system-ui, sans-serif;
       background: var(--bg);
       color: var(--ink);
       line-height: 1.7;
       font-size: 16px;
     }
 
-    /* HEADER */
-    .header {
+    /* ── HEADER ── */
+    .hd {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(30,92,58,.96);
-      backdrop-filter: blur(12px);
+      background: var(--g1);
       padding: 0 24px;
-      height: 60px;
-      display: flex; align-items: center; justify-content: space-between;
+      height: 56px;
+      display: flex; align-items: center; gap: 16px;
     }
-    .header-logo {
-      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", Georgia, serif;
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: .04em;
+    .logo {
+      font-family: "Hiragino Mincho ProN","Yu Mincho",serif;
+      font-size: 1.2rem; font-weight: 700;
       text-decoration: none;
+      display: flex; align-items: baseline; gap: 0;
+      letter-spacing: .02em;
     }
-    .header-logo span { font-size: .75rem; opacity: .7; margin-left: 6px; font-family: inherit; font-weight: 400; }
-    .header-nav { display: flex; align-items: center; gap: 20px; }
-    .header-nav a {
-      color: rgba(255,255,255,.8);
-      text-decoration: none;
-      font-size: .875rem;
-      transition: color .15s;
+    .logo-k { color: #7DDCB2; }
+    .logo-s { color: var(--sf); }
+    .hn {
+      display: flex; align-items: center; gap: 20px;
+      margin-left: auto;
     }
-    .header-nav a:hover { color: #fff; }
-    .header-nav a.active { color: #5DE898; font-weight: 600; }
-    .header-cta {
-      background: var(--orange);
-      color: #fff;
-      border: none;
-      border-radius: 100px;
-      padding: 8px 20px;
-      font-size: .875rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
+    .hn a { color: rgba(255,255,255,.78); text-decoration: none; font-size: .86rem; }
+    .hn a:hover { color: #fff; }
+    .price-chip {
+      background: var(--sf); color: #fff;
+      border-radius: 100px; padding: 4px 12px;
+      font-size: .78rem; font-weight: 700;
+      letter-spacing: .02em; white-space: nowrap;
+    }
+    .cta-btn {
+      background: var(--sf); color: #fff;
+      border: none; border-radius: 100px;
+      padding: 8px 20px; font-size: .86rem; font-weight: 700;
+      cursor: pointer; text-decoration: none;
       transition: background .15s, transform .1s;
       white-space: nowrap;
     }
-    .header-cta:hover { background: var(--orange-dark); transform: translateY(-1px); }
+    .cta-btn:hover { background: var(--sf2); transform: translateY(-1px); }
 
-    /* HERO */
-    .page-hero {
-      background: var(--green-deep);
-      padding: 64px 24px 80px;
-      position: relative;
+    /* ── FEATURE STRIP (below header) ── */
+    .fstrip {
+      background: var(--g1);
+      border-top: 1px solid rgba(255,255,255,.08);
+      padding: 0 24px 16px;
+    }
+    .fstrip-inner {
+      max-width: 900px; margin: 0 auto;
+      display: flex; gap: 0;
+      background: rgba(255,255,255,.07);
+      border-radius: 12px;
       overflow: hidden;
     }
-    .page-hero::after {
-      content: "";
-      position: absolute;
-      bottom: -2px; left: 0; right: 0;
-      height: 60px;
-      background: var(--bg);
-      clip-path: ellipse(60% 100% at 50% 100%);
+    .fstrip-item {
+      flex: 1; padding: 14px 18px;
+      display: flex; align-items: center; gap: 10px;
+      border-right: 1px solid rgba(255,255,255,.1);
     }
-    .page-hero-inner { max-width: 800px; margin: 0 auto; }
-    .page-hero-eyebrow {
-      display: inline-block;
-      background: rgba(255,255,255,.15);
-      color: #a8d8bb;
-      border: 1px solid rgba(255,255,255,.2);
-      border-radius: 100px;
-      padding: 4px 14px;
-      font-size: .78rem;
-      letter-spacing: .08em;
+    .fstrip-item:last-child { border-right: none; }
+    .fstrip-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .fstrip-text strong { display: block; color: #fff; font-size: .82rem; font-weight: 700; }
+    .fstrip-text span { color: rgba(255,255,255,.6); font-size: .75rem; }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--g1);
+      padding: 52px 24px 96px;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute; top: -80px; right: -80px;
+      width: 360px; height: 360px;
+      background: radial-gradient(circle, rgba(212,144,10,.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: "";
+      position: absolute; bottom: -2px; left: 0; right: 0;
+      height: 64px; background: var(--bg);
+      clip-path: ellipse(56% 100% at 50% 100%);
+    }
+    .hero-inner { max-width: 820px; margin: 0 auto; position: relative; z-index: 1; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(212,144,10,.18); color: var(--sf);
+      border: 1px solid rgba(212,144,10,.3);
+      border-radius: 100px; padding: 4px 14px;
+      font-size: .76rem; font-weight: 700; letter-spacing: .08em;
       margin-bottom: 20px;
     }
-    .page-hero h1 {
-      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", Georgia, serif;
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
-      font-weight: 700;
-      color: #fff;
-      line-height: 1.3;
-      margin-bottom: 16px;
+    .hero h1 {
+      font-family: "Hiragino Mincho ProN","Yu Mincho",serif;
+      font-size: clamp(1.8rem,4.5vw,2.9rem);
+      font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 16px;
     }
-    .page-hero p { color: #a8d8bb; font-size: .95rem; line-height: 1.8; }
+    .hero p { color: rgba(255,255,255,.72); font-size: .95rem; line-height: 1.85; }
 
-    /* MAIN */
-    .main { max-width: 1080px; margin: 0 auto; padding: 60px 24px 100px; }
+    /* ── MAIN CONTENT ── */
+    .main { max-width: 1100px; margin: 0 auto; padding: 56px 24px 100px; }
 
-    /* CATEGORY FILTER */
-    .categories {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 48px;
+    /* ── CATEGORY TABS ── */
+    .tabs {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 48px;
     }
-    .cat-btn {
-      padding: 7px 18px;
-      border-radius: 100px;
-      border: 1.5px solid var(--border);
-      background: var(--surface);
-      color: var(--ink-sub);
-      font-size: .85rem;
-      cursor: pointer;
-      transition: all .15s;
-      font-family: inherit;
+    .tab {
+      padding: 7px 18px; border-radius: 100px;
+      border: 1.5px solid var(--bd);
+      background: var(--sur); color: var(--ink2);
+      font-size: .84rem; cursor: pointer;
+      font-family: inherit; transition: all .15s;
     }
-    .cat-btn:hover, .cat-btn.active {
-      border-color: var(--green-mid);
-      background: var(--green-mid);
-      color: #fff;
+    .tab:hover, .tab.active {
+      border-color: var(--g1); background: var(--g1); color: #fff;
     }
 
-    /* FEATURED ARTICLE */
+    /* ── FEATURED ── */
     .featured {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      display: grid; grid-template-columns: 1fr 1.1fr;
+      background: var(--sur);
+      border: 1.5px solid var(--bd);
       border-radius: 20px;
       overflow: hidden;
-      box-shadow: var(--shadow-lg);
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      margin-bottom: 48px;
+      box-shadow: var(--shl);
+      margin-bottom: 52px;
+      text-decoration: none; color: inherit;
       transition: transform .15s, box-shadow .15s;
-      text-decoration: none;
-      color: inherit;
     }
-    .featured:hover { transform: translateY(-4px); box-shadow: 0 16px 60px rgba(30,92,58,.2); }
-    .featured-image {
-      background: linear-gradient(135deg, var(--green-deep) 0%, #0a2c1a 100%);
-      min-height: 320px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
+    .featured:hover { transform: translateY(-4px); box-shadow: 0 16px 56px rgba(26,82,64,.2); }
+    .feat-visual {
+      background: linear-gradient(145deg, #0F3028 0%, #071B12 100%);
+      min-height: 300px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px; padding: 32px; position: relative;
       overflow: hidden;
     }
-    .featured-image-icon {
-      font-size: 5rem;
-      opacity: .6;
+    .feat-visual::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 60%, rgba(212,144,10,.2) 0%, transparent 60%);
     }
-    .featured-image-bg {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 30% 50%, rgba(93,232,152,.15) 0%, transparent 60%);
+    .feat-flow {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
     }
-    .featured-body { padding: 44px 40px; display: flex; flex-direction: column; justify-content: center; }
-    .article-label {
-      font-size: .72rem;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--green-mid);
-      margin-bottom: 12px;
+    .feat-flow-step {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: .88rem; color: rgba(255,255,255,.9);
+      font-weight: 600; white-space: nowrap;
     }
-    .featured-badge {
+    .feat-flow-arrow { color: var(--sf); font-size: 1rem; }
+    .feat-flow-result {
+      background: var(--sf);
+      border-radius: 10px; padding: 10px 24px;
+      font-size: .95rem; font-weight: 700; color: #fff;
+    }
+    .feat-body { padding: 44px 40px; display: flex; flex-direction: column; justify-content: center; }
+    .feat-label {
+      font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+      color: var(--sf); margin-bottom: 10px;
+    }
+    .feat-tag {
       display: inline-block;
-      background: var(--green-light);
-      color: var(--green-deep);
-      font-size: .72rem;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 100px;
-      margin-bottom: 16px;
+      background: var(--sf3); color: var(--sf2);
+      font-size: .72rem; font-weight: 700;
+      padding: 3px 10px; border-radius: 100px; margin-bottom: 14px;
     }
-    .featured-title {
-      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", Georgia, serif;
-      font-size: clamp(1.2rem, 2.5vw, 1.6rem);
-      font-weight: 700;
-      line-height: 1.4;
-      color: var(--ink);
-      margin-bottom: 16px;
+    .feat-title {
+      font-family: "Hiragino Mincho ProN","Yu Mincho",serif;
+      font-size: clamp(1.15rem,2.4vw,1.55rem);
+      font-weight: 700; line-height: 1.45; color: var(--ink);
+      margin-bottom: 14px;
     }
-    .featured-excerpt { font-size: .9rem; color: var(--ink-sub); line-height: 1.8; margin-bottom: 24px; }
-    .article-meta {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      font-size: .8rem;
-      color: var(--ink-muted);
+    .feat-excerpt { font-size: .88rem; color: var(--ink2); line-height: 1.85; margin-bottom: 20px; }
+    .feat-meta { display: flex; align-items: center; gap: 14px; font-size: .78rem; color: var(--mute); }
+    .meta-tag {
+      background: var(--g4); color: var(--g2);
+      padding: 2px 8px; border-radius: 4px; font-size: .74rem;
     }
-    .article-meta-tag {
-      display: inline-block;
-      background: var(--green-pale);
-      color: var(--green-mid);
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: .75rem;
-    }
-    .read-more {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--green-mid);
-      font-size: .875rem;
-      font-weight: 600;
-      text-decoration: none;
-      margin-top: 4px;
-      transition: gap .15s;
-    }
-    .read-more:hover { gap: 10px; }
 
-    /* ARTICLE GRID */
-    .articles-grid {
+    /* ── SECTION HEADING ── */
+    .sec-head {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 28px;
+    }
+    .sec-head h2 {
+      font-family: "Hiragino Mincho ProN","Yu Mincho",serif;
+      font-size: 1.25rem; font-weight: 700; color: var(--ink);
+    }
+    .sec-line { flex: 1; height: 1px; background: var(--bd); }
+
+    /* ── ARTICLE GRID ── */
+    .grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
+      gap: 20px;
+      margin-bottom: 64px;
     }
-    .article-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+    .card {
+      background: var(--sur);
+      border: 1.5px solid var(--bd);
+      border-radius: var(--r);
       overflow: hidden;
-      box-shadow: var(--shadow);
+      box-shadow: var(--sh);
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column;
       transition: transform .15s, box-shadow .15s;
-      text-decoration: none;
-      color: inherit;
-      display: flex;
-      flex-direction: column;
-    }
-    .article-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-    .card-image {
-      height: 160px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
       position: relative;
-      overflow: hidden;
     }
-    .card-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+    .card::before {
+      content: "";
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--g2);
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: var(--shl); }
+    .card:hover::before { opacity: 1; }
+    .card-img {
+      height: 148px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.8rem;
+    }
+    .card-body { padding: 20px 20px 18px; flex: 1; display: flex; flex-direction: column; }
+    .card-cat {
+      font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+      color: var(--g2); margin-bottom: 8px;
+    }
     .card-title {
-      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", Georgia, serif;
-      font-size: 1rem;
-      font-weight: 700;
-      line-height: 1.5;
-      color: var(--ink);
-      margin-bottom: 10px;
+      font-family: "Hiragino Mincho ProN","Yu Mincho",serif;
+      font-size: .96rem; font-weight: 700; line-height: 1.5;
+      color: var(--ink); margin-bottom: 10px;
     }
-    .card-excerpt { font-size: .82rem; color: var(--ink-sub); line-height: 1.7; flex: 1; margin-bottom: 16px; }
+    .card-excerpt { font-size: .8rem; color: var(--ink2); line-height: 1.72; flex: 1; margin-bottom: 14px; }
     .card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: .78rem;
-      color: var(--ink-muted);
-      border-top: 1px solid var(--border);
-      padding-top: 14px;
-      margin-top: auto;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: .75rem; color: var(--mute);
+      border-top: 1px solid var(--bd); padding-top: 12px; margin-top: auto;
     }
 
-    /* NEWSLETTER */
-    .newsletter-section {
-      background: var(--green-deep);
+    /* ── PRICING CTA ── */
+    .pricing {
+      background: var(--g1);
       border-radius: 20px;
       padding: 56px 48px;
-      margin-top: 72px;
+      margin-bottom: 64px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 48px; align-items: center;
+    }
+    .pricing-left h2 {
+      font-family: "Hiragino Mincho ProN","Yu Mincho",serif;
+      font-size: 1.55rem; color: #fff; line-height: 1.4; margin-bottom: 16px;
+    }
+    .pricing-left p { color: rgba(255,255,255,.7); font-size: .9rem; line-height: 1.8; }
+    .pricing-card {
+      background: var(--sur);
+      border-radius: 16px;
+      padding: 32px;
       text-align: center;
-      position: relative;
-      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0,0,0,.2);
     }
-    .newsletter-section::before {
-      content: "";
-      position: absolute;
-      top: -60px; right: -60px;
-      width: 240px; height: 240px;
-      background: radial-gradient(circle, rgba(93,232,152,.15) 0%, transparent 70%);
+    .pricing-badge {
+      display: inline-block;
+      background: var(--sf3); color: var(--sf2);
+      font-size: .75rem; font-weight: 700;
+      padding: 4px 12px; border-radius: 100px; margin-bottom: 16px;
     }
-    .newsletter-section h2 {
-      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", Georgia, serif;
-      font-size: 1.6rem;
-      color: #fff;
-      margin-bottom: 12px;
+    .pricing-amount {
+      font-family: "Hiragino Mincho ProN","Yu Mincho",serif;
+      margin-bottom: 6px;
     }
-    .newsletter-section p { color: #a8d8bb; font-size: .9rem; margin-bottom: 32px; }
-    .newsletter-form { display: flex; gap: 12px; max-width: 480px; margin: 0 auto; }
-    .newsletter-input {
-      flex: 1;
-      padding: 12px 18px;
-      border-radius: 100px;
-      border: none;
-      background: rgba(255,255,255,.12);
-      color: #fff;
-      font-size: .9rem;
-      font-family: inherit;
-      outline: none;
-      transition: background .15s;
+    .pricing-amount .yen { font-size: 1.4rem; color: var(--sf); font-weight: 700; }
+    .pricing-amount .num {
+      font-size: 3.2rem; font-weight: 800; color: var(--ink);
+      font-variant-numeric: tabular-nums; line-height: 1;
     }
-    .newsletter-input::placeholder { color: rgba(255,255,255,.5); }
-    .newsletter-input:focus { background: rgba(255,255,255,.18); }
-    .newsletter-btn {
-      padding: 12px 24px;
-      border-radius: 100px;
-      border: none;
-      background: var(--orange);
-      color: #fff;
-      font-size: .9rem;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-      white-space: nowrap;
-      transition: background .15s;
+    .pricing-amount .per { font-size: .9rem; color: var(--ink2); }
+    .pricing-note { font-size: .8rem; color: var(--mute); margin-bottom: 24px; }
+    .pricing-features {
+      list-style: none; text-align: left; margin-bottom: 24px;
     }
-    .newsletter-btn:hover { background: var(--orange-dark); }
+    .pricing-features li {
+      font-size: .85rem; color: var(--ink2); padding: 6px 0;
+      border-bottom: 1px solid var(--bd);
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .pricing-features li:last-child { border-bottom: none; }
+    .pricing-features .ck { color: var(--g2); font-weight: 700; flex-shrink: 0; }
+    .pricing-cta {
+      display: block;
+      background: var(--sf); color: #fff;
+      border-radius: 100px; padding: 14px 32px;
+      font-size: .95rem; font-weight: 700;
+      text-decoration: none;
+      transition: background .15s, transform .1s;
+    }
+    .pricing-cta:hover { background: var(--sf2); transform: translateY(-2px); }
 
-    /* FOOTER */
-    .footer {
-      background: var(--green-deep);
-      color: rgba(255,255,255,.7);
-      text-align: center;
-      padding: 32px 24px;
-      font-size: .85rem;
+    /* ── MORE ARTICLES ── */
+    .more-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      margin-bottom: 48px;
     }
-    .footer a { color: rgba(255,255,255,.6); text-decoration: none; }
-    .footer a:hover { color: #fff; }
-    .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 16px; flex-wrap: wrap; }
+    .mini-card {
+      background: var(--sur); border: 1.5px solid var(--bd);
+      border-radius: var(--r); padding: 18px 16px;
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; gap: 8px;
+      box-shadow: var(--sh);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .mini-card:hover { transform: translateY(-2px); box-shadow: var(--shl); }
+    .mini-icon { font-size: 1.4rem; }
+    .mini-cat { font-size: .68rem; font-weight: 700; letter-spacing: .08em; color: var(--g2); }
+    .mini-title {
+      font-size: .84rem; font-weight: 700; line-height: 1.45;
+      color: var(--ink);
+    }
+    .mini-date { font-size: .72rem; color: var(--mute); margin-top: auto; }
 
-    /* RESPONSIVE */
-    @media (max-width: 900px) {
+    /* ── FOOTER ── */
+    .ft {
+      background: var(--g1); color: rgba(255,255,255,.65);
+      text-align: center; padding: 36px 24px; font-size: .84rem;
+    }
+    .ft-logo {
+      font-family: "Hiragino Mincho ProN","Yu Mincho",serif;
+      font-size: 1.1rem; font-weight: 700; margin-bottom: 14px;
+    }
+    .ft-logo .fk { color: #7DDCB2; }
+    .ft-logo .fs { color: var(--sf); }
+    .ft-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 14px; flex-wrap: wrap; }
+    .ft-links a { color: rgba(255,255,255,.55); text-decoration: none; }
+    .ft-links a:hover { color: #fff; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
       .featured { grid-template-columns: 1fr; }
-      .featured-image { min-height: 200px; }
-      .featured-body { padding: 28px 24px; }
-      .articles-grid { grid-template-columns: repeat(2, 1fr); }
+      .feat-visual { min-height: 180px; }
+      .feat-body { padding: 28px 24px; }
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .pricing { grid-template-columns: 1fr; gap: 32px; }
+      .more-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 600px) {
-      .articles-grid { grid-template-columns: 1fr; }
-      .header-nav { display: none; }
-      .newsletter-form { flex-direction: column; }
+      .hn { gap: 12px; }
+      .hn a { display: none; }
+      .fstrip-inner { flex-direction: column; border-radius: 8px; }
+      .fstrip-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.1); }
+      .fstrip-item:last-child { border-bottom: none; }
+      .grid { grid-template-columns: 1fr; }
+      .more-grid { grid-template-columns: 1fr 1fr; }
+      .pricing { padding: 32px 24px; }
     }
   </style>
 </head>
 <body>
 
 <!-- HEADER -->
-<header class="header">
-  <a href="/" class="header-logo">取本 <span>とほん</span></a>
-  <nav class="header-nav">
-    <a href="/">ホーム</a>
-    <a href="/blog.html" class="active">ブログ</a>
-    <a href="/#pricing">料金</a>
+<header class="hd">
+  <a href="/" class="logo">
+    <span class="logo-k">カケイ</span><span class="logo-s">シピ</span>
+  </a>
+  <nav class="hn">
+    <a href="/blog.html">ブログ</a>
+    <a href="/lp.html">アプリについて</a>
+    <span class="price-chip">¥980/月</span>
+    <a href="/index.html" class="cta-btn">無料で始める</a>
   </nav>
-  <a href="/index.html" class="header-cta">無料で始める</a>
 </header>
 
-<!-- PAGE HERO -->
-<section class="page-hero">
-  <div class="page-hero-inner">
-    <span class="page-hero-eyebrow">BLOG</span>
-    <h1>家計管理・節約の<br>お役立ち情報</h1>
-    <p>レシート活用術から節約レシピ、AIを使ったスマートな家計管理まで<br>毎日の生活に役立つ情報をお届けします。</p>
+<!-- FEATURE STRIP -->
+<div class="fstrip">
+  <div class="fstrip-inner">
+    <div class="fstrip-item">
+      <span class="fstrip-icon">🧾</span>
+      <div class="fstrip-text">
+        <strong>レシート → レシピ自動作成</strong>
+        <span>買った食材からその日の献立をAIが提案</span>
+      </div>
+    </div>
+    <div class="fstrip-item">
+      <span class="fstrip-icon">💰</span>
+      <div class="fstrip-text">
+        <strong>予算 → レシピ → お買い物リスト</strong>
+        <span>予算に合ったレシピから逆算して買い物計画</span>
+      </div>
+    </div>
+    <div class="fstrip-item">
+      <span class="fstrip-icon">📊</span>
+      <div class="fstrip-text">
+        <strong>家計管理をまるごと</strong>
+        <span>月次分析・カテゴリ予算・価格比較を一元化</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <span class="hero-eyebrow">BLOG</span>
+    <h1>家計管理とレシピ、<br>ふたつを同時に賢くする</h1>
+    <p>節約のコツ・レシートOCR活用・予算別献立作りまで<br>カケイシピ公式ブログが毎週お届けします。</p>
   </div>
 </section>
 
 <!-- MAIN -->
 <main class="main">
 
-  <!-- CATEGORY FILTER -->
-  <div class="categories">
-    <button class="cat-btn active">すべて</button>
-    <button class="cat-btn">節約術</button>
-    <button class="cat-btn">家計管理</button>
-    <button class="cat-btn">レシピ</button>
-    <button class="cat-btn">アプリ活用</button>
-    <button class="cat-btn">ライフスタイル</button>
+  <!-- CATEGORY TABS -->
+  <div class="tabs">
+    <button class="tab active">すべて</button>
+    <button class="tab">節約術</button>
+    <button class="tab">家計管理</button>
+    <button class="tab">レシピ</button>
+    <button class="tab">アプリ活用</button>
+    <button class="tab">ライフスタイル</button>
   </div>
 
-  <!-- FEATURED ARTICLE -->
+  <!-- FEATURED -->
   <a href="/blog/shopping-to-recipe.html" class="featured">
-    <div class="featured-image">
-      <div class="featured-image-bg"></div>
-      <span class="featured-image-icon">🍳</span>
+    <div class="feat-visual">
+      <div class="feat-flow">
+        <div class="feat-flow-step">🛒 今日の買い物を記録</div>
+        <div class="feat-flow-arrow">↓</div>
+        <div class="feat-flow-step">📋 食材リストが自動生成</div>
+        <div class="feat-flow-arrow">↓</div>
+        <div class="feat-flow-result">🍳 レシピを自動提案</div>
+      </div>
     </div>
-    <div class="featured-body">
-      <span class="article-label">注目機能</span>
-      <span class="featured-badge">取本の強み</span>
-      <h2 class="featured-title">買い物した食材からレシピを自動作成<br>食材ロスゼロ・食費節約を同時に実現</h2>
-      <p class="featured-excerpt">
-        スーパーで買った食材をアプリに記録するだけで、その食材を使ったレシピが自動提案されます。献立に悩む時間をゼロにし、食材を使い切ることで月1〜2万円の食費節約を実現する取本の最強機能を徹底解説。
+    <div class="feat-body">
+      <div class="feat-label">注目機能</div>
+      <span class="feat-tag">カケイシピの最強機能</span>
+      <h2 class="feat-title">買い物した食材からレシピを自動作成<br>食材ロスゼロ・献立悩みゼロを実現</h2>
+      <p class="feat-excerpt">
+        スーパーで買った食材を記録するだけで、その食材を使ったレシピが自動提案されます。献立に悩む時間をなくし、食材を使い切ることで月1〜2万円の食費節約を実現するカケイシピの核心機能を徹底解説。
       </p>
-      <div class="article-meta">
+      <div class="feat-meta">
         <span>2026年7月9日</span>
-        <span class="article-meta-tag">節約・レシピ</span>
-        <span>読了時間：約10分</span>
+        <span class="meta-tag">節約・レシピ</span>
+        <span>読了 約10分</span>
       </div>
     </div>
   </a>
 
   <!-- ARTICLE GRID -->
-  <div class="articles-grid">
+  <div class="sec-head">
+    <h2>新着記事</h2>
+    <div class="sec-line"></div>
+  </div>
 
-    <a href="/blog/food-cost-cut-20000.html" class="article-card">
-      <div class="card-image" style="background: linear-gradient(135deg, #1a4a2e 0%, #0d2618 100%);">
-        <span>🛒</span>
-      </div>
+  <div class="grid">
+
+    <a href="/blog/budget-category-tips.html" class="card">
+      <div class="card-img" style="background: linear-gradient(135deg, #122E1E 0%, #0A1810 100%);">📂</div>
       <div class="card-body">
-        <span class="article-label" style="margin-bottom:8px;">節約術</span>
-        <h3 class="card-title">食費を月2万円削減した主婦が実践する「買い物リスト」の作り方</h3>
-        <p class="card-excerpt">衝動買いをゼロにして無駄な食材ロスを防ぐ、計画的な食材管理のコツを徹底解説。AIレシピ提案との組み合わせで、献立悩みも同時に解決します。</p>
-        <div class="card-footer">
-          <span>2026年6月25日</span>
-          <span class="article-meta-tag">節約術</span>
-        </div>
+        <div class="card-cat">家計管理</div>
+        <h3 class="card-title">カテゴリ別予算管理のコツ｜食費・固定費を賢く配分する方法</h3>
+        <p class="card-excerpt">収入別の理想的な予算配分、食費20%ルール、カテゴリごとの無駄を防ぐ具体的な仕組みを解説。</p>
+        <div class="card-footer"><span>2026年6月24日</span><span class="meta-tag">家計管理</span></div>
       </div>
     </a>
 
-    <a href="/blog/ai-recipe-weekly-plan.html" class="article-card">
-      <div class="card-image" style="background: linear-gradient(135deg, #2c3a1a 0%, #1a2a0d 100%);">
-        <span>🍳</span>
-      </div>
+    <a href="/blog/receipt-ocr-how-it-works.html" class="card">
+      <div class="card-img" style="background: linear-gradient(135deg, #1E1A2E 0%, #100D1A 100%);">📸</div>
       <div class="card-body">
-        <span class="article-label" style="margin-bottom:8px;">レシピ</span>
-        <h3 class="card-title">AIが食材から1週間の献立を自動提案！食費と時間を同時に節約する方法</h3>
-        <p class="card-excerpt">冷蔵庫の残り物や買ってきた食材から、栄養バランスのとれた週間献立をAIが自動生成。食材ロスが月平均3,200円分減ったという声も。</p>
-        <div class="card-footer">
-          <span>2026年6月18日</span>
-          <span class="article-meta-tag">レシピ</span>
-        </div>
+        <div class="card-cat">アプリ活用</div>
+        <h3 class="card-title">レシートOCRの仕組みと活用法｜スキャンで家計簿を自動入力</h3>
+        <p class="card-excerpt">撮影から10秒で食材リストへ変換。OCRの精度を上げる撮り方コツとカケイシピのレシピ連携まで。</p>
+        <div class="card-footer"><span>2026年6月17日</span><span class="meta-tag">アプリ活用</span></div>
       </div>
     </a>
 
-    <a href="/blog/budget-category-tips.html" class="article-card">
-      <div class="card-image" style="background: linear-gradient(135deg, #1a2c3a 0%, #0d1a28 100%);">
-        <span>📊</span>
-      </div>
+    <a href="/blog/household-review-monthly.html" class="card">
+      <div class="card-img" style="background: linear-gradient(135deg, #122E22 0%, #091A12 100%);">📅</div>
       <div class="card-body">
-        <span class="article-label" style="margin-bottom:8px;">家計管理</span>
-        <h3 class="card-title">カテゴリ別予算の設定方法｜収入別の目安と「緩くない」見直しタイミング</h3>
-        <p class="card-excerpt">食費・日用品・外食など支出カテゴリごとの予算設定の考え方と、家族構成・収入水準別の現実的な目安金額を解説。</p>
-        <div class="card-footer">
-          <span>2026年6月10日</span>
-          <span class="article-meta-tag">家計管理</span>
-        </div>
+        <div class="card-cat">ライフスタイル</div>
+        <h3 class="card-title">月次家計レビューの習慣化｜毎月30分で改善を継続</h3>
+        <p class="card-excerpt">月末30分のレビューが貯金を3倍にする理由。グラフで見る支出トレンドと翌月の目標設定フロー。</p>
+        <div class="card-footer"><span>2026年6月10日</span><span class="meta-tag">ライフスタイル</span></div>
       </div>
     </a>
 
-    <a href="/blog/receipt-ocr-how-it-works.html" class="article-card">
-      <div class="card-image" style="background: linear-gradient(135deg, #3a1a2c 0%, #280d1a 100%);">
-        <span>🤖</span>
-      </div>
+    <a href="/blog/price-compare-supermarket.html" class="card">
+      <div class="card-img" style="background: linear-gradient(135deg, #2E1A0A 0%, #1A0E04 100%);">🏷️</div>
       <div class="card-body">
-        <span class="article-label" style="margin-bottom:8px;">アプリ活用</span>
-        <h3 class="card-title">AIレシートOCRの仕組みとは？精度を上げるコツと上手な撮り方ガイド</h3>
-        <p class="card-excerpt">スマホのカメラでレシートを撮影するだけで自動入力できるAI技術の仕組みと、より正確に読み取ってもらうための撮影テクニックを紹介。</p>
-        <div class="card-footer">
-          <span>2026年6月3日</span>
-          <span class="article-meta-tag">アプリ活用</span>
-        </div>
+        <div class="card-cat">節約術</div>
+        <h3 class="card-title">スーパーの価格比較で食費を節約｜安い店・特売の賢い活用法</h3>
+        <p class="card-excerpt">スーパーのタイプ別特徴・最安値アラートの使い方・特売品を使い切るレシピ連携まで徹底解説。</p>
+        <div class="card-footer"><span>2026年5月28日</span><span class="meta-tag">節約術</span></div>
       </div>
     </a>
 
-    <a href="/blog/price-compare-supermarket.html" class="article-card">
-      <div class="card-image" style="background: linear-gradient(135deg, #3a2a1a 0%, #281a0d 100%);">
-        <span>🏷️</span>
-      </div>
+    <a href="/blog/savings-improvement.html" class="card">
+      <div class="card-img" style="background: linear-gradient(135deg, #162A16 0%, #0A180A 100%);">💰</div>
       <div class="card-body">
-        <span class="article-label" style="margin-bottom:8px;">節約術</span>
-        <h3 class="card-title">スーパーの価格比較を自動化する方法｜最安値アラートで無駄買いを防ぐ</h3>
-        <p class="card-excerpt">よく買う食品・日用品の価格推移をAIが記録・分析。「今が買い時か」を自動的に教えてくれる最安値アラート機能の活用方法を解説します。</p>
-        <div class="card-footer">
-          <span>2026年5月28日</span>
-          <span class="article-meta-tag">節約術</span>
-        </div>
-      </div>
-    </a>
-
-    <a href="/blog/household-review-monthly.html" class="article-card">
-      <div class="card-image" style="background: linear-gradient(135deg, #1a3a2c 0%, #0d2818 100%);">
-        <span>📅</span>
-      </div>
-      <div class="card-body">
-        <span class="article-label" style="margin-bottom:8px;">ライフスタイル</span>
-        <h3 class="card-title">月次家計レビューの習慣化｜毎月10分で見える家計の「もったいない」を発見</h3>
-        <p class="card-excerpt">月末のわずか10分を使った家計振り返りの習慣が、年間数十万円の差を生む理由。グラフで見る支出トレンドの読み方と改善アクション。</p>
-        <div class="card-footer">
-          <span>2026年5月20日</span>
-          <span class="article-meta-tag">ライフスタイル</span>
-        </div>
-      </div>
-    </a>
-
-    <a href="/blog/savings-improvement.html" class="article-card">
-      <div class="card-image" style="background: linear-gradient(135deg, #1a3a1a 0%, #0d280d 100%);">
-        <span>💰</span>
-      </div>
-      <div class="card-body">
-        <span class="article-label" style="margin-bottom:8px;">節約術</span>
+        <div class="card-cat">節約術</div>
         <h3 class="card-title">節約アプリで貯金を増やす方法｜家計改善・貯蓄アップの実践ガイド</h3>
-        <p class="card-excerpt">食費・固定費の削減から先取り貯蓄まで、節約アプリを使った家計改善の5ステップを解説。取本のレシピ自動作成機能で食費を月1〜2万円節約する方法も紹介。</p>
-        <div class="card-footer">
-          <span>2026年5月19日</span>
-          <span class="article-meta-tag">節約術</span>
-        </div>
+        <p class="card-excerpt">食費・固定費の削減から先取り貯蓄まで、節約アプリを使った家計改善5ステップを解説。</p>
+        <div class="card-footer"><span>2026年5月19日</span><span class="meta-tag">節約術</span></div>
       </div>
     </a>
 
-    <a href="/blog/kakeibo-template-data.html" class="article-card">
-      <div class="card-image" style="background: linear-gradient(135deg, #2c1a3a 0%, #1a0d28 100%);">
-        <span>📁</span>
-      </div>
+    <a href="/blog/kakeibo-template-data.html" class="card">
+      <div class="card-img" style="background: linear-gradient(135deg, #1E162E 0%, #12101A 100%);">📁</div>
       <div class="card-body">
-        <span class="article-label" style="margin-bottom:8px;">家計管理</span>
+        <div class="card-cat">家計管理</div>
         <h3 class="card-title">家計簿テンプレートとデータ管理｜無料テンプレートとWebアプリの使い分け</h3>
-        <p class="card-excerpt">Excelテンプレートとクラウド型家計簿アプリの比較、長期データ管理のメリット、CSVエクスポートを活用した賢い家計データ管理の方法を解説。</p>
-        <div class="card-footer">
-          <span>2026年5月6日</span>
-          <span class="article-meta-tag">家計管理</span>
-        </div>
+        <p class="card-excerpt">ExcelテンプレートとクラウドアプリをCSVエクスポートで賢く組み合わせる方法を解説。</p>
+        <div class="card-footer"><span>2026年5月6日</span><span class="meta-tag">家計管理</span></div>
       </div>
     </a>
 
-    <a href="/blog/spending-analysis.html" class="article-card">
-      <div class="card-image" style="background: linear-gradient(135deg, #1a2a3a 0%, #0d1a28 100%);">
-        <span>📊</span>
+  </div><!-- /grid -->
+
+  <!-- PRICING CTA -->
+  <div class="pricing">
+    <div class="pricing-left">
+      <h2>家計管理とレシピを、<br>ひとつのアプリで。</h2>
+      <p>カケイシピは家計を管理しながら、レシートから自動でレシピを提案。予算内で作れる献立とお買い物リストまでひとつながり。食費を無理なく節約できます。</p>
+      <br>
+      <p style="font-size:.82rem;color:rgba(255,255,255,.5);">※ 予算からのレシピ作成には買い物履歴が必要です</p>
+    </div>
+    <div class="pricing-card">
+      <span class="pricing-badge">スタンダードプラン</span>
+      <div class="pricing-amount">
+        <span class="yen">¥</span><span class="num">980</span><span class="per"> / 月</span>
       </div>
-      <div class="card-body">
-        <span class="article-label" style="margin-bottom:8px;">家計管理</span>
-        <h3 class="card-title">支出管理アプリで家計分析｜月別・カテゴリ別・年間支出を自動集計する方法</h3>
-        <p class="card-excerpt">支出を月別・カテゴリ別・年間でグラフ化し、収入と支出を見える化する家計分析の方法を解説。食費節約にはレシピ自動作成機能が特に効果的。</p>
-        <div class="card-footer">
-          <span>2026年4月22日</span>
-          <span class="article-meta-tag">家計管理</span>
-        </div>
-      </div>
+      <p class="pricing-note">初月無料・いつでも解約可能</p>
+      <ul class="pricing-features">
+        <li><span class="ck">✓</span> レシートOCRで自動入力（無制限）</li>
+        <li><span class="ck">✓</span> 買い物した食材からレシピ自動作成</li>
+        <li><span class="ck">✓</span> 予算設定 → レシピ → お買い物リスト</li>
+        <li><span class="ck">✓</span> カテゴリ別予算管理・グラフ分析</li>
+        <li><span class="ck">✓</span> 最安値アラート・価格比較</li>
+        <li><span class="ck">✓</span> CSVエクスポート</li>
+      </ul>
+      <a href="/index.html" class="pricing-cta">今すぐ無料で試す</a>
+    </div>
+  </div>
+
+  <!-- MORE ARTICLES -->
+  <div class="sec-head">
+    <h2>その他の記事</h2>
+    <div class="sec-line"></div>
+  </div>
+
+  <div class="more-grid">
+
+    <a href="/blog/spending-analysis.html" class="mini-card">
+      <span class="mini-icon">📊</span>
+      <div class="mini-cat">家計管理</div>
+      <div class="mini-title">支出管理アプリで家計分析｜月別・カテゴリ別を自動集計</div>
+      <div class="mini-date">2026年4月22日</div>
     </a>
 
-    <a href="/blog/login-free-kakeibo.html" class="article-card">
-      <div class="card-image" style="background: linear-gradient(135deg, #1a3a2a 0%, #0d2818 100%);">
-        <span>🔓</span>
-      </div>
-      <div class="card-body">
-        <span class="article-label" style="margin-bottom:8px;">アプリ活用</span>
-        <h3 class="card-title">ログイン不要の家計簿 vs Googleログイン型｜オンライン家計簿の使い分け</h3>
-        <p class="card-excerpt">ログイン不要の家計簿アプリとGoogleアカウントで使うオンライン家計簿の違いを比較。データの安全性、複数デバイス対応、機能面での差異を解説。</p>
-        <div class="card-footer">
-          <span>2026年4月8日</span>
-          <span class="article-meta-tag">アプリ活用</span>
-        </div>
-      </div>
+    <a href="/blog/login-free-kakeibo.html" class="mini-card">
+      <span class="mini-icon">🔓</span>
+      <div class="mini-cat">アプリ活用</div>
+      <div class="mini-title">ログイン不要の家計簿 vs Googleログイン型の比較</div>
+      <div class="mini-date">2026年4月8日</div>
     </a>
 
-    <a href="/blog/receipt-kakeibo-basics.html" class="article-card">
-      <div class="card-image" style="background: linear-gradient(135deg, #2a1a3a 0%, #180d28 100%);">
-        <span>🧾</span>
-      </div>
-      <div class="card-body">
-        <span class="article-label" style="margin-bottom:8px;">家計管理</span>
-        <h3 class="card-title">レシートを撮るだけ！AI家計簿で始める「続けられる」節約習慣</h3>
-        <p class="card-excerpt">家計簿が続かない理由の9割は「入力が面倒だから」。AIがレシートを自動解析して記録してくれると、驚くほど続けやすくなります。</p>
-        <div class="card-footer">
-          <span>2026年7月1日</span>
-          <span class="article-meta-tag">家計管理</span>
-        </div>
-      </div>
+    <a href="/blog/food-cost-cut-20000.html" class="mini-card">
+      <span class="mini-icon">🛒</span>
+      <div class="mini-cat">節約術</div>
+      <div class="mini-title">食費を月2万円削減した主婦の「買い物リスト」の作り方</div>
+      <div class="mini-date">2026年6月25日</div>
     </a>
 
-  </div><!-- /articles-grid -->
+    <a href="/blog/ai-recipe-weekly-plan.html" class="mini-card">
+      <span class="mini-icon">🍳</span>
+      <div class="mini-cat">レシピ</div>
+      <div class="mini-title">AIが食材から1週間の献立を自動提案する方法</div>
+      <div class="mini-date">2026年6月18日</div>
+    </a>
 
-  <!-- NEWSLETTER -->
-  <div class="newsletter-section">
-    <h2>節約・家計管理のヒントを<br>毎週お届け</h2>
-    <p>週1回、役立つ家計管理テクニックと取本の新機能情報をメールでお届けします。</p>
-    <form class="newsletter-form" onsubmit="handleNewsletter(event)">
-      <input type="email" class="newsletter-input" placeholder="メールアドレスを入力" />
-      <button type="submit" class="newsletter-btn">登録する</button>
-    </form>
+    <a href="/blog/receipt-kakeibo-basics.html" class="mini-card">
+      <span class="mini-icon">🧾</span>
+      <div class="mini-cat">家計管理</div>
+      <div class="mini-title">レシートを撮るだけ！AI家計簿の基本ガイド</div>
+      <div class="mini-date">2026年7月1日</div>
+    </a>
+
+    <a href="/blog/no-ads-kakeibo.html" class="mini-card">
+      <span class="mini-icon">🚫</span>
+      <div class="mini-cat">アプリ活用</div>
+      <div class="mini-title">広告なし家計簿アプリの選び方とメリット</div>
+      <div class="mini-date">2026年6月1日</div>
+    </a>
+
+    <a href="/blog/family-kakeibo.html" class="mini-card">
+      <span class="mini-icon">👨‍👩‍👧</span>
+      <div class="mini-cat">ライフスタイル</div>
+      <div class="mini-title">家族で共有できる家計簿の選び方</div>
+      <div class="mini-date">2026年5月15日</div>
+    </a>
+
+    <a href="/blog/kakeibo-app-compare.html" class="mini-card">
+      <span class="mini-icon">⚖️</span>
+      <div class="mini-cat">アプリ活用</div>
+      <div class="mini-title">家計簿アプリ比較2026｜無料・有料を徹底比較</div>
+      <div class="mini-date">2026年5月1日</div>
+    </a>
+
   </div>
 
 </main>
 
 <!-- FOOTER -->
-<footer class="footer">
-  <div class="footer-links">
+<footer class="ft">
+  <div class="ft-logo"><span class="fk">カケイ</span><span class="fs">シピ</span></div>
+  <nav class="ft-links">
     <a href="/">ホーム</a>
     <a href="/blog.html">ブログ</a>
-    <a href="/#pricing">料金プラン</a>
-    <a href="/#faq">よくある質問</a>
-  </div>
-  <p>© 2026 取本（とほん） · AIレシート家計簿</p>
+    <a href="/lp.html">アプリについて</a>
+    <a href="/index.html">ログイン</a>
+  </nav>
+  <p>© 2026 カケイシピ</p>
 </footer>
 
 <script>
-  // Category filter
-  document.querySelectorAll('.cat-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  document.querySelectorAll(".tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
     });
   });
-
-  function handleNewsletter(e) {
-    e.preventDefault();
-    const input = e.target.querySelector('input');
-    if (input.value) {
-      e.target.innerHTML = '<p style="color:#5DE898;font-weight:600;">✓ 登録が完了しました！次回のメールをお楽しみに。</p>';
-    }
-  }
 </script>
 </body>
 </html>
