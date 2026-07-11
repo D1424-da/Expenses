@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIが食材から1週間の献立を自動提案！食費と時間を同時に節約する方法 - 取本ブログ</title>
+  <meta name="description" content="冷蔵庫の残り物や買ってきた食材から、栄養バランスのとれた週間献立をAIが自動生成。食材ロスが月平均3,200円分減ったという声も。" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-deep:  #1E5C3A;
+      --green-mid:   #2D7D52;
+      --green-light: #D4ECD9;
+      --green-pale:  #F0F8F2;
+      --orange:      #E8621A;
+      --orange-dark: #C4511A;
+      --bg:          #F7FAF8;
+      --surface:     #FFFFFF;
+      --border:      #D6E8DB;
+      --ink:         #0F2318;
+      --ink-sub:     #4A6355;
+      --ink-muted:   #8AAA96;
+      --shadow:      0 2px 16px rgba(30,92,58,.10);
+      --shadow-lg:   0 8px 40px rgba(30,92,58,.16);
+      --radius:      14px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0C1A11; --surface: #132219; --border: #1E3D2A;
+        --ink: #E4EDE7; --ink-sub: #8ABFA0; --ink-muted: #4A7A5C;
+        --green-pale: #0F2318;
+        --shadow: 0 2px 16px rgba(0,0,0,.4);
+        --shadow-lg: 0 8px 40px rgba(0,0,0,.5);
+      }
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Hiragino Sans", "Noto Sans CJK JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+      background: var(--bg); color: var(--ink); line-height: 1.7; font-size: 16px;
+    }
+
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(30,92,58,.96); backdrop-filter: blur(12px);
+      padding: 0 24px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-logo {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+      font-size: 1.25rem; font-weight: 700; color: #fff;
+      letter-spacing: .04em; text-decoration: none;
+    }
+    .header-logo span { font-size: .75rem; opacity: .7; margin-left: 6px; font-weight: 400; }
+    .header-nav { display: flex; align-items: center; gap: 20px; }
+    .header-nav a { color: rgba(255,255,255,.8); text-decoration: none; font-size: .875rem; }
+    .header-nav a:hover { color: #fff; }
+    .header-cta {
+      background: var(--orange); color: #fff; border: none;
+      border-radius: 100px; padding: 8px 20px; font-size: .875rem;
+      font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap;
+    }
+
+    .article-hero {
+      background: linear-gradient(135deg, #2c3a1a 0%, #1a2a0d 100%);
+      padding: 64px 24px 80px; position: relative; overflow: hidden;
+    }
+    .article-hero::after {
+      content: ""; position: absolute; bottom: -2px; left: 0; right: 0;
+      height: 60px; background: var(--bg);
+      clip-path: ellipse(60% 100% at 50% 100%);
+    }
+    .article-hero-inner { max-width: 760px; margin: 0 auto; }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-size: .78rem; color: rgba(255,255,255,.6); margin-bottom: 24px;
+    }
+    .breadcrumb a { color: rgba(255,255,255,.6); text-decoration: none; }
+    .breadcrumb span { opacity: .5; }
+    .article-category {
+      display: inline-block;
+      background: rgba(255,255,255,.15); color: #a8d8bb;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 100px; padding: 4px 14px;
+      font-size: .78rem; letter-spacing: .06em; margin-bottom: 20px;
+    }
+    .article-hero h1 {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700; color: #fff; line-height: 1.35; margin-bottom: 24px;
+    }
+    .article-meta-hero {
+      display: flex; align-items: center; gap: 20px;
+      font-size: .85rem; color: rgba(255,255,255,.6);
+    }
+
+    .content-wrap {
+      max-width: 1080px; margin: 0 auto;
+      padding: 60px 24px 100px;
+      display: grid; grid-template-columns: 1fr 300px;
+      gap: 48px; align-items: start;
+    }
+    .article-body { min-width: 0; }
+    .lead {
+      font-size: 1.05rem; color: var(--ink-sub); line-height: 1.9;
+      margin-bottom: 40px; padding-left: 16px;
+      border-left: 3px solid var(--green-mid);
+    }
+    .article-body h2 {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+      font-size: 1.4rem; font-weight: 700; color: var(--ink);
+      margin: 48px 0 20px; padding-bottom: 12px;
+      border-bottom: 2px solid var(--green-light);
+    }
+    .article-body h3 { font-size: 1.1rem; font-weight: 700; color: var(--green-deep); margin: 32px 0 12px; }
+    .article-body p { color: var(--ink-sub); line-height: 1.9; margin-bottom: 20px; }
+    .article-body strong { color: var(--ink); }
+    .article-body ul, .article-body ol { padding-left: 24px; margin-bottom: 20px; }
+    .article-body li { color: var(--ink-sub); line-height: 1.8; margin-bottom: 6px; }
+
+    .tip-box {
+      background: var(--green-pale); border: 1px solid var(--green-light);
+      border-left: 4px solid var(--green-mid);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 20px 24px; margin: 32px 0;
+    }
+    .tip-box-label { font-size: .75rem; font-weight: 700; color: var(--green-mid); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+    .tip-box p { margin: 0; color: var(--ink-sub); font-size: .9rem; }
+
+    .benefit-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 16px; margin: 32px 0;
+    }
+    .benefit-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow);
+    }
+    .benefit-icon { font-size: 1.8rem; margin-bottom: 10px; display: block; }
+    .benefit-title { font-size: .95rem; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .benefit-desc { font-size: .82rem; color: var(--ink-sub); line-height: 1.6; }
+
+    .menu-example {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow); margin: 32px 0;
+    }
+    .menu-example-header {
+      background: var(--green-deep); color: #fff;
+      padding: 12px 20px; font-size: .875rem; font-weight: 600;
+    }
+    .menu-day {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+    }
+    .menu-day:last-child { border-bottom: none; }
+    .menu-day-label {
+      width: 40px; height: 40px; border-radius: 8px;
+      background: var(--green-pale); color: var(--green-mid);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .85rem; flex-shrink: 0;
+    }
+    .menu-day-content { flex: 1; }
+    .menu-day-title { font-size: .9rem; font-weight: 600; color: var(--ink); }
+    .menu-day-desc { font-size: .78rem; color: var(--ink-muted); }
+    .menu-day-time {
+      font-size: .75rem; color: var(--green-mid); font-weight: 600;
+      background: var(--green-pale); padding: 2px 8px;
+      border-radius: 4px; white-space: nowrap;
+    }
+
+    .how-to-steps {
+      counter-reset: step;
+      margin: 24px 0;
+    }
+    .how-to-step {
+      display: flex; gap: 20px; margin-bottom: 28px; align-items: flex-start;
+    }
+    .step-circle {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--green-deep); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .9rem; flex-shrink: 0;
+    }
+    .step-body h4 { font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .step-body p { margin: 0; font-size: .875rem; color: var(--ink-sub); line-height: 1.7; }
+
+    .voice-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 4px solid var(--green-mid);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 20px 24px; margin: 32px 0; box-shadow: var(--shadow);
+    }
+    .voice-text { font-size: .95rem; color: var(--ink-sub); line-height: 1.8; margin-bottom: 12px; font-style: italic; }
+    .voice-author { font-size: .82rem; color: var(--ink-muted); }
+
+    .cta-block {
+      background: var(--green-deep); border-radius: 20px;
+      padding: 40px; text-align: center; margin: 48px 0;
+    }
+    .cta-block h3 { font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.4rem; color: #fff; margin-bottom: 12px; }
+    .cta-block p { color: #a8d8bb; font-size: .9rem; margin-bottom: 24px; }
+    .btn-cta {
+      display: inline-block; background: var(--orange); color: #fff;
+      border-radius: 100px; padding: 14px 36px; font-size: 1rem;
+      font-weight: 700; text-decoration: none; transition: background .15s, transform .1s;
+    }
+    .btn-cta:hover { background: var(--orange-dark); transform: translateY(-2px); }
+
+    .sidebar { position: sticky; top: 80px; }
+    .sidebar-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px;
+    }
+    .sidebar-card h4 { font-size: .9rem; font-weight: 700; color: var(--ink); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .toc-list { list-style: none; }
+    .toc-list li { margin-bottom: 8px; }
+    .toc-list a { font-size: .85rem; color: var(--ink-sub); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .toc-list a::before { content: "·"; color: var(--green-mid); font-size: 1.2rem; }
+    .toc-list a:hover { color: var(--green-mid); }
+    .related-article { display: flex; gap: 12px; align-items: center; text-decoration: none; margin-bottom: 16px; }
+    .related-article:last-child { margin-bottom: 0; }
+    .related-icon { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+    .related-title { font-size: .82rem; font-weight: 600; color: var(--ink); line-height: 1.4; }
+    .related-meta { font-size: .75rem; color: var(--ink-muted); margin-top: 2px; }
+
+    .footer { background: var(--green-deep); color: rgba(255,255,255,.7); text-align: center; padding: 32px 24px; font-size: .85rem; }
+    .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 16px; flex-wrap: wrap; }
+    .footer a { color: rgba(255,255,255,.6); text-decoration: none; }
+    .footer a:hover { color: #fff; }
+
+    @media (max-width: 900px) {
+      .content-wrap { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .benefit-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) { .header-nav { display: none; } }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <a href="/" class="header-logo">取本 <span>とほん</span></a>
+  <nav class="header-nav">
+    <a href="/">ホーム</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/#pricing">料金</a>
+  </nav>
+  <a href="/index.html" class="header-cta">無料で始める</a>
+</header>
+
+<section class="article-hero">
+  <div class="article-hero-inner">
+    <div class="breadcrumb">
+      <a href="/">ホーム</a>
+      <span>›</span>
+      <a href="/blog.html">ブログ</a>
+      <span>›</span>
+      <span>レシピ</span>
+    </div>
+    <span class="article-category">レシピ</span>
+    <h1>AIが食材から1週間の献立を自動提案！<br>食費と時間を同時に節約する方法</h1>
+    <div class="article-meta-hero">
+      <span>📅 2026年6月18日</span>
+      <span>⏱ 読了時間：約5分</span>
+      <span>👁 4,120 views</span>
+    </div>
+  </div>
+</section>
+
+<div class="content-wrap">
+
+  <article class="article-body">
+
+    <p class="lead">
+      「今日の晩ご飯どうしよう…」と毎日悩んでいる方に朗報です。AIが冷蔵庫の食材や家族の人数・嗜好を考慮して、1週間分の献立を丸ごと提案してくれます。献立悩みがなくなるだけでなく、食材の使い切りで食費も大幅節約。取本のAIレシピ機能の活用法を詳しくご紹介します。
+    </p>
+
+    <h2 id="benefits">AIレシピ提案で得られる3つのメリット</h2>
+
+    <div class="benefit-grid">
+      <div class="benefit-card">
+        <span class="benefit-icon">⏱</span>
+        <div class="benefit-title">献立考える時間をゼロに</div>
+        <div class="benefit-desc">毎日「今日何作ろう」と悩む時間が消えます。1週間分まとめて提案してもらえば、週1回5分の作業で献立が完成。</div>
+      </div>
+      <div class="benefit-card">
+        <span class="benefit-icon">🥦</span>
+        <div class="benefit-title">食材ロスが激減する</div>
+        <div class="benefit-desc">冷蔵庫の残り食材を使い切る献立を提案するので「腐らせてしまった」が起きにくくなります。月平均3,200円の節約効果。</div>
+      </div>
+      <div class="benefit-card">
+        <span class="benefit-icon">🥗</span>
+        <div class="benefit-title">栄養バランスが改善する</div>
+        <div class="benefit-desc">家族構成・年齢に合わせた栄養バランスを考慮した提案。「気づいたら野菜が増えてた」という声が多数。</div>
+      </div>
+      <div class="benefit-card">
+        <span class="benefit-icon">💰</span>
+        <div class="benefit-title">食費の予測が立てやすくなる</div>
+        <div class="benefit-desc">週の献立が決まれば、必要な食材と買い物予算が事前に分かります。無駄な出費がなくなります。</div>
+      </div>
+    </div>
+
+    <h2 id="how-it-works">AIレシピ機能の使い方</h2>
+
+    <div class="how-to-steps">
+      <div class="how-to-step">
+        <div class="step-circle">1</div>
+        <div class="step-body">
+          <h4>食材を入力する（またはレシートから自動取込）</h4>
+          <p>冷蔵庫にある食材を入力します。レシートをスキャンすると、購入した食材が自動で食材リストに追加されるので入力の手間もなし。</p>
+        </div>
+      </div>
+      <div class="how-to-step">
+        <div class="step-circle">2</div>
+        <div class="step-body">
+          <h4>家族の人数・条件を設定する</h4>
+          <p>大人の人数・子どもの年齢・アレルギー・調理時間の上限などを設定。週単位か1食単位かも選べます。</p>
+        </div>
+      </div>
+      <div class="how-to-step">
+        <div class="step-circle">3</div>
+        <div class="step-body">
+          <h4>AIが献立を自動生成</h4>
+          <p>数秒で週間献立（または1食分のレシピ）が完成。材料・手順・栄養情報が一覧で表示されます。</p>
+        </div>
+      </div>
+      <div class="how-to-step">
+        <div class="step-circle">4</div>
+        <div class="step-body">
+          <h4>買い物リストに変換する</h4>
+          <p>献立が決まったら「買い物リスト生成」ボタンで、不足食材のリストを自動作成。スーパーへ持っていくだけ。</p>
+        </div>
+      </div>
+    </div>
+
+    <h2 id="sample-menu">AIが提案する週間献立の例（3人家族の場合）</h2>
+
+    <div class="menu-example">
+      <div class="menu-example-header">🍱 AIが提案した1週間の献立（食材：鶏もも・小松菜・にんじん・豆腐・卵 etc.）</div>
+      <div class="menu-day">
+        <div class="menu-day-label">月</div>
+        <div class="menu-day-content">
+          <div class="menu-day-title">鶏もも肉の照り焼き＋小松菜の胡麻和え＋みそ汁</div>
+          <div class="menu-day-desc">鶏もも肉・小松菜・豆腐・えのき使用</div>
+        </div>
+        <div class="menu-day-time">⏱ 25分</div>
+      </div>
+      <div class="menu-day">
+        <div class="menu-day-label">火</div>
+        <div class="menu-day-content">
+          <div class="menu-day-title">野菜たっぷりカレーライス</div>
+          <div class="menu-day-desc">にんじん・玉ねぎ・じゃがいも・豚バラ使用</div>
+        </div>
+        <div class="menu-day-time">⏱ 35分</div>
+      </div>
+      <div class="menu-day">
+        <div class="menu-day-label">水</div>
+        <div class="menu-day-content">
+          <div class="menu-day-title">豆腐ハンバーグ＋ポテトサラダ</div>
+          <div class="menu-day-desc">豆腐・ひき肉・じゃがいも・きゅうり使用</div>
+        </div>
+        <div class="menu-day-time">⏱ 30分</div>
+      </div>
+      <div class="menu-day">
+        <div class="menu-day-label">木</div>
+        <div class="menu-day-content">
+          <div class="menu-day-title">卵と小松菜の炒め物＋わかめスープ</div>
+          <div class="menu-day-desc">卵・小松菜・わかめ使用（残り食材を一掃）</div>
+        </div>
+        <div class="menu-day-time">⏱ 15分</div>
+      </div>
+      <div class="menu-day">
+        <div class="menu-day-label">金</div>
+        <div class="menu-day-content">
+          <div class="menu-day-title">さけの塩焼き＋なめこ汁＋ひじきの煮物</div>
+          <div class="menu-day-desc">さけ・なめこ・ひじき（乾物活用）</div>
+        </div>
+        <div class="menu-day-time">⏱ 20分</div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-box-label">POINT</div>
+      <p>「木曜日の献立が残り食材を一掃するメニュー」になっているのがポイント。AIが週末に向けて冷蔵庫をリセットする設計をしてくれます。</p>
+    </div>
+
+    <h2 id="voices">ユーザーの声</h2>
+
+    <div class="voice-card">
+      <div class="voice-text">「毎日の献立を考えるのが本当に苦痛だったんですが、AIに任せるようになって全然ストレスがなくなりました。しかも食材ロスが激減して、先月は食費が3,800円も少なかったです！」</div>
+      <div class="voice-author">— 30代女性・2人の子どものお母さん</div>
+    </div>
+
+    <div class="voice-card">
+      <div class="voice-text">「単身赴任中です。料理のレパートリーが少なくてワンパターンになりがちだったのが、AIが毎週違う提案をしてくれるので飽きなくなりました。栄養も気にしてくれるのがありがたい。」</div>
+      <div class="voice-author">— 40代男性・単身赴任中</div>
+    </div>
+
+    <h2 id="tips">より活用するためのコツ</h2>
+    <ul>
+      <li><strong>週に1回、日曜日にまとめてセット</strong>：週の始めに設定しておくと月曜から迷わない</li>
+      <li><strong>「使い切りモード」を活用</strong>：消費期限が近い食材を優先して使い切るメニューを提案してくれる機能</li>
+      <li><strong>気に入ったレシピを「保存」する</strong>：後から繰り返し使えるマイレシピ集を作れる</li>
+      <li><strong>家族の好みを学習させる</strong>：「この料理は好き/嫌い」をフィードバックすると提案がどんどん最適化される</li>
+      <li><strong>調理時間フィルタを使う</strong>：忙しい曜日は「15分以内」に設定して手軽なメニューだけを提案させる</li>
+    </ul>
+
+    <div class="cta-block">
+      <h3>今夜の献立、AIに任せてみませんか？</h3>
+      <p>食材を入力するだけで今夜のメニューが決まります。完全無料でお試しいただけます。</p>
+      <a href="/index.html" class="btn-cta">無料で試してみる →</a>
+    </div>
+
+  </article>
+
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <h4>目次</h4>
+      <ul class="toc-list">
+        <li><a href="#benefits">AIレシピで得られる3つのメリット</a></li>
+        <li><a href="#how-it-works">AIレシピ機能の使い方</a></li>
+        <li><a href="#sample-menu">週間献立の例</a></li>
+        <li><a href="#voices">ユーザーの声</a></li>
+        <li><a href="#tips">より活用するためのコツ</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-card">
+      <h4>関連記事</h4>
+      <a href="/blog/receipt-kakeibo-basics.html" class="related-article">
+        <div class="related-icon" style="background: linear-gradient(135deg, #1E5C3A 0%, #0a2c1a 100%);">🧾</div>
+        <div>
+          <div class="related-title">レシートを撮るだけ！AI家計簿で始める節約習慣</div>
+          <div class="related-meta">2026年7月1日</div>
+        </div>
+      </a>
+      <a href="/blog/food-cost-cut-20000.html" class="related-article">
+        <div class="related-icon" style="background: linear-gradient(135deg, #1a4a2e 0%, #0d2618 100%);">🛒</div>
+        <div>
+          <div class="related-title">食費を月2万円削減した主婦の「買い物リスト」術</div>
+          <div class="related-meta">2026年6月25日</div>
+        </div>
+      </a>
+      <a href="/blog/budget-category-tips.html" class="related-article">
+        <div class="related-icon" style="background: linear-gradient(135deg, #1a2c3a 0%, #0d1a28 100%);">📊</div>
+        <div>
+          <div class="related-title">カテゴリ別予算の設定方法と目安</div>
+          <div class="related-meta">2026年6月10日</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="sidebar-card" style="background: var(--green-deep); border-color: transparent;">
+      <h4 style="color: #fff; border-color: rgba(255,255,255,.2);">無料で始める</h4>
+      <p style="font-size: .85rem; color: #a8d8bb; margin-bottom: 16px;">AIレシピ提案・レシートスキャン・家計分析がすべて無料。</p>
+      <a href="/index.html" style="display:block; background: var(--orange); color: #fff; text-align: center; border-radius: 100px; padding: 10px 20px; font-size: .875rem; font-weight: 700; text-decoration: none;" onmouseover="this.style.background='#C4511A'" onmouseout="this.style.background='#E8621A'">今すぐ無料登録 →</a>
+    </div>
+  </aside>
+
+</div>
+
+<footer class="footer">
+  <div class="footer-links">
+    <a href="/">ホーム</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/#pricing">料金プラン</a>
+  </div>
+  <p>© 2026 取本（とほん） · AIレシート家計簿</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>家計簿初心者でも1日3分でOK！簡単・続く・挫折しない始め方ガイド</title>
+  <meta name="description" content="家計簿が初めての方でも1日3分・週に1回でOK。簡単に始められてズボラでも続く家計簿の始め方を、ステップ別に解説します。" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4)}}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .ah{background:linear-gradient(135deg,#4a3a1a 0%,#281a0d 100%);padding:64px 24px 80px;position:relative;overflow:hidden}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(255,255,255,.15);color:#a8d8bb;border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;line-height:1.35;margin-bottom:24px}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .timeline{position:relative;padding-left:32px;margin:24px 0}
+    .timeline::before{content:"";position:absolute;left:12px;top:0;bottom:0;width:2px;background:var(--gl)}
+    .tl-item{position:relative;margin-bottom:28px}
+    .tl-dot{position:absolute;left:-26px;top:4px;width:14px;height:14px;border-radius:50%;background:var(--gm);border:2px solid var(--bg)}
+    .tl-week{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.06em;margin-bottom:4px}
+    .tl-title{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:4px}
+    .tl-desc{font-size:.85rem;color:var(--is)}
+    .time-box{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px 24px;margin:24px 0;box-shadow:var(--sh);display:flex;align-items:center;gap:20px}
+    .time-num{font-size:2.4rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1;flex-shrink:0}
+    .time-desc{font-size:.9rem;color:var(--is)}
+    .cb{background:var(--gd);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}}
+    @media(max-width:600px){.hn{display:none}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a href="/" class="hl">取本 <span>とほん</span></a>
+  <nav class="hn"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金</a></nav>
+  <a href="/index.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <div class="bc"><a href="/">ホーム</a><span>›</span><a href="/blog.html">ブログ</a><span>›</span><span>初心者の家計簿</span></div>
+    <span class="ac">初心者・簡単家計簿</span>
+    <h1>家計簿初心者でも1日3分でOK！<br>簡単・続く・挫折しない始め方ガイド</h1>
+    <div class="am"><span>📅 2026年7月3日</span><span>⏱ 読了時間：約5分</span><span>👁 5,620 views</span></div>
+  </div>
+</section>
+
+<div class="cw">
+<article class="ab">
+<p class="ld">「家計簿を始めたいけど何から手をつければ？」「以前やろうとしたけど3日で挫折した」という方へ。家計簿は最初から完璧にやろうとするから続かないのです。1日3分・週1回の入力で十分な家計簿の始め方を、初心者向けにわかりやすく解説します。</p>
+
+<h2 id="mindset">始める前に知っておきたい「初心者のマインドセット」</h2>
+<p>家計簿初心者がやりがちな失敗は「最初から完璧を目指す」ことです。全支出を記録しようとする、1円単位まで合わせようとする、毎日必ず入力しようとする…これらはすべて挫折を招きます。</p>
+
+<div class="tb"><div class="tl">初心者の鉄則</div><p>「ざっくり把握」で十分です。細かい金額は気にしなくてOK。大まかな支出の傾向がわかれば、節約のヒントは自然に見えてきます。</p></div>
+
+<h3>「3分家計簿」の考え方</h3>
+<p>1日3分というのは「1日に使う時間が3分以内に収まる」という意味です。毎日入力する必要はありません。週1回まとめて入力するなら、1週間分のレシートを5〜10分でスキャンすれば完成です。</p>
+
+<div class="time-box">
+  <div class="time-num">3分</div>
+  <div class="time-desc">1日あたりに換算した家計簿入力時間の目安。週1回まとめてスキャンすれば、日割りで1〜3分で収まります。</div>
+</div>
+
+<h2 id="first-month">最初の1ヶ月でやることは3つだけ</h2>
+<ol>
+  <li><strong>レシートをもらう習慣をつける</strong>（コンビニでも必ずレシートをもらう）</li>
+  <li><strong>週末に5分でまとめてスキャン</strong>（毎日やらなくていい）</li>
+  <li><strong>月末に合計だけ確認する</strong>（細かい分析は不要。合計金額を見るだけ）</li>
+</ol>
+<p>これだけでOKです。最初の1ヶ月は「記録すること」だけに集中してください。節約は翌月からで十分です。</p>
+
+<h2 id="step-by-step">初心者のための週次スケジュール</h2>
+
+<div class="timeline">
+  <div class="tl-item">
+    <div class="tl-dot"></div>
+    <div class="tl-week">Week 1</div>
+    <div class="tl-title">アカウント登録と最初のスキャン</div>
+    <div class="tl-desc">取本に登録（30秒）→ その日のレシートをスキャン→ 「記録できた！」という達成感を味わう</div>
+  </div>
+  <div class="tl-item">
+    <div class="tl-dot"></div>
+    <div class="tl-week">Week 2</div>
+    <div class="tl-title">週次スキャン習慣を作る</div>
+    <div class="tl-desc">日曜の夜にその週のレシートをまとめてスキャン。「5分で終わる」という感覚を体験する</div>
+  </div>
+  <div class="tl-item">
+    <div class="tl-dot"></div>
+    <div class="tl-week">Week 3〜4</div>
+    <div class="tl-title">月次グラフを確認する</div>
+    <div class="tl-desc">月末にカテゴリ別グラフを確認。「外食が多かった」「日用品が少ない」という傾向を把握するだけでOK</div>
+  </div>
+  <div class="tl-item">
+    <div class="tl-dot"></div>
+    <div class="tl-week">2ヶ月目〜</div>
+    <div class="tl-title">カテゴリ別予算を設定する</div>
+    <div class="tl-desc">1ヶ月分のデータが溜まったら、現状の支出を参考に予算を設定。最初は現状の110%くらいの余裕ある予算から</div>
+  </div>
+</div>
+
+<h2 id="qa">初心者のよくある疑問に答えます</h2>
+
+<h3>Q. 現金払いのレシートがない場合は？</h3>
+<p>領収書や手書きメモでも入力できます。また、クレジットカード・Suicaなどの電子マネー払いは明細から確認してまとめて入力する方法が楽です。「現金払いは大まかな金額だけ入力する」でも十分です。</p>
+
+<h3>Q. カテゴリ分類がわからなくて手が止まります</h3>
+<p>取本のAIが自動でカテゴリを提案してくれます。提案が間違っていても、最初は修正しなくてOKです。大まかな傾向を把握できれば目的は達成できます。</p>
+
+<h3>Q. 1週間入力できなかったらどうすれば？</h3>
+<p>再開するだけです。家計簿は「途切れたらアウト」ではありません。1ヶ月さぼっても、再開したその日から価値が生まれます。</p>
+
+<div class="cb">
+  <h3>今日から3分家計簿を始める</h3>
+  <p>初心者でも安心。入力はレシートを撮るだけ。難しい操作は一切なし。完全無料でスタートできます。</p>
+  <a href="/index.html" class="bc2">無料で始める →</a>
+</div>
+</article>
+
+<aside class="sb">
+  <div class="sbc">
+    <h4>目次</h4>
+    <ul class="toc">
+      <li><a href="#mindset">初心者のマインドセット</a></li>
+      <li><a href="#first-month">最初の1ヶ月でやること3つ</a></li>
+      <li><a href="#step-by-step">週次スケジュール</a></li>
+      <li><a href="#qa">よくある疑問</a></li>
+    </ul>
+  </div>
+  <div class="sbc">
+    <h4>関連記事</h4>
+    <a href="/blog/simple-kakeibo-continue.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#1a4a3a 0%,#0d2828 100%)">✨</div>
+      <div><div class="rt">シンプルだから続く！面倒じゃない家計簿の作り方</div><div class="rm">2026年7月4日</div></div>
+    </a>
+    <a href="/blog/receipt-kakeibo-basics.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#1E5C3A 0%,#0a2c1a 100%)">🧾</div>
+      <div><div class="rt">レシートを撮るだけ！AI家計簿で始める節約習慣</div><div class="rm">2026年7月1日</div></div>
+    </a>
+    <a href="/blog/money-visible-savings.html" class="ra">
+      <div class="ri" style="background:linear-gradient(135deg,#4a1a1a 0%,#280d0d 100%)">💰</div>
+      <div><div class="rt">お金の見える化で貯金を増やす実践ステップ</div><div class="rm">2026年6月15日</div></div>
+    </a>
+  </div>
+  <div class="sbc" style="background:var(--gd);border-color:transparent">
+    <h4 style="color:#fff;border-color:rgba(255,255,255,.2)">初心者でも簡単</h4>
+    <p style="font-size:.85rem;color:#a8d8bb;margin-bottom:16px">レシートを撮るだけで自動入力。難しい操作はゼロです。</p>
+    <a href="/index.html" style="display:block;background:var(--or);color:#fff;text-align:center;border-radius:100px;padding:10px 20px;font-size:.875rem;font-weight:700;text-decoration:none">今すぐ無料登録 →</a>
+  </div>
+</aside>
+</div>
+
+<footer class="ft">
+  <div class="fl"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金プラン</a></div>
+  <p>© 2026 取本（とほん） · AIレシート家計簿</p>
+</footer>
+</body>
+</html>

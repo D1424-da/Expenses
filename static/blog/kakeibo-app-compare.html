@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>家計簿アプリ比較2026年版｜マネーフォワード・Zaim・Moneytree・とほんを徹底比較</title>
+  <meta name="description" content="マネーフォワードME・Zaim・Moneytree・とほんを料金・機能・使いやすさで徹底比較。無料家計簿アプリ選びで後悔しないための完全ガイド2026年版。" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#1a2a3a 0%,#0d1520 100%);padding:64px 24px 80px;position:relative;overflow:hidden}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(255,255,255,.15);color:#a8c8e0;border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;line-height:1.35;margin-bottom:24px}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
+    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
+    .su{font-size:.85rem;color:var(--im);margin-top:4px}
+    .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:32px 0}
+    .cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+    .ci{font-size:1.8rem;margin-bottom:10px;display:block}
+    .ct{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px}
+    .cd{font-size:.82rem;color:var(--is);line-height:1.6}
+    .cb{background:var(--gd);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    /* comparison table */
+    .ct-wrap{overflow-x:auto;margin:32px 0}
+    .ct-tbl{width:100%;border-collapse:collapse;font-size:.88rem}
+    .ct-tbl th{background:var(--gd);color:#fff;padding:12px 16px;text-align:center;white-space:nowrap}
+    .ct-tbl th:first-child{text-align:left}
+    .ct-tbl td{padding:12px 16px;border-bottom:1px solid var(--bd);color:var(--is);text-align:center;vertical-align:top}
+    .ct-tbl td:first-child{text-align:left;font-weight:600;color:var(--ink);white-space:nowrap}
+    .ct-tbl tr:nth-child(even) td{background:var(--gp)}
+    .ct-tbl .hi{color:var(--gm);font-weight:700}
+    .ct-tbl .lo{color:#c0392b}
+    .badge-tohon{background:var(--or);color:#fff;border-radius:100px;padding:2px 8px;font-size:.72rem;font-weight:700;white-space:nowrap}
+    .app-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;margin-bottom:20px;box-shadow:var(--sh)}
+    .app-card-hd{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+    .app-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
+    .app-name{font-size:1.05rem;font-weight:700;color:var(--ink)}
+    .app-tag{font-size:.72rem;color:var(--im);margin-top:2px}
+    .app-pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    .pros,.cons{background:var(--gp);border-radius:8px;padding:12px 14px}
+    .pros{border-left:3px solid var(--gm)}
+    .cons{border-left:3px solid #e0916a}
+    .pc-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;margin-bottom:6px}
+    .pros .pc-label{color:var(--gm)}
+    .cons .pc-label{color:#c4511a}
+    .pros ul,.cons ul{list-style:none;padding:0;margin:0}
+    .pros li,.cons li{font-size:.82rem;color:var(--is);line-height:1.7;margin-bottom:2px}
+    .pros li::before{content:"✓ ";color:var(--gm)}
+    .cons li::before{content:"✗ ";color:#c4511a}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}.app-pros-cons{grid-template-columns:1fr}}
+    @media(max-width:600px){.hn{display:none}.sg{grid-template-columns:1fr}.ct-tbl th,.ct-tbl td{padding:8px 10px;font-size:.8rem}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a href="/" class="hl">取本 <span>とほん</span></a>
+  <nav class="hn"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/#pricing">料金</a></nav>
+  <a href="/index.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <div class="bc"><a href="/">ホーム</a><span>›</span><a href="/blog.html">ブログ</a><span>›</span><span>家計簿アプリ比較</span></div>
+    <span class="ac">無料家計簿アプリ比較2026</span>
+    <h1>家計簿アプリ比較2026年版｜マネーフォワード・Zaim・Moneytree・とほんを徹底比較</h1>
+    <div class="am"><span>📅 2026年6月30日</span><span>⏱ 読了時間：約7分</span><span>👁 3,140 views</span></div>
+  </div>
+</section>
+
+<div class="cw">
+<article class="ab">
+<p class="ld">「マネーフォワードとZaim、どっちが自分に合ってるの？」「無料で使い続けられるアプリはある？」——家計簿アプリを選ぶとき、選択肢が多すぎて迷ってしまう方のために、主要4サービスを料金・機能・使いやすさで比較しました。あなたの生活スタイルに合う1つが見つかります。</p>
+
+<h2 id="overview">比較する4つのアプリ</h2>
+<p>今回比較するのはダウンロード数・知名度・機能の異なる4つのサービスです。</p>
+
+<div class="sg">
+  <div class="sc"><div class="sn">4</div><div class="su">比較アプリ数</div></div>
+  <div class="sc"><div class="sn">無料</div><div class="su">基本機能の価格帯</div></div>
+  <div class="sc"><div class="sn">2026</div><div class="su">最新情報に基づく比較</div></div>
+</div>
+
+<h2 id="table">一目でわかる比較表</h2>
+<p>まず全体像を表で確認しましょう。</p>
+
+<div class="ct-wrap">
+<table class="ct-tbl">
+  <thead>
+    <tr>
+      <th>比較項目</th>
+      <th>マネーフォワードME</th>
+      <th>Zaim</th>
+      <th>Moneytree</th>
+      <th>とほん <span class="badge-tohon">おすすめ</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>基本料金（月額）</td>
+      <td class="lo">無料〜<br />月500円</td>
+      <td>無料〜<br />月360円</td>
+      <td>無料〜<br />月500円</td>
+      <td class="hi">完全無料</td>
+    </tr>
+    <tr>
+      <td>口座自動連携</td>
+      <td>◎ 対応（有料）</td>
+      <td>○ 対応（有料）</td>
+      <td>◎ 対応（有料）</td>
+      <td>△ 非対応</td>
+    </tr>
+    <tr>
+      <td>レシート読み取り（AI）</td>
+      <td>○ 対応</td>
+      <td>○ 対応</td>
+      <td>△ 非対応</td>
+      <td class="hi">◎ AI自動読み取り</td>
+    </tr>
+    <tr>
+      <td>広告表示</td>
+      <td class="lo">あり（無料版）</td>
+      <td class="lo">あり（無料版）</td>
+      <td>ほぼなし</td>
+      <td class="hi">完全広告なし</td>
+    </tr>
+    <tr>
+      <td>ログイン方法</td>
+      <td>メール登録</td>
+      <td>メール登録</td>
+      <td>メール登録</td>
+      <td class="hi">Googleワンクリック</td>
+    </tr>
+    <tr>
+      <td>ブラウザ（PC）対応</td>
+      <td>○ 対応</td>
+      <td>○ 対応</td>
+      <td>○ 対応</td>
+      <td class="hi">◎ ブラウザメイン</td>
+    </tr>
+    <tr>
+      <td>無料版の記録件数制限</td>
+      <td class="lo">直近1年分</td>
+      <td>無制限</td>
+      <td>無制限</td>
+      <td class="hi">無制限</td>
+    </tr>
+    <tr>
+      <td>グラフ・分析</td>
+      <td>◎ 豊富（有料で全機能）</td>
+      <td>○ 基本あり</td>
+      <td>○ 基本あり</td>
+      <td>○ 月別グラフあり</td>
+    </tr>
+    <tr>
+      <td>インストール不要</td>
+      <td>△ アプリ推奨</td>
+      <td>△ アプリ推奨</td>
+      <td>△ アプリ推奨</td>
+      <td class="hi">◎ ブラウザのみ</td>
+    </tr>
+    <tr>
+      <td>こんな人におすすめ</td>
+      <td>銀行連携を<br />重視する人</td>
+      <td>レシート手入力が<br />多い人</td>
+      <td>資産全体を<br />管理したい人</td>
+      <td class="hi">手軽に<br />始めたい人</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="mf">マネーフォワードMEの特徴と評価</h2>
+
+<div class="app-card">
+  <div class="app-card-hd">
+    <div class="app-icon" style="background:#003087;color:#fff">💳</div>
+    <div>
+      <div class="app-name">マネーフォワードME</div>
+      <div class="app-tag">銀行・カード連携に強い定番アプリ</div>
+    </div>
+  </div>
+  <p style="font-size:.88rem;color:var(--is);margin-bottom:12px">国内最大手クラスの家計簿アプリ。銀行口座・クレジットカード・電子マネーなど2,500以上の金融機関と連携できるのが最大の強みです。</p>
+  <div class="app-pros-cons">
+    <div class="pros">
+      <div class="pc-label">メリット</div>
+      <ul>
+        <li>金融機関連携が業界最多水準</li>
+        <li>自動入力で入力の手間が少ない</li>
+        <li>グラフ・分析機能が豊富</li>
+        <li>資産管理も同時にできる</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <div class="pc-label">デメリット</div>
+      <ul>
+        <li>無料版は直近1年分しか見られない</li>
+        <li>無料版に広告が多い</li>
+        <li>月額プレミアム料金が発生する</li>
+        <li>登録・設定に時間がかかる</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<p><strong>こんな人に向いています：</strong>複数の銀行口座やクレジットカードを使っていて、自動で家計を把握したい方。共働きで収入源が多い方。投資・資産管理も同時にやりたい方。</p>
+
+<div class="tb"><div class="tl">注意点</div><p>2024年から無料プランの機能が縮小され、連携口座数が4件までに制限されています。複数口座を管理するには有料プラン（月額500円〜）が実質必要です。</p></div>
+
+<h2 id="zaim">Zaimの特徴と評価</h2>
+
+<div class="app-card">
+  <div class="app-card-hd">
+    <div class="app-icon" style="background:#00a99d;color:#fff">🧾</div>
+    <div>
+      <div class="app-name">Zaim</div>
+      <div class="app-tag">レシート撮影と手入力のバランス型</div>
+    </div>
+  </div>
+  <p style="font-size:.88rem;color:var(--is);margin-bottom:12px">レシートの写真から自動入力できる機能が人気。シンプルな操作性で初心者からも使いやすいと評判です。</p>
+  <div class="app-pros-cons">
+    <div class="pros">
+      <div class="pc-label">メリット</div>
+      <ul>
+        <li>レシート読み取り精度が高い</li>
+        <li>無料で記録件数制限なし</li>
+        <li>カテゴリのカスタマイズが柔軟</li>
+        <li>予算管理機能がわかりやすい</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <div class="pc-label">デメリット</div>
+      <ul>
+        <li>無料版に広告バナーがある</li>
+        <li>銀行連携は有料プランのみ</li>
+        <li>長期データの分析は有料</li>
+        <li>アプリのインストールが必要</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<p><strong>こんな人に向いています：</strong>スーパーのレシートを主な入力方法にしたい方。手入力が中心でシンプルに使いたい方。月予算をきっちり管理したい方。</p>
+
+<h2 id="moneytree">Moneytreeの特徴と評価</h2>
+
+<div class="app-card">
+  <div class="app-card-hd">
+    <div class="app-icon" style="background:#2d5f2d;color:#fff">🌲</div>
+    <div>
+      <div class="app-name">Moneytree</div>
+      <div class="app-tag">資産一覧・広告少なめのスマートアプリ</div>
+    </div>
+  </div>
+  <p style="font-size:.88rem;color:var(--is);margin-bottom:12px">デザインがシンプルで広告が少なく、資産の全体像を把握するのに優れています。ビジネス利用向けの展開もあり、使い勝手が好みを分けます。</p>
+  <div class="app-pros-cons">
+    <div class="pros">
+      <div class="pc-label">メリット</div>
+      <ul>
+        <li>広告がほとんどない</li>
+        <li>UIがシンプルで見やすい</li>
+        <li>証券・年金なども連携可能</li>
+        <li>データのセキュリティが高い</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <div class="pc-label">デメリット</div>
+      <ul>
+        <li>手動入力には不向き</li>
+        <li>レシート読み取り非対応</li>
+        <li>日本語サポートに課題がある場合も</li>
+        <li>家計管理よりも資産管理寄り</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<p><strong>こんな人に向いています：</strong>銀行・証券を自動連携して資産全体を一覧したい方。家計というより「資産管理」をしたい方。広告が苦手な方（連携型サービスのため）。</p>
+
+<h2 id="tohon">とほんの特徴と評価</h2>
+
+<div class="app-card">
+  <div class="app-card-hd">
+    <div class="app-icon" style="background:#1E5C3A;color:#fff">🌿</div>
+    <div>
+      <div class="app-name">とほん</div>
+      <div class="app-tag">レシートAI読み取り × 完全無料 × 広告なし</div>
+    </div>
+  </div>
+  <p style="font-size:.88rem;color:var(--is);margin-bottom:12px">「レシートを撮るだけ」で家計簿がつけられるWebアプリ。インストール不要でブラウザから使えて、Googleアカウントで30秒登録。広告なし・完全無料で毎日の記録が続きやすいのが特徴です。</p>
+  <div class="app-pros-cons">
+    <div class="pros">
+      <div class="pc-label">メリット</div>
+      <ul>
+        <li>完全無料・広告ゼロ</li>
+        <li>AIがレシートを自動で読み取る</li>
+        <li>インストール不要（ブラウザのみ）</li>
+        <li>Googleワンクリックで即スタート</li>
+        <li>月別グラフで支出を可視化</li>
+        <li>価格比較機能でお得な買い物</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <div class="pc-label">デメリット</div>
+      <ul>
+        <li>銀行口座の自動連携は非対応</li>
+        <li>証券・投資の管理はできない</li>
+        <li>機能はシンプル（複雑な分析は不向き）</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="tb"><div class="tl">POINT</div><p>「毎月銀行明細を見てもよくわからない」「レシートをためてしまいがち」という方には、とほんのように撮影するだけで記録できるアプリが続けやすいです。</p></div>
+
+<h2 id="choose">あなたに合うアプリはどれ？</h2>
+<p>4つのアプリを比べると、それぞれが異なるユーザー像に向けて設計されていることがわかります。</p>
+
+<div class="cg">
+  <div class="cc">
+    <span class="ci">💳</span>
+    <div class="ct">マネーフォワードME が向いている人</div>
+    <div class="cd">収入が複数あり、銀行・カードを自動連携したい。月500円払ってでも手間を省きたい。投資・ローンも一緒に管理したい。</div>
+  </div>
+  <div class="cc">
+    <span class="ci">🧾</span>
+    <div class="ct">Zaim が向いている人</div>
+    <div class="cd">スーパーのレシートをこまめに記録したい。カテゴリ分けにこだわりたい。無料で続けたいが広告は我慢できる。</div>
+  </div>
+  <div class="cc">
+    <span class="ci">🌲</span>
+    <div class="ct">Moneytree が向いている人</div>
+    <div class="cd">資産の全体像を把握したい。証券・保険・年金もまとめて管理したい。広告のないスマートなUIを好む。</div>
+  </div>
+  <div class="cc">
+    <span class="ci">🌿</span>
+    <div class="ct">とほん が向いている人</div>
+    <div class="cd">まず日々の買い物をシンプルに記録したい。インストール不要・広告なしで手軽に始めたい。レシートを撮るだけで使えるものを探している。</div>
+  </div>
+</div>
+
+<h2 id="free-compare">無料プランを本音で比べると…</h2>
+<p>「無料で使いたい」という方には、各アプリの無料プランの実態を把握することが大切です。</p>
+
+<h3>マネーフォワードME 無料版の実態</h3>
+<p>口座連携は4件まで、過去のデータは1年分まで閲覧可能です。無料版には広告が表示され、一部分析機能も制限されています。日常使いには十分ですが、連携口座が多い方は有料プランが必要になるケースがほとんどです。</p>
+
+<h3>Zaim 無料版の実態</h3>
+<p>記録件数の制限はなく、基本的なカテゴリ分析・グラフは無料で使えます。ただし無料版には広告バナーが表示され、銀行連携は有料プランのみ対応です。手動入力中心であれば無料でも十分活用できます。</p>
+
+<h3>Moneytree 無料版の実態</h3>
+<p>無料でも多くの金融機関と連携でき、広告も少ないのが魅力です。一方で手動入力やレシート記録には対応していないため、「現金派」の方には使い勝手が良くないことがあります。</p>
+
+<h3>とほん 無料版（＝唯一の版）の実態</h3>
+<p><strong>とほんは有料プランが存在せず、すべての機能が永続的に無料</strong>です。広告もなく、月30件までの記録制限はありますが、多くの方の日常使いに対応しています。記録30件を超える場合はプレミアムオプションで制限を解除できます（一度きりの課金）。</p>
+
+<div class="cb">
+  <h3>とほんを無料で試してみませんか？</h3>
+  <p>インストール不要・Googleアカウントで30秒登録。広告なしでレシートを撮るだけで家計管理が始められます。</p>
+  <a href="/index.html" class="bc2">今すぐ無料で始める</a>
+</div>
+
+<h2 id="faq">よくある質問</h2>
+
+<h3>Q. 結局どれが一番おすすめですか？</h3>
+<p>目的によって変わります。<strong>銀行・カード連携重視ならマネーフォワードME</strong>、<strong>レシート手入力重視ならZaim</strong>、<strong>資産一覧重視ならMoneytree</strong>、<strong>シンプルにレシート記録から始めたいならとほん</strong>がおすすめです。</p>
+
+<h3>Q. 複数のアプリを併用してもいいですか？</h3>
+<p>もちろん可能ですが、入力の手間が倍になるため続かなくなる方が多いです。まず1つに絞り、3か月続けてみることをおすすめします。</p>
+
+<h3>Q. 初めて家計簿をつける人はどれから始めればいい？</h3>
+<p>設定の手間が少なく、すぐ始められるアプリからスタートするのがコツです。とほんはGoogleアカウントのワンクリックで始められ、レシートを撮るだけで記録できるので、初心者の方でも続けやすいと好評です。</p>
+
+<h3>Q. iPhoneでもAndroidでも使えますか？</h3>
+<p>マネーフォワード・Zaim・MoneytreeはいずれもiOS・Android両対応のアプリがあります。とほんはブラウザベースのWebアプリなので、スマホ・PC・タブレットのブラウザから機種を問わず利用できます。</p>
+
+</article>
+
+<aside class="sb">
+  <div class="sbc">
+    <h4>目次</h4>
+    <ul class="toc">
+      <li><a href="#overview">比較する4つのアプリ</a></li>
+      <li><a href="#table">一目でわかる比較表</a></li>
+      <li><a href="#mf">マネーフォワードME</a></li>
+      <li><a href="#zaim">Zaim</a></li>
+      <li><a href="#moneytree">Moneytree</a></li>
+      <li><a href="#tohon">とほん</a></li>
+      <li><a href="#choose">あなたに合うアプリは？</a></li>
+      <li><a href="#free-compare">無料プランの実態</a></li>
+      <li><a href="#faq">よくある質問</a></li>
+    </ul>
+  </div>
+
+  <div class="sbc">
+    <h4>関連記事</h4>
+    <a href="/blog/no-ads-kakeibo.html" class="ra">
+      <div class="ri" style="background:#e8f5ee">🚫</div>
+      <div>
+        <div class="rt">広告なし家計簿アプリ2026年版</div>
+        <div class="rm">ストレスフリーな家計管理</div>
+      </div>
+    </a>
+    <a href="/blog/web-kakeibo-free.html" class="ra">
+      <div class="ri" style="background:#e8f0f8">🌐</div>
+      <div>
+        <div class="rt">無料Webブラウザ家計簿の選び方</div>
+        <div class="rm">インストール不要で使えるサービス</div>
+      </div>
+    </a>
+    <a href="/blog/kakeibo-csv-graph.html" class="ra">
+      <div class="ri" style="background:#f0e8f8">📊</div>
+      <div>
+        <div class="rt">家計簿CSVとグラフ分析の活用法</div>
+        <div class="rm">支出の見える化で節約力アップ</div>
+      </div>
+    </a>
+    <a href="/blog/money-management.html" class="ra">
+      <div class="ri" style="background:#e8f5ee">💰</div>
+      <div>
+        <div class="rt">お金管理と節約術の完全ガイド</div>
+        <div class="rm">月3万円の節約を目指す方法</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="sbc" style="background:var(--gd);border-color:transparent">
+    <h4 style="color:#fff;border-color:rgba(255,255,255,.2)">とほんを試す</h4>
+    <p style="font-size:.82rem;color:#a8d8bb;margin-bottom:16px">広告なし・完全無料・Googleワンクリックで今すぐ始められます</p>
+    <a href="/index.html" style="display:block;background:var(--or);color:#fff;text-align:center;border-radius:100px;padding:10px;font-size:.88rem;font-weight:700;text-decoration:none">無料で始める</a>
+  </div>
+</aside>
+</div>
+
+<footer class="ft">
+  <div class="fl">
+    <a href="/">ホーム</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/#pricing">料金</a>
+    <a href="/privacy.html">プライバシーポリシー</a>
+    <a href="/terms.html">利用規約</a>
+  </div>
+  <p>© 2026 とほん. All rights reserved.</p>
+</footer>
+</body>
+</html>

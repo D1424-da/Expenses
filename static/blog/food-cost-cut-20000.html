@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>食費を月2万円削減した主婦が実践する「買い物リスト」の作り方 - 取本ブログ</title>
+  <meta name="description" content="衝動買いをゼロにして無駄な食材ロスを防ぐ、計画的な食材管理のコツを徹底解説。AIレシピ提案との組み合わせで食費を劇的に削減。" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-deep:  #1E5C3A;
+      --green-mid:   #2D7D52;
+      --green-light: #D4ECD9;
+      --green-pale:  #F0F8F2;
+      --orange:      #E8621A;
+      --orange-dark: #C4511A;
+      --bg:          #F7FAF8;
+      --surface:     #FFFFFF;
+      --border:      #D6E8DB;
+      --ink:         #0F2318;
+      --ink-sub:     #4A6355;
+      --ink-muted:   #8AAA96;
+      --shadow:      0 2px 16px rgba(30,92,58,.10);
+      --shadow-lg:   0 8px 40px rgba(30,92,58,.16);
+      --radius:      14px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0C1A11; --surface: #132219; --border: #1E3D2A;
+        --ink: #E4EDE7; --ink-sub: #8ABFA0; --ink-muted: #4A7A5C;
+        --green-pale: #0F2318;
+        --shadow: 0 2px 16px rgba(0,0,0,.4);
+        --shadow-lg: 0 8px 40px rgba(0,0,0,.5);
+      }
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Hiragino Sans", "Noto Sans CJK JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+      background: var(--bg); color: var(--ink); line-height: 1.7; font-size: 16px;
+    }
+
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(30,92,58,.96); backdrop-filter: blur(12px);
+      padding: 0 24px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-logo {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+      font-size: 1.25rem; font-weight: 700; color: #fff;
+      letter-spacing: .04em; text-decoration: none;
+    }
+    .header-logo span { font-size: .75rem; opacity: .7; margin-left: 6px; font-weight: 400; }
+    .header-nav { display: flex; align-items: center; gap: 20px; }
+    .header-nav a { color: rgba(255,255,255,.8); text-decoration: none; font-size: .875rem; }
+    .header-nav a:hover { color: #fff; }
+    .header-cta {
+      background: var(--orange); color: #fff; border: none;
+      border-radius: 100px; padding: 8px 20px; font-size: .875rem;
+      font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap;
+    }
+    .header-cta:hover { background: var(--orange-dark); }
+
+    .article-hero {
+      background: linear-gradient(135deg, #1a4a2e 0%, #0d2618 100%);
+      padding: 64px 24px 80px;
+      position: relative; overflow: hidden;
+    }
+    .article-hero::after {
+      content: ""; position: absolute; bottom: -2px; left: 0; right: 0;
+      height: 60px; background: var(--bg);
+      clip-path: ellipse(60% 100% at 50% 100%);
+    }
+    .article-hero-inner { max-width: 760px; margin: 0 auto; }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-size: .78rem; color: rgba(255,255,255,.6); margin-bottom: 24px;
+    }
+    .breadcrumb a { color: rgba(255,255,255,.6); text-decoration: none; }
+    .breadcrumb span { opacity: .5; }
+    .article-category {
+      display: inline-block;
+      background: rgba(255,255,255,.15); color: #a8d8bb;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 100px; padding: 4px 14px;
+      font-size: .78rem; letter-spacing: .06em; margin-bottom: 20px;
+    }
+    .article-hero h1 {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700; color: #fff; line-height: 1.35; margin-bottom: 24px;
+    }
+    .article-meta-hero {
+      display: flex; align-items: center; gap: 20px;
+      font-size: .85rem; color: rgba(255,255,255,.6);
+    }
+
+    .content-wrap {
+      max-width: 1080px; margin: 0 auto;
+      padding: 60px 24px 100px;
+      display: grid; grid-template-columns: 1fr 300px;
+      gap: 48px; align-items: start;
+    }
+
+    .article-body { min-width: 0; }
+    .lead {
+      font-size: 1.05rem; color: var(--ink-sub); line-height: 1.9;
+      margin-bottom: 40px; padding-left: 16px;
+      border-left: 3px solid var(--green-mid);
+    }
+    .article-body h2 {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+      font-size: 1.4rem; font-weight: 700; color: var(--ink);
+      margin: 48px 0 20px; padding-bottom: 12px;
+      border-bottom: 2px solid var(--green-light);
+    }
+    .article-body h3 { font-size: 1.1rem; font-weight: 700; color: var(--green-deep); margin: 32px 0 12px; }
+    .article-body p { color: var(--ink-sub); line-height: 1.9; margin-bottom: 20px; }
+    .article-body strong { color: var(--ink); }
+    .article-body ul, .article-body ol { padding-left: 24px; margin-bottom: 20px; }
+    .article-body li { color: var(--ink-sub); line-height: 1.8; margin-bottom: 6px; }
+
+    .tip-box {
+      background: var(--green-pale); border: 1px solid var(--green-light);
+      border-left: 4px solid var(--green-mid);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 20px 24px; margin: 32px 0;
+    }
+    .tip-box-label { font-size: .75rem; font-weight: 700; color: var(--green-mid); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+    .tip-box p { margin: 0; color: var(--ink-sub); font-size: .9rem; }
+
+    .warn-box {
+      background: #fff8f0; border: 1px solid #f8d4b0;
+      border-left: 4px solid var(--orange);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 20px 24px; margin: 32px 0;
+    }
+    .warn-box-label { font-size: .75rem; font-weight: 700; color: var(--orange); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+    .warn-box p { margin: 0; color: var(--ink-sub); font-size: .9rem; }
+    @media (prefers-color-scheme: dark) {
+      .warn-box { background: #1a1208; border-color: #5a3010; }
+    }
+
+    .before-after {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 20px; margin: 32px 0;
+    }
+    .ba-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);
+    }
+    .ba-label {
+      font-size: .75rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; margin-bottom: 12px;
+    }
+    .ba-label.before { color: #b04444; }
+    .ba-label.after { color: var(--green-mid); }
+    .ba-amount { font-size: 2rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .ba-amount.before { color: #b04444; }
+    .ba-amount.after { color: var(--green-mid); }
+    .ba-desc { font-size: .85rem; color: var(--ink-muted); margin-top: 4px; }
+
+    .checklist { list-style: none; padding: 0; margin: 24px 0; }
+    .checklist li {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+      color: var(--ink-sub); font-size: .9rem;
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist li::before {
+      content: "✓"; color: var(--green-mid); font-weight: 700;
+      flex-shrink: 0; margin-top: 2px;
+    }
+
+    .table-wrap { overflow-x: auto; margin: 24px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    th {
+      background: var(--green-deep); color: #fff;
+      padding: 10px 16px; text-align: left; font-weight: 600;
+    }
+    td { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--ink-sub); }
+    tr:nth-child(even) td { background: var(--green-pale); }
+
+    .cta-block {
+      background: var(--green-deep); border-radius: 20px;
+      padding: 40px; text-align: center; margin: 48px 0;
+    }
+    .cta-block h3 { font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.4rem; color: #fff; margin-bottom: 12px; }
+    .cta-block p { color: #a8d8bb; font-size: .9rem; margin-bottom: 24px; }
+    .btn-cta {
+      display: inline-block; background: var(--orange); color: #fff;
+      border-radius: 100px; padding: 14px 36px; font-size: 1rem;
+      font-weight: 700; text-decoration: none; transition: background .15s, transform .1s;
+    }
+    .btn-cta:hover { background: var(--orange-dark); transform: translateY(-2px); }
+
+    .sidebar { position: sticky; top: 80px; }
+    .sidebar-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px;
+    }
+    .sidebar-card h4 { font-size: .9rem; font-weight: 700; color: var(--ink); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .toc-list { list-style: none; }
+    .toc-list li { margin-bottom: 8px; }
+    .toc-list a { font-size: .85rem; color: var(--ink-sub); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .toc-list a::before { content: "·"; color: var(--green-mid); font-size: 1.2rem; }
+    .toc-list a:hover { color: var(--green-mid); }
+    .related-article { display: flex; gap: 12px; align-items: center; text-decoration: none; margin-bottom: 16px; }
+    .related-article:last-child { margin-bottom: 0; }
+    .related-icon { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+    .related-title { font-size: .82rem; font-weight: 600; color: var(--ink); line-height: 1.4; }
+    .related-meta { font-size: .75rem; color: var(--ink-muted); margin-top: 2px; }
+
+    .footer { background: var(--green-deep); color: rgba(255,255,255,.7); text-align: center; padding: 32px 24px; font-size: .85rem; }
+    .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 16px; flex-wrap: wrap; }
+    .footer a { color: rgba(255,255,255,.6); text-decoration: none; }
+    .footer a:hover { color: #fff; }
+
+    @media (max-width: 900px) {
+      .content-wrap { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .before-after { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) { .header-nav { display: none; } }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <a href="/" class="header-logo">取本 <span>とほん</span></a>
+  <nav class="header-nav">
+    <a href="/">ホーム</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/#pricing">料金</a>
+  </nav>
+  <a href="/index.html" class="header-cta">無料で始める</a>
+</header>
+
+<section class="article-hero">
+  <div class="article-hero-inner">
+    <div class="breadcrumb">
+      <a href="/">ホーム</a>
+      <span>›</span>
+      <a href="/blog.html">ブログ</a>
+      <span>›</span>
+      <span>節約術</span>
+    </div>
+    <span class="article-category">節約術</span>
+    <h1>食費を月2万円削減した主婦が実践する<br>「買い物リスト」の作り方</h1>
+    <div class="article-meta-hero">
+      <span>📅 2026年6月25日</span>
+      <span>⏱ 読了時間：約6分</span>
+      <span>👁 5,840 views</span>
+    </div>
+  </div>
+</section>
+
+<div class="content-wrap">
+
+  <article class="article-body">
+
+    <p class="lead">
+      「食費を削りたいけどどこから手をつければ？」という方に朗報です。食費削減の鍵は、買い物に行く「前」にあります。計画的な買い物リストと食材管理を組み合わせることで、無駄買いと食材ロスを同時になくすことができます。3人家族のBさんが実践して月2万円の削減に成功した方法を、ステップ別に解説します。
+    </p>
+
+    <h2 id="before-after">削減前後の比較</h2>
+
+    <div class="before-after">
+      <div class="ba-card">
+        <div class="ba-label before">削減前（月平均）</div>
+        <div class="ba-amount before">¥82,000</div>
+        <div class="ba-desc">3人家族の食費総額<br>うち食材ロス：約¥8,500</div>
+      </div>
+      <div class="ba-card">
+        <div class="ba-label after">削減後（3ヶ月後）</div>
+        <div class="ba-amount after">¥61,000</div>
+        <div class="ba-desc">3人家族の食費総額<br>うち食材ロス：約¥1,200</div>
+      </div>
+    </div>
+
+    <p>
+      最も大きかった変化は<strong>食材ロスの削減（月約7,300円）</strong>と<strong>衝動買いの減少（月約6,500円）</strong>でした。残りの差額は、スーパーの価格比較を意識した購入タイミングの最適化です。
+    </p>
+
+    <h2 id="why-list">なぜ「買い物リスト」がそんなに大事なのか</h2>
+    <p>
+      スーパーに「なんとなく」入ると、目に入ったものを買ってしまいます。特売品や新商品の誘惑は強力です。事前にリストを作っておくと、目的の商品だけを見て買えるため、余計なものをカゴに入れる確率が劇的に下がります。
+    </p>
+
+    <div class="warn-box">
+      <div class="warn-box-label">注意</div>
+      <p>「空腹時のスーパー」は衝動買いの温床です。食後に行くか、買い物リストを必ず持参する習慣をつけましょう。</p>
+    </div>
+
+    <h2 id="how-to-make-list">効果的な買い物リストの作り方</h2>
+
+    <h3>ステップ1：週の献立を先に決める</h3>
+    <p>
+      何を食べるかを先に決めてから買い物に行く「献立先行型」の買い物が最も効果的です。取本のAIレシピ機能では、冷蔵庫の残り食材や家族の人数を入力するだけで、1週間分の献立を自動提案してくれます。
+    </p>
+
+    <h3>ステップ2：食材の在庫を確認する</h3>
+    <p>
+      買い物前に冷蔵庫・冷凍庫・パントリーを確認します。「たぶんある」と思って買ったら2個あった、という重複買いは食材ロスの大きな原因です。
+    </p>
+
+    <h3>ステップ3：カテゴリ別に整理する</h3>
+    <p>
+      リストをスーパーの売り場レイアウトに合わせてカテゴリ分けすると、迷わず効率よく買い物できます。
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>カテゴリ</th>
+            <th>内容例</th>
+            <th>買い過ぎ防止のコツ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>野菜・果物</td>
+            <td>にんじん、玉ねぎ、小松菜</td>
+            <td>使い切れる量だけ。まとめ買いはNG</td>
+          </tr>
+          <tr>
+            <td>肉・魚</td>
+            <td>鶏もも肉、豚バラ、さけ</td>
+            <td>献立に必要な量を計算して購入</td>
+          </tr>
+          <tr>
+            <td>乳製品・卵</td>
+            <td>牛乳、卵、ヨーグルト</td>
+            <td>消費期限を確認してから個数を決める</td>
+          </tr>
+          <tr>
+            <td>調味料・乾物</td>
+            <td>醤油、みりん、パスタ</td>
+            <td>残量を確認してから。1つ在庫が残ってたら買わない</td>
+          </tr>
+          <tr>
+            <td>日用品</td>
+            <td>洗剤、ティッシュ</td>
+            <td>食品と別リストにして混同しない</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="food-waste">食材ロスをゼロに近づける「使い切り」テクニック</h2>
+    <p>
+      食材ロスが多い家庭の特徴は「見えない在庫」があること。冷蔵庫の奥に忘れた食材がある状態です。
+    </p>
+
+    <ul class="checklist">
+      <li>冷蔵庫は「先入れ先出し」：新しい食材は奥、古いものは手前に</li>
+      <li>半端な野菜は「冷凍ストック」に変換：使い切れなかったら冷凍してロスゼロ</li>
+      <li>消費期限3日以内の食材を「今週使い切る食材」コーナーに集める</li>
+      <li>AIレシピ機能で「残り物レシピ」を提案してもらう</li>
+      <li>週1回の冷蔵庫チェックを買い物前の習慣にする</li>
+    </ul>
+
+    <div class="tip-box">
+      <div class="tip-box-label">取本の活用ポイント</div>
+      <p>レシートをスキャンすると、過去の購入履歴から「この食材は最後にいつ買ったか」が分かります。ストック確認の代わりにも使えます。</p>
+    </div>
+
+    <h2 id="price-timing">購入タイミングを最適化して価格差を利用する</h2>
+    <p>
+      同じスーパーでも、同じ商品が曜日・時間帯によって価格が変わることがあります。取本の価格履歴機能を使うと、よく購入する商品の価格推移が見えます。
+    </p>
+    <p>
+      例えば「このヨーグルト、先月は178円で買えたのに今月は218円だ」という気づきが生まれます。特売日を狙って購入するだけで、年間数千円の節約になります。
+    </p>
+
+    <h2 id="one-month-plan">最初の1ヶ月でやること</h2>
+    <ol>
+      <li><strong>Week 1</strong>：今の食費を把握する（レシートをすべてスキャン）</li>
+      <li><strong>Week 2</strong>：献立先行型の買い物を試す（まず週3日から）</li>
+      <li><strong>Week 3</strong>：買い物リストを作り、リスト外は買わないルールを実践</li>
+      <li><strong>Week 4</strong>：食材ロスを記録し、翌月の購入量の見直し</li>
+    </ol>
+
+    <div class="cta-block">
+      <h3>AIが買い物リストを自動作成します</h3>
+      <p>献立を入力するだけで、必要な食材リストをAIが自動生成。まずは無料で試してみてください。</p>
+      <a href="/index.html" class="btn-cta">無料で始める →</a>
+    </div>
+
+  </article>
+
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <h4>目次</h4>
+      <ul class="toc-list">
+        <li><a href="#before-after">削減前後の比較</a></li>
+        <li><a href="#why-list">買い物リストがなぜ大事か</a></li>
+        <li><a href="#how-to-make-list">効果的なリストの作り方</a></li>
+        <li><a href="#food-waste">食材ロスをゼロに近づける技</a></li>
+        <li><a href="#price-timing">購入タイミングの最適化</a></li>
+        <li><a href="#one-month-plan">最初の1ヶ月でやること</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-card">
+      <h4>関連記事</h4>
+      <a href="/blog/receipt-kakeibo-basics.html" class="related-article">
+        <div class="related-icon" style="background: linear-gradient(135deg, #1E5C3A 0%, #0a2c1a 100%);">🧾</div>
+        <div>
+          <div class="related-title">レシートを撮るだけ！AI家計簿で始める節約習慣</div>
+          <div class="related-meta">2026年7月1日</div>
+        </div>
+      </a>
+      <a href="/blog/ai-recipe-weekly-plan.html" class="related-article">
+        <div class="related-icon" style="background: linear-gradient(135deg, #2c3a1a 0%, #1a2a0d 100%);">🍳</div>
+        <div>
+          <div class="related-title">AIが食材から1週間の献立を自動提案</div>
+          <div class="related-meta">2026年6月18日</div>
+        </div>
+      </a>
+      <a href="/blog/budget-category-tips.html" class="related-article">
+        <div class="related-icon" style="background: linear-gradient(135deg, #1a2c3a 0%, #0d1a28 100%);">📊</div>
+        <div>
+          <div class="related-title">カテゴリ別予算の設定方法と目安</div>
+          <div class="related-meta">2026年6月10日</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="sidebar-card" style="background: var(--green-deep); border-color: transparent;">
+      <h4 style="color: #fff; border-color: rgba(255,255,255,.2);">無料で始める</h4>
+      <p style="font-size: .85rem; color: #a8d8bb; margin-bottom: 16px;">レシートを撮るだけで家計が自動管理。完全無料で使い始められます。</p>
+      <a href="/index.html" style="display:block; background: var(--orange); color: #fff; text-align: center; border-radius: 100px; padding: 10px 20px; font-size: .875rem; font-weight: 700; text-decoration: none;" onmouseover="this.style.background='#C4511A'" onmouseout="this.style.background='#E8621A'">今すぐ無料登録 →</a>
+    </div>
+  </aside>
+
+</div>
+
+<footer class="footer">
+  <div class="footer-links">
+    <a href="/">ホーム</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/#pricing">料金プラン</a>
+  </div>
+  <p>© 2026 取本（とほん） · AIレシート家計簿</p>
+</footer>
+
+</body>
+</html>
