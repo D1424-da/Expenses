@@ -3,6 +3,7 @@ import {
   doc, setDoc, onSnapshot,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { $, escapeHtml, openModal, closeModal } from "./dom-utils.js";
+import { dbBase } from "./db-paths.js";
 import { log, logErr } from "./log.js";
 
 let _db, _getUser;
@@ -24,7 +25,7 @@ export function startSync() {
   const user = _getUser();
   if (!user) return;
   _unsub = onSnapshot(
-    _ref(user.uid),
+    _ref(),
     (snap) => {
       _items = snap.exists() ? (snap.data().items || []) : [];
       _updateBadge();
@@ -132,7 +133,7 @@ async function _persist(items) {
   const user = _getUser();
   if (!user) return;
   try {
-    await setDoc(_ref(user.uid), { items });
+    await setDoc(_ref(), { items });
     // onSnapshot が _items と _updateBadge を自動更新するので手動更新不要
   } catch (err) {
     logErr("買い物リスト保存エラー:", err.message, err);
@@ -149,8 +150,8 @@ function _updateBadge() {
   if (badgePc) { badgePc.hidden = count === 0; badgePc.textContent = count > 9 ? "9+" : String(count); }
 }
 
-function _ref(uid) {
-  return doc(_db, "users", uid, "settings", "shoppingList");
+function _ref() {
+  return doc(_db, ...dbBase(), "settings", "shoppingList");
 }
 
 function _uid() {

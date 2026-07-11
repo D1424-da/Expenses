@@ -37,8 +37,11 @@ service cloud.firestore {
     function validMealPlan(d) {
       return d.date is string && d.date.size() <= 10
         && (!('朝食' in d) || (d['朝食'] is string && d['朝食'].size() <= 200))
-        && (!('昼食' in d) || (d['昼食'] is string && d['昼食'].size() <= 200))
+        && (!('お弁当' in d) || (d['お弁当'] is string && d['お弁当'].size() <= 200))
         && (!('夕食' in d) || (d['夕食'] is string && d['夕食'].size() <= 200))
+        && (!('朝食レシピ' in d) || (d['朝食レシピ'] is string && d['朝食レシピ'].size() <= 50000))
+        && (!('お弁当レシピ' in d) || (d['お弁当レシピ'] is string && d['お弁当レシピ'].size() <= 50000))
+        && (!('夕食レシピ' in d) || (d['夕食レシピ'] is string && d['夕食レシピ'].size() <= 50000))
         && (!('savedAt' in d) || d.savedAt is string);
     }
     match /users/{userId}/mealPlans/{mealId} {
@@ -55,6 +58,51 @@ service cloud.firestore {
     match /users/{userId}/savedRecipes/{recipeId} {
       allow read, delete: if isOwner(userId);
       allow create, update: if isOwner(userId) && validRecipe(request.resource.data);
+    }
+  }
+
+  // ---- 世帯共有 ---------------------------------------------------------------
+  // households/{hid} の members 配列に uid が含まれるユーザーのみアクセス可能。
+  match /households/{householdId} {
+    function isHMember() {
+      return request.auth != null && request.auth.uid in resource.data.members;
+    }
+
+    // 既存メンバーのみ読める
+    allow read: if isHMember();
+
+    // 作成: 自分だけを初期メンバーとして作成できる
+    allow create: if request.auth != null
+      && request.resource.data.members.hasOnly([request.auth.uid])
+      && request.resource.data.createdBy == request.auth.uid
+      && request.resource.data.members.size() <= 10;
+
+    // 更新: 既存メンバー OR 新規参加（自分だけを追加、最大10人）
+    allow update: if request.auth != null && (
+      isHMember() ||
+      (request.resource.data.members.hasAll(resource.data.members)
+        && request.resource.data.members.size() <= resource.data.members.size() + 1
+        && request.resource.data.members.size() <= 10)
+    );
+
+    // 削除: 作成者のみ
+    allow delete: if isHMember() && resource.data.createdBy == request.auth.uid;
+
+    match /expenses/{expenseId} {
+      allow read, delete: if isHMember();
+      allow create, update: if isHMember() && validExpense(request.resource.data);
+    }
+    match /settings/{settingId} {
+      allow read: if isHMember();
+      allow write: if isHMember() && validSetting(request.resource.data);
+    }
+    match /mealPlans/{mealId} {
+      allow read, delete: if isHMember();
+      allow create, update: if isHMember() && validMealPlan(request.resource.data);
+    }
+    match /savedRecipes/{recipeId} {
+      allow read, delete: if isHMember();
+      allow create, update: if isHMember() && validRecipe(request.resource.data);
     }
   }
 }

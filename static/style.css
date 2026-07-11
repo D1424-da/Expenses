@@ -977,3 +977,103 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   main { max-width: 1040px; padding: 20px 24px 24px; }
   .pc-nav-inner { padding: 0 24px; }
 }
+
+/* ============================================================
+   LIST FILTER ROW (G-2)
+   ============================================================ */
+.list-filter-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.list-filter-row input[type="search"] {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  font-size: 0.88rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-input);
+  background: var(--stone);
+  color: var(--ink);
+}
+.list-filter-row select {
+  width: auto;
+  flex-shrink: 0;
+  padding: 9px 10px;
+  font-size: 0.83rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-input);
+  background: var(--stone);
+  color: var(--ink);
+}
+.list-filter-count {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: right;
+  margin: -4px 0 8px;
+}
+
+/* ============================================================
+   HOUSEHOLD MODAL (G-5)
+   ============================================================ */
+.household-status-box {
+  padding: 10px 14px;
+  border-radius: var(--r-card-sm);
+  background: var(--sage-light);
+  color: var(--sage);
+  font-size: 0.86rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.household-section {
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+.household-section-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+.household-hint {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+.household-join-row {
+  display: flex;
+  gap: 8px;
+}
+.household-join-row input {
+  flex: 1;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-weight: 700;
+}
+.household-join-row button {
+  flex-shrink: 0;
+  padding: 11px 18px;
+}
+/* inline code span in JS-generated status HTML */
+.household-code-display {
+  display: inline-block;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  color: var(--sage);
+  font-variant-numeric: tabular-nums;
+  background: var(--stone);
+  padding: 2px 10px;
+  border-radius: 6px;
+}
+.household-leave-btn {
+  width: 100%;
+  color: var(--danger);
+  border-color: var(--danger);
+  background: none;
+  font-size: 0.88rem;
+  padding: 10px;
+}
+.household-leave-btn:hover {
+  background: var(--petal);
+}

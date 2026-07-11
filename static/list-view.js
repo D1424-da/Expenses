@@ -1,4 +1,5 @@
 // 店舗別一覧の描画。store → branch → 明細 の3階層でグループ表示する。
+// G-2: setFilter(text, cat) で絞り込みができる。
 import { $, yen, escapeHtml } from "./dom-utils.js";
 
 // イベントデリゲーション用: id → expense オブジェクトのマップ
@@ -6,13 +7,25 @@ let _expenseById = new Map();
 let _onEdit, _onDelete;
 let _delegated = false;
 
+// 絞り込み状態
+let _filterText = "";
+let _filterCat  = "";
+let _lastExpenses = [];
+
+export function setFilter(text, cat) {
+  _filterText = (text || "").toLowerCase();
+  _filterCat  = cat || "";
+  _render(_lastExpenses);
+}
+
 export function renderList(expenses, { onEdit, onDelete }) {
-  const list = $("expense-list");
   _onEdit = onEdit;
   _onDelete = onDelete;
+  _lastExpenses = expenses;
   _expenseById = new Map(expenses.map((e) => [e.id, e]));
 
   // リスナーはリスト要素に1度だけ登録（innerHTML 書き換えで消えない）
+  const list = $("expense-list");
   if (!_delegated) {
     list.addEventListener("click", (ev) => {
       const btn = ev.target.closest("[data-act]");
@@ -25,14 +38,52 @@ export function renderList(expenses, { onEdit, onDelete }) {
     _delegated = true;
   }
 
+  _render(expenses);
+}
+
+function _applyFilter(expenses) {
+  if (!_filterText && !_filterCat) return expenses;
+  return expenses.filter((e) => {
+    if (_filterCat && e.category !== _filterCat) return false;
+    if (_filterText) {
+      const haystack = [
+        e.store, e.branch, e.memo, e.category, e.date,
+        ...(e.items || []).map((it) => it.name),
+      ].filter(Boolean).join(" ").toLowerCase();
+      if (!haystack.includes(_filterText)) return false;
+    }
+    return true;
+  });
+}
+
+function _render(expenses) {
+  const list = $("expense-list");
+  const filtered = _applyFilter(expenses);
+
   list.innerHTML = "";
+
+  const countEl = $("list-filter-count");
+  if (countEl) {
+    if (_filterText || _filterCat) {
+      countEl.textContent = `${filtered.length} / ${expenses.length} 件`;
+      countEl.hidden = false;
+    } else {
+      countEl.hidden = true;
+    }
+  }
+
   $("empty-msg").hidden = expenses.length > 0;
-  if (!expenses.length) return;
+  if (!filtered.length) {
+    if (expenses.length > 0) {
+      list.innerHTML = `<p class="empty">条件に一致する記録がありません。</p>`;
+    }
+    return;
+  }
 
   const totalOf = (arr) => arr.reduce((t, e) => t + (e.amount || 0), 0);
 
   const stores = new Map();
-  for (const e of expenses) {
+  for (const e of filtered) {
     const store = (e.store || "").trim() || "(店名なし)";
     const branch = (e.branch || "").trim();
     if (!stores.has(store)) stores.set(store, { total: 0, count: 0, branches: new Map() });
@@ -54,11 +105,9 @@ export function renderList(expenses, { onEdit, onDelete }) {
           <span class="sg-total">${yen(s.total)}<span class="sg-count">${s.count}件</span></span>
         </div>`;
 
-      // イテレータを配列に展開せず some(Boolean) を評価する
       let hasBranches = false;
       for (const k of s.branches.keys()) { if (k) { hasBranches = true; break; } }
 
-      // totalOf を事前計算してからソート（コンパレータ内での O(m) 繰り返しを排除）
       [...s.branches.entries()]
         .map(([branch, entries]) => ({ branch, entries, total: totalOf(entries) }))
         .sort((a, b) => b.total - a.total)
@@ -83,7 +132,7 @@ export function renderList(expenses, { onEdit, onDelete }) {
 function _renderRow(e, indented) {
   const row = document.createElement("div");
   row.className = "expense-item" + (indented ? " ei-indent" : "");
-  row.dataset.id = e.id; // イベントデリゲーション用
+  row.dataset.id = e.id;
   const memo = e.memo ? ` · ${escapeHtml(e.memo)}` : "";
   const cat = e.category ? `<span class="ei-cat">${escapeHtml(e.category)}</span>` : "";
   const items = e.items || [];

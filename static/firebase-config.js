@@ -3,6 +3,8 @@ export const firebaseConfig = {
   authDomain: "expenses-9af61.firebaseapp.com",
   projectId: "expenses-9af61",
   storageBucket: "expenses-9af61.firebasestorage.app",
+  // TODO(B-3): messagingSenderId と appId 内のプロジェクト番号が不一致（489 vs 499）。
+  // Firebase Console でプロジェクト番号を確認し正しい値に統一すること（FCM使用前に必須）。
   messagingSenderId: "277005147489",
   appId: "1:277005147499:web:f605c0e9b3d669a795b920",
 };

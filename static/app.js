@@ -34,7 +34,7 @@ import { requestBackendOcr, preprocessImage, runClientOcr, prewarmOcr } from "./
 import { TRUSTED_ENGINES, normalizeWithHistory } from "./history.js";
 import { categoryBreakdown, buildPriceHistory, lowestPriceAlerts } from "./stats.js";
 import { initForm, fillForm, resetForm, editExpense, deleteExpense } from "./expense-form.js";
-import { renderList } from "./list-view.js";
+import { renderList, setFilter } from "./list-view.js";
 import { initCalendar, renderCalendar, maybeRefreshDayModal, updateMealPlans } from "./calendar-view.js";
 import { initCompare } from "./compare-view.js";
 import { initRecipe, openRecipeModal } from "./recipe-view.js";
@@ -43,6 +43,8 @@ import { initTrend } from "./trend-view.js";
 import { initSavedRecipes } from "./saved-recipes.js";
 import { initShoppingList, startSync as startShoppingSync, stopSync as stopShoppingSync } from "./shopping-list.js";
 import { initMealPlan, startMealPlanSync, stopMealPlanSync } from "./meal-plan.js";
+import { dbSetUser, dbClearHousehold, dbBase } from "./db-paths.js";
+import { initHousehold, loadHousehold, clearHousehold } from "./household.js";
 
 window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
 window.addEventListener("unhandledrejection", (e) => logErr("未処理のPromise拒否:", e.reason));
@@ -78,6 +80,11 @@ onAuthStateChanged(auth, (user) => {
     if (unsubscribe) unsubscribe();
     stopShoppingSync();
     stopMealPlanSync();
+    // B-1: ログアウト時にキャッシュをクリアして他ユーザーへのデータ漏洩を防ぐ
+    _allExpensesCache = null;
+    _priceHistoryCache = null;
+    clearHousehold();
+    dbClearHousehold();
     $("app").hidden = true;
     $("login-screen").hidden = false;
   }
@@ -137,10 +144,27 @@ $("google-login").onclick = async () => {
 
 // ---- アプリ初期化 ----------------------------------------------------------
 let appInitialized = false;
-function setupApp() {
+async function setupApp() {
+  // G-5: ログインユーザーを db-paths.js に登録し、世帯メンバーシップを確認
+  dbSetUser(currentUser.uid);
+  try {
+    await loadHousehold(currentUser.uid);
+  } catch (err) {
+    logErr("世帯読み込みエラー（個人モードで続行）:", err.message);
+    dbClearHousehold();
+  }
+
   if (!appInitialized) {
     const sel = $("f-category");
     for (const c of CATEGORIES) sel.add(new Option(c, c));
+
+    // G-2: 検索フィルターのカテゴリ選択肢を生成
+    const catFilter = $("list-cat-filter");
+    if (catFilter) {
+      for (const c of CATEGORIES) catFilter.add(new Option(c, c));
+      $("list-search").oninput  = (e) => setFilter(e.target.value, catFilter.value);
+      catFilter.onchange        = (e) => setFilter($("list-search").value, e.target.value);
+    }
 
     initForm({
       db,
@@ -151,15 +175,26 @@ function setupApp() {
     initCalendar({
       onAddExpense: _addCalendarExpense,
       onEdit: editExpense,
-      onDelete: deleteExpense,
+      onDelete: _deleteAndClearCache,
     });
     initCompare({ fetchAllExpenses });
     initRecipe({ getToken: () => currentUser?.getIdToken(), fetchAllExpenses, getBudget });
-    initBudget({ db, getUser: () => currentUser, categories: CATEGORIES, onUpdated: renderSummary });
+    initBudget({
+      db,
+      getUser: () => currentUser,
+      categories: CATEGORIES,
+      onUpdated: renderSummary,
+      getCurrentMonth: () => currentMonth,
+    });
     initTrend({ fetchMonthExpenses });
     initSavedRecipes({ db, getUser: () => currentUser });
     initShoppingList({ db, getUser: () => currentUser });
     initMealPlan({ db, getUser: () => currentUser });
+    initHousehold({
+      db,
+      getUser: () => currentUser,
+      onChanged: _onHouseholdChanged,
+    });
 
     $("logout").onclick = () => { stopShoppingSync(); stopMealPlanSync(); signOut(auth); };
     $("prev-month").onclick = () => shiftMonth(-1);
@@ -177,6 +212,9 @@ function setupApp() {
       initialPeriod: "month",
     });
 
+    // G-1: CSV エクスポート
+    $("export-btn").onclick = _exportCsv;
+
     // PC nav
     $("pcnav-home").onclick     = () => window.scrollTo({ top: 0, behavior: "smooth" });
     $("pcnav-calendar").onclick = () => $("calendar").scrollIntoView({ behavior: "smooth" });
@@ -185,13 +223,21 @@ function setupApp() {
       expenses: currentExpenses,
       initialPeriod: "month",
     });
-    $("pcnav-shopping").onclick = () => $("shopping-btn").click();
-    $("pcnav-saved").onclick    = () => $("saved-recipes-btn").click();
-    $("pcnav-compare").onclick  = () => $("compare-btn").click();
-    $("pcnav-budget").onclick   = () => $("budget-btn").click();
-    $("pcnav-trend").onclick    = () => $("trend-btn").click();
+    $("pcnav-shopping").onclick   = () => $("shopping-btn").click();
+    $("pcnav-saved").onclick      = () => $("saved-recipes-btn").click();
+    $("pcnav-compare").onclick    = () => $("compare-btn").click();
+    $("pcnav-budget").onclick     = () => $("budget-btn").click();
+    $("pcnav-trend").onclick      = () => $("trend-btn").click();
+    $("pcnav-household").onclick  = () => $("household-btn").click();
 
     bindModalDismiss();
+
+    // G-3: Service Worker 登録
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js")
+        .then((r) => log("SW 登録:", r.scope))
+        .catch((err) => logErr("SW 登録失敗:", err.message));
+    }
 
     prewarmOcr();
     appInitialized = true;
@@ -219,7 +265,7 @@ function renderMonth() {
 
 // ---- Firestore -------------------------------------------------------------
 function expensesCol() {
-  return collection(db, "users", currentUser.uid, "expenses");
+  return collection(db, ...dbBase(), "expenses");
 }
 
 async function fetchAllExpenses() {
@@ -232,7 +278,7 @@ async function fetchMonthExpenses(month) {
   const next  = new Date(month.getFullYear(), month.getMonth() + 1, 1);
   const end   = monthKey(next) + "-01";
   const q = query(
-    expensesCol(),
+    collection(db, ...dbBase(), "expenses"),
     where("date", ">=", start),
     where("date", "<",  end),
   );
@@ -246,7 +292,7 @@ function subscribeMonth() {
   const next = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
   const end = monthKey(next) + "-01";
   const q = query(
-    expensesCol(),
+    collection(db, ...dbBase(), "expenses"),
     where("date", ">=", start),
     where("date", "<", end),
     orderBy("date", "desc"),
@@ -330,12 +376,77 @@ async function _addCalendarExpense({ date, store, amount, category }) {
   _jumpToMonthOf(date);
 }
 
+// D-1: 削除時もキャッシュを破棄して最安値アラートが陳腐化しないようにする
+function _deleteAndClearCache(id) {
+  _allExpensesCache = null;
+  _priceHistoryCache = null;
+  deleteExpense(id);
+}
+
 // ---- フォーム保存後のコールバック（expense-form のコールバック） ------------
 function _onFormSaved(dateStr, wasEdit) {
-  // キャッシュは保持（軽微な陳腐化を許容し全件再フェッチを避ける）
+  // D-1: 編集・追加後にキャッシュを破棄（次回アラート表示時に正確な価格を反映）
+  _allExpensesCache = null;
+  _priceHistoryCache = null;
   _jumpToMonthOf(dateStr);
   if (wasEdit) $("expense-list").scrollIntoView({ behavior: "smooth" });
   if (!_advanceQueue()) $("ocr-status").hidden = true;
+}
+
+// ---- G-5: 世帯切替後のリセット ---------------------------------------------
+function _onHouseholdChanged() {
+  // Firestore リスナーを張り直して正しいコレクションを購読する
+  _allExpensesCache = null;
+  _priceHistoryCache = null;
+  if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+  stopShoppingSync();
+  stopMealPlanSync();
+  loadBudget().then(renderSummary);
+  startShoppingSync();
+  startMealPlanSync((map) => {
+    updateMealPlans(map);
+    renderCalendar(currentExpenses, currentMonth);
+    maybeRefreshDayModal();
+  });
+  subscribeMonth();
+}
+
+// ---- G-1: CSV エクスポート --------------------------------------------------
+async function _exportCsv() {
+  const btn = $("export-btn");
+  btn.disabled = true;
+  btn.textContent = "⏳ 準備中…";
+  try {
+    const all = await fetchAllExpenses();
+    const rows = [
+      ["日付", "店名", "支店名", "金額", "カテゴリ", "メモ", "品目名", "品目価格", "OCRエンジン"],
+    ];
+    for (const e of all) {
+      const items = e.items || [];
+      if (!items.length) {
+        rows.push([e.date, e.store || "", e.branch || "", e.amount, e.category || "", e.memo || "", "", "", e.ocrEngine || ""]);
+      } else {
+        for (const it of items) {
+          rows.push([e.date, e.store || "", e.branch || "", e.amount, e.category || "", e.memo || "", it.name || "", it.price || "", e.ocrEngine || ""]);
+        }
+      }
+    }
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\r\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }); // BOM付きでExcel対応
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `家計簿_${monthKey(new Date())}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    log("CSVエクスポート:", all.length, "件");
+  } catch (err) {
+    logErr("CSVエクスポートエラー:", err.message, err);
+    alert("エクスポートに失敗しました: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📥 CSV";
+  }
 }
 
 function _jumpToMonthOf(dateStr) {
