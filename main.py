@@ -197,6 +197,19 @@ async def beta_redeem(
     return JSONResponse({"ok": True})
 
 
+@app.post("/api/stripe/portal")
+async def stripe_portal(
+    authorization: str | None = Header(default=None),
+) -> JSONResponse:
+    """Stripe カスタマーポータル URL を返す（解約・領収書確認用）。Firebase 認証必須。"""
+    uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
+    if not uid:
+        raise HTTPException(401, "認証が必要です。")
+    from app import stripe_billing
+    url = await stripe_billing.create_portal_session(uid)
+    return JSONResponse({"url": url})
+
+
 @app.post("/api/stripe/webhook")
 async def stripe_webhook(
     request: Request,

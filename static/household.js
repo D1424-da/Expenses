@@ -22,7 +22,6 @@ export function initHousehold({ db, getUser, onChanged }) {
   _onChanged = onChanged;
 
   $("household-close").onclick  = () => closeModal("household-modal");
-  $("household-btn").onclick    = _open;
   $("household-create-btn").onclick = _create;
   $("household-join-btn").onclick   = _join;
   $("household-leave-btn").onclick  = _leave;
