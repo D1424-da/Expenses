@@ -292,6 +292,8 @@ main {
   background: var(--petal);
 }
 .alert-title { font-size: 0.78rem; font-weight: 700; color: var(--petal-ink); margin-bottom: 6px; }
+.alert-section { font-size: 0.72rem; font-weight: 700; color: var(--muted); letter-spacing: .05em; margin: 10px 0 4px; padding-top: 8px; border-top: 1px solid var(--border); }
+.alert-section:first-of-type { margin-top: 4px; padding-top: 4px; border-top: none; }
 .alert-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 0.83rem; flex-wrap: wrap; margin-top: 4px; }
 .alert-name { font-weight: 600; color: var(--ink); }
 .alert-detail { color: var(--muted); }
@@ -449,8 +451,18 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .expense-item .ei-amount { font-weight: 700; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
 .expense-item .ei-actions { display: flex; gap: 4px; }
 .expense-item .ei-actions button { padding: 6px 10px; font-size: 0.83rem; }
+/* 明細アコーディオン */
+.expense-item .ei-details { margin-top: 6px; }
+.expense-item .ei-details-summary {
+  font-size: 0.75rem; color: var(--sage); font-weight: 600;
+  cursor: pointer; list-style: none; display: flex; align-items: center; gap: 4px;
+  user-select: none;
+}
+.expense-item .ei-details-summary::before { content: "▶"; font-size: .6rem; transition: transform .15s; }
+.expense-item .ei-details[open] > .ei-details-summary::before { transform: rotate(90deg); }
+.expense-item .ei-details-summary::-webkit-details-marker { display: none; }
 .expense-item .ei-items {
-  list-style: none; margin: 4px 0 0; padding: 0;
+  list-style: none; margin: 6px 0 0; padding: 0;
   display: flex; flex-direction: column; gap: 2px;
 }
 .expense-item .ei-items li {

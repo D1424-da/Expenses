@@ -87,7 +87,7 @@ export function lowestPriceAlerts(priceHistory, thisMonthExpenses) {
       if (!it.name || !it.price) continue;
       const key = normName(it.name);
       if (!thisMonth.has(key)) thisMonth.set(key, { name: it.name, entries: [] });
-      thisMonth.get(key).entries.push({ store: e.store, branch: e.branch, price: it.price, date: e.date });
+      thisMonth.get(key).entries.push({ store: e.store, branch: e.branch, price: it.price, date: e.date, category: e.category || "" });
     }
   }
   if (!thisMonth.size) return [];
@@ -97,7 +97,7 @@ export function lowestPriceAlerts(priceHistory, thisMonthExpenses) {
     const allTimeMin = priceHistory.get(key) ?? Infinity;
     for (const e of entries) {
       if (e.price <= allTimeMin && e.price > 0) {
-        alerts.push({ name, store: e.store, price: e.price, prevMin: allTimeMin });
+        alerts.push({ name, store: e.store, price: e.price, prevMin: allTimeMin, category: e.category });
         break;
       }
     }

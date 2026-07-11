@@ -144,10 +144,13 @@ function _renderRow(e, indented) {
   const cat = e.category ? `<span class="ei-cat">${escapeHtml(e.category)}</span>` : "";
   const items = e.items || [];
   const itemsHtml = items.length
-    ? `<ul class="ei-items">${items.map((it) => {
-        const qty = it.qty != null ? `<span class="ei-item-qty">${escapeHtml(String(it.qty))}${escapeHtml(it.unit || "")}</span>` : "";
-        return `<li><span class="ei-item-name">${escapeHtml(it.name)}</span>${qty}<span class="ei-item-price">${yen(it.price)}</span></li>`;
-      }).join("")}</ul>`
+    ? `<details class="ei-details">
+        <summary class="ei-details-summary">明細 ${items.length}件</summary>
+        <ul class="ei-items">${items.map((it) => {
+          const qty = it.qty != null ? `<span class="ei-item-qty">${escapeHtml(String(it.qty))}${escapeHtml(it.unit || "")}</span>` : "";
+          return `<li><span class="ei-item-name">${escapeHtml(it.name)}</span>${qty}<span class="ei-item-price">${yen(it.price)}</span></li>`;
+        }).join("")}</ul>
+      </details>`
     : "";
   row.innerHTML = `
     <div class="ei-main">
