@@ -28,6 +28,12 @@ service cloud.firestore {
     function validSetting(d) {
       return !('items' in d) || (d.items is list && d.items.size() <= 200);
     }
+    // サブスクリプション状態はバックエンド（Admin SDK）のみ書き込み可能。
+    // フロントからの write を明示的に禁止して不正なプラン昇格を防ぐ。
+    match /users/{userId}/settings/subscription {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
     match /users/{userId}/settings/{settingId} {
       allow read: if isOwner(userId);
       allow write: if isOwner(userId) && validSetting(request.resource.data);

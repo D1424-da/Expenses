@@ -28,7 +28,7 @@ import { firebaseConfig, OCR_API_BASE, CATEGORIES } from "./firebase-config.js";
 import { parseReceipt } from "./parser.js";
 import { log, logErr } from "./log.js";
 import {
-  $, yen, escapeHtml, dayKey, monthKey, monthLabel, renderCatBars, bindModalDismiss,
+  $, yen, escapeHtml, dayKey, monthKey, monthLabel, renderCatBars, bindModalDismiss, openModal,
 } from "./dom-utils.js";
 import { requestBackendOcr, preprocessImage, runClientOcr, prewarmOcr } from "./ocr-client.js";
 import { TRUSTED_ENGINES, normalizeWithHistory } from "./history.js";
@@ -45,10 +45,35 @@ import { initShoppingList, startSync as startShoppingSync, stopSync as stopShopp
 import { initMealPlan, startMealPlanSync, stopMealPlanSync } from "./meal-plan.js";
 import { dbSetUser, dbClearHousehold, dbBase } from "./db-paths.js";
 import { initHousehold, loadHousehold, clearHousehold } from "./household.js";
+import {
+  initBilling, startBillingSync, stopBillingSync,
+  checkGate, renderUsageBar, FREE_LIMIT,
+} from "./stripe-billing.js";
 
 window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
 window.addEventListener("unhandledrejection", (e) => logErr("未処理のPromise拒否:", e.reason));
 log("app.js 読み込み開始");
+
+// Stripe Checkout からのリダイレクト結果を検出してトーストを表示
+(function _handleStripeRedirect() {
+  const params = new URLSearchParams(location.search);
+  const result = params.get("checkout");
+  if (!result) return;
+  history.replaceState(null, "", location.pathname); // URLからパラメータを除去
+  if (result === "success") {
+    const s = document.createElement("div");
+    s.className = "toast toast-success";
+    s.textContent = "🎉 プレミアムプランへようこそ！反映まで少々お待ちください。";
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 6000);
+  } else if (result === "cancel") {
+    const s = document.createElement("div");
+    s.className = "toast";
+    s.textContent = "支払いはキャンセルされました。";
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 4000);
+  }
+})();
 
 // ---- Firebase 初期化 -------------------------------------------------------
 const fbApp = initializeApp(firebaseConfig);
@@ -80,6 +105,7 @@ onAuthStateChanged(auth, (user) => {
     if (unsubscribe) unsubscribe();
     stopShoppingSync();
     stopMealPlanSync();
+    stopBillingSync();
     // B-1: ログアウト時にキャッシュをクリアして他ユーザーへのデータ漏洩を防ぐ
     _allExpensesCache = null;
     _priceHistoryCache = null;
@@ -175,6 +201,7 @@ async function setupApp() {
       getUser: () => currentUser,
       expensesCol,
       onSaved: _onFormSaved,
+      onBeforeSave: () => checkGate(currentExpenses.length),
     });
     initCalendar({
       onAddExpense: _addCalendarExpense,
@@ -199,6 +226,8 @@ async function setupApp() {
       getUser: () => currentUser,
       onChanged: _onHouseholdChanged,
     });
+    initBilling({ db, getUser: () => currentUser });
+    $("usage-bar").querySelector(".usage-upgrade").onclick = () => openModal("upgrade-modal");
 
     $("logout").onclick = () => { stopShoppingSync(); stopMealPlanSync(); signOut(auth); };
     $("prev-month").onclick = () => shiftMonth(-1);
@@ -247,6 +276,7 @@ async function setupApp() {
     appInitialized = true;
   }
   try {
+    startBillingSync();
     await loadBudget();
     renderSummary();
     startShoppingSync();
@@ -334,6 +364,7 @@ function renderSummary() {
   $("summary-total").textContent = yen(total);
   $("summary-count").textContent = currentExpenses.length
     ? `${currentExpenses.length}件の記録` : "記録なし";
+  renderUsageBar(currentExpenses.length);
 
   const bars = $("category-bars");
   const usedBudget = renderBudgetBars(currentExpenses, bars);

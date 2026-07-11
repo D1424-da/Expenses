@@ -172,6 +172,13 @@ async function _handleSubmit(e) {
   e.preventDefault();
   const saveBtn = $("save-btn");
   const id = $("f-id").value;
+
+  // 新規保存のみ課金ゲートを通す（編集は常に許可）
+  if (!id && _ctx.onBeforeSave) {
+    const allowed = await _ctx.onBeforeSave();
+    if (!allowed) return;
+  }
+
   saveBtn.disabled = true;
   saveBtn.textContent = "保存中…";
   try {
