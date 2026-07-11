@@ -59,50 +59,52 @@ service cloud.firestore {
       allow read, delete: if isOwner(userId);
       allow create, update: if isOwner(userId) && validRecipe(request.resource.data);
     }
-  }
 
-  // ---- 世帯共有 ---------------------------------------------------------------
-  // households/{hid} の members 配列に uid が含まれるユーザーのみアクセス可能。
-  match /households/{householdId} {
-    function isHMember() {
-      return request.auth != null && request.auth.uid in resource.data.members;
-    }
+    // ---- 世帯共有 ---------------------------------------------------------------
+    // households/{hid} の members 配列に uid が含まれるユーザーのみアクセス可能。
+    match /households/{householdId} {
+      function isHMember() {
+        return request.auth != null && request.auth.uid in resource.data.members;
+      }
 
-    // 既存メンバーのみ読める
-    allow read: if isHMember();
+      // 認証済みユーザーは招待コード確認のために読める（参加フロー用）
+      allow read: if request.auth != null;
 
-    // 作成: 自分だけを初期メンバーとして作成できる
-    allow create: if request.auth != null
-      && request.resource.data.members.hasOnly([request.auth.uid])
-      && request.resource.data.createdBy == request.auth.uid
-      && request.resource.data.members.size() <= 10;
+      // 作成: 自分だけを初期メンバーとして作成できる
+      allow create: if request.auth != null
+        && request.resource.data.members.hasOnly([request.auth.uid])
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.members.size() <= 10;
 
-    // 更新: 既存メンバー OR 新規参加（自分だけを追加、最大10人）
-    allow update: if request.auth != null && (
-      isHMember() ||
-      (request.resource.data.members.hasAll(resource.data.members)
-        && request.resource.data.members.size() <= resource.data.members.size() + 1
-        && request.resource.data.members.size() <= 10)
-    );
+      // 更新: 既存メンバー OR 新規参加（自分のUIDのみ追加、最大10人）
+      allow update: if request.auth != null && (
+        isHMember() ||
+        (request.resource.data.members.hasAll(resource.data.members)
+          && request.resource.data.members.hasAll([request.auth.uid])
+          && !resource.data.members.hasAll([request.auth.uid])
+          && request.resource.data.members.size() <= resource.data.members.size() + 1
+          && request.resource.data.members.size() <= 10)
+      );
 
-    // 削除: 作成者のみ
-    allow delete: if isHMember() && resource.data.createdBy == request.auth.uid;
+      // 削除: 作成者のみ
+      allow delete: if isHMember() && resource.data.createdBy == request.auth.uid;
 
-    match /expenses/{expenseId} {
-      allow read, delete: if isHMember();
-      allow create, update: if isHMember() && validExpense(request.resource.data);
-    }
-    match /settings/{settingId} {
-      allow read: if isHMember();
-      allow write: if isHMember() && validSetting(request.resource.data);
-    }
-    match /mealPlans/{mealId} {
-      allow read, delete: if isHMember();
-      allow create, update: if isHMember() && validMealPlan(request.resource.data);
-    }
-    match /savedRecipes/{recipeId} {
-      allow read, delete: if isHMember();
-      allow create, update: if isHMember() && validRecipe(request.resource.data);
+      match /expenses/{expenseId} {
+        allow read, delete: if isHMember();
+        allow create, update: if isHMember() && validExpense(request.resource.data);
+      }
+      match /settings/{settingId} {
+        allow read: if isHMember();
+        allow write: if isHMember() && validSetting(request.resource.data);
+      }
+      match /mealPlans/{mealId} {
+        allow read, delete: if isHMember();
+        allow create, update: if isHMember() && validMealPlan(request.resource.data);
+      }
+      match /savedRecipes/{recipeId} {
+        allow read, delete: if isHMember();
+        allow create, update: if isHMember() && validRecipe(request.resource.data);
+      }
     }
   }
 }

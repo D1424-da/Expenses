@@ -18,6 +18,13 @@ export function setFilter(text, cat) {
   _render(_lastExpenses);
 }
 
+export function resetList() {
+  _filterText = "";
+  _filterCat  = "";
+  _lastExpenses = [];
+  _expenseById = new Map();
+}
+
 export function renderList(expenses, { onEdit, onDelete }) {
   _onEdit = onEdit;
   _onDelete = onDelete;
