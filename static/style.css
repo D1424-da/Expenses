@@ -157,6 +157,7 @@ body {
 }
 .topbar-btn:hover { background: var(--border); }
 .topbar-btn--logout { color: var(--muted); }
+.topbar-btn--blog { text-decoration: none; display: inline-flex; align-items: center; }
 
 #shopping-btn, #saved-recipes-btn, #compare-btn {
   background: var(--stone);
