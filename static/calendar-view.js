@@ -401,7 +401,6 @@ function _showDayInlineEdit(id, rowEl) {
         branch:   e.branch || "",
         category: rowEl.querySelector(".ei-f-cat").value,
         memo:     rowEl.querySelector(".ei-f-memo").value.trim(),
-        items:    e.items || [],
       };
       await _onInlineSave?.(id, payload);
       const updated = { ...e, ...payload };
