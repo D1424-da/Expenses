@@ -53,10 +53,11 @@ export function stopBillingSync() {
 // サブスクリプションが有効かどうかを返す。
 export function isPremium() {
   if (!_sub) return false;
-  if (_sub.plan === "beta") return true;
+  // beta プランも status:'active' が必要（status:'cancelled' で失効できるようにする）
+  if (_sub.plan === "beta" && _sub.status === "active") return true;
   if (_sub.status !== "active") return false;
   const end = _sub.currentPeriodEnd;
-  if (end && typeof end === "number" && end < Date.now() / 1000) return false;
+  if (typeof end === "number" && end > 0 && end < Date.now() / 1000) return false;
   return true;
 }
 
@@ -126,6 +127,7 @@ async function _redeemBetaCode() {
     msg.textContent = "❌ " + err.message;
     msg.style.color = "var(--c-err, red)";
     msg.hidden = false;
+  } finally {
     btn.disabled = false;
   }
 }

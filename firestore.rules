@@ -29,14 +29,15 @@ service cloud.firestore {
       return !('items' in d) || (d.items is list && d.items.size() <= 200);
     }
     // サブスクリプション状態はバックエンド（Admin SDK）のみ書き込み可能。
-    // フロントからの write を明示的に禁止して不正なプラン昇格を防ぐ。
+    // Firestore はルールを OR で評価するため、汎用 settings/{settingId} ルール側でも
+    // subscription を明示的に除外する（allow write: if false だけでは不十分）。
     match /users/{userId}/settings/subscription {
       allow read: if isOwner(userId);
       allow write: if false;
     }
     match /users/{userId}/settings/{settingId} {
       allow read: if isOwner(userId);
-      allow write: if isOwner(userId) && validSetting(request.resource.data);
+      allow write: if isOwner(userId) && settingId != "subscription" && validSetting(request.resource.data);
     }
 
     // 週間献立（カレンダー表示用）。ドキュメントIDは日付（YYYY-MM-DD）。
