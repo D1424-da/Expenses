@@ -510,8 +510,103 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   background: none; border: 1.5px solid var(--border); border-radius: var(--r-btn);
   color: var(--muted); cursor: pointer; margin-left: auto;
 }
-.ei-inline-actions .ei-cancel-btn:hover,
-.ei-inline-actions .ei-full-edit-btn:hover { background: var(--stone); }
+.ei-inline-actions .ei-cancel-btn:hover { background: var(--stone); }
+
+/* 明細インライン編集アコーディオン */
+.ei-items-edit-details {
+  margin: 8px 0 4px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+.ei-items-edit-summary {
+  list-style: none;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--sage-deep);
+  background: var(--sage-light);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ei-items-edit-summary::before { content: "▶"; font-size: .58rem; transition: transform .15s; }
+.ei-items-edit-details[open] > .ei-items-edit-summary::before { transform: rotate(90deg); }
+.ei-items-edit-summary::-webkit-details-marker { display: none; }
+.ei-items-edit-body {
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ei-item-edit-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.ei-item-edit-row .ei-item-n {
+  flex: 2;
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 0.82rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-btn);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+}
+.ei-item-edit-row .ei-item-p {
+  flex: 1;
+  min-width: 64px;
+  padding: 6px 8px;
+  font-size: 0.82rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-btn);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+.ei-item-edit-row .ei-item-n:focus,
+.ei-item-edit-row .ei-item-p:focus {
+  border-color: var(--sage);
+  box-shadow: 0 0 0 3px var(--sage-light);
+  outline: none;
+}
+.ei-item-rm {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, color 0.12s;
+}
+.ei-item-rm:hover { background: #fee2e2; color: #dc2626; }
+.ei-item-add {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--sage-deep);
+  background: none;
+  border: 1.5px dashed var(--sage);
+  border-radius: var(--r-btn);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s;
+}
+.ei-item-add:hover { background: var(--sage-light); }
 
 /* 日付モーダルの前後日ナビ */
 .day-nav {
