@@ -64,34 +64,6 @@ _PROMPTS: dict[str, str] = {
 
 ## 火曜日
 ...（以下同様）""",
-
-    "select": """\
-以下の食材を使って、{servings}人前の朝食・昼食・夕食をそれぞれ3パターン提案してください。
-{note}
-
-食材: {items}
-
-【食事の基本方針】
-- 朝食: 軽くてシンプルな和食・洋食（ご飯＋味噌汁、トースト＋卵、ヨーグルト＋フルーツなど）。パスタ・揚げ物・こってり料理は朝食に使わないこと。
-- 昼食: 中程度の食事（丼・麺・サンドイッチなど手軽なもの）。
-- 夕食: メインの料理（しっかりした一品）。
-
-各オプションは「料理名（調理時間の目安）」だけを記載してください。詳細レシピは不要です。
-
-## 朝食
-### ① 料理名（約〇分）
-### ② 料理名（約〇分）
-### ③ 料理名（約〇分）
-
-## 昼食
-### ① 料理名（約〇分）
-### ② 料理名（約〇分）
-### ③ 料理名（約〇分）
-
-## 夕食
-### ① 料理名（約〇分）
-### ② 料理名（約〇分）
-### ③ 料理名（約〇分）""",
 }
 
 
@@ -119,8 +91,6 @@ def suggest_recipes(
     family: dict | None = None,
 ) -> str:
     """食材リストと人数からレシピ提案テキストを返す。"""
-    # select タイプは朝・昼・夜×3のレシピを生成するため応答が長く、タイムアウトを延長する
-    timeout = 120 if recipe_type == "select" else 60
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY が設定されていません。")
@@ -148,7 +118,7 @@ def suggest_recipes(
         "https://generativelanguage.googleapis.com/v1beta/models/"
         f"{GEMINI_MODEL}:generateContent"
     )
-    result = net.post_json(url, body, headers={"x-goog-api-key": api_key}, service="Gemini Recipe API", timeout=timeout)
+    result = net.post_json(url, body, headers={"x-goog-api-key": api_key}, service="Gemini Recipe API")
     try:
         text = result["candidates"][0]["content"]["parts"][0]["text"]
     except (KeyError, IndexError, TypeError):
