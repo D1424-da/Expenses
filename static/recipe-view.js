@@ -402,6 +402,16 @@ async function _suggest() {
   $("recipe-result").hidden = true;
   $("recipe-dish-selector").hidden = true;
 
+  // 週間献立: 開始日〜終了日から日数を計算（最大7日）。未指定なら7日。
+  let days = null;
+  if (_activeType === "weekly") {
+    const start = $("recipe-plan-start").value;
+    const end   = $("recipe-plan-end").value;
+    days = (start && end)
+      ? Math.min(7, Math.max(1, Math.round((new Date(end) - new Date(start)) / 86400000) + 1))
+      : 7;
+  }
+
   try {
     const token = _getToken ? await _getToken() : "";
     const body = JSON.stringify({
@@ -411,6 +421,7 @@ async function _suggest() {
       max_minutes: _maxMinutes || null,
       use_up: _useUp,
       family: _hasFamily() ? _saveFamily() : null,
+      days,
     });
     const headers = {
       "Content-Type": "application/json",
