@@ -14,7 +14,7 @@ GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
 
 _NOTES = {
     "common": "食材の量が不明な場合は、家庭での一般的な使用量を想定してください。",
-    "time":   "調理時間の合計を{max_minutes}分以内に収めてください。",
+    "time":   "各料理（1品・1食）ごとの調理時間を{max_minutes}分以内に収めてください。週全体や複数日の合計ではなく、1品あたりの目安時間です。",
     "use_up": "食材が余らないよう、できるだけすべて使い切ってください。",
 }
 
