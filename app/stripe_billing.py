@@ -82,7 +82,7 @@ async def create_checkout_session(uid: str, email: str) -> str:
         line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
         customer_email=email,
         metadata={"uid": uid},
-        subscription_data={"metadata": {"uid": uid}},
+        subscription_data={"metadata": {"uid": uid}, "trial_period_days": 14},
         success_url=f"{APP_URL}/app?checkout=success",
         cancel_url=f"{APP_URL}/app?checkout=cancel",
         idempotency_key=f"checkout-{uid}-{int(time.time() // 300)}",
