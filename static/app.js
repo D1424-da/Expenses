@@ -198,7 +198,8 @@ async function setupApp() {
     const catFilter = $("list-cat-filter");
     if (catFilter) {
       for (const c of CATEGORIES) catFilter.add(new Option(c, c));
-      $("list-search").oninput  = (e) => setFilter(e.target.value, catFilter.value);
+      const _debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+      $("list-search").oninput  = _debounce((e) => setFilter(e.target.value, catFilter.value), 300);
       catFilter.onchange        = (e) => setFilter($("list-search").value, e.target.value);
     }
 
@@ -327,7 +328,10 @@ function expensesCol() {
 }
 
 async function fetchAllExpenses() {
-  const snap = await getDocs(expensesCol());
+  const cutoff = new Date();
+  cutoff.setFullYear(cutoff.getFullYear() - 2);
+  const q = query(expensesCol(), where("date", ">=", cutoff.toISOString().slice(0, 10)));
+  const snap = await getDocs(q);
   return snap.docs.map((d) => d.data());
 }
 

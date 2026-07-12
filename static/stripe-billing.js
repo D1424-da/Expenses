@@ -146,6 +146,7 @@ export async function openPortal() {
       throw new Error(body.detail || `HTTP ${res.status}`);
     }
     const { url } = await res.json();
+    if (!url || !url.startsWith("https://")) throw new Error("無効なリダイレクト先");
     location.href = url;
   } catch (err) {
     logErr("ポータルエラー:", err.message);
@@ -174,6 +175,7 @@ async function _startCheckout() {
       throw new Error(body.detail || `HTTP ${res.status}`);
     }
     const { url } = await res.json();
+    if (!url || !url.startsWith("https://")) throw new Error("無効なリダイレクト先");
     location.href = url;
   } catch (err) {
     logErr("チェックアウトエラー:", err.message);

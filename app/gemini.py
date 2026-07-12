@@ -54,6 +54,22 @@ def _to_int(value: object) -> int:
         return 0
 
 
+_MAX_AMOUNT = 99_999_999
+
+
+def _validated_date(value: object) -> str:
+    """YYYY-MM-DD 文字列を検証し、範囲外・無効なら今日の日付を返す。"""
+    today = dt.date.today()
+    date_str = str(value or "")[:10]
+    try:
+        parsed = dt.date.fromisoformat(date_str)
+        if dt.date(2000, 1, 1) <= parsed <= today + dt.timedelta(days=1):
+            return parsed.isoformat()
+    except ValueError:
+        pass
+    return today.isoformat()
+
+
 def normalize_receipt(structured: dict, raw_text: str, engine: str = "gemini") -> dict:
     """フロントと同じ形（parser.parse_receipt 互換）に整える。"""
     category = structured.get("category")
@@ -64,15 +80,14 @@ def normalize_receipt(structured: dict, raw_text: str, engine: str = "gemini") -
             item_cat = it.get("category")
             items.append({
                 "name": str(it["name"])[:60],
-                "price": _to_int(it.get("price")),
-                # 行ごとのカテゴリ。候補外/未指定はレシート全体のカテゴリで補う。
+                "price": max(0, min(_to_int(it.get("price")), _MAX_AMOUNT)),
                 "category": item_cat if item_cat in CATEGORIES else overall,
             })
     return {
-        "date": str(structured.get("date") or "")[:10] or dt.date.today().isoformat(),
+        "date": _validated_date(structured.get("date")),
         "store": str(structured.get("store") or "")[:50],
         "branch": str(structured.get("branch") or "")[:50],
-        "amount": _to_int(structured.get("total")),
+        "amount": max(0, min(_to_int(structured.get("total")), _MAX_AMOUNT)),
         "category": overall,
         "items": items,
         "raw_text": raw_text,

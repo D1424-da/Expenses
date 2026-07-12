@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>カケイシピ | 家計管理×レシピ自動作成</title>
+  <meta name="description" content="レシートを撮るだけで家計簿を自動入力。AI-OCRで店名・金額・品目を読み取り、月次予算・最安値アラート・レシピ提案まで対応。" />
+
+  <!-- Google Search Console 所有権確認 -->
+  <meta name=google-site-verification=8_G9TeYLqQrvZRTtXOrlCEoyOcc_1PzWsxofIMvMaQ8/>
+
+  <!-- GA4 (Google Analytics) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+  <script src="analytics.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ログイン画面（未ログイン時に表示） -->
+  <div id="login-screen" class="login-screen" hidden>
+    <!-- 上部 / 左パネル：ブランドエリア -->
+    <div class="login-brand">
+      <div class="login-brand-logo">カケイシピ</div>
+      <div class="login-brand-sub">家計×レシピ</div>
+      <p class="login-brand-tagline">レシートを撮るだけ。<br />それだけで、家計が整っていく</p>
+      <ul class="login-features">
+        <li><span class="lf-icon">📸</span>写真を1枚撮るだけ。金額も品目も自動で記録</li>
+        <li><span class="lf-icon">💴</span>「今月あといくら使える？」が毎日ひと目でわかる</li>
+        <li><span class="lf-icon">🍳</span>「今夜何作ろう…」も、冷蔵庫の食材からAIが提案</li>
+      </ul>
+      <!-- PC専用：ペルソナへの共感メッセージ -->
+      <p class="login-brand-persona">毎日忙しくて、家計も料理も自信がない。<br />そんなお母さんのために作りました。</p>
+    </div>
+    <!-- 下部 / 右パネル：ログインカード -->
+    <div class="login-card">
+      <p class="login-card-eyebrow">登録1分・カード不要</p>
+      <p class="login-card-title">まずは無料で<br class="sp-only"/>使ってみる</p>
+      <!-- LINE/Instagram等のインアプリブラウザ用の警告（app.jsで制御） -->
+      <div id="inapp-warning" class="inapp-warning" hidden>
+        <p>⚠️ LINEなどのアプリ内ブラウザでは<br />Googleログインができません。</p>
+        <p class="inapp-hint">右下の <strong>「…」→「ブラウザで開く」</strong> をタップするか、<br />URLをコピーしてSafari / Chromeで開いてください。</p>
+        <button id="copy-url-btn" class="copy-url-btn">🔗 URLをコピー</button>
+      </div>
+      <button id="google-login" class="google-btn">
+        <span class="g-icon">G</span> Google でログイン
+      </button>
+      <p id="login-error" class="login-error" hidden></p>
+      <p class="login-trust">月10件まで永久無料 · いつでも退会OK</p>
+      <p class="login-blog-link"><a href="/blog.html">ブログ</a> · <a href="/">このアプリについて</a></p>
+    </div>
+  </div>
+
+  <!-- アプリ本体（ログイン後に表示） -->
+  <div id="app" hidden>
+    <header class="topbar">
+      <h1>カケイシピ</h1>
+      <div class="topbar-right">
+        <button id="shopping-btn" class="topbar-btn" title="買い物リスト">
+          🛒<span id="shopping-badge" class="shopping-badge" hidden></span>
+        </button>
+        <button id="saved-recipes-btn" class="topbar-btn" title="保存済みレシピ">📚</button>
+        <button id="compare-btn" class="topbar-btn" title="価格比較">🔎 価格比較</button>
+        <button id="export-btn" class="topbar-btn" title="CSVでエクスポート">📥 CSV</button>
+        <span id="premium-badge" class="premium-badge" hidden title="プレミアムプラン">✨ PRO</span>
+        <a href="/" class="topbar-btn topbar-btn--blog" title="このアプリについて">🏠 LP</a>
+        <a href="/blog.html" class="topbar-btn topbar-btn--blog" title="ブログ">📝 ブログ</a>
+        <button id="account-btn" class="topbar-btn topbar-btn--account" title="アカウント">⚙️</button>
+      </div>
+    </header>
+
+    <!-- PC専用ナビゲーションバー（モバイルでは非表示） -->
+    <nav class="pc-nav" aria-label="メインナビゲーション">
+      <div class="pc-nav-inner">
+        <button class="pc-nav-item" id="pcnav-home"><span class="pcnav-icon">🏠</span><span class="pcnav-label">ホーム</span></button>
+        <button class="pc-nav-item" id="pcnav-calendar"><span class="pcnav-icon">📅</span><span class="pcnav-label">カレンダー</span></button>
+        <button class="pc-nav-item pcnav-accent" id="pcnav-recipe"><span class="pcnav-icon">🍳</span><span class="pcnav-label">レシピ提案</span></button>
+        <div class="pcnav-divider"></div>
+        <button class="pc-nav-item" id="pcnav-shopping">
+          <span class="pcnav-icon">🛒</span><span class="pcnav-label">買い物リスト</span>
+          <span class="shopping-badge" id="shopping-badge-pc" hidden></span>
+        </button>
+        <button class="pc-nav-item" id="pcnav-saved"><span class="pcnav-icon">📚</span><span class="pcnav-label">保存レシピ</span></button>
+        <button class="pc-nav-item" id="pcnav-compare"><span class="pcnav-icon">🔎</span><span class="pcnav-label">価格比較</span></button>
+        <div class="pcnav-divider"></div>
+        <button class="pc-nav-item" id="pcnav-budget"><span class="pcnav-icon">💰</span><span class="pcnav-label">予算</span></button>
+        <button class="pc-nav-item" id="pcnav-trend"><span class="pcnav-icon">📈</span><span class="pcnav-label">月別グラフ</span></button>
+        <div class="pcnav-divider"></div>
+        <button class="pc-nav-item" id="pcnav-household"><span class="pcnav-icon">👨‍👩‍👧</span><span class="pcnav-label">世帯グループ</span></button>
+      </div>
+    </nav>
+
+    <main>
+      <!-- サマリー -->
+      <section class="summary card">
+        <div class="summary-hero">
+          <div class="summary-top">
+            <div class="summary-total">
+              <span class="label">今月 使ったお金</span>
+              <span id="summary-total" class="value">¥0</span>
+              <span id="summary-count" class="sub"></span>
+            </div>
+            <div class="summary-actions">
+              <button id="budget-btn" class="summary-action-btn" title="予算設定">💰 予算</button>
+              <button id="trend-btn" class="summary-action-btn" title="月別グラフ">📈 グラフ</button>
+            </div>
+          </div>
+          <!-- 月切り替えナビ -->
+          <div class="month-picker">
+            <button id="prev-month" aria-label="前の月">‹</button>
+            <span id="current-month"></span>
+            <button id="next-month" aria-label="次の月">›</button>
+          </div>
+        </div>
+        <div class="summary-body">
+          <div id="category-bars" class="category-bars"></div>
+          <div id="lowest-alerts" class="lowest-alerts" hidden></div>
+          <!-- 無料プランの使用量バー -->
+          <div id="usage-bar" class="usage-bar" hidden>
+            <span class="usage-count"></span>
+            <button class="usage-upgrade" type="button" hidden>✨ もっと記録する</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- カレンダー（日ごとの買い物金額＋週間合計） -->
+      <section class="card calendar-card">
+        <div class="list-head">
+          <h2>📅 買い物カレンダー</h2>
+          <span class="hint cal-hint">日付をタップして記録 · 週の合計も確認できます</span>
+        </div>
+        <div id="calendar" class="calendar"></div>
+      </section>
+
+      <!-- レシート読み取り -->
+      <section class="card capture">
+        <h2>レシートで記録する</h2>
+        <p class="hint">写真を1枚撮るだけ。金額と品目をAIが自動で読み取ります。</p>
+        <div class="capture-buttons">
+          <label class="file-button cam-only">
+            📷 今すぐ撮影
+            <input id="camera-input" type="file" accept="image/*" capture="environment" hidden />
+          </label>
+          <label class="file-button secondary">
+            🖼️ 写真から選ぶ
+            <input id="file-input" type="file" accept="image/*" multiple hidden />
+          </label>
+        </div>
+        <div id="ocr-status" class="status" role="status" aria-live="polite" hidden></div>
+      </section>
+
+      <!-- 入力フォーム（OCR結果の確認・修正 / 手入力） -->
+      <section class="card form-card" id="form-card">
+        <h2 id="form-title">手で入力する</h2>
+        <p id="edit-banner" class="edit-banner" hidden></p>
+        <form id="expense-form">
+          <input type="hidden" id="f-id" />
+          <input type="hidden" id="f-image-url" />
+          <input type="hidden" id="f-rawtext" />
+          <input type="hidden" id="f-engine" />
+
+          <div class="row">
+            <label>日付<input type="date" id="f-date" required /></label>
+            <label>金額(円)<input type="number" id="f-amount" min="0" step="1" inputmode="numeric" required /></label>
+          </div>
+          <div class="row">
+            <label>店名<input type="text" id="f-store" placeholder="例: スーパー〇〇" /></label>
+            <label>支店名<input type="text" id="f-branch" placeholder="例: 〇〇店" /></label>
+          </div>
+          <label>カテゴリ
+            <select id="f-category"></select>
+          </label>
+          <label>メモ<input type="text" id="f-memo" placeholder="任意" /></label>
+
+          <details id="items-details">
+            <summary>明細（<span id="items-count">0</span>件）</summary>
+            <div id="items-list" class="items-list"></div>
+          </details>
+          <p class="items-qty-global-hint" id="items-qty-global-hint" hidden>
+            💡 各明細に数量・単位を入力すると、レシピ提案の精度が向上します
+          </p>
+
+          <div class="form-preview" id="form-preview" hidden>
+            <img id="preview-img" alt="読み取ったレシート" />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="primary" id="save-btn">保存</button>
+            <button type="button" id="skip-btn" hidden>スキップ</button>
+            <button type="button" id="reset-btn">クリア</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 店舗別一覧 -->
+      <section class="card list-card">
+        <div class="list-head">
+          <h2>今月の買い物</h2>
+        </div>
+        <div class="list-filter-row">
+          <input id="list-search" type="search" placeholder="店名・商品名・メモで検索…" autocomplete="off" />
+          <select id="list-cat-filter">
+            <option value="">すべてのカテゴリ</option>
+          </select>
+        </div>
+        <p id="list-filter-count" class="list-filter-count" hidden></p>
+        <div id="expense-list" class="expense-list"></div>
+        <p id="empty-msg" class="empty" hidden>まだ記録がありません。<br />レシートを撮って始めましょう 📸</p>
+      </section>
+    </main>
+
+    <!-- 商品の最安値（店舗横断で比較） -->
+    <div id="compare-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="商品の最安値">
+        <div class="modal-head">
+          <h2>🔎 価格比較</h2>
+          <button id="compare-close" aria-label="閉じる">✕</button>
+        </div>
+        <p class="hint">購入した商品を店舗間で比較して、一番お得なお店を確認できます。</p>
+        <input id="compare-search" type="search" placeholder="商品名で検索（空欄で全件）" />
+        <div id="compare-list" class="compare-list"></div>
+      </div>
+    </div>
+    <!-- カレンダーの日付タップ → その日の買い物を確認・追加 -->
+    <div id="day-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="day-modal-title">
+        <div class="modal-head">
+          <h2 id="day-modal-title">買い物</h2>
+          <button id="day-close" aria-label="閉じる">✕</button>
+        </div>
+        <div class="day-nav">
+          <button id="day-prev" type="button" aria-label="前の日">‹ 前の日</button>
+          <button id="day-next" type="button" aria-label="次の日">次の日 ›</button>
+        </div>
+        <div class="day-total-line">
+          <span class="label">この日の合計</span>
+          <span id="day-total" class="value">¥0</span>
+        </div>
+        <div id="day-meal-plan" class="day-meal-plan" hidden>
+          <h3 class="day-meal-title">🍽 今日の献立</h3>
+          <div id="day-meal-content" class="day-meal-content"></div>
+        </div>
+        <div id="day-list" class="day-list"></div>
+        <form id="day-form" class="day-form">
+          <h3>この日に記録する</h3>
+          <div class="row">
+            <label>金額(円)<input type="number" id="day-amount" min="0" step="1" inputmode="numeric" placeholder="例: 1280" /></label>
+            <label>カテゴリ<select id="day-category"></select></label>
+          </div>
+          <label>店名<input type="text" id="day-store" placeholder="任意" /></label>
+          <button type="submit" class="primary">追加する</button>
+        </form>
+      </div>
+    </div>
+    <!-- レシピ提案モーダル -->
+    <div id="recipe-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="recipe-modal-title">
+        <div class="modal-head">
+          <h2 id="recipe-modal-title">🍳 レシピ提案</h2>
+          <button id="recipe-close" aria-label="閉じる">✕</button>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-label">食材の選び方</span>
+          <div class="recipe-tabs" id="recipe-mode-tabs" role="group" aria-label="食材選択モード">
+            <button class="recipe-tab active" data-mode="history">📋 購入履歴</button>
+            <button class="recipe-tab" data-mode="budget">💰 予算から</button>
+          </div>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-label" id="recipe-period-label">食材の購入期間</span>
+          <div class="recipe-tabs" id="recipe-period-tabs" role="group" aria-label="期間ショートカット">
+            <button class="recipe-tab" data-period="day">今日</button>
+            <button class="recipe-tab" data-period="week">今週</button>
+            <button class="recipe-tab" data-period="month">今月</button>
+          </div>
+        </div>
+        <div class="recipe-date-range-row">
+          <input type="date" id="recipe-date-from" aria-label="開始日" />
+          <span class="recipe-date-sep">〜</span>
+          <input type="date" id="recipe-date-to" aria-label="終了日" />
+        </div>
+        <div id="recipe-ingredients" class="recipe-ingredients"></div>
+        <div id="recipe-budget-info" class="recipe-budget-info" hidden>
+          <span id="recipe-budget-status"></span>
+          <span id="recipe-budget-total"></span>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-label">種類</span>
+          <div class="recipe-tabs" id="recipe-type-tabs" role="group" aria-label="レシピ種類">
+            <button class="recipe-tab" data-rtype="meal">1食分</button>
+            <button class="recipe-tab" data-rtype="weekly">週間献立</button>
+          </div>
+        </div>
+        <div id="recipe-plan-start-row" class="recipe-row" hidden>
+          <span class="recipe-label">開始日</span>
+          <input type="date" id="recipe-plan-start" aria-label="献立開始日" />
+          <span class="recipe-plan-start-hint">（カレンダー反映の起点）</span>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-label">時短</span>
+          <div class="recipe-tabs" id="recipe-time-tabs" role="group" aria-label="調理時間">
+            <button class="recipe-tab active" data-minutes="0">指定なし</button>
+            <button class="recipe-tab" data-minutes="15">15分</button>
+            <button class="recipe-tab" data-minutes="30">30分</button>
+          </div>
+        </div>
+        <label class="recipe-useup-row">
+          <input type="checkbox" id="recipe-useup" />
+          <span>食材を使い切るレシピ</span>
+        </label>
+        <div class="recipe-servings-row">
+          <label>人数
+            <input type="number" id="recipe-servings" value="2" min="1" max="20" inputmode="numeric" />
+            人前
+          </label>
+          <button id="recipe-suggest-btn" type="button" class="primary">提案する</button>
+        </div>
+        <!-- 家族構成（折りたたみ） -->
+        <div class="family-section">
+          <button type="button" id="family-toggle" class="family-toggle">
+            👨‍👩‍👧 家族構成を設定（より最適なレシピになります）
+          </button>
+          <div id="family-panel" class="family-panel" hidden>
+            <p class="family-hint">家族の構成を入力すると、辛さ・量・食感などを考慮したレシピを提案します。次回以降は自動で記憶されます。</p>
+            <div class="family-grid">
+              <label class="family-row"><span>大人（男）</span><input type="number" id="fam-adults-m" value="0" min="0" max="10" inputmode="numeric" /><span>人</span></label>
+              <label class="family-row"><span>大人（女）</span><input type="number" id="fam-adults-f" value="0" min="0" max="10" inputmode="numeric" /><span>人</span></label>
+              <label class="family-row"><span>幼児（〜5歳）</span><input type="number" id="fam-toddlers" value="0" min="0" max="10" inputmode="numeric" /><span>人</span></label>
+              <label class="family-row"><span>小学生</span><input type="number" id="fam-elementary" value="0" min="0" max="10" inputmode="numeric" /><span>人</span></label>
+              <label class="family-row"><span>中学・高校生</span><input type="number" id="fam-junior-high" value="0" min="0" max="10" inputmode="numeric" /><span>人</span></label>
+            </div>
+          </div>
+        </div>
+        <div id="recipe-status" class="status" hidden></div>
+        <div id="recipe-result" class="recipe-result" hidden></div>
+        <div id="recipe-post-actions" class="recipe-post-actions" hidden>
+          <button id="recipe-save-btn" type="button">📚 保存</button>
+          <button id="recipe-shopping-btn" type="button">🛒 リストに追加</button>
+          <button id="recipe-calendar-btn" type="button" hidden>📅 カレンダーに反映</button>
+        </div>
+        <!-- カレンダー食事スロット選択パネル（1食分をカレンダーに追加するとき） -->
+        <div id="recipe-meal-slot-picker" class="recipe-meal-slot-picker" hidden>
+          <p class="meal-slot-title">どの食事として追加しますか？</p>
+          <div class="meal-slot-btns">
+            <button data-slot="朝食" type="button">🌅 朝食</button>
+            <button data-slot="お弁当" type="button">🍱 お弁当</button>
+            <button data-slot="夕食" type="button">🌙 夕食</button>
+          </div>
+          <button id="recipe-meal-slot-cancel" type="button" class="btn-ghost">キャンセル</button>
+        </div>
+        <!-- 料理ごと保存選択パネル -->
+        <div id="recipe-dish-selector" class="recipe-dish-selector" hidden>
+          <p class="dish-selector-title">保存する料理を選んでください</p>
+          <div id="recipe-dish-list" class="recipe-dish-list"></div>
+          <div class="dish-selector-actions">
+            <button id="recipe-dish-cancel-btn" type="button" class="btn-ghost">キャンセル</button>
+            <button id="recipe-dish-save-btn" type="button" class="btn-primary">保存する</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 週計タップ → その週のカテゴリ別内訳（明細カテゴリで集計） -->
+    <div id="week-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="week-modal-title">
+        <div class="modal-head">
+          <h2 id="week-modal-title">週の内訳</h2>
+          <button id="week-close" aria-label="閉じる">✕</button>
+        </div>
+        <div class="day-total-line">
+          <span class="label">週計</span>
+          <span id="week-total" class="value">¥0</span>
+        </div>
+        <div id="week-bars" class="category-bars"></div>
+      </div>
+    </div>
+    <!-- 月次予算設定 -->
+    <div id="budget-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="月次予算設定">
+        <div class="modal-head">
+          <h2>💰 <span id="budget-modal-month">今月の予算</span></h2>
+          <button id="budget-close" aria-label="閉じる">✕</button>
+        </div>
+        <p class="hint">カテゴリごとに月の目標金額を設定します。0 または空欄は「予算なし」です。</p>
+        <form id="budget-form">
+          <div id="budget-inputs" class="budget-inputs"></div>
+          <button type="submit" class="primary">保存する</button>
+        </form>
+      </div>
+    </div>
+    <!-- 支出推移グラフ -->
+    <div id="trend-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="支出推移">
+        <div class="modal-head">
+          <h2>📈 月別グラフ</h2>
+          <button id="trend-close" aria-label="閉じる">✕</button>
+        </div>
+        <p id="trend-loading" class="hint">読み込み中…</p>
+        <div id="trend-chart"></div>
+      </div>
+    </div>
+    <!-- 保存済みレシピ -->
+    <div id="saved-recipes-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="保存済みレシピ">
+        <div class="modal-head">
+          <h2>📚 保存済みレシピ</h2>
+          <button id="saved-recipes-close" aria-label="閉じる">✕</button>
+        </div>
+        <div id="saved-recipes-list-wrap">
+          <div id="saved-recipes-list" class="saved-recipes-list"></div>
+          <p id="saved-recipes-empty" class="empty" hidden>保存済みのレシピがありません。</p>
+        </div>
+        <div id="saved-recipe-detail" hidden>
+          <button id="saved-recipe-back" class="back-btn">← 一覧に戻る</button>
+          <h3 id="saved-recipe-title-detail" class="saved-recipe-detail-title"></h3>
+          <div id="saved-recipe-content" class="recipe-result"></div>
+          <div class="saved-recipe-detail-actions">
+            <button id="saved-recipe-shopping-btn" type="button">🛒 買い物リストに追加</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 買い物リスト -->
+    <div id="shopping-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="買い物リスト">
+        <div class="modal-head">
+          <h2>🛒 買い物リスト</h2>
+          <button id="shopping-close" aria-label="閉じる">✕</button>
+        </div>
+        <form id="shopping-add-form" class="shopping-add-form">
+          <input id="shopping-add-input" type="text" placeholder="食材・商品を追加…" autocomplete="off" />
+          <button type="submit" class="primary">追加</button>
+        </form>
+        <div id="shopping-items" class="shopping-items"></div>
+        <p id="shopping-empty" class="empty" hidden>リストはまだ空です。</p>
+        <button id="shopping-clear-done" class="shopping-clear-btn" type="button">完了済みを削除</button>
+      </div>
+    </div>
+
+    <!-- 世帯グループ管理 -->
+    <div id="household-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="世帯グループ">
+        <div class="modal-head">
+          <h2>👨‍👩‍👧 世帯グループ</h2>
+          <button id="household-close" aria-label="閉じる">✕</button>
+        </div>
+        <p class="hint">家族と家計簿を共有できます。グループを作成してコードを共有するか、コードを入力して参加してください。</p>
+        <div id="household-status" class="household-status-box"></div>
+
+        <!-- グループ未参加時 -->
+        <div id="household-create-sec" class="household-section">
+          <h3 class="household-section-title">グループを作成する</h3>
+          <p class="household-hint">新しいグループを作成し、招待コードで家族を招待できます。</p>
+          <button id="household-create-btn" class="primary" type="button">グループを作成</button>
+        </div>
+
+        <div id="household-join-sec" class="household-section">
+          <h3 class="household-section-title">グループに参加する</h3>
+          <p class="household-hint">グループ管理者から招待コードを受け取って入力してください。</p>
+          <div class="household-join-row">
+            <input id="household-code-input" type="text" placeholder="招待コード（8文字）" autocomplete="off" maxlength="8" />
+            <button id="household-join-btn" type="button">参加</button>
+          </div>
+        </div>
+
+        <!-- グループ参加済み時 -->
+        <div id="household-leave-sec" class="household-section" hidden>
+          <button id="household-leave-btn" class="household-leave-btn" type="button">グループから退出</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- アップグレードモーダル（無料プラン上限到達時） -->
+    <div id="upgrade-modal" class="modal" hidden>
+      <div class="modal-box upgrade-modal-box" role="dialog" aria-modal="true" aria-label="プレミアムプラン">
+        <div class="modal-head">
+          <h2>✨ もっと使いたい方へ</h2>
+          <button id="upgrade-close" aria-label="閉じる">✕</button>
+        </div>
+        <div class="upgrade-content">
+          <p class="upgrade-limit-msg">今月の無料記録（10件）に達しました。<br />プレミアムにすると、記録し放題になります。</p>
+          <div class="upgrade-plans">
+            <div class="upgrade-plan">
+              <div class="plan-name">無料プラン</div>
+              <ul class="plan-features">
+                <li>月10件まで記録</li>
+                <li>AI OCR・集計・カレンダー</li>
+              </ul>
+            </div>
+            <div class="upgrade-plan upgrade-plan--featured">
+              <div class="plan-badge">おすすめ</div>
+              <div class="plan-name">プレミアム <span class="plan-price">¥480<span class="plan-period">/月</span></span></div>
+              <ul class="plan-features">
+                <li>✅ 記録件数 <strong>無制限</strong></li>
+                <li>✅ AI レシートOCR</li>
+                <li>✅ レシピ提案</li>
+                <li>✅ 世帯共有</li>
+                <li>✅ CSVエクスポート</li>
+                <li>✅ 最安値アラート</li>
+              </ul>
+            </div>
+          </div>
+          <button id="upgrade-checkout-btn" class="primary upgrade-btn" type="button">今すぐアップグレード</button>
+          <p class="upgrade-hint">Stripe の安全な決済ページへ移動します。<br />クレジットカード対応。いつでもキャンセル可能です。</p>
+          <div class="beta-code-section">
+            <p class="beta-code-label">招待コードをお持ちの方</p>
+            <div class="beta-code-row">
+              <input type="text" id="beta-code-input" placeholder="招待コードを入力" maxlength="50" autocomplete="off" />
+              <button id="beta-code-btn" type="button">適用</button>
+            </div>
+            <p id="beta-code-msg" hidden></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- アカウント・設定モーダル -->
+    <div id="account-modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-label="アカウント設定">
+        <div class="modal-head">
+          <h2>⚙️ アカウント</h2>
+          <button id="account-close" aria-label="閉じる">✕</button>
+        </div>
+        <div class="account-content">
+          <div class="account-user-row">
+            <span id="account-user-email" class="account-email"></span>
+          </div>
+          <!-- プラン状態 -->
+          <div id="account-plan-free" class="account-plan-box account-plan-free">
+            <div class="account-plan-label">現在のプラン</div>
+            <div class="account-plan-name">無料プラン</div>
+            <p class="account-plan-desc">月10件まで記録できます。</p>
+            <button id="account-upgrade-btn" class="primary account-action-btn" type="button">✨ プレミアムにアップグレード</button>
+          </div>
+          <div id="account-plan-premium" class="account-plan-box account-plan-premium" hidden>
+            <div class="account-plan-label">現在のプラン</div>
+            <div class="account-plan-name">✨ プレミアムプラン</div>
+            <p class="account-plan-desc">記録件数無制限・すべての機能が使えます。</p>
+            <button id="account-portal-btn" class="account-action-btn account-action-btn--sub" type="button">サブスクリプションを管理・解約する</button>
+            <p class="account-portal-hint">Stripe の管理ページへ移動します。解約・領収書の確認ができます。</p>
+          </div>
+          <!-- ログアウト -->
+          <button id="logout" class="account-action-btn account-action-btn--logout" type="button">ログアウト</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB（モバイル：カメラ起動） -->
+    <button class="fab" id="fab-camera" aria-label="レシートを撮影">📷</button>
+
+    <!-- ボトムナビ（モバイルのみ） -->
+    <nav class="bottom-nav" aria-label="メインナビゲーション">
+      <button class="bnav-item" id="bnav-home" aria-label="ホーム">
+        <span class="bnav-icon">🏠</span>
+        <span class="bnav-label">ホーム</span>
+      </button>
+      <button class="bnav-item" id="bnav-calendar" aria-label="カレンダー">
+        <span class="bnav-icon">📅</span>
+        <span class="bnav-label">カレンダー</span>
+      </button>
+      <button class="bnav-item" id="bnav-shopping" aria-label="買い物リスト">
+        <span class="bnav-icon">🛒</span>
+        <span class="bnav-label">買い物</span>
+      </button>
+      <button class="bnav-item" id="bnav-recipe" aria-label="レシピを提案">
+        <span class="bnav-icon">🍳</span>
+        <span class="bnav-label">レシピ提案</span>
+      </button>
+      <button class="bnav-item" id="bnav-household" aria-label="世帯グループ">
+        <span class="bnav-icon">👨‍👩‍👧</span>
+        <span class="bnav-label">世帯</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ブラウザ内OCRは PaddleOCR(ppu-paddle-ocr + onnxruntime-web) を app.js から
+       動的 import で読み込む（Gemini→Vision が両方失敗したときの最終フォールバック）。 -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

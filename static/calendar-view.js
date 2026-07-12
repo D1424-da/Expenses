@@ -300,8 +300,16 @@ function _renderDayModal() {
 
   // 献立（常に表示・各食事をインライン編集可能）
   const mealContentEl = $("day-meal-content");
+  // Firestoreスナップショットによる再描画でユーザーの入力中テキストが消えないよう、
+  // 変更済みフィールドの値を退避してから再構築する。
+  const inProgress = {};
+  for (const input of mealContentEl.querySelectorAll("input[aria-label]")) {
+    if (input.value !== input.dataset.original) {
+      inProgress[input.getAttribute("aria-label")] = input.value;
+    }
+  }
   mealContentEl.innerHTML = "";
-  mealContentEl.appendChild(_buildMealEditor(_mealPlans[_selectedDay] || {}));
+  mealContentEl.appendChild(_buildMealEditor({ ...(_mealPlans[_selectedDay] || {}), ...inProgress }));
   $("day-meal-plan").hidden = false;
 
   // 支出リスト（イベントデリゲーション）
@@ -506,6 +514,7 @@ function _buildMealEditor(plan) {
     input.type = "text";
     input.className = "meal-editor-input";
     input.value = memo;
+    input.dataset.original = memo;
     input.placeholder = ph;
     input.setAttribute("aria-label", slot);
     inputWrap.appendChild(input);

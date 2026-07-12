@@ -64,7 +64,7 @@ export async function requestBackendOcr(file, getIdToken, onWakeup) {
   try {
     const token = await getIdToken();
     if (token) headers.Authorization = `Bearer ${token}`;
-  } catch (e) { logErr("IDトークン取得失敗（認証なしで続行）:", e.message); }
+  } catch (e) { logErr("IDトークン取得失敗:", e.message); throw e; }
   // Render 無料枠はアイドルで停止し、初回は起動に時間がかかる。タイムアウトと
   // 「起動待ち」表示を入れ、固まったらブラウザ内OCRへフォールバックさせる。
   const ctrl = new AbortController();

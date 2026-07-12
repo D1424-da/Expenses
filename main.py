@@ -14,6 +14,7 @@
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from pathlib import Path
@@ -82,7 +83,7 @@ async def ocr_receipt(
     authorization: str | None = Header(default=None),
 ) -> JSONResponse:
     """レシート画像を受け取り、OCR → 項目抽出した結果を返す（保存はしない）。"""
-    security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
+    uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
     _rate_limiter.check(security.client_ip(request))
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(400, f"対応していない画像形式です: {file.content_type}")
@@ -97,7 +98,8 @@ async def ocr_receipt(
     engine = os.environ.get("OCR_ENGINE", "tesseract").lower()
     if engine in engines.AI_ENGINES:
         try:
-            return JSONResponse(engines.extract_with_ai(engine, image_bytes, file.content_type))
+            result = await asyncio.to_thread(engines.extract_with_ai, engine, image_bytes, file.content_type)
+            return JSONResponse(result)
         except engines.ExtractionError as exc:
             raise HTTPException(
                 500, "レシートの読み取りに失敗しました。時間をおいて再試行してください。"
@@ -134,13 +136,14 @@ async def suggest_recipe(
     authorization: str | None = Header(default=None),
 ) -> JSONResponse:
     """食材リストと人数からレシピを提案する（Gemini 使用）。"""
-    security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
+    uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
     _rate_limiter.check(security.client_ip(request))
     if not body.items:
         raise HTTPException(400, "食材リストが空です。")
     from app import recipe as recipe_mod
     try:
-        text = recipe_mod.suggest_recipes(
+        text = await asyncio.to_thread(
+            recipe_mod.suggest_recipes,
             body.items, body.servings, body.recipe_type,
             max_minutes=body.max_minutes, use_up=body.use_up,
             family=body.family.model_dump() if body.family else None,
@@ -150,7 +153,7 @@ async def suggest_recipe(
         msg = str(exc)
         if "GEMINI_API_KEY が設定されていません" in msg:
             raise HTTPException(503, "レシピ提案サービスが設定されていません（GEMINI_API_KEY を確認してください）。") from exc
-        raise HTTPException(503, f"Gemini API でエラーが発生しました。食材の数を減らして再試行してください。({msg[:150]})") from exc
+        raise HTTPException(503, "Gemini API でエラーが発生しました。食材の数を減らして再試行してください。") from exc
     except Exception as exc:  # noqa: BLE001
         logger.exception("Recipe suggestion failed")
         raise HTTPException(500, "レシピの提案に失敗しました。時間をおいて再試行してください。") from exc
@@ -183,10 +186,12 @@ class BetaRedeemRequest(BaseModel):
 
 @app.post("/api/beta/redeem")
 async def beta_redeem(
+    request: Request,
     body: BetaRedeemRequest,
     authorization: str | None = Header(default=None),
 ) -> JSONResponse:
     """招待コードを検証し、有効なら無料プレミアムを付与する。Firebase 認証必須。"""
+    _rate_limiter.check(security.client_ip(request))
     uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
     if not uid:
         raise HTTPException(401, "認証が必要です。")

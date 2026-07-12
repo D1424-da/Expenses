@@ -22,39 +22,48 @@ from __future__ import annotations
 import base64
 import json
 import os
+import threading
 
 from app import gemini, net
 
 _SCOPES = ["https://www.googleapis.com/auth/cloud-platform"]
+_creds_lock = threading.Lock()
+_cached_creds = None
 
 
 def _get_access_token() -> str:
     """Vertex を呼ぶための OAuth アクセストークンを取得する。
 
-    google-auth に依存する（サービスアカウント鍵の JWT 署名が必要なため、
-    標準ライブラリだけでは現実的でない）。
+    認証情報をモジュールレベルでキャッシュし、有効期限が切れた場合のみ再取得する。
     """
+    global _cached_creds
     try:
         import google.auth
         import google.auth.transport.requests
         from google.oauth2 import service_account
-    except ImportError as exc:  # 依存未導入のときは原因を明示
+    except ImportError as exc:
         raise RuntimeError(
             "Vertex を使うには google-auth が必要です（requirements に追加してください）。"
         ) from exc
 
+    with _creds_lock:
+        if _cached_creds is not None and _cached_creds.valid:
+            return _cached_creds.token
+
     sa_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
     if sa_json:
-        # Render 等、鍵ファイルを置きにくい環境向け: JSON 文字列から直接生成。
         info = json.loads(sa_json)
         creds = service_account.Credentials.from_service_account_info(info, scopes=_SCOPES)
     else:
-        # GOOGLE_APPLICATION_CREDENTIALS or 実行環境の既定資格情報（ADC）。
         creds, _ = google.auth.default(scopes=_SCOPES)
 
-    creds.refresh(google.auth.transport.requests.Request())
+    req = google.auth.transport.requests.Request()
+    creds.refresh(req)
     if not creds.token:
         raise RuntimeError("Vertex 用のアクセストークンを取得できませんでした。")
+
+    with _creds_lock:
+        _cached_creds = creds
     return creds.token
 
 
