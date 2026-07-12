@@ -28,7 +28,7 @@ export function initHousehold({ db, getUser, onChanged }) {
 }
 
 // ログイン時に呼ぶ。世帯メンバーなら householdId を返す。
-export async function loadHousehold(uid) {
+export async function loadHousehold(uid, db = _db) {
   try {
     const snap = await getDoc(doc(_db, "users", uid, "settings", "household"));
     const hid = snap.exists() ? snap.data().householdId : null;

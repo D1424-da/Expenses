@@ -184,7 +184,7 @@ async function setupApp() {
   // G-5: ログインユーザーを db-paths.js に登録し、世帯メンバーシップを確認
   dbSetUser(currentUser.uid);
   try {
-    await loadHousehold(currentUser.uid);
+    await loadHousehold(currentUser.uid, db);
   } catch (err) {
     logErr("世帯読み込みエラー（個人モードで続行）:", err.message);
     dbClearHousehold();
