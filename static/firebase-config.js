@@ -1,6 +1,6 @@
 export const firebaseConfig = {
   apiKey: "AIzaSyCJanik_5LtvXqDCVahBSPgF4vpWvlf72o",
-  authDomain: "expenses-9af61.firebaseapp.com",
+  authDomain: "expenses-9af61.web.app",
   projectId: "expenses-9af61",
   storageBucket: "expenses-9af61.firebasestorage.app",
   // TODO(B-3): messagingSenderId と appId 内のプロジェクト番号が不一致（489 vs 499）。
