@@ -367,6 +367,8 @@ function _renderIngredients() {
 
 function _itemsForPeriod() {
   return _filterExpenses()
+    // 外食（マクドナルド等の軽食含む）は調理不要な完成品のため、レシピ食材候補から除外する
+    .filter((e) => e.category !== "外食")
     .flatMap((e) => (e.items || []).map((it) => {
       if (!it.name || it.name.length < 1) return null;
       // 数量・単位がある場合は "牛肉 300g" "たまご 6個" 形式でAPIに渡す（精度向上）
@@ -728,9 +730,10 @@ async function _renderBudgetIngredients() {
     _expensesCache = all;
 
     // 品目ごとに平均単価・購入回数・直近日付を集計
+    // 外食（マクドナルド等の軽食含む）は調理不要な完成品のため、レシピ食材候補から除外する
     const itemMap = new Map();
     for (const exp of all) {
-      if (!exp.items) continue;
+      if (!exp.items || exp.category === "外食") continue;
       for (const it of exp.items) {
         if (!it.name || !it.price || it.price <= 0) continue;
         const cur = itemMap.get(it.name) || { totalPrice: 0, count: 0, lastDate: "" };
