@@ -59,7 +59,7 @@ self.addEventListener("fetch", (e) => {
   if (e.request.mode === "navigate") {
     const path = url.pathname;
     // LP・ブログはネットワークから取得（SSR不要だがキャッシュに乗せない）
-    if (path === "/" || path === "/lp" || path.startsWith("/blog") || path === "/terms.html" ||
+    if (path === "/" || path === "/index.html" || path === "/login.html" || path === "/lp" || path.startsWith("/blog") || path === "/terms.html" ||
     path === "/privacy.html" ||
     path === "/tokushoho.html" ||
     path === "/contact.html") {
@@ -68,7 +68,7 @@ self.addEventListener("fetch", (e) => {
     // キャッシュ・ネットワークいずれも失敗した場合は必ずネットワークへ再フォールバックし、
     // Promise reject によるブラウザの内部エラーページ（chrome-error://）表示を防ぐ。
     e.respondWith(
-      caches.match("login.html")
+      caches.match("/login.html")
         .then((cached) => cached || fetch(e.request))
         .catch(() => fetch(e.request)),
     );
