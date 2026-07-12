@@ -191,6 +191,21 @@ async def stripe_checkout(
     return JSONResponse({"url": url})
 
 
+@app.post("/api/trial/ensure")
+async def trial_ensure(
+    request: Request,
+    authorization: str | None = Header(default=None),
+) -> JSONResponse:
+    """初回ログイン時に14日間の無料トライアルを開始する。Firebase 認証必須。"""
+    _rate_limiter.check(security.client_ip(request))
+    uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
+    if not uid:
+        raise HTTPException(401, "認証が必要です。")
+    from app import stripe_billing
+    result = await stripe_billing.ensure_trial(uid)
+    return JSONResponse(result)
+
+
 class BetaRedeemRequest(BaseModel):
     code: str = Field(..., max_length=50)
 

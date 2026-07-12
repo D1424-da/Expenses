@@ -182,6 +182,38 @@ async def redeem_beta_code(uid: str, code: str) -> bool:
     return True
 
 
+TRIAL_PERIOD_DAYS = 14
+
+
+async def ensure_trial(uid: str) -> dict:
+    """初回ログイン時に14日間の無料トライアルを開始する。
+    既にサブスクリプション情報がある場合は何もしない（トライアルは1ユーザー1回のみ）。
+    トライアル終了後は currentPeriodEnd が過ぎるため、isPremium() 判定により自動的に無料プランへ戻る。
+    """
+    from firebase_admin import firestore as admin_fs
+    db = _get_firestore()
+    ref = (
+        db.collection("users")
+        .document(uid)
+        .collection("settings")
+        .document("subscription")
+    )
+    snap = ref.get()
+    if snap.exists:
+        return {"started": False}
+
+    now = int(time.time())
+    ref.set({
+        "status": "active",
+        "plan": "trial",
+        "trialStart": now,
+        "currentPeriodEnd": now + TRIAL_PERIOD_DAYS * 86400,
+        "updatedAt": admin_fs.SERVER_TIMESTAMP,
+    })
+    logger.info("Trial started: uid=%s", uid)
+    return {"started": True}
+
+
 def _persist_subscription(uid: str, subscription: dict, customer_id: str | None) -> None:
     """サブスクリプション情報を Firestore の users/{uid}/settings/subscription に書き込む。"""
     from firebase_admin import firestore as admin_fs

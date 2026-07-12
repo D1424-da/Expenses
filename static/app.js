@@ -47,7 +47,7 @@ import { initMealPlan, startMealPlanSync, stopMealPlanSync } from "./meal-plan.j
 import { dbSetUser, dbClearHousehold, dbBase } from "./db-paths.js";
 import { initHousehold, loadHousehold, clearHousehold, openHousehold } from "./household.js";
 import {
-  initBilling, startBillingSync, stopBillingSync,
+  initBilling, startBillingSync, stopBillingSync, ensureTrial,
   checkGate, renderUsageBar, FREE_LIMIT, isPremium, openPortal, premiumExpiryLabel,
 } from "./stripe-billing.js";
 
@@ -396,6 +396,7 @@ async function setupApp() {
   }
   try {
     startBillingSync();
+    ensureTrial();
     _syncStripeSubscription(currentUser);
     await loadBudget();
     renderSummary();
