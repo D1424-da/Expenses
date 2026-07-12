@@ -183,7 +183,6 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
 
   _lastMarkdown = "";
   _lastItems = [];
-  _expensesCache = null;
   $("recipe-result").hidden = true;
   $("recipe-result").innerHTML = "";
   $("recipe-status").hidden = true;

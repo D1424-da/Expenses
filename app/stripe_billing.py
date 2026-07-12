@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 
 from fastapi import HTTPException
 
@@ -84,6 +85,7 @@ async def create_checkout_session(uid: str, email: str) -> str:
         subscription_data={"metadata": {"uid": uid}},
         success_url=f"{APP_URL}/?checkout=success",
         cancel_url=f"{APP_URL}/?checkout=cancel",
+        idempotency_key=f"checkout-{uid}-{int(time.time() // 300)}",
     )
     return session.url
 

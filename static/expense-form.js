@@ -139,12 +139,12 @@ function _addItemRow(name = "", price = 0, category = "", qty = "", unit = "") {
   row.innerHTML = `
     <div class="item-row-main">
       <input type="text" class="item-name" value="${escapeHtml(name)}" placeholder="品目" />
-      <input type="number" class="item-price" value="${price || 0}" min="0" step="1" inputmode="numeric" />
+      <input type="number" class="item-price" value="${escapeHtml(String(price || 0))}" min="0" step="1" inputmode="numeric" />
       <select class="item-category" aria-label="明細カテゴリ">${options}</select>
       <button type="button" aria-label="削除">✕</button>
     </div>
     <div class="item-row-qty">
-      <input type="number" class="item-qty" value="${qty ?? ""}" min="0" step="0.1" inputmode="decimal" placeholder="数量" />
+      <input type="number" class="item-qty" value="${escapeHtml(String(qty ?? ""))}" min="0" step="0.1" inputmode="decimal" placeholder="数量" />
       <input type="text" class="item-unit" value="${escapeHtml(unit ?? "")}" placeholder="g / 個 / 袋" maxlength="6" />
       <span class="item-qty-label">↑ 入力するとレシピ精度が上がります（任意）</span>
     </div>`;

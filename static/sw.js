@@ -1,11 +1,11 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v1";
+const CACHE = "receipt-v2";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
   "/",
-  "/index.html",
+  "/login.html",
   "/style.css",
   "/app.js",
   "/firebase-config.js",
@@ -51,10 +51,10 @@ self.addEventListener("fetch", (e) => {
   // 外部リクエスト（Firebase SDK・API・CDN）はネットワーク優先でパススルー
   if (url.origin !== self.location.origin) return;
 
-  // ナビゲーション（ページ遷移）は index.html をキャッシュから返す
+  // ナビゲーション（ページ遷移）は login.html をキャッシュから返す
   if (e.request.mode === "navigate") {
     e.respondWith(
-      caches.match("/index.html").then((cached) => cached || fetch(e.request)),
+      caches.match("/login.html").then((cached) => cached || fetch(e.request)),
     );
     return;
   }
