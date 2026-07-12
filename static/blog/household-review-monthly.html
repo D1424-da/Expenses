@@ -6,6 +6,15 @@
   <title>月次家計レビューの習慣化｜毎月30分で家計を改善し続ける方法</title>
   <meta name="description" content="月次家計レビューを習慣化して家計を改善し続ける方法を解説。月末に30分だけ振り返りをするだけで貯金が増える。カケイシピのグラフ・集計機能でレビューを効率化。" />
   <style>
+    .prevnext{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;gap:16px;flex-wrap:wrap}
+    .pn-link{flex:1;min-width:200px;display:flex;flex-direction:column;gap:4px;padding:16px 18px;background:#fff;border:1px solid #e2e8e6;border-radius:12px;text-decoration:none;transition:border-color .15s,transform .1s}
+    .pn-link:hover{border-color:#2D7D52;transform:translateY(-2px)}
+    .pn-next{text-align:right}
+    .pn-dir{font-size:.75rem;color:#2D7D52;font-weight:700}
+    .pn-title{font-size:.88rem;color:#0F2318;line-height:1.4}
+    .pn-empty{visibility:hidden;pointer-events:none}
+    @media(prefers-color-scheme:dark){.pn-link{background:#132219;border-color:#1E3D2A}.pn-title{color:#E4EDE7}}
+
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
     @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
@@ -252,6 +261,11 @@
   </aside>
 </div>
 
+
+<nav class="prevnext">
+  <a class="pn-link pn-prev" href="/blog/price-compare-supermarket.html"><span class="pn-dir">← 前の記事</span><span class="pn-title">スーパーの価格比較で食費を節約</span></a>
+  <a class="pn-link pn-next" href="/blog/receipt-ocr-how-it-works.html"><span class="pn-dir">次の記事 →</span><span class="pn-title">レシートOCRの仕組みと活用法</span></a>
+</nav>
 <footer class="ft">
   <nav class="fl">
     <a href="/">カケイシピ TOP</a>

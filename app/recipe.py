@@ -16,6 +16,13 @@ _NOTES = {
     "common": "食材の量が不明な場合は、家庭での一般的な使用量を想定してください。",
     "time":   "各料理（1品・1食）ごとの調理時間を{max_minutes}分以内に収めてください。週全体や複数日の合計ではなく、1品あたりの目安時間です。",
     "use_up": "食材が余らないよう、できるだけすべて使い切ってください。",
+    "quantity": (
+        "食材リストに記載された数量（g・個・パックなど）を必ず考慮し、"
+        "実際にその量で賄える日数分だけ献立を作成してください。"
+        "食材が不足していて指定期間の全日程を賄えない場合は、"
+        "無理に埋めずに賄える日数までで献立を止め、"
+        "最後に「※現在の食材では約〇日分しか賄えません。残りは買い足しが必要です」と一言添えてください。"
+    ),
 }
 
 _PROMPTS: dict[str, str] = {
@@ -39,7 +46,7 @@ _PROMPTS: dict[str, str] = {
 家庭で作りやすいシンプルなレシピを優先してください。""",
 
     "weekly": """\
-以下の食材を使って、{servings}人前の1週間分の献立（月〜日）を提案してください。
+以下の食材を使って、{servings}人前・最大{days}日分の献立を提案してください（{day_labels}）。
 {note}
 
 食材: {items}
@@ -50,6 +57,7 @@ _PROMPTS: dict[str, str] = {
 - 夕食: メインの料理（しっかりした一品）。
 
 以下のマークダウン形式で記載してください。朝食・昼食は料理名のみ、夕食は料理名・使う食材・作り方を記載してください。
+見出しは指定した曜日ラベル（{day_labels}）をそのまま使い、順番通りに記載してください。
 
 ## 月曜日
 - **朝食**: ...
@@ -63,10 +71,11 @@ _PROMPTS: dict[str, str] = {
 2. ...
 
 ## 火曜日
-...（以下同様）""",
+...（食材が続く限り、指定した曜日ラベルの分だけ同様に記載）""",
 
     "select": """\
 以下の食材を使って、{servings}人前の朝食・昼食・夕食をそれぞれ3パターン提案してください。
+食材リストの数量（記載がある場合）を踏まえ、実際に用意できる範囲の料理にしてください。
 {note}
 
 食材: {items}
@@ -110,6 +119,9 @@ def _family_note(family: dict | None) -> str:
     return "家族構成: " + "、".join(parts) + "。この構成に合った料理（辛さ・量・食感など）を提案してください。"
 
 
+_DAY_LABELS = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"]
+
+
 def suggest_recipes(
     items: list[str],
     servings: int,
@@ -117,6 +129,7 @@ def suggest_recipes(
     max_minutes: int | None = None,
     use_up: bool = False,
     family: dict | None = None,
+    days: int | None = None,
 ) -> str:
     """食材リストと人数からレシピ提案テキストを返す。"""
     # select タイプは朝・昼・夜×3のレシピを生成するため応答が長く、タイムアウトを延長する
@@ -130,15 +143,21 @@ def suggest_recipes(
         notes.append(_NOTES["time"].format(max_minutes=max_minutes))
     if use_up:
         notes.append(_NOTES["use_up"])
+    if recipe_type in ("weekly", "select"):
+        notes.append(_NOTES["quantity"])
     family_note = _family_note(family)
     if family_note:
         notes.append(family_note)
 
     template = _PROMPTS.get(recipe_type, _PROMPTS["meal"])
+    days_n = max(1, min(7, days or 7))
+    day_labels = "、".join(_DAY_LABELS[:days_n])
     prompt = template.format(
         servings=servings,
         items="、".join(items),
         note="\n".join(notes),
+        days=days_n,
+        day_labels=day_labels,
     )
     body = {
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],

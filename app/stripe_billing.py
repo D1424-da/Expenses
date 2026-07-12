@@ -24,7 +24,7 @@ logger = logging.getLogger("uvicorn.error")
 STRIPE_SECRET_KEY     = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 STRIPE_PRICE_ID       = os.environ.get("STRIPE_PRICE_ID", "")
-APP_URL               = os.environ.get("APP_URL", "https://expenses-9af61.web.app")
+APP_URL               = os.environ.get("APP_URL", "https://get-tohon.online")
 BETA_CODES            = {c.strip().upper() for c in os.environ.get("BETA_CODES", "").split(",") if c.strip()}
 
 # ---- Firebase Admin SDK（遅延初期化） ---------------------------------------
@@ -188,6 +188,7 @@ def _persist_subscription(uid: str, subscription: dict, customer_id: str | None)
     db = _get_firestore()
     status = subscription.get("status", "unknown")
     period_end = subscription.get("current_period_end")  # Unix timestamp
+    cancel_at_period_end = bool(subscription.get("cancel_at_period_end", False))
 
     ref = (
         db.collection("users")
@@ -201,6 +202,7 @@ def _persist_subscription(uid: str, subscription: dict, customer_id: str | None)
         "stripeCustomerId": customer_id,
         "stripeSubscriptionId": subscription.get("id"),
         "currentPeriodEnd": period_end,
+        "cancelAtPeriodEnd": cancel_at_period_end,
         "updatedAt": admin_fs.SERVER_TIMESTAMP,
     }, merge=True)
     logger.info("Firestore subscription updated: uid=%s status=%s", uid, status)

@@ -7,9 +7,9 @@
   <script src="redirect.js"></script>
   <title>カケイシピ - 買い物した食材からレシピを自動作成する家計アプリ</title>
   <meta name="description" content="レシートを撮るだけで食材を記録し、AIが今夜の献立を自動提案。予算から食材リストも作成。食費節約と料理の悩みを同時に解決するカケイシピ。¥980/月・初月無料。" />
-  <link rel="canonical" href="https://expenses-9af61.web.app/lp" />
+  <link rel="canonical" href="https://get-tohon.online/lp" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://expenses-9af61.web.app/lp" />
+  <meta property="og:url" content="https://get-tohon.online/lp" />
   <meta property="og:title" content="カケイシピ - 買い物した食材からレシピを自動作成する家計アプリ" />
   <meta property="og:description" content="レシートを撮るだけで食材を記録し、AIが今夜の献立を自動提案。食費節約と料理の悩みを同時に解決するカケイシピ。¥980/月・初月無料。" />
   <meta property="og:site_name" content="カケイシピ" />
@@ -123,6 +123,13 @@
     .header-nav { display: flex; align-items: center; gap: 24px; flex: 1; margin-left: 28px; }
     .header-nav-link { color: rgba(255,255,255,.82); text-decoration: none; font-size: .88rem; transition: color .15s; }
     .header-nav-link:hover { color: #fff; }
+    .header-actions { display: flex; align-items: center; gap: 14px; }
+    .header-login-link {
+      color: #fff; text-decoration: underline; text-underline-offset: 3px;
+      font-size: .85rem; font-weight: 600; white-space: nowrap; opacity: .92;
+      transition: opacity .15s;
+    }
+    .header-login-link:hover { opacity: 1; }
 
     /* ── HERO ── */
     .hero {
@@ -615,7 +622,10 @@
   <nav class="header-nav">
     <a class="header-nav-link" href="/blog.html">ブログ</a>
   </nav>
-  <a class="header-cta" href="/login.html">無料で始める</a>
+  <div class="header-actions">
+    <a class="header-login-link" href="/app">ログイン</a>
+    <a class="header-cta" href="/login.html">無料で始める</a>
+  </div>
 </header>
 
 <!-- HERO -->

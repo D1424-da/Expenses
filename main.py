@@ -129,6 +129,7 @@ class RecipeRequest(BaseModel):
     max_minutes: int | None = Field(None, ge=5, le=180)
     use_up: bool = Field(False)
     family: FamilyComposition | None = Field(None)
+    days: int | None = Field(None, ge=1, le=7)
 
 
 @app.post("/api/recipe")
@@ -153,6 +154,7 @@ async def suggest_recipe(
             items, body.servings, body.recipe_type,
             max_minutes=body.max_minutes, use_up=body.use_up,
             family=body.family.model_dump() if body.family else None,
+            days=body.days,
         )
         return JSONResponse({"recipe": text})
     except RuntimeError as exc:

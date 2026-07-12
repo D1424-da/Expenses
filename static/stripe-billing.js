@@ -50,6 +50,15 @@ export function stopBillingSync() {
   _sub = null;
 }
 
+// サブスク解約済み（期間終了後に無料プランへ戻る）なら期限の表示文字列を返す。有効期限なしなら null。
+export function premiumExpiryLabel() {
+  if (!_sub?.cancelAtPeriodEnd) return null;
+  const end = _sub?.currentPeriodEnd;
+  if (typeof end !== "number" || end <= 0) return null;
+  const d = new Date(end * 1000);
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日まで利用可能（解約手続き済み）`;
+}
+
 // サブスクリプションが有効かどうかを返す。
 export function isPremium() {
   if (!_sub) return false;
@@ -91,7 +100,21 @@ export function renderUsageBar(currentMonthCount) {
 function _updatePremiumBadge() {
   const badge = $("premium-badge");
   if (!badge) return;
-  badge.hidden = !isPremium();
+  const premium = isPremium();
+  badge.hidden = !premium;
+
+  if (premium) {
+    const end = _sub?.currentPeriodEnd;
+    if (_sub?.cancelAtPeriodEnd && typeof end === "number" && end > 0) {
+      const d = new Date(end * 1000);
+      const dateStr = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+      badge.textContent = `✨ PRO（${dateStr}まで）`;
+      badge.title = "解約手続き済み — 上記日付以降は無料プランに戻ります";
+    } else {
+      badge.textContent = "✨ PRO";
+      badge.title = "プレミアムプラン";
+    }
+  }
 
   // ベータユーザーには Stripe ポータルボタンを表示しない（顧客 ID 未作成のため）
   const portalWrap = $("account-portal-wrap");
