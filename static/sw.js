@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v10";
+const CACHE = "receipt-v11";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
@@ -62,23 +62,29 @@ self.addEventListener("fetch", (e) => {
     if (path === "/" || path === "/lp" || path.startsWith("/blog")) {
       return; // ブラウザのデフォルト処理に委ねる
     }
+    // キャッシュ・ネットワークいずれも失敗した場合は必ずネットワークへ再フォールバックし、
+    // Promise reject によるブラウザの内部エラーページ（chrome-error://）表示を防ぐ。
     e.respondWith(
-      caches.match("/login.html").then((cached) => cached || fetch(e.request)),
+      caches.match("/login.html")
+        .then((cached) => cached || fetch(e.request))
+        .catch(() => fetch(e.request)),
     );
     return;
   }
 
   // 静的アセット: キャッシュ優先、なければネット取得してキャッシュ
   e.respondWith(
-    caches.match(e.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(e.request).then((resp) => {
-        if (resp && resp.ok && resp.type === "basic") {
-          const clone = resp.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, clone));
-        }
-        return resp;
-      });
-    }),
+    caches.match(e.request)
+      .then((cached) => {
+        if (cached) return cached;
+        return fetch(e.request).then((resp) => {
+          if (resp && resp.ok && resp.type === "basic") {
+            const clone = resp.clone();
+            caches.open(CACHE).then((c) => c.put(e.request, clone));
+          }
+          return resp;
+        });
+      })
+      .catch(() => fetch(e.request)),
   );
 });
