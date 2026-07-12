@@ -735,6 +735,18 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   flex-shrink: 0;
 }
 .login-error { color: var(--danger); font-size: 0.83rem; margin-top: 14px; }
+
+/* メール/パスワード認証フォーム */
+.email-divider { display: flex; align-items: center; gap: 10px; margin: 18px 0 14px; color: var(--muted); font-size: 0.82rem; }
+.email-divider::before,.email-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.email-form { display: flex; flex-direction: column; gap: 10px; }
+.email-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--r-btn); font-size: 0.95rem; background: var(--bg); color: var(--fg); box-sizing: border-box; }
+.email-input:focus { outline: none; border-color: var(--primary); }
+.email-submit-btn { width: 100%; padding: 13px; background: var(--primary); color: #fff; border: none; border-radius: var(--r-btn); font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+.email-submit-btn:hover { opacity: .88; }
+.email-submit-btn:disabled { opacity: .5; cursor: default; }
+.email-sub-actions { display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+.email-text-btn { background: none; border: none; color: var(--primary); font-size: 0.8rem; cursor: pointer; padding: 0; text-decoration: underline; }
 .inapp-warning {
   background: var(--badge-mid-bg); border: 1.5px solid var(--badge-mid-br);
   border-radius: var(--r-card-sm); padding: 16px 14px; margin-bottom: 20px; text-align: left;
