@@ -24,7 +24,7 @@ logger = logging.getLogger("uvicorn.error")
 STRIPE_SECRET_KEY     = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 STRIPE_PRICE_ID       = os.environ.get("STRIPE_PRICE_ID", "")
-APP_URL               = os.environ.get("APP_URL", "https://expenses-9af61.web.app")
+APP_URL               = os.environ.get("APP_URL", "https://get-tohon.online")
 BETA_CODES            = {c.strip().upper() for c in os.environ.get("BETA_CODES", "").split(",") if c.strip()}
 
 # ---- Firebase Admin SDK（遅延初期化） ---------------------------------------
@@ -72,7 +72,10 @@ def _stripe():
 
 
 async def create_checkout_session(uid: str, email: str) -> str:
-    """Stripe Checkout セッションを作成して URL を返す。"""
+    """Stripe Checkout セッションを作成して URL を返す。
+    14日間の無料トライアルはカード登録不要の ensure_trial() 側で提供するため、
+    ここでは付与しない（Checkoutに進む＝トライアル終了後の本契約）。
+    """
     if not STRIPE_PRICE_ID:
         raise HTTPException(503, "Stripe Price ID が未設定です（STRIPE_PRICE_ID）。")
     stripe = _stripe()
@@ -83,11 +86,24 @@ async def create_checkout_session(uid: str, email: str) -> str:
         customer_email=email,
         metadata={"uid": uid},
         subscription_data={"metadata": {"uid": uid}},
-        success_url=f"{APP_URL}/?checkout=success",
-        cancel_url=f"{APP_URL}/?checkout=cancel",
+        success_url=f"{APP_URL}/app?checkout=success",
+        cancel_url=f"{APP_URL}/app?checkout=cancel",
         idempotency_key=f"checkout-{uid}-{int(time.time() // 300)}",
     )
     return session.url
+
+
+async def sync_subscription(uid: str, email: str) -> dict:
+    """チェックアウト後にサブスクリプション状態を Stripe から取得して Firestore に同期する。"""
+    stripe = _stripe()
+    customers = stripe.Customer.list(email=email, limit=5)
+    for customer in customers.auto_paging_iter():
+        subs = stripe.Subscription.list(customer=customer.id, status="all", limit=5)
+        for sub in subs.auto_paging_iter():
+            if sub.get("metadata", {}).get("uid") == uid or True:
+                _persist_subscription(uid, sub, customer.id)
+                return {"status": sub.get("status"), "synced": True}
+    return {"status": "not_found", "synced": False}
 
 
 async def create_portal_session(uid: str) -> str:
@@ -103,7 +119,7 @@ async def create_portal_session(uid: str) -> str:
         raise HTTPException(404, "Stripe 顧客 ID が見つかりません。")
     session = stripe.billing_portal.Session.create(
         customer=customer_id,
-        return_url=f"{APP_URL}/",
+        return_url=f"{APP_URL}/app",
     )
     return session.url
 
@@ -169,12 +185,45 @@ async def redeem_beta_code(uid: str, code: str) -> bool:
     return True
 
 
+TRIAL_PERIOD_DAYS = 14
+
+
+async def ensure_trial(uid: str) -> dict:
+    """初回ログイン時に14日間の無料トライアルを開始する。
+    既にサブスクリプション情報がある場合は何もしない（トライアルは1ユーザー1回のみ）。
+    トライアル終了後は currentPeriodEnd が過ぎるため、isPremium() 判定により自動的に無料プランへ戻る。
+    """
+    from firebase_admin import firestore as admin_fs
+    db = _get_firestore()
+    ref = (
+        db.collection("users")
+        .document(uid)
+        .collection("settings")
+        .document("subscription")
+    )
+    snap = ref.get()
+    if snap.exists:
+        return {"started": False}
+
+    now = int(time.time())
+    ref.set({
+        "status": "active",
+        "plan": "trial",
+        "trialStart": now,
+        "currentPeriodEnd": now + TRIAL_PERIOD_DAYS * 86400,
+        "updatedAt": admin_fs.SERVER_TIMESTAMP,
+    })
+    logger.info("Trial started: uid=%s", uid)
+    return {"started": True}
+
+
 def _persist_subscription(uid: str, subscription: dict, customer_id: str | None) -> None:
     """サブスクリプション情報を Firestore の users/{uid}/settings/subscription に書き込む。"""
     from firebase_admin import firestore as admin_fs
     db = _get_firestore()
     status = subscription.get("status", "unknown")
     period_end = subscription.get("current_period_end")  # Unix timestamp
+    cancel_at_period_end = bool(subscription.get("cancel_at_period_end", False))
 
     ref = (
         db.collection("users")
@@ -188,6 +237,7 @@ def _persist_subscription(uid: str, subscription: dict, customer_id: str | None)
         "stripeCustomerId": customer_id,
         "stripeSubscriptionId": subscription.get("id"),
         "currentPeriodEnd": period_end,
+        "cancelAtPeriodEnd": cancel_at_period_end,
         "updatedAt": admin_fs.SERVER_TIMESTAMP,
     }, merge=True)
     logger.info("Firestore subscription updated: uid=%s status=%s", uid, status)

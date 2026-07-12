@@ -6,6 +6,11 @@
   <title>カケイシピ | 家計管理×レシピ自動作成</title>
   <meta name="description" content="レシートを撮るだけで家計簿を自動入力。AI-OCRで店名・金額・品目を読み取り、月次予算・最安値アラート・レシピ提案まで対応。" />
 
+  <!-- firebaseapp.com → web.app へリダイレクト（Google認証ポップアップのCSP衝突対策） -->
+  <script src="redirect.js"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.json" />
+
   <!-- Google Search Console 所有権確認 -->
   <meta name=google-site-verification=8_G9TeYLqQrvZRTtXOrlCEoyOcc_1PzWsxofIMvMaQ8/>
 
@@ -45,8 +50,23 @@
         <span class="g-icon">G</span> Google でログイン
       </button>
       <p id="login-error" class="login-error" hidden></p>
+
+      <!-- メール/パスワード認証 -->
+      <div class="email-divider"><span>または</span></div>
+      <form id="email-login-form" class="email-form">
+        <input id="email-input" type="email" placeholder="メールアドレス" autocomplete="email" required class="email-input" />
+        <input id="password-input" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password" required class="email-input" />
+        <button id="email-submit-btn" type="submit" class="email-submit-btn">ログイン</button>
+        <p id="email-login-error" class="login-error" hidden></p>
+        <div class="email-sub-actions">
+          <button type="button" id="email-reset-btn" class="email-text-btn">パスワードを忘れた方</button>
+          <button type="button" id="email-mode-toggle" class="email-text-btn">アカウントを新規作成</button>
+        </div>
+      </form>
+
       <p class="login-trust">月10件まで永久無料 · いつでも退会OK</p>
-      <p class="login-blog-link"><a href="/blog.html">ブログ</a> · <a href="/">このアプリについて</a></p>
+      <p class="login-blog-link"><a href="blog.html">ブログ</a> · <a href="/">このアプリについて</a></p>
+      <p class="login-legal-link"><a href="terms.html">利用規約</a> · <a href="privacy.html">プライバシーポリシー</a> · <a href="tokushoho.html">特定商取引法に基づく表記</a></p>
     </div>
   </div>
 
@@ -61,9 +81,8 @@
         <button id="saved-recipes-btn" class="topbar-btn" title="保存済みレシピ">📚</button>
         <button id="compare-btn" class="topbar-btn" title="価格比較">🔎 価格比較</button>
         <button id="export-btn" class="topbar-btn" title="CSVでエクスポート">📥 CSV</button>
-        <span id="premium-badge" class="premium-badge" hidden title="プレミアムプラン">✨ PRO</span>
-        <a href="/" class="topbar-btn topbar-btn--blog" title="このアプリについて">🏠 LP</a>
-        <a href="/blog.html" class="topbar-btn topbar-btn--blog" title="ブログ">📝 ブログ</a>
+        <span id="premium-badge" class="premium-badge" hidden title="プレミアムプラン"></span>
+        <a href="blog.html" class="topbar-btn topbar-btn--blog" title="ブログ">📝 ブログ</a>
         <button id="account-btn" class="topbar-btn topbar-btn--account" title="アカウント">⚙️</button>
       </div>
     </header>
@@ -287,13 +306,22 @@
           <span class="recipe-label">種類</span>
           <div class="recipe-tabs" id="recipe-type-tabs" role="group" aria-label="レシピ種類">
             <button class="recipe-tab" data-rtype="meal">1食分</button>
+            <button class="recipe-tab" data-rtype="select">朝・昼・夜を選ぶ</button>
             <button class="recipe-tab" data-rtype="weekly">週間献立</button>
           </div>
         </div>
         <div id="recipe-plan-start-row" class="recipe-row" hidden>
-          <span class="recipe-label">開始日</span>
+          <span class="recipe-label">対象期間</span>
           <input type="date" id="recipe-plan-start" aria-label="献立開始日" />
-          <span class="recipe-plan-start-hint">（カレンダー反映の起点）</span>
+          <span class="recipe-date-sep">〜</span>
+          <input type="date" id="recipe-plan-end" aria-label="献立終了日" />
+          <span class="recipe-plan-start-hint">（最大7日間・カレンダー反映）</span>
+        </div>
+        <p id="recipe-plan-range-error" class="recipe-plan-range-error" hidden></p>
+        <div id="recipe-select-day-row" class="recipe-row" hidden>
+          <span class="recipe-label">対象日</span>
+          <input type="date" id="recipe-select-day" aria-label="献立を保存する日" />
+          <span class="recipe-plan-start-hint">（この日の朝食・昼食・夕食として保存）</span>
         </div>
         <div class="recipe-row">
           <span class="recipe-label">時短</span>
@@ -336,6 +364,14 @@
           <button id="recipe-save-btn" type="button">📚 保存</button>
           <button id="recipe-shopping-btn" type="button">🛒 リストに追加</button>
           <button id="recipe-calendar-btn" type="button" hidden>📅 カレンダーに反映</button>
+        </div>
+        <!-- 朝・昼・夜を選ぶ：3択カード選択UI -->
+        <div id="recipe-select-picker" class="recipe-select-picker" hidden>
+          <div id="recipe-select-groups"></div>
+          <div class="recipe-select-actions">
+            <button id="recipe-select-calendar-btn" type="button" class="btn-primary">📅 カレンダーに追加</button>
+            <button id="recipe-select-save-btn" type="button">📚 レシピを保存</button>
+          </div>
         </div>
         <!-- カレンダー食事スロット選択パネル（1食分をカレンダーに追加するとき） -->
         <div id="recipe-meal-slot-picker" class="recipe-meal-slot-picker" hidden>
@@ -487,7 +523,7 @@
             </div>
             <div class="upgrade-plan upgrade-plan--featured">
               <div class="plan-badge">おすすめ</div>
-              <div class="plan-name">プレミアム <span class="plan-price">¥480<span class="plan-period">/月</span></span></div>
+              <div class="plan-name">プレミアム <span class="plan-price">¥980<span class="plan-period">/月</span></span></div>
               <ul class="plan-features">
                 <li>✅ 記録件数 <strong>無制限</strong></li>
                 <li>✅ AI レシートOCR</li>
@@ -534,6 +570,7 @@
             <div class="account-plan-label">現在のプラン</div>
             <div class="account-plan-name">✨ プレミアムプラン</div>
             <p class="account-plan-desc">記録件数無制限・すべての機能が使えます。</p>
+            <p id="account-plan-expiry" class="account-plan-expiry" hidden></p>
             <div id="account-portal-wrap">
               <button id="account-portal-btn" class="account-action-btn account-action-btn--sub" type="button">サブスクリプションを管理・解約する</button>
               <p class="account-portal-hint">Stripe の管理ページへ移動します。解約・領収書の確認ができます。</p>

@@ -19,7 +19,7 @@ from app import net
 
 logger = logging.getLogger("uvicorn.error")
 
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
 
 # フロント(static/app.js)と同一のプロンプト。支店名(branch)を含む。
 PROMPT = """あなたは日本のレシートを読み取るアシスタントです。

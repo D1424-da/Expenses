@@ -125,10 +125,11 @@ class FamilyComposition(BaseModel):
 class RecipeRequest(BaseModel):
     items: list[Annotated[str, Field(max_length=200)]] = Field(..., min_length=1, max_length=50)
     servings: int = Field(2, ge=1, le=20)
-    recipe_type: str = Field("meal", pattern="^(meal|weekly)$")
+    recipe_type: str = Field("meal", pattern="^(meal|weekly|select)$")
     max_minutes: int | None = Field(None, ge=5, le=180)
     use_up: bool = Field(False)
     family: FamilyComposition | None = Field(None)
+    days: int | None = Field(None, ge=1, le=7)
 
 
 @app.post("/api/recipe")
@@ -144,20 +145,25 @@ async def suggest_recipe(
     _rate_limiter.check(security.client_ip(request))
     if not body.items:
         raise HTTPException(400, "食材リストが空です。")
+    # select タイプはプロンプトが長いため食材数を15品に絞る（Gemini 負荷軽減）
+    items = body.items[:15] if body.recipe_type == "select" else body.items
     from app import recipe as recipe_mod
     try:
         text = await asyncio.to_thread(
             recipe_mod.suggest_recipes,
-            body.items, body.servings, body.recipe_type,
+            items, body.servings, body.recipe_type,
             max_minutes=body.max_minutes, use_up=body.use_up,
             family=body.family.model_dump() if body.family else None,
+            days=body.days,
         )
         return JSONResponse({"recipe": text})
     except RuntimeError as exc:
         msg = str(exc)
+        logger.error("Recipe suggest RuntimeError: %s", msg)
         if "GEMINI_API_KEY が設定されていません" in msg:
             raise HTTPException(503, "レシピ提案サービスが設定されていません（GEMINI_API_KEY を確認してください）。") from exc
-        raise HTTPException(503, "Gemini API でエラーが発生しました。食材の数を減らして再試行してください。") from exc
+        # Gemini からのエラー詳細（429課金/レート制限など）をそのまま返して調査しやすくする
+        raise HTTPException(503, f"Gemini API でエラーが発生しました: {msg[:300]}") from exc
     except Exception as exc:  # noqa: BLE001
         logger.exception("Recipe suggestion failed")
         raise HTTPException(500, "レシピの提案に失敗しました。時間をおいて再試行してください。") from exc
@@ -176,12 +182,28 @@ async def stripe_checkout(
     authorization: str | None = Header(default=None),
 ) -> JSONResponse:
     """Stripe Checkout セッションを作成し URL を返す。Firebase 認証必須。"""
+    _rate_limiter.check(security.client_ip(request))
     uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
     if not uid:
         raise HTTPException(401, "認証が必要です。")
     from app import stripe_billing
     url = await stripe_billing.create_checkout_session(uid, body.email)
     return JSONResponse({"url": url})
+
+
+@app.post("/api/trial/ensure")
+async def trial_ensure(
+    request: Request,
+    authorization: str | None = Header(default=None),
+) -> JSONResponse:
+    """初回ログイン時に14日間の無料トライアルを開始する。Firebase 認証必須。"""
+    _rate_limiter.check(security.client_ip(request))
+    uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
+    if not uid:
+        raise HTTPException(401, "認証が必要です。")
+    from app import stripe_billing
+    result = await stripe_billing.ensure_trial(uid)
+    return JSONResponse(result)
 
 
 class BetaRedeemRequest(BaseModel):
@@ -206,11 +228,33 @@ async def beta_redeem(
     return JSONResponse({"ok": True})
 
 
+class SyncRequest(BaseModel):
+    email: str = Field(..., max_length=254)
+
+
+@app.post("/api/stripe/sync")
+async def stripe_sync(
+    request: Request,
+    body: SyncRequest,
+    authorization: str | None = Header(default=None),
+) -> JSONResponse:
+    """チェックアウト直後にサブスクリプション状態を Stripe から取得して Firestore に同期する。"""
+    _rate_limiter.check(security.client_ip(request))
+    uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
+    if not uid:
+        raise HTTPException(401, "認証が必要です。")
+    from app import stripe_billing
+    result = await stripe_billing.sync_subscription(uid, body.email)
+    return JSONResponse(result)
+
+
 @app.post("/api/stripe/portal")
 async def stripe_portal(
+    request: Request,
     authorization: str | None = Header(default=None),
 ) -> JSONResponse:
     """Stripe カスタマーポータル URL を返す（解約・領収書確認用）。Firebase 認証必須。"""
+    _rate_limiter.check(security.client_ip(request))
     uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
     if not uid:
         raise HTTPException(401, "認証が必要です。")

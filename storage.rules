@@ -1,0 +1,10 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Firebase Storage は現在未使用（レシート画像はバックエンドAPIで処理し保存しない）。
+    // 誤って公開バケットになることを防ぐため、明示的に全アクセスを拒否する。
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

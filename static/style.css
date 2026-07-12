@@ -720,6 +720,15 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   text-decoration: none;
 }
 .login-blog-link a:hover { text-decoration: underline; }
+.login-legal-link {
+  margin-top: 4px;
+  font-size: .68rem;
+  text-align: center;
+  color: var(--muted);
+  opacity: .75;
+}
+.login-legal-link a { color: var(--muted); text-decoration: none; }
+.login-legal-link a:hover { text-decoration: underline; }
 .google-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   width: 100%; padding: 17px; font-size: 1rem; font-weight: 700;
@@ -735,6 +744,18 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   flex-shrink: 0;
 }
 .login-error { color: var(--danger); font-size: 0.83rem; margin-top: 14px; }
+
+/* メール/パスワード認証フォーム */
+.email-divider { display: flex; align-items: center; gap: 10px; margin: 18px 0 14px; color: var(--muted); font-size: 0.82rem; }
+.email-divider::before,.email-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.email-form { display: flex; flex-direction: column; gap: 10px; }
+.email-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--r-btn); font-size: 0.95rem; background: var(--bg); color: var(--fg); box-sizing: border-box; }
+.email-input:focus { outline: none; border-color: var(--primary); }
+.email-submit-btn { width: 100%; padding: 13px; background: var(--primary); color: #fff; border: none; border-radius: var(--r-btn); font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+.email-submit-btn:hover { opacity: .88; }
+.email-submit-btn:disabled { opacity: .5; cursor: default; }
+.email-sub-actions { display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+.email-text-btn { background: none; border: none; color: var(--primary); font-size: 0.8rem; cursor: pointer; padding: 0; text-decoration: underline; }
 .inapp-warning {
   background: var(--badge-mid-bg); border: 1.5px solid var(--badge-mid-br);
   border-radius: var(--r-card-sm); padding: 16px 14px; margin-bottom: 20px; text-align: left;
@@ -1011,6 +1032,7 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 }
 .recipe-date-sep { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
 .recipe-plan-start-hint { font-size: 0.75rem; color: var(--muted); }
+.recipe-plan-range-error { color: var(--c-err, #c0392b); font-size: 0.8rem; margin: -6px 0 8px; }
 #recipe-plan-start { padding: 5px 8px; font-size: 0.82rem; border: 1.5px solid var(--border); border-radius: 8px; background: var(--stone); color: var(--ink); }
 .recipe-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .recipe-tab {
@@ -1092,6 +1114,29 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 }
 .dish-selector-actions { display: flex; gap: 8px; }
 .dish-selector-actions button { flex: 1; font-size: 0.88rem; padding: 11px; }
+
+/* 朝・昼・夜 3択カード選択UI */
+.recipe-select-picker { margin-top: 16px; }
+.meal-select-group { margin-bottom: 18px; }
+.meal-select-heading { font-size: 0.92rem; font-weight: 700; color: var(--sage); margin-bottom: 8px; }
+.meal-select-cards { display: flex; flex-direction: column; gap: 8px; }
+@media (min-width: 480px) { .meal-select-cards { flex-direction: row; } }
+.meal-select-card {
+  flex: 1; padding: 12px 14px; background: var(--bg);
+  border: 2px solid var(--border); border-radius: var(--r-btn);
+  font-size: 0.88rem; color: var(--fg); cursor: pointer;
+  text-align: left; transition: border-color .15s, background .15s;
+  min-height: 48px;
+}
+.meal-select-card:hover { border-color: var(--sage); background: var(--sage-light); }
+.meal-select-card.selected {
+  border-color: var(--sage); background: var(--sage-light);
+  font-weight: 600; color: var(--sage-dark, var(--sage));
+}
+.meal-select-card-title { display: block; }
+.recipe-select-actions { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.recipe-select-actions button { flex: 1; min-width: 140px; font-size: 0.9rem; padding: 12px 10px; border-radius: var(--r-btn); }
+.recipe-select-actions button:disabled { opacity: .5; cursor: default; }
 /* 汎用ボタンバリアント */
 .btn-primary { background: var(--sage); color: #fff; border: none; border-radius: var(--r-btn); cursor: pointer; }
 .btn-primary:hover { filter: brightness(1.08); }
@@ -1679,6 +1724,11 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   line-height: 1.5;
 }
 .account-plan-premium .account-plan-desc { color: rgba(255,255,255,.75); }
+.account-plan-expiry {
+  font-size: 0.78rem; font-weight: 600; color: #fff;
+  background: rgba(255,255,255,.16); border-radius: 8px;
+  padding: 7px 10px; margin: -6px 0 14px;
+}
 .account-action-btn {
   width: 100%;
   padding: 13px 16px;

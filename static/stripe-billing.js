@@ -11,13 +11,14 @@ import { log, logErr } from "./log.js";
 
 export const FREE_LIMIT = 10;
 
-let _db, _getUser;
+let _db, _getUser, _onSubChange;
 let _sub = null;         // キャッシュ済みサブスクリプション情報
 let _unsubSub = null;    // Firestore リスナーの解除関数
 
-export function initBilling({ db, getUser }) {
+export function initBilling({ db, getUser, onSubChange }) {
   _db = db;
   _getUser = getUser;
+  _onSubChange = onSubChange;
 
   $("upgrade-close").onclick        = () => closeModal("upgrade-modal");
   $("upgrade-checkout-btn").onclick = _startCheckout;
@@ -38,16 +39,48 @@ export function startBillingSync() {
     _sub = snap.exists() ? snap.data() : null;
     log("課金状態更新:", _sub?.status ?? "無料");
     _updatePremiumBadge();
+    // トライアル開始などでプレミアム状態が変わったら、利用状況バナーやゲートを即座に再反映する
+    if (_onSubChange) _onSubChange();
   }, (err) => {
     logErr("課金状態取得エラー:", err.message);
     _sub = null;
   });
 }
 
+// 初回ログイン時に呼ぶ。サブスクリプション情報が未作成なら14日間の無料トライアルを開始する。
+export async function ensureTrial() {
+  const user = _getUser();
+  if (!user) return;
+  try {
+    const token = await user.getIdToken();
+    await fetch(`${OCR_API_BASE}/api/trial/ensure`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}` },
+    });
+  } catch (err) {
+    logErr("トライアル開始エラー:", err.message);
+  }
+}
+
 // ログアウト時に呼ぶ。
 export function stopBillingSync() {
   if (_unsubSub) { _unsubSub(); _unsubSub = null; }
   _sub = null;
+}
+
+// サブスク解約済み（期間終了後に無料プランへ戻る）なら期限の表示文字列を返す。有効期限なしなら null。
+export function premiumExpiryLabel() {
+  const end = _sub?.currentPeriodEnd;
+  if (typeof end !== "number" || end <= 0) return null;
+  const d = new Date(end * 1000);
+  const dateStr = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+  if (_sub?.plan === "trial") {
+    return `${dateStr}まで無料トライアル中（以降は有料プランへの登録が必要です）`;
+  }
+  if (_sub?.cancelAtPeriodEnd) {
+    return `${dateStr}まで利用可能（解約手続き済み）`;
+  }
+  return null;
 }
 
 // サブスクリプションが有効かどうかを返す。
@@ -91,7 +124,25 @@ export function renderUsageBar(currentMonthCount) {
 function _updatePremiumBadge() {
   const badge = $("premium-badge");
   if (!badge) return;
-  badge.hidden = !isPremium();
+  const premium = isPremium();
+  badge.hidden = !premium;
+
+  if (premium) {
+    const end = _sub?.currentPeriodEnd;
+    const dateStr = (typeof end === "number" && end > 0)
+      ? (() => { const d = new Date(end * 1000); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`; })()
+      : null;
+    if (_sub?.plan === "trial" && dateStr) {
+      badge.textContent = `🎁 トライアル中（${dateStr}まで）`;
+      badge.title = "無料トライアル期間中です。終了後は有料プランへの登録が必要になります。";
+    } else if (_sub?.cancelAtPeriodEnd && dateStr) {
+      badge.textContent = `✨ PRO（${dateStr}まで）`;
+      badge.title = "解約手続き済み — 上記日付以降は無料プランに戻ります";
+    } else {
+      badge.textContent = "✨ PRO";
+      badge.title = "プレミアムプラン";
+    }
+  }
 
   // ベータユーザーには Stripe ポータルボタンを表示しない（顧客 ID 未作成のため）
   const portalWrap = $("account-portal-wrap");
@@ -139,6 +190,9 @@ async function _redeemBetaCode() {
 export async function openPortal() {
   const user = _getUser();
   if (!user) return;
+  const btn = document.getElementById("account-portal-btn");
+  const originalText = btn?.textContent ?? "";
+  if (btn) { btn.disabled = true; btn.textContent = "接続中…"; }
   try {
     const token = await user.getIdToken();
     const res = await fetch(`${OCR_API_BASE}/api/stripe/portal`, {
@@ -155,6 +209,7 @@ export async function openPortal() {
   } catch (err) {
     logErr("ポータルエラー:", err.message);
     alert("管理ページへの移動に失敗しました: " + err.message);
+    if (btn) { btn.disabled = false; btn.textContent = originalText; }
   }
 }
 

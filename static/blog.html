@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ブログ - カケイシピ｜家計管理×レシピ自動作成</title>
+    <script src="redirect.js"></script>
+    <!-- GA4 (Google Analytics) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+  <script src="analytics.js"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.json" />
+<title>ブログ - カケイシピ｜家計管理×レシピ自動作成</title>
   <meta name="description" content="家計管理・節約・レシピ活用に関するお役立ち情報をお届けします。カケイシピ公式ブログ。レシートからレシピ、予算からお買い物リストまで。" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -178,6 +184,7 @@
     .tab:hover, .tab.active {
       border-color: var(--g1); background: var(--g1); color: #fff;
     }
+    .category-empty-hint { color: var(--mute); font-size: .88rem; margin: -28px 0 48px; }
 
     /* ── FEATURED ── */
     .featured {
@@ -431,10 +438,10 @@
     <span class="logo-k">カケイ</span><span class="logo-s">シピ</span>
   </a>
   <nav class="hn">
-    <a href="/blog.html">ブログ</a>
-    <a href="/">アプリについて</a>
+    <a href="blog.html">ブログ</a>
+    <a href="index.html">アプリについて</a>
     <span class="price-chip">¥980/月</span>
-    <a href="/login.html" class="cta-btn">無料で始める</a>
+    <a href="login.html" class="cta-btn">無料で始める</a>
   </nav>
 </header>
 
@@ -478,17 +485,18 @@
 <main class="main">
 
   <!-- CATEGORY TABS -->
-  <div class="tabs">
-    <button class="tab active">すべて</button>
-    <button class="tab">節約術</button>
-    <button class="tab">家計管理</button>
-    <button class="tab">レシピ</button>
-    <button class="tab">アプリ活用</button>
-    <button class="tab">ライフスタイル</button>
+  <div class="tabs" id="category-tabs">
+    <button class="tab active" data-cat="すべて">すべて</button>
+    <button class="tab" data-cat="節約術">節約術</button>
+    <button class="tab" data-cat="家計管理">家計管理</button>
+    <button class="tab" data-cat="レシピ">レシピ</button>
+    <button class="tab" data-cat="アプリ活用">アプリ活用</button>
+    <button class="tab" data-cat="ライフスタイル">ライフスタイル</button>
   </div>
+  <p id="category-empty-hint" class="category-empty-hint" hidden>このカテゴリの記事はまだありません。</p>
 
   <!-- FEATURED -->
-  <a href="/blog/shopping-to-recipe.html" class="featured">
+  <a href="/blog/shopping-to-recipe.html" class="featured" data-cat="レシピ">
     <div class="feat-visual">
       <div class="feat-flow">
         <div class="feat-flow-step">🛒 今日の買い物を記録</div>
@@ -521,7 +529,7 @@
 
   <div class="grid">
 
-    <a href="/blog/budget-category-tips.html" class="card">
+    <a href="/blog/budget-category-tips.html" class="card" data-cat="家計管理">
       <div class="card-img" style="background: linear-gradient(135deg, #122E1E 0%, #0A1810 100%);">📂</div>
       <div class="card-body">
         <div class="card-cat">家計管理</div>
@@ -531,7 +539,7 @@
       </div>
     </a>
 
-    <a href="/blog/receipt-ocr-how-it-works.html" class="card">
+    <a href="/blog/receipt-ocr-how-it-works.html" class="card" data-cat="アプリ活用">
       <div class="card-img" style="background: linear-gradient(135deg, #1E1A2E 0%, #100D1A 100%);">📸</div>
       <div class="card-body">
         <div class="card-cat">アプリ活用</div>
@@ -541,7 +549,7 @@
       </div>
     </a>
 
-    <a href="/blog/household-review-monthly.html" class="card">
+    <a href="/blog/household-review-monthly.html" class="card" data-cat="ライフスタイル">
       <div class="card-img" style="background: linear-gradient(135deg, #122E22 0%, #091A12 100%);">📅</div>
       <div class="card-body">
         <div class="card-cat">ライフスタイル</div>
@@ -551,7 +559,7 @@
       </div>
     </a>
 
-    <a href="/blog/price-compare-supermarket.html" class="card">
+    <a href="/blog/price-compare-supermarket.html" class="card" data-cat="節約術">
       <div class="card-img" style="background: linear-gradient(135deg, #2E1A0A 0%, #1A0E04 100%);">🏷️</div>
       <div class="card-body">
         <div class="card-cat">節約術</div>
@@ -561,7 +569,7 @@
       </div>
     </a>
 
-    <a href="/blog/savings-improvement.html" class="card">
+    <a href="/blog/savings-improvement.html" class="card" data-cat="節約術">
       <div class="card-img" style="background: linear-gradient(135deg, #162A16 0%, #0A180A 100%);">💰</div>
       <div class="card-body">
         <div class="card-cat">節約術</div>
@@ -571,7 +579,7 @@
       </div>
     </a>
 
-    <a href="/blog/kakeibo-template-data.html" class="card">
+    <a href="/blog/kakeibo-template-data.html" class="card" data-cat="家計管理">
       <div class="card-img" style="background: linear-gradient(135deg, #1E162E 0%, #12101A 100%);">📁</div>
       <div class="card-body">
         <div class="card-cat">家計管理</div>
@@ -596,7 +604,7 @@
       <div class="pricing-amount">
         <span class="yen">¥</span><span class="num">980</span><span class="per"> / 月</span>
       </div>
-      <p class="pricing-note">初月無料・いつでも解約可能</p>
+      <p class="pricing-note">14日間無料・いつでも解約可能</p>
       <ul class="pricing-features">
         <li><span class="ck">✓</span> レシートOCRで自動入力（無制限）</li>
         <li><span class="ck">✓</span> 買い物した食材からレシピ自動作成</li>
@@ -605,7 +613,7 @@
         <li><span class="ck">✓</span> 最安値アラート・価格比較</li>
         <li><span class="ck">✓</span> CSVエクスポート</li>
       </ul>
-      <a href="/login.html" class="pricing-cta">今すぐ無料で試す</a>
+      <a href="login.html" class="pricing-cta">今すぐ無料で試す</a>
     </div>
   </div>
 
@@ -617,56 +625,56 @@
 
   <div class="more-grid">
 
-    <a href="/blog/spending-analysis.html" class="mini-card">
+    <a href="/blog/spending-analysis.html" class="mini-card" data-cat="家計管理">
       <span class="mini-icon">📊</span>
       <div class="mini-cat">家計管理</div>
       <div class="mini-title">支出管理アプリで家計分析｜月別・カテゴリ別を自動集計</div>
       <div class="mini-date">2026年4月22日</div>
     </a>
 
-    <a href="/blog/login-free-kakeibo.html" class="mini-card">
+    <a href="/blog/login-free-kakeibo.html" class="mini-card" data-cat="アプリ活用">
       <span class="mini-icon">🔓</span>
       <div class="mini-cat">アプリ活用</div>
       <div class="mini-title">ログイン不要の家計簿 vs Googleログイン型の比較</div>
       <div class="mini-date">2026年4月8日</div>
     </a>
 
-    <a href="/blog/food-cost-cut-20000.html" class="mini-card">
+    <a href="/blog/food-cost-cut-20000.html" class="mini-card" data-cat="節約術">
       <span class="mini-icon">🛒</span>
       <div class="mini-cat">節約術</div>
       <div class="mini-title">食費を月2万円削減した主婦の「買い物リスト」の作り方</div>
       <div class="mini-date">2026年6月25日</div>
     </a>
 
-    <a href="/blog/ai-recipe-weekly-plan.html" class="mini-card">
+    <a href="/blog/ai-recipe-weekly-plan.html" class="mini-card" data-cat="レシピ">
       <span class="mini-icon">🍳</span>
       <div class="mini-cat">レシピ</div>
       <div class="mini-title">AIが食材から1週間の献立を自動提案する方法</div>
       <div class="mini-date">2026年6月18日</div>
     </a>
 
-    <a href="/blog/receipt-kakeibo-basics.html" class="mini-card">
+    <a href="/blog/receipt-kakeibo-basics.html" class="mini-card" data-cat="家計管理">
       <span class="mini-icon">🧾</span>
       <div class="mini-cat">家計管理</div>
       <div class="mini-title">レシートを撮るだけ！AI家計簿の基本ガイド</div>
       <div class="mini-date">2026年7月1日</div>
     </a>
 
-    <a href="/blog/no-ads-kakeibo.html" class="mini-card">
+    <a href="/blog/no-ads-kakeibo.html" class="mini-card" data-cat="アプリ活用">
       <span class="mini-icon">🚫</span>
       <div class="mini-cat">アプリ活用</div>
       <div class="mini-title">広告なし家計簿アプリの選び方とメリット</div>
       <div class="mini-date">2026年6月1日</div>
     </a>
 
-    <a href="/blog/family-kakeibo.html" class="mini-card">
+    <a href="/blog/family-kakeibo.html" class="mini-card" data-cat="ライフスタイル">
       <span class="mini-icon">👨‍👩‍👧</span>
       <div class="mini-cat">ライフスタイル</div>
       <div class="mini-title">家族で共有できる家計簿の選び方</div>
       <div class="mini-date">2026年5月15日</div>
     </a>
 
-    <a href="/blog/kakeibo-app-compare.html" class="mini-card">
+    <a href="/blog/kakeibo-app-compare.html" class="mini-card" data-cat="アプリ活用">
       <span class="mini-icon">⚖️</span>
       <div class="mini-cat">アプリ活用</div>
       <div class="mini-title">家計簿アプリ比較2026｜無料・有料を徹底比較</div>
@@ -681,21 +689,18 @@
 <footer class="ft">
   <div class="ft-logo"><span class="fk">カケイ</span><span class="fs">シピ</span></div>
   <nav class="ft-links">
-    <a href="/">ホーム</a>
-    <a href="/blog.html">ブログ</a>
-    <a href="/">アプリについて</a>
-    <a href="/login.html">ログイン</a>
+    <a href="index.html">ホーム</a>
+    <a href="blog.html">ブログ</a>
+    <a href="index.html">アプリについて</a>
+    <a href="login.html">ログイン</a>
+    <a href="terms.html">利用規約</a>
+    <a href="privacy.html">プライバシーポリシー</a>
+    <a href="tokushoho.html">特定商取引法に基づく表記</a>
+    <a href="contact.html">お問い合わせ</a>
   </nav>
   <p>© 2026 カケイシピ</p>
 </footer>
 
-<script>
-  document.querySelectorAll(".tab").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-    });
-  });
-</script>
+<script src="blog-filter.js"></script>
 </body>
 </html>

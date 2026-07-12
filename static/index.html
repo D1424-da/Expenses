@@ -3,8 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- firebaseapp.com → web.app へリダイレクト -->
+  <script src="redirect.js"></script>
+      <!-- GA4 (Google Analytics) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+  <script src="analytics.js"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.json" />
   <title>カケイシピ - 買い物した食材からレシピを自動作成する家計アプリ</title>
-  <meta name="description" content="レシートを撮るだけで食材を記録し、AIが今夜の献立を自動提案。予算から食材リストも作成。食費節約と料理の悩みを同時に解決するカケイシピ。¥980/月・初月無料。" />
+  <meta name="description" content="レシートを撮るだけで食材を記録し、AIが今夜の献立を自動提案。予算から食材リストも作成。食費節約と料理の悩みを同時に解決するカケイシピ。¥980/月・14日間無料。" />
+  <link rel="canonical" href="https://get-tohon.online/lp" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://get-tohon.online/lp" />
+  <meta property="og:title" content="カケイシピ - 買い物した食材からレシピを自動作成する家計アプリ" />
+  <meta property="og:description" content="レシートを撮るだけで食材を記録し、AIが今夜の献立を自動提案。食費節約と料理の悩みを同時に解決するカケイシピ。¥980/月・14日間無料。" />
+  <meta property="og:site_name" content="カケイシピ" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="カケイシピ - 買い物した食材からレシピを自動作成する家計アプリ" />
+  <meta name="twitter:description" content="レシートを撮るだけで食材を記録し、AIが今夜の献立を自動提案。食費節約と料理の悩みを同時に解決するカケイシピ。¥980/月・14日間無料。" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -112,6 +128,13 @@
     .header-nav { display: flex; align-items: center; gap: 24px; flex: 1; margin-left: 28px; }
     .header-nav-link { color: rgba(255,255,255,.82); text-decoration: none; font-size: .88rem; transition: color .15s; }
     .header-nav-link:hover { color: #fff; }
+    .header-actions { display: flex; align-items: center; gap: 14px; }
+    .header-login-link {
+      color: #fff; text-decoration: underline; text-underline-offset: 3px;
+      font-size: .85rem; font-weight: 600; white-space: nowrap; opacity: .92;
+      transition: opacity .15s;
+    }
+    .header-login-link:hover { opacity: 1; }
 
     /* ── HERO ── */
     .hero {
@@ -600,11 +623,14 @@
 
 <!-- HEADER -->
 <header class="header">
-  <a class="header-logo" href="/">カケイシピ</a>
+  <a class="header-logo" href="index.html">カケイシピ</a>
   <nav class="header-nav">
-    <a class="header-nav-link" href="/blog.html">ブログ</a>
+    <a class="header-nav-link" href="blog.html">ブログ</a>
   </nav>
-  <a class="header-cta" href="/login.html">無料で始める</a>
+  <div class="header-actions">
+    <a class="header-login-link" href="app">ログイン</a>
+    <a class="header-cta" href="login.html">無料で始める</a>
+  </div>
 </header>
 
 <!-- HERO -->
@@ -622,7 +648,7 @@
         <a class="btn-primary" href="/login.html">無料で試してみる →</a>
         <a class="btn-ghost" href="#features">機能を見る</a>
       </div>
-      <p class="hero-note">✓ Googleアカウントで即日登録 &nbsp;✓ 初月無料</p>
+      <p class="hero-note">✓ Googleアカウントで即日登録 &nbsp;✓ 14日間無料</p>
     </div>
     <div class="hero-visual">
       <div class="phone-glow"></div>
@@ -761,11 +787,11 @@
     <div class="section-head" style="text-align:center">
       <div class="section-label">料金プラン</div>
       <h2 class="section-title">シンプルな1プラン</h2>
-      <p class="section-sub" style="margin:0 auto">初月無料。すべての機能を制限なく使えます。</p>
+      <p class="section-sub" style="margin:0 auto">14日間無料。すべての機能を制限なく使えます。</p>
     </div>
     <div class="pricing-grid" style="max-width:480px;margin:0 auto">
       <div class="plan-card plan-card--featured">
-        <div class="plan-featured-badge">初月無料</div>
+        <div class="plan-featured-badge">14日間無料</div>
         <div class="plan-name">カケイシピ プラン</div>
         <div class="plan-price">¥980<sub>/月</sub></div>
         <div class="plan-period">税込・いつでも解約可</div>
@@ -779,7 +805,7 @@
           <li>最安値アラート</li>
           <li>世帯共有・CSVエクスポート</li>
         </ul>
-        <a class="plan-cta plan-cta--primary" href="/login.html">1ヶ月無料で試してみる →</a>
+        <a class="plan-cta plan-cta--primary" href="login.html">14日間無料で試してみる →</a>
         <p style="font-size:.78rem;color:var(--ink-muted);text-align:center;margin-top:12px">※予算からのリスト作成には買い物履歴が必要です</p>
       </div>
     </div>
@@ -790,29 +816,33 @@
 <section class="cta-banner">
   <div class="section-inner">
     <h2>今日から、買い物がレシピに変わる</h2>
-    <p>Googleアカウントで30秒で登録完了。初月無料でお試しいただけます。<br />食費の節約と献立の悩みを、一度に解決しましょう。</p>
-    <a class="btn-primary" href="/login.html">1ヶ月無料で試してみる →</a>
-    <p class="cta-note">スマートフォン・PC どちらでも利用できます &nbsp;·&nbsp; ¥980/月（初月無料）</p>
+    <p>Googleアカウントで30秒で登録完了。14日間無料でお試しいただけます。<br />食費の節約と献立の悩みを、一度に解決しましょう。</p>
+    <a class="btn-primary" href="login.html">14日間無料で試してみる →</a>
+    <p class="cta-note">スマートフォン・PC どちらでも利用できます &nbsp;·&nbsp; ¥980/月（14日間無料）</p>
   </div>
 </section>
 
 <!-- MOBILE FIXED CTA -->
 <div class="mobile-cta-bar">
   <div class="mobile-cta-text">
-    <strong>1ヶ月無料で試す</strong>
+    <strong>14日間無料で試す</strong>
     ¥980/月・いつでも解約可
   </div>
-  <a class="mobile-cta-btn" href="/login.html">始める →</a>
+  <a class="mobile-cta-btn" href="login.html">始める →</a>
 </div>
 
 <!-- FOOTER -->
 <footer class="footer">
   <div class="footer-logo">カケイシピ</div>
   <nav class="footer-links">
-    <a href="/login.html">アプリを開く</a>
+    <a href="login.html">アプリを開く</a>
     <a href="#features">機能</a>
     <a href="#pricing">料金</a>
-    <a href="/blog.html">ブログ</a>
+    <a href="blog.html">ブログ</a>
+    <a href="terms.html">利用規約</a>
+    <a href="privacy.html">プライバシーポリシー</a>
+    <a href="tokushoho.html">特定商取引法に基づく表記</a>
+    <a href="contact.html">お問い合わせ</a>
   </nav>
   <p class="footer-copy">© 2026 カケイシピ. All rights reserved.</p>
 </footer>

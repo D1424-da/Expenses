@@ -18,6 +18,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
   getRedirectResult, signOut, onAuthStateChanged,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, collection, addDoc,
@@ -46,8 +47,8 @@ import { initMealPlan, startMealPlanSync, stopMealPlanSync } from "./meal-plan.j
 import { dbSetUser, dbClearHousehold, dbBase } from "./db-paths.js";
 import { initHousehold, loadHousehold, clearHousehold, openHousehold } from "./household.js";
 import {
-  initBilling, startBillingSync, stopBillingSync,
-  checkGate, renderUsageBar, FREE_LIMIT, isPremium, openPortal,
+  initBilling, startBillingSync, stopBillingSync, ensureTrial,
+  checkGate, renderUsageBar, FREE_LIMIT, isPremium, openPortal, premiumExpiryLabel,
 } from "./stripe-billing.js";
 
 window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
@@ -55,17 +56,17 @@ window.addEventListener("unhandledrejection", (e) => logErr("未処理のPromise
 log("app.js 読み込み開始");
 
 // Stripe Checkout からのリダイレクト結果を検出してトーストを表示
-(function _handleStripeRedirect() {
+const _checkoutResult = (() => {
   const params = new URLSearchParams(location.search);
   const result = params.get("checkout");
-  if (!result) return;
-  history.replaceState(null, "", location.pathname); // URLからパラメータを除去
+  if (!result) return null;
+  history.replaceState(null, "", location.pathname);
   if (result === "success") {
     const s = document.createElement("div");
     s.className = "toast toast-success";
-    s.textContent = "🎉 プレミアムプランへようこそ！反映まで少々お待ちください。";
+    s.textContent = "🎉 プレミアムプランへようこそ！サブスクリプションを確認中…";
     document.body.appendChild(s);
-    setTimeout(() => s.remove(), 6000);
+    setTimeout(() => s.remove(), 8000);
   } else if (result === "cancel") {
     const s = document.createElement("div");
     s.className = "toast";
@@ -73,7 +74,27 @@ log("app.js 読み込み開始");
     document.body.appendChild(s);
     setTimeout(() => s.remove(), 4000);
   }
+  return result;
 })();
+
+// チェックアウト成功時に Stripe → Firestore を手動同期する（Webhook の遅延対策）
+async function _syncStripeSubscription(user) {
+  if (_checkoutResult !== "success") return;
+  try {
+    const token = await user.getIdToken();
+    const res = await fetch(`${OCR_API_BASE}/api/stripe/sync`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ email: user.email }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      log("Stripe 同期:", data.status);
+    }
+  } catch (e) {
+    logErr("Stripe 同期エラー:", e.message);
+  }
+}
 
 // ---- Firebase 初期化 -------------------------------------------------------
 const fbApp = initializeApp(firebaseConfig);
@@ -112,6 +133,9 @@ onAuthStateChanged(auth, (user) => {
     resetList();
     clearHousehold();
     dbClearHousehold();
+    // 前のユーザーが開いたままにしたモーダルを次のユーザーに引き継がないようにする
+    closeModal("upgrade-modal");
+    closeModal("account-modal");
     $("app").hidden = true;
     $("login-screen").hidden = false;
   }
@@ -156,7 +180,12 @@ getRedirectResult(auth).then((result) => {
   el.hidden = false;
 });
 
+let _googleLoginBusy = false;
 $("google-login").onclick = async () => {
+  if (_googleLoginBusy) return;
+  _googleLoginBusy = true;
+  const btn = $("google-login");
+  btn.disabled = true;
   const useRedirect = _isMobile && !_isSafari;
   log("ログインボタン押下:", useRedirect ? "redirect" : "popup");
   $("login-error").hidden = true;
@@ -168,12 +197,82 @@ $("google-login").onclick = async () => {
       log("ポップアップログイン成功:", result.user.email);
     }
   } catch (err) {
-    logErr("ログインエラー:", err.code, err.message, err);
-    const el = $("login-error");
-    el.textContent = "ログインに失敗しました: " + (err.code || err.message);
-    el.hidden = false;
+    if (err.code !== "auth/cancelled-popup-request" && err.code !== "auth/popup-closed-by-user") {
+      logErr("ログインエラー:", err.code, err.message, err);
+      const el = $("login-error");
+      el.textContent = "ログインに失敗しました: " + (err.code || err.message);
+      el.hidden = false;
+    }
+  } finally {
+    _googleLoginBusy = false;
+    btn.disabled = false;
   }
 };
+
+// メール/パスワード認証
+const _emailForm = $("email-login-form");
+if (_emailForm) {
+  const _modeToggle    = $("email-mode-toggle");
+  const _emailInput    = $("email-input");
+  const _passwordInput = $("password-input");
+  const _emailError    = $("email-login-error");
+  const _submitBtn     = $("email-submit-btn");
+  const _resetBtn      = $("email-reset-btn");
+  let _emailMode = "login"; // "login" | "signup"
+
+  _modeToggle && (_modeToggle.onclick = () => {
+    _emailMode = _emailMode === "login" ? "signup" : "login";
+    _submitBtn.textContent = _emailMode === "signup" ? "新規登録" : "ログイン";
+    _modeToggle.textContent = _emailMode === "signup"
+      ? "すでにアカウントをお持ちの方はこちら"
+      : "アカウントを新規作成";
+    _emailError.hidden = true;
+  });
+
+  _emailForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const email = _emailInput.value.trim();
+    const pass  = _passwordInput.value;
+    _emailError.hidden = true;
+    _submitBtn.disabled = true;
+    try {
+      if (_emailMode === "signup") {
+        await createUserWithEmailAndPassword(auth, email, pass);
+      } else {
+        await signInWithEmailAndPassword(auth, email, pass);
+      }
+    } catch (err) {
+      logErr("メールログインエラー:", err.code);
+      const msgs = {
+        "auth/user-not-found": "メールアドレスが見つかりません。",
+        "auth/wrong-password": "パスワードが違います。",
+        "auth/email-already-in-use": "このメールアドレスはすでに登録されています。",
+        "auth/weak-password": "パスワードは6文字以上にしてください。",
+        "auth/invalid-email": "メールアドレスの形式が正しくありません。",
+        "auth/invalid-credential": "メールアドレスまたはパスワードが違います。",
+      };
+      _emailError.textContent = msgs[err.code] || "エラー: " + (err.code || err.message);
+      _emailError.hidden = false;
+    } finally {
+      _submitBtn.disabled = false;
+    }
+  };
+
+  _resetBtn && (_resetBtn.onclick = async () => {
+    const email = _emailInput.value.trim();
+    if (!email) { _emailError.textContent = "メールアドレスを入力してください。"; _emailError.hidden = false; return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      _emailError.textContent = "パスワードリセットメールを送信しました。";
+      _emailError.style.color = "var(--c-ok, green)";
+      _emailError.hidden = false;
+    } catch (err) {
+      _emailError.textContent = "送信に失敗しました: " + (err.code || err.message);
+      _emailError.style.color = "";
+      _emailError.hidden = false;
+    }
+  });
+}
 
 // ---- アプリ初期化 ----------------------------------------------------------
 let appInitialized = false;
@@ -217,7 +316,7 @@ async function setupApp() {
       onInlineSave: _inlineSave,
     });
     initCompare({ fetchAllExpenses });
-    initRecipe({ getToken: () => currentUser?.getIdToken(), fetchAllExpenses, getBudget });
+    initRecipe({ getToken: () => currentUser?.getIdToken(), fetchAllExpenses, getBudget, db, getUser: () => currentUser });
     initBudget({
       db,
       getUser: () => currentUser,
@@ -234,7 +333,7 @@ async function setupApp() {
       getUser: () => currentUser,
       onChanged: _onHouseholdChanged,
     });
-    initBilling({ db, getUser: () => currentUser });
+    initBilling({ db, getUser: () => currentUser, onSubChange: () => renderSummary() });
     $("usage-bar").querySelector(".usage-upgrade").onclick = () => openModal("upgrade-modal");
 
     // アカウントモーダル
@@ -243,6 +342,9 @@ async function setupApp() {
       const premium = isPremium();
       $("account-plan-free").hidden = premium;
       $("account-plan-premium").hidden = !premium;
+      const expiry = premiumExpiryLabel();
+      $("account-plan-expiry").hidden = !expiry;
+      $("account-plan-expiry").textContent = expiry ?? "";
       openModal("account-modal");
     };
     $("account-close").onclick = () => closeModal("account-modal");
@@ -297,6 +399,8 @@ async function setupApp() {
   }
   try {
     startBillingSync();
+    ensureTrial();
+    _syncStripeSubscription(currentUser);
     await loadBudget();
     renderSummary();
     startShoppingSync();
