@@ -71,18 +71,33 @@ def _stripe():
         raise HTTPException(503, "Stripe ライブラリが未インストールです。") from exc
 
 
+def _has_prior_subscription(stripe, email: str) -> bool:
+    """このメールアドレスで過去にサブスクリプションを契約したことがあるか確認する。
+    解約後の再契約でトライアルを繰り返し取得できてしまう不正利用を防ぐ。
+    """
+    customers = stripe.Customer.list(email=email, limit=10)
+    for customer in customers.auto_paging_iter():
+        subs = stripe.Subscription.list(customer=customer.id, status="all", limit=1)
+        if subs.data:
+            return True
+    return False
+
+
 async def create_checkout_session(uid: str, email: str) -> str:
-    """Stripe Checkout セッションを作成して URL を返す。"""
+    """Stripe Checkout セッションを作成して URL を返す。初回契約のみ14日間の無料トライアルを付与する。"""
     if not STRIPE_PRICE_ID:
         raise HTTPException(503, "Stripe Price ID が未設定です（STRIPE_PRICE_ID）。")
     stripe = _stripe()
+    subscription_data = {"metadata": {"uid": uid}}
+    if not _has_prior_subscription(stripe, email):
+        subscription_data["trial_period_days"] = 14
     session = stripe.checkout.Session.create(
         payment_method_types=["card"],
         mode="subscription",
         line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
         customer_email=email,
         metadata={"uid": uid},
-        subscription_data={"metadata": {"uid": uid}, "trial_period_days": 14},
+        subscription_data=subscription_data,
         success_url=f"{APP_URL}/app?checkout=success",
         cancel_url=f"{APP_URL}/app?checkout=cancel",
         idempotency_key=f"checkout-{uid}-{int(time.time() // 300)}",
