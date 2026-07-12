@@ -27,11 +27,8 @@
       {
         "source": "/lp",
         "destination": "/index.html"
-      },
-      {
-        "source": "**",
-        "destination": "/login.html"
       }
+
     ]
   },
   "firestore": {
