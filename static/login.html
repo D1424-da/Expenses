@@ -45,6 +45,20 @@
         <span class="g-icon">G</span> Google でログイン
       </button>
       <p id="login-error" class="login-error" hidden></p>
+
+      <!-- メール/パスワード認証 -->
+      <div class="email-divider"><span>または</span></div>
+      <form id="email-login-form" class="email-form">
+        <input id="email-input" type="email" placeholder="メールアドレス" autocomplete="email" required class="email-input" />
+        <input id="password-input" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password" required class="email-input" />
+        <button id="email-submit-btn" type="submit" class="email-submit-btn">ログイン</button>
+        <p id="email-login-error" class="login-error" hidden></p>
+        <div class="email-sub-actions">
+          <button type="button" id="email-reset-btn" class="email-text-btn">パスワードを忘れた方</button>
+          <button type="button" id="email-mode-toggle" class="email-text-btn">アカウントを新規作成</button>
+        </div>
+      </form>
+
       <p class="login-trust">月10件まで永久無料 · いつでも退会OK</p>
       <p class="login-blog-link"><a href="/blog.html">ブログ</a> · <a href="/">このアプリについて</a></p>
     </div>

@@ -206,6 +206,24 @@ async def beta_redeem(
     return JSONResponse({"ok": True})
 
 
+class SyncRequest(BaseModel):
+    email: str = Field(..., max_length=254)
+
+
+@app.post("/api/stripe/sync")
+async def stripe_sync(
+    body: SyncRequest,
+    authorization: str | None = Header(default=None),
+) -> JSONResponse:
+    """チェックアウト直後にサブスクリプション状態を Stripe から取得して Firestore に同期する。"""
+    uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
+    if not uid:
+        raise HTTPException(401, "認証が必要です。")
+    from app import stripe_billing
+    result = await stripe_billing.sync_subscription(uid, body.email)
+    return JSONResponse(result)
+
+
 @app.post("/api/stripe/portal")
 async def stripe_portal(
     authorization: str | None = Header(default=None),

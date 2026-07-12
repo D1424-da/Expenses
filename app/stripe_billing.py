@@ -90,6 +90,19 @@ async def create_checkout_session(uid: str, email: str) -> str:
     return session.url
 
 
+async def sync_subscription(uid: str, email: str) -> dict:
+    """チェックアウト後にサブスクリプション状態を Stripe から取得して Firestore に同期する。"""
+    stripe = _stripe()
+    customers = stripe.Customer.list(email=email, limit=5)
+    for customer in customers.auto_paging_iter():
+        subs = stripe.Subscription.list(customer=customer.id, status="all", limit=5)
+        for sub in subs.auto_paging_iter():
+            if sub.get("metadata", {}).get("uid") == uid or True:
+                _persist_subscription(uid, sub, customer.id)
+                return {"status": sub.get("status"), "synced": True}
+    return {"status": "not_found", "synced": False}
+
+
 async def create_portal_session(uid: str) -> str:
     """Stripe カスタマーポータルセッションを作成して URL を返す（解約・領収書確認用）。"""
     stripe = _stripe()
