@@ -21,6 +21,8 @@ let _useUp         = false;
 let _lastMarkdown  = "";
 let _lastItems     = [];
 let _lastServings  = 2;
+let _selectResult  = null; // { 朝食: [{title,markdown},...], 昼食: [...], 夕食: [...] }
+let _selectChosen  = { 朝食: 0, 昼食: 0, 夕食: 0 };
 let _budgetMode        = false;
 let _budgetSelectedItems = []; // { name, estimatedPrice }
 let _budgetRemaining   = 0;
@@ -107,6 +109,7 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
       _activeType = btn.dataset.rtype;
       _setActiveTab("recipe-type-tabs", btn);
       $("recipe-plan-start-row").hidden = _activeType !== "weekly";
+      $("recipe-select-picker").hidden = true;
       _renderIngredients();
     };
   });
@@ -145,6 +148,10 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
 
   // カレンダーに反映ボタン
   $("recipe-calendar-btn").onclick = _exportToCalendar;
+
+  // 朝・昼・夜 選択UI のアクションボタン
+  $("recipe-select-calendar-btn").onclick = _selectConfirmCalendar;
+  $("recipe-select-save-btn").onclick = _selectConfirmSave;
 
   // 食事スロット選択パネル（1食分をカレンダーに追加するとき）
   $("recipe-meal-slot-cancel").onclick = () => {
@@ -187,10 +194,13 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
 
   _lastMarkdown = "";
   _lastItems = [];
+  _selectResult = null;
+  _selectChosen = { 朝食: 0, 昼食: 0, 夕食: 0 };
   $("recipe-result").hidden = true;
   $("recipe-result").innerHTML = "";
   $("recipe-status").hidden = true;
   $("recipe-post-actions").hidden = true;
+  $("recipe-select-picker").hidden = true;
   $("recipe-dish-selector").hidden = true;
   $("recipe-save-btn").textContent = "📚 保存";
   $("recipe-shopping-btn").textContent = "🛒 リストに追加";
@@ -368,13 +378,21 @@ async function _suggest() {
     _lastServings = servings;
     localStorage.setItem("recipe_servings", servings);
     $("recipe-status").hidden = true;
-    const result = $("recipe-result");
-    result.innerHTML = _markdownToHtml(recipe);
-    result.hidden = false;
-    $("recipe-post-actions").hidden = false;
-    $("recipe-calendar-btn").hidden = false;
-    $("recipe-calendar-btn").textContent =
-      _activeType === "weekly" ? "📅 カレンダーに反映" : "📅 カレンダーに追加";
+
+    if (_activeType === "select") {
+      _selectResult = _parseSelectResult(recipe);
+      _selectChosen = { 朝食: 0, 昼食: 0, 夕食: 0 };
+      _renderSelectPicker();
+      $("recipe-select-picker").hidden = false;
+    } else {
+      const result = $("recipe-result");
+      result.innerHTML = _markdownToHtml(recipe);
+      result.hidden = false;
+      $("recipe-post-actions").hidden = false;
+      $("recipe-calendar-btn").hidden = false;
+      $("recipe-calendar-btn").textContent =
+        _activeType === "weekly" ? "📅 カレンダーに反映" : "📅 カレンダーに追加";
+    }
   } catch (err) {
     logErr("レシピ提案エラー:", err.message, err);
     // 接続エラーの場合はコールドスタートを疑う
@@ -697,6 +715,124 @@ function _renderBudgetChips() {
   const _chipPeriodLabel = _periodFrom === _periodTo ? _periodFrom : `${_periodFrom}〜${_periodTo}`;
   $("recipe-budget-status").textContent = `${_chipPeriodLabel}の食費残り ${yen(_budgetRemaining)}`;
   $("recipe-budget-total").textContent  = `推定合計 ${yen(totalCost)}`;
+}
+
+// ---- 朝・昼・夜を選ぶ --------------------------------------------------------
+
+const _MEAL_SLOTS = ["朝食", "昼食", "夕食"];
+const _MEAL_ICONS = { 朝食: "🌅", 昼食: "☀️", 夕食: "🌙" };
+// カレンダー保存時のスロットキー（昼食はカレンダーでは「お弁当」として保存）
+const _MEAL_SLOT_KEY = { 朝食: "朝食", 昼食: "お弁当", 夕食: "夕食" };
+
+// APIレスポンスのMarkdownを {朝食:[{title,markdown}], 昼食:[...], 夕食:[...]} に変換する。
+function _parseSelectResult(md) {
+  const result = {};
+  const sections = md.split(/^## /m).slice(1);
+  for (const section of sections) {
+    const nl = section.indexOf("\n");
+    if (nl === -1) continue;
+    const heading = section.slice(0, nl).trim();
+    const mealTime = _MEAL_SLOTS.find((m) => heading.includes(m));
+    if (!mealTime) continue;
+    const body = section.slice(nl);
+    const options = body.split(/^### /m).slice(1).map((opt) => {
+      const onl = opt.indexOf("\n");
+      const rawTitle = onl === -1 ? opt.trim() : opt.slice(0, onl).trim();
+      // ① ② ③ などの番号プレフィックスを除去
+      const title = rawTitle.replace(/^[①②③④⑤\d][.．\s]*/, "").trim();
+      return { title, markdown: opt.trim() };
+    }).filter((o) => o.title);
+    if (options.length) result[mealTime] = options;
+  }
+  return result;
+}
+
+// 3択カードをレンダリングする。
+function _renderSelectPicker() {
+  const groups = $("recipe-select-groups");
+  groups.innerHTML = _MEAL_SLOTS.map((slot) => {
+    const options = _selectResult[slot] || [];
+    if (!options.length) return "";
+    const icon = _MEAL_ICONS[slot];
+    const cards = options.map((opt, i) => `
+      <button type="button" class="meal-select-card${i === _selectChosen[slot] ? " selected" : ""}"
+        data-slot="${escapeHtml(slot)}" data-idx="${i}">
+        <span class="meal-select-card-title">${escapeHtml(opt.title)}</span>
+      </button>`).join("");
+    return `<div class="meal-select-group">
+      <div class="meal-select-heading">${icon} ${slot}</div>
+      <div class="meal-select-cards">${cards}</div>
+    </div>`;
+  }).join("");
+
+  groups.querySelectorAll(".meal-select-card").forEach((btn) => {
+    btn.onclick = () => {
+      const slot = btn.dataset.slot;
+      const idx  = Number(btn.dataset.idx);
+      _selectChosen[slot] = idx;
+      // 同グループの選択状態を更新
+      groups.querySelectorAll(`.meal-select-card[data-slot="${slot}"]`).forEach((b, i) => {
+        b.classList.toggle("selected", i === idx);
+      });
+    };
+  });
+
+  // カレンダー追加ボタンは _selectedDay がないと無効
+  $("recipe-select-calendar-btn").disabled = !_selectedDay;
+  $("recipe-select-calendar-btn").title = _selectedDay ? "" : "カレンダーの日付をタップしてからレシピを開いてください";
+}
+
+async function _selectConfirmCalendar() {
+  if (!_selectedDay || !_selectResult) return;
+  const btn = $("recipe-select-calendar-btn");
+  btn.disabled = true;
+  btn.textContent = "保存中…";
+  try {
+    for (const slot of _MEAL_SLOTS) {
+      const opts = _selectResult[slot];
+      if (!opts?.length) continue;
+      const chosen = opts[_selectChosen[slot] ?? 0];
+      await saveMeal(_selectedDay, _MEAL_SLOT_KEY[slot] || slot, chosen.title, chosen.markdown);
+    }
+    btn.textContent = "✅ カレンダーに追加しました";
+    setTimeout(() => { btn.textContent = "📅 カレンダーに追加"; btn.disabled = false; }, 2500);
+  } catch (err) {
+    logErr("選択献立カレンダー追加エラー:", err.message);
+    alert("カレンダーへの追加に失敗しました: " + err.message);
+    btn.disabled = false;
+    btn.textContent = "📅 カレンダーに追加";
+  }
+}
+
+async function _selectConfirmSave() {
+  if (!_selectResult) return;
+  const btn = $("recipe-select-save-btn");
+  btn.disabled = true;
+  btn.textContent = "保存中…";
+  try {
+    let count = 0;
+    for (const slot of _MEAL_SLOTS) {
+      const opts = _selectResult[slot];
+      if (!opts?.length) continue;
+      const chosen = opts[_selectChosen[slot] ?? 0];
+      await saveRecipe({
+        title: chosen.title,
+        markdown: chosen.markdown,
+        items: _extractIngredients(chosen.markdown).length ? _extractIngredients(chosen.markdown) : _lastItems,
+        period: _activePeriod,
+        rtype: "meal",
+        servings: _lastServings,
+      });
+      count++;
+    }
+    btn.textContent = `✅ ${count}品を保存しました`;
+    setTimeout(() => { btn.textContent = "📚 レシピを保存"; btn.disabled = false; }, 2500);
+  } catch (err) {
+    logErr("選択レシピ保存エラー:", err.message);
+    alert("保存に失敗しました: " + err.message);
+    btn.disabled = false;
+    btn.textContent = "📚 レシピを保存";
+  }
 }
 
 // ---- 週間献立 → カレンダー --------------------------------------------------
