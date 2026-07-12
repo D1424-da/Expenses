@@ -1104,6 +1104,29 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 }
 .dish-selector-actions { display: flex; gap: 8px; }
 .dish-selector-actions button { flex: 1; font-size: 0.88rem; padding: 11px; }
+
+/* 朝・昼・夜 3択カード選択UI */
+.recipe-select-picker { margin-top: 16px; }
+.meal-select-group { margin-bottom: 18px; }
+.meal-select-heading { font-size: 0.92rem; font-weight: 700; color: var(--sage); margin-bottom: 8px; }
+.meal-select-cards { display: flex; flex-direction: column; gap: 8px; }
+@media (min-width: 480px) { .meal-select-cards { flex-direction: row; } }
+.meal-select-card {
+  flex: 1; padding: 12px 14px; background: var(--bg);
+  border: 2px solid var(--border); border-radius: var(--r-btn);
+  font-size: 0.88rem; color: var(--fg); cursor: pointer;
+  text-align: left; transition: border-color .15s, background .15s;
+  min-height: 48px;
+}
+.meal-select-card:hover { border-color: var(--sage); background: var(--sage-light); }
+.meal-select-card.selected {
+  border-color: var(--sage); background: var(--sage-light);
+  font-weight: 600; color: var(--sage-dark, var(--sage));
+}
+.meal-select-card-title { display: block; }
+.recipe-select-actions { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.recipe-select-actions button { flex: 1; min-width: 140px; font-size: 0.9rem; padding: 12px 10px; border-radius: var(--r-btn); }
+.recipe-select-actions button:disabled { opacity: .5; cursor: default; }
 /* 汎用ボタンバリアント */
 .btn-primary { background: var(--sage); color: #fff; border: none; border-radius: var(--r-btn); cursor: pointer; }
 .btn-primary:hover { filter: brightness(1.08); }
