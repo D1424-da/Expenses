@@ -317,8 +317,9 @@ async function _suggest() {
     _showStatus("error", "食材が見つかりません。期間を変更するか、明細付きのレシートを保存してください。");
     return;
   }
-  const cappedItems = items.length > 50 ? items.slice(0, 50) : items;
-  if (items.length > 50) log(`食材が${items.length}品あるため上位50品に絞りました`);
+  const itemLimit = _activeType === "select" ? 15 : 50;
+  const cappedItems = items.length > itemLimit ? items.slice(0, itemLimit) : items;
+  if (items.length > itemLimit) log(`食材が${items.length}品あるため上位${itemLimit}品に絞りました`);
   const servings = Math.max(1, Math.min(20, Number($("recipe-servings").value) || 2));
   const btn = $("recipe-suggest-btn");
   btn.disabled = true;
