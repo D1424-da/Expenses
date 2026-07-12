@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="redirect.js"></script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>プライバシーポリシー | カケイシピ</title>
+  <meta name="description" content="カケイシピのプライバシーポリシー。個人情報の取り扱いについて掲載しています。" />
+  <link rel="canonical" href="https://get-tohon.online/privacy.html" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--g1:#1E5C3A;--g2:#2D7D52;--bg:#F7FAF8;--sur:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--ink2:#4A6355;--mute:#8AAA96}
+    @media (prefers-color-scheme:dark){:root{--bg:#0C1A11;--sur:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--ink2:#8ABFA0;--mute:#4A7A5C}}
+    :root[data-theme="dark"]{--bg:#0C1A11;--sur:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--ink2:#8ABFA0;--mute:#4A7A5C}
+    :root[data-theme="light"]{--bg:#F7FAF8;--sur:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--ink2:#4A6355;--mute:#8AAA96}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.8;font-size:16px}
+    header{position:sticky;top:0;z-index:10;background:var(--g1);padding:0 24px;height:56px;display:flex;align-items:center}
+    header a{color:#fff;text-decoration:none;font-weight:700;font-size:1.05rem}
+    main{max-width:760px;margin:0 auto;padding:48px 24px 100px}
+    h1{font-size:1.6rem;margin-bottom:8px}
+    .updated{color:var(--mute);font-size:.85rem;margin-bottom:32px}
+    h2{font-size:1.15rem;margin:32px 0 12px;color:var(--g2)}
+    p,li{color:var(--ink2);font-size:.94rem}
+    ul,ol{padding-left:1.4em;margin-bottom:8px}
+    li{margin-bottom:6px}
+    table{width:100%;border-collapse:collapse;margin:12px 0}
+    th,td{border:1px solid var(--bd);padding:10px 12px;text-align:left;font-size:.88rem;color:var(--ink2)}
+    th{background:var(--sur)}
+    .box{background:var(--sur);border:1px solid var(--bd);border-radius:12px;padding:24px 28px;margin-bottom:20px}
+    footer{text-align:center;padding:32px;color:var(--mute);font-size:.82rem}
+    footer a{color:var(--g2)}
+  </style>
+</head>
+<body>
+<header><a href="/">カケイシピ</a></header>
+<main>
+  <h1>プライバシーポリシー</h1>
+  <p class="updated">最終改定日：2026年7月12日</p>
+
+  <div class="box">
+    <p>カケイシピ（以下「当サービス」といいます）は、ユーザーの個人情報を適切に取り扱うことが重要な責務であると認識し、以下のとおりプライバシーポリシー（以下「本ポリシー」といいます）を定めます。</p>
+  </div>
+
+  <h2>1. 取得する情報</h2>
+  <p>当サービスは、ユーザーがサービスを利用するにあたり、以下の情報を取得します。</p>
+  <table>
+    <thead><tr><th>情報の種類</th><th>取得のタイミング・方法</th></tr></thead>
+    <tbody>
+      <tr><td>メールアドレス・氏名（Googleアカウント情報）</td><td>Googleログインまたはメール/パスワード登録時</td></tr>
+      <tr><td>家計簿の記録内容（日付・店舗名・金額・品目等）</td><td>ユーザーの入力・レシート撮影時</td></tr>
+      <tr><td>レシート画像</td><td>OCR読み取り機能利用時（読み取り処理後は保存しません）</td></tr>
+      <tr><td>決済情報</td><td>プレミアムプラン契約時、決済代行会社（Stripe）が取得（当サービスはカード番号を保持しません）</td></tr>
+      <tr><td>アクセスログ・Cookie</td><td>サービス利用時、Google Analytics等の解析ツールにより自動取得</td></tr>
+    </tbody>
+  </table>
+
+  <h2>2. 利用目的</h2>
+  <ul>
+    <li>当サービスの提供・維持・改善のため</li>
+    <li>ユーザー認証・本人確認のため</li>
+    <li>レシート画像からの品目・金額の自動抽出（AI-OCR）のため</li>
+    <li>AIによる献立・レシピの自動提案のため</li>
+    <li>プレミアムプランの決済処理・利用状況管理のため</li>
+    <li>お問い合わせへの対応のため</li>
+    <li>サービスの利用状況分析・品質向上のため</li>
+    <li>不正利用の防止のため</li>
+  </ul>
+
+  <h2>3. 第三者への提供</h2>
+  <p>当サービスは、以下の場合を除き、あらかじめユーザーの同意を得ることなく、第三者に個人情報を提供しません。</p>
+  <ul>
+    <li>法令に基づく場合</li>
+    <li>人の生命、身体または財産の保護のために必要がある場合であって、本人の同意を得ることが困難であるとき</li>
+    <li>業務委託先（決済代行会社Stripe、クラウドインフラGoogle Firebase、AI処理を行うGoogle Gemini API等）に、利用目的の達成に必要な範囲内で提供する場合</li>
+  </ul>
+
+  <h2>4. 外部送信・利用しているサービス</h2>
+  <table>
+    <thead><tr><th>サービス名</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td>Google Firebase / Firestore</td><td>認証・データベース・ホスティング</td></tr>
+      <tr><td>Google Gemini API</td><td>レシートOCR・AIレシピ提案</td></tr>
+      <tr><td>Stripe</td><td>決済処理</td></tr>
+      <tr><td>Google Analytics</td><td>アクセス解析</td></tr>
+      <tr><td>Render.com</td><td>バックエンドAPIのホスティング</td></tr>
+    </tbody>
+  </table>
+
+  <h2>5. データの保管期間・削除</h2>
+  <p>ユーザーが登録したデータは、アカウントが存続する限り保管します。ユーザーはいつでもアカウント内の記録を削除でき、アカウント削除をご希望の場合はお問い合わせフォームよりご連絡ください。合理的な期間内に対応いたします。</p>
+
+  <h2>6. Cookie（クッキー）の使用について</h2>
+  <p>当サービスは、サービス向上・利用状況の分析のためにCookieを使用します。ブラウザの設定によりCookieを無効化することも可能ですが、その場合、一部機能がご利用いただけなくなる可能性があります。</p>
+
+  <h2>7. 個人情報の開示・訂正・削除</h2>
+  <p>ユーザーご本人からの個人情報の開示・訂正・削除等のご請求には、法令に従い適切に対応いたします。お問い合わせフォームよりご連絡ください。</p>
+
+  <h2>8. プライバシーポリシーの変更</h2>
+  <p>本ポリシーの内容は、法令その他本ポリシーに別段の定めのある事項を除いて、ユーザーに通知することなく変更することができるものとします。変更後のプライバシーポリシーは、当サービス上に表示した時点より効力を生じるものとします。</p>
+
+  <h2>9. お問い合わせ窓口</h2>
+  <p>本ポリシーに関するお問い合わせは、下記までお願いいたします。</p>
+  <p><a href="/contact.html">お問い合わせフォーム</a></p>
+</main>
+<footer>
+  <a href="/">ホーム</a> ・ <a href="/terms.html">利用規約</a> ・ <a href="/tokushoho.html">特定商取引法に基づく表記</a> ・ <a href="/contact.html">お問い合わせ</a>
+  <p style="margin-top:12px">© 2026 カケイシピ</p>
+</footer>
+</body>
+</html>

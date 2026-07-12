@@ -3,21 +3,21 @@
 
   <!-- メインページ -->
   <url>
-    <loc>https://expenses-d4c7a.web.app/lp.html</loc>
+    <loc>https://get-tohon.online/lp</loc>
     <lastmod>2026-07-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/index.html</loc>
+    <loc>https://get-tohon.online/index.html</loc>
     <lastmod>2026-07-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog.html</loc>
+    <loc>https://get-tohon.online/blog.html</loc>
     <lastmod>2026-07-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -25,7 +25,7 @@
 
   <!-- ブログ記事 — 新規作成（2026年7月） -->
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/shopping-to-recipe.html</loc>
+    <loc>https://get-tohon.online/blog/shopping-to-recipe.html</loc>
     <lastmod>2026-07-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
@@ -33,21 +33,21 @@
 
   <!-- ブログ記事 — 新規作成（2026年6月） -->
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/budget-category-tips.html</loc>
+    <loc>https://get-tohon.online/blog/budget-category-tips.html</loc>
     <lastmod>2026-06-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/receipt-ocr-how-it-works.html</loc>
+    <loc>https://get-tohon.online/blog/receipt-ocr-how-it-works.html</loc>
     <lastmod>2026-06-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/household-review-monthly.html</loc>
+    <loc>https://get-tohon.online/blog/household-review-monthly.html</loc>
     <lastmod>2026-06-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -55,21 +55,21 @@
 
   <!-- ブログ記事 — 新規作成（2026年5月） -->
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/price-compare-supermarket.html</loc>
+    <loc>https://get-tohon.online/blog/price-compare-supermarket.html</loc>
     <lastmod>2026-05-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/savings-improvement.html</loc>
+    <loc>https://get-tohon.online/blog/savings-improvement.html</loc>
     <lastmod>2026-05-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/kakeibo-template-data.html</loc>
+    <loc>https://get-tohon.online/blog/kakeibo-template-data.html</loc>
     <lastmod>2026-05-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -77,14 +77,14 @@
 
   <!-- ブログ記事 — 新規作成（2026年4月） -->
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/spending-analysis.html</loc>
+    <loc>https://get-tohon.online/blog/spending-analysis.html</loc>
     <lastmod>2026-04-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/login-free-kakeibo.html</loc>
+    <loc>https://get-tohon.online/blog/login-free-kakeibo.html</loc>
     <lastmod>2026-04-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -92,101 +92,130 @@
 
   <!-- ブログ記事 — 既存記事 -->
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/receipt-kakeibo-basics.html</loc>
+    <loc>https://get-tohon.online/blog/receipt-kakeibo-basics.html</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/food-cost-cut-20000.html</loc>
+    <loc>https://get-tohon.online/blog/food-cost-cut-20000.html</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/ai-recipe-weekly-plan.html</loc>
+    <loc>https://get-tohon.online/blog/ai-recipe-weekly-plan.html</loc>
     <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/no-ads-kakeibo.html</loc>
+    <loc>https://get-tohon.online/blog/no-ads-kakeibo.html</loc>
     <lastmod>2026-06-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/family-kakeibo.html</loc>
+    <loc>https://get-tohon.online/blog/family-kakeibo.html</loc>
     <lastmod>2026-05-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/kakeibo-app-compare.html</loc>
+    <loc>https://get-tohon.online/blog/kakeibo-app-compare.html</loc>
     <lastmod>2026-05-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/web-kakeibo-free.html</loc>
+    <loc>https://get-tohon.online/blog/web-kakeibo-free.html</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/simple-kakeibo-continue.html</loc>
+    <loc>https://get-tohon.online/blog/simple-kakeibo-continue.html</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/windows-mac-kakeibo.html</loc>
+    <loc>https://get-tohon.online/blog/windows-mac-kakeibo.html</loc>
     <lastmod>2026-03-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/pc-kakeibo-browser.html</loc>
+    <loc>https://get-tohon.online/blog/pc-kakeibo-browser.html</loc>
     <lastmod>2026-03-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/kakeibo-csv-graph.html</loc>
+    <loc>https://get-tohon.online/blog/kakeibo-csv-graph.html</loc>
     <lastmod>2026-02-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/excel-kakeibo-auto.html</loc>
+    <loc>https://get-tohon.online/blog/excel-kakeibo-auto.html</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/money-management.html</loc>
+    <loc>https://get-tohon.online/blog/money-management.html</loc>
     <lastmod>2026-01-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://expenses-d4c7a.web.app/blog/beginner-3min-kakeibo.html</loc>
+    <loc>https://get-tohon.online/blog/beginner-3min-kakeibo.html</loc>
     <lastmod>2026-01-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+
+  <!-- 法務ページ -->
+  <url>
+    <loc>https://get-tohon.online/terms.html</loc>
+    <lastmod>2026-07-12</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/privacy.html</loc>
+    <lastmod>2026-07-12</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/tokushoho.html</loc>
+    <lastmod>2026-07-12</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/contact.html</loc>
+    <lastmod>2026-07-12</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 
 </urlset>

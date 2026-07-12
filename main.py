@@ -182,6 +182,7 @@ async def stripe_checkout(
     authorization: str | None = Header(default=None),
 ) -> JSONResponse:
     """Stripe Checkout セッションを作成し URL を返す。Firebase 認証必須。"""
+    _rate_limiter.check(security.client_ip(request))
     uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
     if not uid:
         raise HTTPException(401, "認証が必要です。")
@@ -218,10 +219,12 @@ class SyncRequest(BaseModel):
 
 @app.post("/api/stripe/sync")
 async def stripe_sync(
+    request: Request,
     body: SyncRequest,
     authorization: str | None = Header(default=None),
 ) -> JSONResponse:
     """チェックアウト直後にサブスクリプション状態を Stripe から取得して Firestore に同期する。"""
+    _rate_limiter.check(security.client_ip(request))
     uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
     if not uid:
         raise HTTPException(401, "認証が必要です。")
@@ -232,9 +235,11 @@ async def stripe_sync(
 
 @app.post("/api/stripe/portal")
 async def stripe_portal(
+    request: Request,
     authorization: str | None = Header(default=None),
 ) -> JSONResponse:
     """Stripe カスタマーポータル URL を返す（解約・領収書確認用）。Firebase 認証必須。"""
+    _rate_limiter.check(security.client_ip(request))
     uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
     if not uid:
         raise HTTPException(401, "認証が必要です。")
