@@ -139,6 +139,9 @@ async function _redeemBetaCode() {
 export async function openPortal() {
   const user = _getUser();
   if (!user) return;
+  const btn = document.getElementById("account-portal-btn");
+  const originalText = btn?.textContent ?? "";
+  if (btn) { btn.disabled = true; btn.textContent = "接続中…"; }
   try {
     const token = await user.getIdToken();
     const res = await fetch(`${OCR_API_BASE}/api/stripe/portal`, {
@@ -155,6 +158,7 @@ export async function openPortal() {
   } catch (err) {
     logErr("ポータルエラー:", err.message);
     alert("管理ページへの移動に失敗しました: " + err.message);
+    if (btn) { btn.disabled = false; btn.textContent = originalText; }
   }
 }
 
