@@ -177,7 +177,12 @@ getRedirectResult(auth).then((result) => {
   el.hidden = false;
 });
 
+let _googleLoginBusy = false;
 $("google-login").onclick = async () => {
+  if (_googleLoginBusy) return;
+  _googleLoginBusy = true;
+  const btn = $("google-login");
+  btn.disabled = true;
   const useRedirect = _isMobile && !_isSafari;
   log("ログインボタン押下:", useRedirect ? "redirect" : "popup");
   $("login-error").hidden = true;
@@ -189,10 +194,15 @@ $("google-login").onclick = async () => {
       log("ポップアップログイン成功:", result.user.email);
     }
   } catch (err) {
-    logErr("ログインエラー:", err.code, err.message, err);
-    const el = $("login-error");
-    el.textContent = "ログインに失敗しました: " + (err.code || err.message);
-    el.hidden = false;
+    if (err.code !== "auth/cancelled-popup-request" && err.code !== "auth/popup-closed-by-user") {
+      logErr("ログインエラー:", err.code, err.message, err);
+      const el = $("login-error");
+      el.textContent = "ログインに失敗しました: " + (err.code || err.message);
+      el.hidden = false;
+    }
+  } finally {
+    _googleLoginBusy = false;
+    btn.disabled = false;
   }
 };
 
