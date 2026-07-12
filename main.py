@@ -125,7 +125,7 @@ class FamilyComposition(BaseModel):
 class RecipeRequest(BaseModel):
     items: list[Annotated[str, Field(max_length=200)]] = Field(..., min_length=1, max_length=50)
     servings: int = Field(2, ge=1, le=20)
-    recipe_type: str = Field("meal", pattern="^(meal|weekly)$")
+    recipe_type: str = Field("meal", pattern="^(meal|weekly|select)$")
     max_minutes: int | None = Field(None, ge=5, le=180)
     use_up: bool = Field(False)
     family: FamilyComposition | None = Field(None)
@@ -144,11 +144,13 @@ async def suggest_recipe(
     _rate_limiter.check(security.client_ip(request))
     if not body.items:
         raise HTTPException(400, "食材リストが空です。")
+    # select タイプはプロンプトが長いため食材数を20品に絞る（Gemini 負荷軽減）
+    items = body.items[:20] if body.recipe_type == "select" else body.items
     from app import recipe as recipe_mod
     try:
         text = await asyncio.to_thread(
             recipe_mod.suggest_recipes,
-            body.items, body.servings, body.recipe_type,
+            items, body.servings, body.recipe_type,
             max_minutes=body.max_minutes, use_up=body.use_up,
             family=body.family.model_dump() if body.family else None,
         )

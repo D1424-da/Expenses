@@ -137,6 +137,8 @@ def suggest_recipes(
     family: dict | None = None,
 ) -> str:
     """食材リストと人数からレシピ提案テキストを返す。"""
+    # select タイプは朝・昼・夜×3のレシピを生成するため応答が長く、タイムアウトを延長する
+    timeout = 120 if recipe_type == "select" else 60
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY が設定されていません。")
@@ -164,7 +166,7 @@ def suggest_recipes(
         "https://generativelanguage.googleapis.com/v1beta/models/"
         f"{GEMINI_MODEL}:generateContent"
     )
-    result = net.post_json(url, body, headers={"x-goog-api-key": api_key}, service="Gemini Recipe API")
+    result = net.post_json(url, body, headers={"x-goog-api-key": api_key}, service="Gemini Recipe API", timeout=timeout)
     try:
         text = result["candidates"][0]["content"]["parts"][0]["text"]
     except (KeyError, IndexError, TypeError):
