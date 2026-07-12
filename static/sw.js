@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v3";
+const CACHE = "receipt-v4";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
@@ -27,6 +27,7 @@ const STATIC_ASSETS = [
   "/trend-view.js",
   "/budget-view.js",
   "/stats.js",
+  "/redirect.js",
 ];
 
 self.addEventListener("install", (e) => {
