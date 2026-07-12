@@ -393,7 +393,7 @@ async function setupApp() {
   }
   try {
     startBillingSync();
-    _syncStripeSubscription(user);
+    _syncStripeSubscription(currentUser);
     await loadBudget();
     renderSummary();
     startShoppingSync();

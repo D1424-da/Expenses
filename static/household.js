@@ -30,17 +30,17 @@ export function initHousehold({ db, getUser, onChanged }) {
 // ログイン時に呼ぶ。世帯メンバーなら householdId を返す。
 export async function loadHousehold(uid, db = _db) {
   try {
-    const snap = await getDoc(doc(_db, "users", uid, "settings", "household"));
+    const snap = await getDoc(doc(db, "users", uid, "settings", "household"));
     const hid = snap.exists() ? snap.data().householdId : null;
     if (!hid) return null;
     // まだメンバーかどうか確認（退出済みの場合は null を返す）
-    const hSnap = await getDoc(doc(_db, "households", hid));
+    const hSnap = await getDoc(doc(db, "households", hid));
     if (hSnap.exists() && (hSnap.data().members || []).includes(uid)) {
       dbSetHousehold(hid);
       return hid;
     }
     // メンバーから外れていた → 参照を消す
-    await setDoc(doc(_db, "users", uid, "settings", "household"), { householdId: null });
+    await setDoc(doc(db, "users", uid, "settings", "household"), { householdId: null });
   } catch (err) {
     logErr("世帯情報の読み込みエラー:", err.message);
   }
