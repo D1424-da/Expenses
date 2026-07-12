@@ -24,7 +24,7 @@ logger = logging.getLogger("uvicorn.error")
 STRIPE_SECRET_KEY     = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 STRIPE_PRICE_ID       = os.environ.get("STRIPE_PRICE_ID", "")
-APP_URL               = os.environ.get("APP_URL", "https://expenses-9af61.web.app")
+APP_URL               = os.environ.get("APP_URL", "https://get-tohon.online")
 BETA_CODES            = {c.strip().upper() for c in os.environ.get("BETA_CODES", "").split(",") if c.strip()}
 
 # ---- Firebase Admin SDK（遅延初期化） ---------------------------------------
