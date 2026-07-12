@@ -92,6 +92,10 @@ function _updatePremiumBadge() {
   const badge = $("premium-badge");
   if (!badge) return;
   badge.hidden = !isPremium();
+
+  // ベータユーザーには Stripe ポータルボタンを表示しない（顧客 ID 未作成のため）
+  const portalWrap = $("account-portal-wrap");
+  if (portalWrap) portalWrap.hidden = _sub?.plan === "beta";
 }
 
 async function _redeemBetaCode() {
