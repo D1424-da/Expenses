@@ -50,6 +50,10 @@ function _hasFamily() {
   return _FAM_FIELDS.some(({ id }) => Number($(id).value) > 0);
 }
 
+export function clearExpensesCache() {
+  _expensesCache = null;
+}
+
 export function initRecipe({ getToken, fetchAllExpenses, getBudget }) {
   _getToken = getToken;
   _fetchAllExpenses = fetchAllExpenses;

@@ -50,21 +50,20 @@ def _get_access_token() -> str:
         if _cached_creds is not None and _cached_creds.valid:
             return _cached_creds.token
 
-    sa_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
-    if sa_json:
-        info = json.loads(sa_json)
-        creds = service_account.Credentials.from_service_account_info(info, scopes=_SCOPES)
-    else:
-        creds, _ = google.auth.default(scopes=_SCOPES)
+        sa_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+        if sa_json:
+            info = json.loads(sa_json)
+            creds = service_account.Credentials.from_service_account_info(info, scopes=_SCOPES)
+        else:
+            creds, _ = google.auth.default(scopes=_SCOPES)
 
-    req = google.auth.transport.requests.Request()
-    creds.refresh(req)
-    if not creds.token:
-        raise RuntimeError("Vertex 用のアクセストークンを取得できませんでした。")
+        req = google.auth.transport.requests.Request()
+        creds.refresh(req)
+        if not creds.token:
+            raise RuntimeError("Vertex 用のアクセストークンを取得できませんでした。")
 
-    with _creds_lock:
         _cached_creds = creds
-    return creds.token
+        return creds.token
 
 
 def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dict:

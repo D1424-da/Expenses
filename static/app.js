@@ -37,7 +37,7 @@ import { initForm, fillForm, resetForm, editExpense, deleteExpense, inlineSave }
 import { renderList, setFilter, resetList } from "./list-view.js";
 import { initCalendar, renderCalendar, maybeRefreshDayModal, updateMealPlans } from "./calendar-view.js";
 import { initCompare } from "./compare-view.js";
-import { initRecipe, openRecipeModal } from "./recipe-view.js";
+import { initRecipe, openRecipeModal, clearExpensesCache } from "./recipe-view.js";
 import { initBudget, loadBudget, getBudget, renderBudgetBars } from "./budget-view.js";
 import { initTrend } from "./trend-view.js";
 import { initSavedRecipes } from "./saved-recipes.js";
@@ -335,6 +335,11 @@ async function fetchAllExpenses() {
   return snap.docs.map((d) => d.data());
 }
 
+async function fetchAllExpensesUnlimited() {
+  const snap = await getDocs(expensesCol());
+  return snap.docs.map((d) => d.data());
+}
+
 async function fetchMonthExpenses(month) {
   const start = monthKey(month) + "-01";
   const next  = new Date(month.getFullYear(), month.getMonth() + 1, 1);
@@ -364,6 +369,7 @@ function subscribeMonth() {
     q,
     (snap) => {
       currentExpenses = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      clearExpensesCache(); // 支出が更新されたらレシピモーダルのキャッシュを無効化
       log("Firestore更新:", currentExpenses.length, "件");
       renderList(currentExpenses, { onEdit: editExpense, onDelete: _deleteAndClearCache, onInlineSave: _inlineSave });
       renderCalendar(currentExpenses, currentMonth);
@@ -507,7 +513,7 @@ async function _exportCsv() {
   btn.disabled = true;
   btn.textContent = "⏳ 準備中…";
   try {
-    const all = await fetchAllExpenses();
+    const all = await fetchAllExpensesUnlimited();
     const rows = [
       ["日付", "店名", "支店名", "金額", "カテゴリ", "メモ", "品目名", "品目価格", "OCRエンジン"],
     ];

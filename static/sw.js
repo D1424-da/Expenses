@@ -51,8 +51,13 @@ self.addEventListener("fetch", (e) => {
   // 外部リクエスト（Firebase SDK・API・CDN）はネットワーク優先でパススルー
   if (url.origin !== self.location.origin) return;
 
-  // ナビゲーション（ページ遷移）は login.html をキャッシュから返す
+  // ナビゲーション（ページ遷移）はルートに応じて振り分ける
   if (e.request.mode === "navigate") {
+    const path = url.pathname;
+    // LP・ブログはネットワークから取得（SSR不要だがキャッシュに乗せない）
+    if (path === "/" || path === "/lp" || path.startsWith("/blog")) {
+      return; // ブラウザのデフォルト処理に委ねる
+    }
     e.respondWith(
       caches.match("/login.html").then((cached) => cached || fetch(e.request)),
     );
