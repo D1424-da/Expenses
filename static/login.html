@@ -6,6 +6,13 @@
   <title>カケイシピ | 家計管理×レシピ自動作成</title>
   <meta name="description" content="レシートを撮るだけで家計簿を自動入力。AI-OCRで店名・金額・品目を読み取り、月次予算・最安値アラート・レシピ提案まで対応。" />
 
+  <!-- firebaseapp.com → web.app へリダイレクト（Google認証ポップアップのCSP衝突対策） -->
+  <script>
+    if (location.hostname === 'expenses-9af61.firebaseapp.com') {
+      location.replace('https://expenses-9af61.web.app' + location.pathname + location.search + location.hash);
+    }
+  </script>
+
   <!-- Google Search Console 所有権確認 -->
   <meta name=google-site-verification=8_G9TeYLqQrvZRTtXOrlCEoyOcc_1PzWsxofIMvMaQ8/>
 

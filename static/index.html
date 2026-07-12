@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- firebaseapp.com → web.app へリダイレクト -->
+  <script>
+    if (location.hostname === 'expenses-9af61.firebaseapp.com') {
+      location.replace('https://expenses-9af61.web.app' + location.pathname + location.search + location.hash);
+    }
+  </script>
   <title>カケイシピ - 買い物した食材からレシピを自動作成する家計アプリ</title>
   <meta name="description" content="レシートを撮るだけで食材を記録し、AIが今夜の献立を自動提案。予算から食材リストも作成。食費節約と料理の悩みを同時に解決するカケイシピ。¥980/月・初月無料。" />
   <style>
