@@ -28,8 +28,7 @@ const STATIC_ASSETS = [
   "/budget-view.js",
   "/stats.js",
   "/redirect.js",
-  "/app.js",
-  "/stripe-billing.js",
+
 ];
 
 self.addEventListener("install", (e) => {
