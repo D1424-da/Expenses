@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v2";
+const CACHE = "receipt-v3";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
@@ -50,6 +50,9 @@ self.addEventListener("fetch", (e) => {
 
   // 外部リクエスト（Firebase SDK・API・CDN）はネットワーク優先でパススルー
   if (url.origin !== self.location.origin) return;
+
+  // Firebase Auth ハンドラ（/__/auth/）はSWを介さずネットワークから直接取得
+  if (url.pathname.startsWith('/__/')) return;
 
   // ナビゲーション（ページ遷移）はルートに応じて振り分ける
   if (e.request.mode === "navigate") {
