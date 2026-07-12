@@ -78,8 +78,7 @@
         <button id="saved-recipes-btn" class="topbar-btn" title="保存済みレシピ">📚</button>
         <button id="compare-btn" class="topbar-btn" title="価格比較">🔎 価格比較</button>
         <button id="export-btn" class="topbar-btn" title="CSVでエクスポート">📥 CSV</button>
-        <span id="premium-badge" class="premium-badge" hidden title="プレミアムプラン">✨ PRO</span>
-        <a href="/" class="topbar-btn topbar-btn--blog" title="このアプリについて">🏠 LP</a>
+        <span id="premium-badge" class="premium-badge" hidden title="プレミアムプラン"></span>
         <a href="/blog.html" class="topbar-btn topbar-btn--blog" title="ブログ">📝 ブログ</a>
         <button id="account-btn" class="topbar-btn topbar-btn--account" title="アカウント">⚙️</button>
       </div>
@@ -309,9 +308,17 @@
           </div>
         </div>
         <div id="recipe-plan-start-row" class="recipe-row" hidden>
-          <span class="recipe-label">開始日</span>
+          <span class="recipe-label">対象期間</span>
           <input type="date" id="recipe-plan-start" aria-label="献立開始日" />
-          <span class="recipe-plan-start-hint">（カレンダー反映の起点）</span>
+          <span class="recipe-date-sep">〜</span>
+          <input type="date" id="recipe-plan-end" aria-label="献立終了日" />
+          <span class="recipe-plan-start-hint">（最大7日間・カレンダー反映）</span>
+        </div>
+        <p id="recipe-plan-range-error" class="recipe-plan-range-error" hidden></p>
+        <div id="recipe-select-day-row" class="recipe-row" hidden>
+          <span class="recipe-label">対象日</span>
+          <input type="date" id="recipe-select-day" aria-label="献立を保存する日" />
+          <span class="recipe-plan-start-hint">（この日の朝食・昼食・夕食として保存）</span>
         </div>
         <div class="recipe-row">
           <span class="recipe-label">時短</span>
@@ -560,6 +567,7 @@
             <div class="account-plan-label">現在のプラン</div>
             <div class="account-plan-name">✨ プレミアムプラン</div>
             <p class="account-plan-desc">記録件数無制限・すべての機能が使えます。</p>
+            <p id="account-plan-expiry" class="account-plan-expiry" hidden></p>
             <div id="account-portal-wrap">
               <button id="account-portal-btn" class="account-action-btn account-action-btn--sub" type="button">サブスクリプションを管理・解約する</button>
               <p class="account-portal-hint">Stripe の管理ページへ移動します。解約・領収書の確認ができます。</p>

@@ -48,7 +48,7 @@ import { dbSetUser, dbClearHousehold, dbBase } from "./db-paths.js";
 import { initHousehold, loadHousehold, clearHousehold, openHousehold } from "./household.js";
 import {
   initBilling, startBillingSync, stopBillingSync,
-  checkGate, renderUsageBar, FREE_LIMIT, isPremium, openPortal,
+  checkGate, renderUsageBar, FREE_LIMIT, isPremium, openPortal, premiumExpiryLabel,
 } from "./stripe-billing.js";
 
 window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
@@ -313,7 +313,7 @@ async function setupApp() {
       onInlineSave: _inlineSave,
     });
     initCompare({ fetchAllExpenses });
-    initRecipe({ getToken: () => currentUser?.getIdToken(), fetchAllExpenses, getBudget });
+    initRecipe({ getToken: () => currentUser?.getIdToken(), fetchAllExpenses, getBudget, db, getUser: () => currentUser });
     initBudget({
       db,
       getUser: () => currentUser,
@@ -339,6 +339,9 @@ async function setupApp() {
       const premium = isPremium();
       $("account-plan-free").hidden = premium;
       $("account-plan-premium").hidden = !premium;
+      const expiry = premiumExpiryLabel();
+      $("account-plan-expiry").hidden = !expiry;
+      $("account-plan-expiry").textContent = expiry ?? "";
       openModal("account-modal");
     };
     $("account-close").onclick = () => closeModal("account-modal");

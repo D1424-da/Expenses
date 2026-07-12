@@ -1023,6 +1023,7 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 }
 .recipe-date-sep { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
 .recipe-plan-start-hint { font-size: 0.75rem; color: var(--muted); }
+.recipe-plan-range-error { color: var(--c-err, #c0392b); font-size: 0.8rem; margin: -6px 0 8px; }
 #recipe-plan-start { padding: 5px 8px; font-size: 0.82rem; border: 1.5px solid var(--border); border-radius: 8px; background: var(--stone); color: var(--ink); }
 .recipe-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .recipe-tab {
@@ -1714,6 +1715,11 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   line-height: 1.5;
 }
 .account-plan-premium .account-plan-desc { color: rgba(255,255,255,.75); }
+.account-plan-expiry {
+  font-size: 0.78rem; font-weight: 600; color: #fff;
+  background: rgba(255,255,255,.16); border-radius: 8px;
+  padding: 7px 10px; margin: -6px 0 14px;
+}
 .account-action-btn {
   width: 100%;
   padding: 13px 16px;

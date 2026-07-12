@@ -188,6 +188,7 @@ def _persist_subscription(uid: str, subscription: dict, customer_id: str | None)
     db = _get_firestore()
     status = subscription.get("status", "unknown")
     period_end = subscription.get("current_period_end")  # Unix timestamp
+    cancel_at_period_end = bool(subscription.get("cancel_at_period_end", False))
 
     ref = (
         db.collection("users")
@@ -201,6 +202,7 @@ def _persist_subscription(uid: str, subscription: dict, customer_id: str | None)
         "stripeCustomerId": customer_id,
         "stripeSubscriptionId": subscription.get("id"),
         "currentPeriodEnd": period_end,
+        "cancelAtPeriodEnd": cancel_at_period_end,
         "updatedAt": admin_fs.SERVER_TIMESTAMP,
     }, merge=True)
     logger.info("Firestore subscription updated: uid=%s status=%s", uid, status)
