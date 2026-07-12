@@ -84,6 +84,8 @@ async def ocr_receipt(
 ) -> JSONResponse:
     """レシート画像を受け取り、OCR → 項目抽出した結果を返す（保存はしない）。"""
     uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
+    if not uid and FIREBASE_PROJECT_ID:
+        raise HTTPException(401, "認証が必要です。")
     _rate_limiter.check(security.client_ip(request))
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(400, f"対応していない画像形式です: {file.content_type}")
@@ -137,6 +139,8 @@ async def suggest_recipe(
 ) -> JSONResponse:
     """食材リストと人数からレシピを提案する（Gemini 使用）。"""
     uid = security.verify_firebase_token(authorization, FIREBASE_PROJECT_ID)
+    if not uid and FIREBASE_PROJECT_ID:
+        raise HTTPException(401, "認証が必要です。")
     _rate_limiter.check(security.client_ip(request))
     if not body.items:
         raise HTTPException(400, "食材リストが空です。")

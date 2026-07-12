@@ -25,6 +25,10 @@
         "destination": "/blog.html"
       },
       {
+        "source": "/lp",
+        "destination": "/index.html"
+      },
+      {
         "source": "**",
         "destination": "/login.html"
       }

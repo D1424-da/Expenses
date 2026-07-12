@@ -12,9 +12,12 @@ from __future__ import annotations
 import base64
 import datetime as dt
 import json
+import logging
 import os
 
 from app import net
+
+logger = logging.getLogger("uvicorn.error")
 
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 
@@ -67,6 +70,7 @@ def _validated_date(value: object) -> str:
             return parsed.isoformat()
     except ValueError:
         pass
+    logger.warning("Gemini 日付不正: %r → 今日", value)
     return today.isoformat()
 
 

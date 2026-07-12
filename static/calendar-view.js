@@ -12,6 +12,7 @@ let _onAddExpense, _onEdit, _onDelete, _onInlineSave;
 let _expenses  = [];
 let _mealPlans = {};
 let _selectedDay = null;
+let _lastRenderedDay = null; // inProgress 保存と日付跨ぎを区別するため
 let _weekBreakdowns = [];
 
 // 日付モーダルのデリゲーション用マップ（_renderDayModal のたびに再構築）
@@ -301,15 +302,19 @@ function _renderDayModal() {
   // 献立（常に表示・各食事をインライン編集可能）
   const mealContentEl = $("day-meal-content");
   // Firestoreスナップショットによる再描画でユーザーの入力中テキストが消えないよう、
-  // 変更済みフィールドの値を退避してから再構築する。
+  // 同じ日の再描画時のみ変更済みフィールドの値を退避する。
+  // 日付ナビゲーション時は退避しない（前日の未保存テキストが混入するのを防ぐ）。
   const inProgress = {};
-  for (const input of mealContentEl.querySelectorAll("input[aria-label]")) {
-    if (input.value !== input.dataset.original) {
-      inProgress[input.getAttribute("aria-label")] = input.value;
+  if (_lastRenderedDay === _selectedDay) {
+    for (const input of mealContentEl.querySelectorAll("input[aria-label]")) {
+      if (input.value !== input.dataset.original) {
+        inProgress[input.getAttribute("aria-label")] = input.value;
+      }
     }
   }
   mealContentEl.innerHTML = "";
   mealContentEl.appendChild(_buildMealEditor({ ...(_mealPlans[_selectedDay] || {}), ...inProgress }));
+  _lastRenderedDay = _selectedDay;
   $("day-meal-plan").hidden = false;
 
   // 支出リスト（イベントデリゲーション）
