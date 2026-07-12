@@ -63,12 +63,7 @@ self.addEventListener("fetch", (e) => {
       return; // ブラウザのデフォルト処理に委ねる
     }
     // キャッシュ・ネットワークいずれも失敗した場合は必ずネットワークへ再フォールバックし、
-    // Promise reject によるブラウザの内部エラーページ（chrome-error://）表示を防ぐ。
-    e.respondWith(
-      caches.match("/login.html")
-        .then((cached) => cached || fetch(e.request))
-        .catch(() => fetch(e.request)),
-    );
+    
     return;
   }
 
