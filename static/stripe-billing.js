@@ -11,13 +11,14 @@ import { log, logErr } from "./log.js";
 
 export const FREE_LIMIT = 10;
 
-let _db, _getUser;
+let _db, _getUser, _onSubChange;
 let _sub = null;         // キャッシュ済みサブスクリプション情報
 let _unsubSub = null;    // Firestore リスナーの解除関数
 
-export function initBilling({ db, getUser }) {
+export function initBilling({ db, getUser, onSubChange }) {
   _db = db;
   _getUser = getUser;
+  _onSubChange = onSubChange;
 
   $("upgrade-close").onclick        = () => closeModal("upgrade-modal");
   $("upgrade-checkout-btn").onclick = _startCheckout;
@@ -38,6 +39,8 @@ export function startBillingSync() {
     _sub = snap.exists() ? snap.data() : null;
     log("課金状態更新:", _sub?.status ?? "無料");
     _updatePremiumBadge();
+    // トライアル開始などでプレミアム状態が変わったら、利用状況バナーやゲートを即座に再反映する
+    if (_onSubChange) _onSubChange();
   }, (err) => {
     logErr("課金状態取得エラー:", err.message);
     _sub = null;

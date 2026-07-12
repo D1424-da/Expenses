@@ -133,6 +133,9 @@ onAuthStateChanged(auth, (user) => {
     resetList();
     clearHousehold();
     dbClearHousehold();
+    // 前のユーザーが開いたままにしたモーダルを次のユーザーに引き継がないようにする
+    closeModal("upgrade-modal");
+    closeModal("account-modal");
     $("app").hidden = true;
     $("login-screen").hidden = false;
   }
@@ -330,7 +333,7 @@ async function setupApp() {
       getUser: () => currentUser,
       onChanged: _onHouseholdChanged,
     });
-    initBilling({ db, getUser: () => currentUser });
+    initBilling({ db, getUser: () => currentUser, onSubChange: () => renderSummary() });
     $("usage-bar").querySelector(".usage-upgrade").onclick = () => openModal("upgrade-modal");
 
     // アカウントモーダル
