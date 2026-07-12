@@ -72,7 +72,10 @@ def _stripe():
 
 
 async def create_checkout_session(uid: str, email: str) -> str:
-    """Stripe Checkout セッションを作成して URL を返す。"""
+    """Stripe Checkout セッションを作成して URL を返す。
+    14日間の無料トライアルはカード登録不要の ensure_trial() 側で提供するため、
+    ここでは付与しない（Checkoutに進む＝トライアル終了後の本契約）。
+    """
     if not STRIPE_PRICE_ID:
         raise HTTPException(503, "Stripe Price ID が未設定です（STRIPE_PRICE_ID）。")
     stripe = _stripe()
@@ -82,7 +85,7 @@ async def create_checkout_session(uid: str, email: str) -> str:
         line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
         customer_email=email,
         metadata={"uid": uid},
-        subscription_data={"metadata": {"uid": uid}, "trial_period_days": 14},
+        subscription_data={"metadata": {"uid": uid}},
         success_url=f"{APP_URL}/app?checkout=success",
         cancel_url=f"{APP_URL}/app?checkout=cancel",
         idempotency_key=f"checkout-{uid}-{int(time.time() // 300)}",

@@ -70,11 +70,17 @@ export function stopBillingSync() {
 
 // サブスク解約済み（期間終了後に無料プランへ戻る）なら期限の表示文字列を返す。有効期限なしなら null。
 export function premiumExpiryLabel() {
-  if (!_sub?.cancelAtPeriodEnd) return null;
   const end = _sub?.currentPeriodEnd;
   if (typeof end !== "number" || end <= 0) return null;
   const d = new Date(end * 1000);
-  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日まで利用可能（解約手続き済み）`;
+  const dateStr = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+  if (_sub?.plan === "trial") {
+    return `${dateStr}まで無料トライアル中（以降は有料プランへの登録が必要です）`;
+  }
+  if (_sub?.cancelAtPeriodEnd) {
+    return `${dateStr}まで利用可能（解約手続き済み）`;
+  }
+  return null;
 }
 
 // サブスクリプションが有効かどうかを返す。
@@ -123,9 +129,13 @@ function _updatePremiumBadge() {
 
   if (premium) {
     const end = _sub?.currentPeriodEnd;
-    if (_sub?.cancelAtPeriodEnd && typeof end === "number" && end > 0) {
-      const d = new Date(end * 1000);
-      const dateStr = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+    const dateStr = (typeof end === "number" && end > 0)
+      ? (() => { const d = new Date(end * 1000); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`; })()
+      : null;
+    if (_sub?.plan === "trial" && dateStr) {
+      badge.textContent = `🎁 トライアル中（${dateStr}まで）`;
+      badge.title = "無料トライアル期間中です。終了後は有料プランへの登録が必要になります。";
+    } else if (_sub?.cancelAtPeriodEnd && dateStr) {
       badge.textContent = `✨ PRO（${dateStr}まで）`;
       badge.title = "解約手続き済み — 上記日付以降は無料プランに戻ります";
     } else {
