@@ -59,7 +59,10 @@ self.addEventListener("fetch", (e) => {
   if (e.request.mode === "navigate") {
     const path = url.pathname;
     // LP・ブログはネットワークから取得（SSR不要だがキャッシュに乗せない）
-    if (path === "/" || path === "/lp" || path.startsWith("/blog")) {
+    if (path === "/" || path === "/lp" || path.startsWith("/blog") || path === "/terms.html" ||
+    path === "/privacy.html" ||
+    path === "/tokushoho.html" ||
+    path === "/contact.html") {
       return; // ブラウザのデフォルト処理に委ねる
     }
     // キャッシュ・ネットワークいずれも失敗した場合は必ずネットワークへ再フォールバックし、
