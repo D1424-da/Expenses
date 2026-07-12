@@ -83,8 +83,8 @@ async def create_checkout_session(uid: str, email: str) -> str:
         customer_email=email,
         metadata={"uid": uid},
         subscription_data={"metadata": {"uid": uid}},
-        success_url=f"{APP_URL}/?checkout=success",
-        cancel_url=f"{APP_URL}/?checkout=cancel",
+        success_url=f"{APP_URL}/app?checkout=success",
+        cancel_url=f"{APP_URL}/app?checkout=cancel",
         idempotency_key=f"checkout-{uid}-{int(time.time() // 300)}",
     )
     return session.url
@@ -116,7 +116,7 @@ async def create_portal_session(uid: str) -> str:
         raise HTTPException(404, "Stripe 顧客 ID が見つかりません。")
     session = stripe.billing_portal.Session.create(
         customer=customer_id,
-        return_url=f"{APP_URL}/",
+        return_url=f"{APP_URL}/app",
     )
     return session.url
 
