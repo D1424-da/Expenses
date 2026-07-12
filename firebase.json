@@ -23,6 +23,14 @@
         "destination": "/lp.html"
       },
       {
+        "source": "/lp",
+        "destination": "/lp.html"
+      },
+      {
+        "source": "/blog",
+        "destination": "/blog.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
