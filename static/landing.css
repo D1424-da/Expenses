@@ -589,3 +589,182 @@ body {
   .features-grid { grid-template-columns: 1fr; }
   .feature-card { padding: 20px; }
 }
+
+/* ── PHONE SLIDES ── */
+.phone-slides {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.phone-screen.slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: opacity .5s ease, transform .5s ease;
+  pointer-events: none;
+}
+.phone-screen.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.phone-screen.slide.exit {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+.slide-dots {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  z-index: 10;
+}
+.slide-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(93,232,152,.3);
+  cursor: pointer;
+  transition: background .3s;
+}
+.slide-dot.active { background: #5DE898; }
+
+/* レシピ提案画面パーツ */
+.ps-recipe-lead {
+  text-align: center;
+  padding: 6px 0 4px;
+}
+.ps-recipe-badge {
+  font-size: 7px;
+  color: #5DE898;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.ps-recipe-ingredients {
+  font-size: 7.5px;
+  color: #a8d8bb;
+  background: rgba(93,232,152,.1);
+  border-radius: 6px;
+  padding: 4px 8px;
+  display: inline-block;
+}
+.ps-recipe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ps-recipe-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(93,232,152,.1);
+}
+.ps-recipe-item--top {
+  background: rgba(93,232,152,.08);
+  border-color: rgba(93,232,152,.25);
+}
+.ps-recipe-emoji { font-size: 14px; }
+.ps-recipe-info { flex: 1; }
+.ps-recipe-name { font-size: 8px; color: #c5dece; font-weight: 600; }
+.ps-recipe-meta { font-size: 6.5px; color: #5b9e75; margin-top: 2px; }
+.ps-recipe-match {
+  font-size: 6px;
+  font-weight: 700;
+  color: #5DE898;
+  background: rgba(93,232,152,.15);
+  border-radius: 4px;
+  padding: 2px 5px;
+  white-space: nowrap;
+}
+.ps-recipe-cta {
+  text-align: center;
+  font-size: 7.5px;
+  color: #5DE898;
+  font-weight: 600;
+  padding: 6px 0 2px;
+  border-top: 1px solid rgba(93,232,152,.1);
+  margin-top: auto;
+}
+
+/* ── SECURITY SECTION ── */
+.security-section { background: var(--surface); }
+.security-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 40px;
+}
+.security-card {
+  text-align: center;
+  padding: 32px 24px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.security-icon {
+  font-size: 2rem;
+  margin-bottom: 14px;
+}
+.security-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+.security-desc {
+  font-size: .82rem;
+  color: var(--ink-sub);
+  line-height: 1.7;
+}
+@media (max-width: 768px) {
+  .security-grid { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* ── TESTIMONIALS ── */
+.testimonial-card { position: relative; }
+.testimonial-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.testimonial-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.testimonial-stars { font-size: 1rem; line-height: 1; }
+.testimonial-meta {
+  font-size: .75rem;
+  color: var(--ink-muted);
+  margin-top: 3px;
+}
+
+/* ── PLAN SAFETY ── */
+.plan-safety {
+  margin: 14px 0 4px;
+  padding: 14px 16px;
+  background: rgba(93,232,152,.07);
+  border-radius: 10px;
+  border: 1px solid rgba(93,232,152,.2);
+}
+.plan-safety p {
+  font-size: .78rem;
+  color: var(--ink-sub);
+  margin: 0 0 4px;
+  line-height: 1.5;
+}
+.plan-safety p:last-child { margin-bottom: 0; }

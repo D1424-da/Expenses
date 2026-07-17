@@ -140,62 +140,108 @@
         <a class="btn-primary" href="/login.html">無料で試してみる →</a>
         <a class="btn-ghost" href="#features">機能を見る</a>
       </div>
-      <p class="hero-note">✓ Googleアカウントで即日登録 &nbsp;✓ 14日間無料</p>
+      <p class="hero-note">✓ Googleアカウントで即日登録 &nbsp;✓ 14日間無料 &nbsp;✓ クレカ登録不要</p>
     </div>
     <div class="hero-visual">
       <div class="phone-glow"></div>
       <div class="phone">
         <div class="phone-notch"></div>
-        <div class="phone-screen">
-          <div class="ps-header">
-            <span class="ps-title">🧾 レシート家計簿</span>
-            <span class="ps-month">2026年7月</span>
-          </div>
-          <div class="ps-total">
-            <div class="ps-total-label">今月の支出</div>
-            <div class="ps-total-amount">¥48,230</div>
-          </div>
-          <div class="ps-bar-wrap">
-            <div class="ps-bar-row">
-              <span class="ps-bar-label">食料品</span>
-              <div class="ps-bar-track"><div class="ps-bar-fill" style="width:72%;background:#2D7D52"></div></div>
-              <span class="ps-bar-val">¥34.7k</span>
+        <!-- スライド式：家計簿画面 → レシピ提案画面 -->
+        <div class="phone-slides" id="heroSlides">
+          <!-- SLIDE 1: 家計簿 -->
+          <div class="phone-screen slide active">
+            <div class="ps-header">
+              <span class="ps-title">🧾 レシート家計簿</span>
+              <span class="ps-month">2026年7月</span>
             </div>
-            <div class="ps-bar-row">
-              <span class="ps-bar-label">外食</span>
-              <div class="ps-bar-track"><div class="ps-bar-fill" style="width:22%;background:#5b9e75"></div></div>
-              <span class="ps-bar-val">¥10.5k</span>
+            <div class="ps-total">
+              <div class="ps-total-label">今月の支出</div>
+              <div class="ps-total-amount">¥48,230</div>
             </div>
-            <div class="ps-bar-row">
-              <span class="ps-bar-label">日用品</span>
-              <div class="ps-bar-track"><div class="ps-bar-fill" style="width:6%;background:#9cca9e"></div></div>
-              <span class="ps-bar-val">¥3.0k</span>
-            </div>
-          </div>
-          <div class="ps-divider"></div>
-          <div class="ps-list">
-            <div class="ps-item">
-              <div class="ps-item-left">
-                <span class="ps-item-store">イオン 〇〇店</span>
-                <span class="ps-item-date">7/11 · 食料品</span>
+            <div class="ps-bar-wrap">
+              <div class="ps-bar-row">
+                <span class="ps-bar-label">食料品</span>
+                <div class="ps-bar-track"><div class="ps-bar-fill" style="width:72%;background:#2D7D52"></div></div>
+                <span class="ps-bar-val">¥34.7k</span>
               </div>
-              <span class="ps-item-amount">¥3,820</span>
-            </div>
-            <div class="ps-item">
-              <div class="ps-item-left">
-                <span class="ps-item-store">業務スーパー</span>
-                <span class="ps-item-date">7/10 · 食料品</span>
+              <div class="ps-bar-row">
+                <span class="ps-bar-label">外食</span>
+                <div class="ps-bar-track"><div class="ps-bar-fill" style="width:22%;background:#5b9e75"></div></div>
+                <span class="ps-bar-val">¥10.5k</span>
               </div>
-              <span class="ps-item-amount">¥2,140</span>
-            </div>
-            <div class="ps-item">
-              <div class="ps-item-left">
-                <span class="ps-item-store">マクドナルド</span>
-                <span class="ps-item-date">7/9 · 外食</span>
+              <div class="ps-bar-row">
+                <span class="ps-bar-label">日用品</span>
+                <div class="ps-bar-track"><div class="ps-bar-fill" style="width:6%;background:#9cca9e"></div></div>
+                <span class="ps-bar-val">¥3.0k</span>
               </div>
-              <span class="ps-item-amount">¥1,290</span>
+            </div>
+            <div class="ps-divider"></div>
+            <div class="ps-list">
+              <div class="ps-item">
+                <div class="ps-item-left">
+                  <span class="ps-item-store">イオン 〇〇店</span>
+                  <span class="ps-item-date">7/11 · 食料品</span>
+                </div>
+                <span class="ps-item-amount">¥3,820</span>
+              </div>
+              <div class="ps-item">
+                <div class="ps-item-left">
+                  <span class="ps-item-store">業務スーパー</span>
+                  <span class="ps-item-date">7/10 · 食料品</span>
+                </div>
+                <span class="ps-item-amount">¥2,140</span>
+              </div>
+              <div class="ps-item">
+                <div class="ps-item-left">
+                  <span class="ps-item-store">マクドナルド</span>
+                  <span class="ps-item-date">7/9 · 外食</span>
+                </div>
+                <span class="ps-item-amount">¥1,290</span>
+              </div>
             </div>
           </div>
+          <!-- SLIDE 2: レシピ提案 -->
+          <div class="phone-screen slide">
+            <div class="ps-header">
+              <span class="ps-title">🍳 AIレシピ提案</span>
+              <span class="ps-month">今夜の献立</span>
+            </div>
+            <div class="ps-recipe-lead">
+              <div class="ps-recipe-badge">📷 直近のレシートから</div>
+              <div class="ps-recipe-ingredients">豚肉・玉ねぎ・にんじん・じゃがいも</div>
+            </div>
+            <div class="ps-divider"></div>
+            <div class="ps-recipe-list">
+              <div class="ps-recipe-item ps-recipe-item--top">
+                <div class="ps-recipe-emoji">🍛</div>
+                <div class="ps-recipe-info">
+                  <div class="ps-recipe-name">豚肉のカレー炒め</div>
+                  <div class="ps-recipe-meta">調理15分・材料4種・食材消費率100%</div>
+                </div>
+                <div class="ps-recipe-match">推薦</div>
+              </div>
+              <div class="ps-recipe-item">
+                <div class="ps-recipe-emoji">🥘</div>
+                <div class="ps-recipe-info">
+                  <div class="ps-recipe-name">肉じゃが</div>
+                  <div class="ps-recipe-meta">調理20分・材料4種</div>
+                </div>
+              </div>
+              <div class="ps-recipe-item">
+                <div class="ps-recipe-emoji">🍲</div>
+                <div class="ps-recipe-info">
+                  <div class="ps-recipe-name">豚汁</div>
+                  <div class="ps-recipe-meta">調理20分・材料4種</div>
+                </div>
+              </div>
+            </div>
+            <div class="ps-recipe-cta">レシピの詳細を見る →</div>
+          </div>
+        </div>
+        <!-- スライドインジケーター -->
+        <div class="slide-dots">
+          <span class="slide-dot active" data-slide="0"></span>
+          <span class="slide-dot" data-slide="1"></span>
         </div>
       </div>
     </div>
@@ -224,6 +270,33 @@
         <div class="step-num">🛒</div>
         <div class="step-title">予算→お買い物リスト</div>
         <p class="step-desc">月の食費予算を設定すると、最適な食材リストを自動生成。計画的な買い物で節約できます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section class="section security-section">
+  <div class="section-inner">
+    <div class="section-head" style="text-align:center">
+      <div class="section-label">安心・安全</div>
+      <h2 class="section-title">大切なデータを<br />徹底的に守ります</h2>
+    </div>
+    <div class="security-grid">
+      <div class="security-card">
+        <div class="security-icon">🗑️</div>
+        <div class="security-title">解析後即時削除</div>
+        <p class="security-desc">アップロードされたレシート画像は、AI解析完了後にサーバーから即時自動削除されます。</p>
+      </div>
+      <div class="security-card">
+        <div class="security-icon">🚫</div>
+        <div class="security-title">AI学習への利用ゼロ</div>
+        <p class="security-desc">お客様のデータがAIの学習・改善目的に使用されることは一切ありません。</p>
+      </div>
+      <div class="security-card">
+        <div class="security-icon">🔒</div>
+        <div class="security-title">SSL/TLS暗号化通信</div>
+        <p class="security-desc">すべての通信はSSL/TLSで暗号化されています。第三者による傍受からデータを保護します。</p>
       </div>
     </div>
   </div>
@@ -298,6 +371,11 @@
           <li>世帯共有・CSVエクスポート</li>
         </ul>
         <a class="plan-cta plan-cta--primary" href="login.html">14日間無料で試してみる →</a>
+        <div class="plan-safety">
+          <p>✓ クレジットカード登録不要でお試し開始</p>
+          <p>✓ 無料期間終了3日前にメールでお知らせ</p>
+          <p>✓ いつでもすぐに解約できます</p>
+        </div>
         <p style="font-size:.78rem;color:var(--ink-muted);text-align:center;margin-top:12px">※予算からのリスト作成には買い物履歴が必要です</p>
       </div>
     </div>
@@ -312,20 +390,35 @@
       <h2 class="section-title">食費節約を実感した方々のリアルな声</h2>
     </div>
     <div class="features-grid">
-      <div class="feature-card">
-        <div style="font-size:1.4rem;margin-bottom:12px" role="img" aria-label="5つ星評価">⭐⭐⭐⭐⭐</div>
+      <div class="feature-card testimonial-card">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#2D7D52,#1a4d33)">M</div>
+          <div>
+            <div class="testimonial-stars" role="img" aria-label="5つ星評価">⭐⭐⭐⭐⭐</div>
+            <div class="testimonial-meta">30代・主婦（2児の母）</div>
+          </div>
+        </div>
         <p class="feature-desc">「レシートを撮るだけで献立まで提案してくれるのが画期的。食費が月1万5千円減りました」</p>
-        <p style="margin-top:12px;font-size:.78rem;color:var(--ink-muted)">30代・主婦（2児の母）</p>
       </div>
-      <div class="feature-card">
-        <div style="font-size:1.4rem;margin-bottom:12px" role="img" aria-label="5つ星評価">⭐⭐⭐⭐⭐</div>
+      <div class="feature-card testimonial-card">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#4a7c59,#2a4c36)">K</div>
+          <div>
+            <div class="testimonial-stars" role="img" aria-label="5つ星評価">⭐⭐⭐⭐⭐</div>
+            <div class="testimonial-meta">20代・一人暮らし</div>
+          </div>
+        </div>
         <p class="feature-desc">「冷蔵庫に何があるか把握できるようになって食品ロスがほぼゼロに。AIのレシピ提案が優秀です」</p>
-        <p style="margin-top:12px;font-size:.78rem;color:var(--ink-muted)">20代・一人暮らし</p>
       </div>
-      <div class="feature-card">
-        <div style="font-size:1.4rem;margin-bottom:12px" role="img" aria-label="5つ星評価">⭐⭐⭐⭐⭐</div>
+      <div class="feature-card testimonial-card">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#3d6b4f,#1e3828)">T</div>
+          <div>
+            <div class="testimonial-stars" role="img" aria-label="5つ星評価">⭐⭐⭐⭐⭐</div>
+            <div class="testimonial-meta">40代・共働き夫婦</div>
+          </div>
+        </div>
         <p class="feature-desc">「夫婦でデータ共有できて家計の把握が劇的に楽になりました。最安値アラートで無駄な出費も減りました」</p>
-        <p style="margin-top:12px;font-size:.78rem;color:var(--ink-muted)">40代・共働き夫婦</p>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:24px">
@@ -351,7 +444,7 @@
     <h2>今日から、買い物がレシピに変わる</h2>
     <p>Googleアカウントで30秒で登録完了。14日間無料でお試しいただけます。<br />食費の節約と献立の悩みを、一度に解決しましょう。</p>
     <a class="btn-primary" href="login.html">14日間無料で試してみる →</a>
-    <p class="cta-note">スマートフォン・PC どちらでも利用できます &nbsp;·&nbsp; ¥980/月（14日間無料）</p>
+    <p class="cta-note">スマートフォン・PC どちらでも利用できます &nbsp;·&nbsp; ¥980/月（14日間無料）&nbsp;·&nbsp; クレカ登録不要</p>
   </div>
 </section>
 
@@ -380,5 +473,35 @@
   <p class="footer-copy">© 2026 カケイシピ. All rights reserved.</p>
 </footer>
 
+<script>
+(function() {
+  var slides = document.querySelectorAll('#heroSlides .slide');
+  var dots = document.querySelectorAll('.slide-dot');
+  var current = 0;
+  var timer;
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    slides[current].classList.add('exit');
+    dots[current].classList.remove('active');
+    var prev = current;
+    current = n;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+    setTimeout(function() { slides[prev].classList.remove('exit'); }, 500);
+  }
+
+  function next() { goTo((current + 1) % slides.length); }
+
+  function start() { timer = setInterval(next, 3500); }
+  function stop() { clearInterval(timer); }
+
+  dots.forEach(function(dot, i) {
+    dot.addEventListener('click', function() { stop(); goTo(i); start(); });
+  });
+
+  start();
+})();
+</script>
 </body>
 </html>
