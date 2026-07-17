@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="../redirect.js"></script>
+        <!-- GA4 (Google Analytics) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+  <script src="../analytics.js"></script>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="../manifest.json" />
+<title>冷蔵庫の中身からレシピを提案するAI｜食材を腐らせない・フードロス対策アプリ</title>
+  <meta name="description" content="冷蔵庫の中身を把握し、余っている食材からレシピを提案するAIアプリの選び方。食材を腐らせる・捨てるフードロスを防ぎ、家計簿にも連動するカケイシピの活用法を解説。" />
+  <style>
+    .prevnext{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;gap:16px;flex-wrap:wrap}
+    .pn-link{flex:1;min-width:200px;display:flex;flex-direction:column;gap:4px;padding:16px 18px;background:#fff;border:1px solid #e2e8e6;border-radius:12px;text-decoration:none;transition:border-color .15s,transform .1s}
+    .pn-link:hover{border-color:#2D7D52;transform:translateY(-2px)}
+    .pn-next{text-align:right}
+    .pn-dir{font-size:.75rem;color:#2D7D52;font-weight:700}
+    .pn-title{font-size:.88rem;color:#0F2318;line-height:1.4}
+    .pn-empty{visibility:hidden;pointer-events:none}
+    @media(prefers-color-scheme:dark){.pn-link{background:#132219;border-color:#1E3D2A}.pn-title{color:#E4EDE7}}
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    :root[data-theme="light"]{--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--gp:#F0F8F2}
+    :root[data-theme="dark"]{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#0d3024 0%,#061a0e 100%);padding:80px 24px 100px;position:relative;overflow:hidden}
+    .ah::before{content:"";position:absolute;top:-60px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(45,125,82,.3) 0%,transparent 70%);border-radius:50%}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto;position:relative;z-index:1}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(45,125,82,.4);color:#a8d8bb;border:1px solid rgba(45,125,82,.6);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:700;color:#fff;line-height:1.3;margin-bottom:20px;text-shadow:0 2px 20px rgba(0,0,0,.4)}
+    .ah .tagline{font-size:1rem;color:rgba(255,255,255,.7);margin-bottom:24px;line-height:1.7}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
+    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
+    .su{font-size:.85rem;color:var(--im);margin-top:4px}
+    .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:32px 0}
+    .cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+    .ci{font-size:1.8rem;margin-bottom:10px;display:block}
+    .ct{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px}
+    .cd{font-size:.82rem;color:var(--is);line-height:1.6}
+    .flow{display:flex;gap:0;margin:32px 0;overflow-x:auto;padding-bottom:8px}
+    .flow-item{flex:1;min-width:140px;text-align:center;padding:20px 10px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);position:relative;margin-right:28px;box-shadow:var(--sh)}
+    .flow-item:last-child{margin-right:0}
+    .flow-item::after{content:"→";position:absolute;right:-22px;top:50%;transform:translateY(-50%);color:var(--gm);font-size:1.2rem;font-weight:700}
+    .flow-item:last-child::after{display:none}
+    .flow-icon{font-size:1.8rem;display:block;margin-bottom:10px}
+    .flow-step{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.06em;margin-bottom:4px}
+    .flow-desc{font-size:.8rem;color:var(--is);line-height:1.5}
+    .voice{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;margin:16px 0;box-shadow:var(--sh);position:relative}
+    .voice::before{content:"\"";font-family:serif;font-size:3rem;color:var(--gl);position:absolute;top:-4px;left:16px;line-height:1}
+    .voice-text{padding-top:20px;font-size:.9rem;color:var(--is);line-height:1.8;font-style:italic}
+    .voice-attr{margin-top:12px;font-size:.8rem;color:var(--im);font-style:normal}
+    .cb{background:linear-gradient(135deg,#1E5C3A 0%,#0d3024 100%);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.5rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:16px 44px;font-size:1.05rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s;box-shadow:0 4px 20px rgba(232,98,26,.4)}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .faq{margin:16px 0}
+    .faq-item{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px 20px;margin-bottom:12px;box-shadow:var(--sh)}
+    .faq-q{font-size:.92rem;font-weight:700;color:var(--ink);margin-bottom:8px;display:flex;gap:8px}
+    .faq-q::before{content:"Q";color:var(--or);font-weight:800}
+    .faq-a{font-size:.88rem;color:var(--is);line-height:1.8;display:flex;gap:8px}
+    .faq-a::before{content:"A";color:var(--gm);font-weight:800;flex-shrink:0}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}}
+    @media(max-width:600px){.hn{display:none}.sg{grid-template-columns:1fr}.flow{flex-direction:column}.flow-item{margin-right:0;margin-bottom:24px}.flow-item::after{content:"↓";right:50%;top:auto;bottom:-22px;transform:translateX(50%)}}
+  </style>
+  <link rel="canonical" href="https://get-tohon.online/blog/fridge-ai-recipe.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://get-tohon.online/blog/fridge-ai-recipe.html" />
+  <meta property="og:title" content="冷蔵庫の中身からレシピを提案するAI｜食材を腐らせない・フードロス対策アプリ" />
+  <meta property="og:description" content="冷蔵庫の中身を把握し、余っている食材からレシピを提案するAIアプリの選び方とフードロス対策を解説。" />
+  <meta property="og:image" content="https://get-tohon.online/ogp.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "冷蔵庫の中身からレシピを提案するAI｜食材を腐らせない・フードロス対策アプリ",
+    "description": "冷蔵庫の中身を把握し、余っている食材からレシピを提案するAIアプリの選び方。食材を腐らせる・捨てるフードロスを防ぐ活用法を解説。",
+    "datePublished": "2026-07-17",
+    "dateModified": "2026-07-17",
+    "url": "https://get-tohon.online/blog/fridge-ai-recipe.html",
+    "author": { "@type": "Organization", "name": "カケイシピ", "url": "https://get-tohon.online/" },
+    "publisher": { "@type": "Organization", "name": "カケイシピ", "url": "https://get-tohon.online/" },
+    "isPartOf": { "@type": "Blog", "name": "カケイシピ ブログ", "url": "https://get-tohon.online/blog.html" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "冷蔵庫の中身を手入力せずにレシピ提案してもらう方法はありますか？",
+        "acceptedAnswer": { "@type": "Answer", "text": "カケイシピでは、冷蔵庫の中身を直接入力する代わりに、買い物のレシートを撮影するだけで購入した食材が記録され、その食材からAIがレシピを提案します。まだ使っていない食材を優先的に使うレシピも提案されます。" }
+      },
+      {
+        "@type": "Question",
+        "name": "フードロス対策アプリとレシピアプリの違いは何ですか？",
+        "acceptedAnswer": { "@type": "Answer", "text": "フードロス対策アプリは主に賞味期限管理に特化していることが多く、レシピアプリは食材を入力してレシピを検索することに特化しています。カケイシピは購入履歴の記録・フードロス対策・レシピ提案・家計簿を1つに統合しています。" }
+      },
+      {
+        "@type": "Question",
+        "name": "家庭の食品ロスはどのくらい発生していますか？",
+        "acceptedAnswer": { "@type": "Answer", "text": "農林水産省の発表によると、日本の年間食品ロス量は約643万tにのぼり、そのうち家庭からの発生量も大きな割合を占めています。買った食材を使い切ることが、家庭でできる最も効果的な対策の一つです。" }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+<header class="hd">
+  <a href="../index.html" class="hl">カケイシピ</a>
+  <nav class="hn"><a href="../index.html">ホーム</a><a href="../blog.html">ブログ</a><a href="../index.html#pricing">料金</a></nav>
+  <a href="../login.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <nav class="bc">
+      <a href="../index.html">カケイシピ</a><span>/</span>
+      <a href="../blog.html">ブログ</a><span>/</span>
+      <span>冷蔵庫の中身からレシピを提案するAI</span>
+    </nav>
+    <span class="ac">フードロス対策</span>
+    <h1>冷蔵庫の中身からレシピを提案するAI<br>食材を腐らせない仕組みづくり</h1>
+    <p class="tagline">「野菜室の奥で野菜がしなびていた」を防ぐには、記録を面倒にしないことが鍵です。<br>買い物のたびに自動で食材を把握するAI活用法を紹介します。</p>
+    <div class="am">
+      <span>2026年7月17日</span>
+      <span>読了目安：8分</span>
+    </div>
+  </div>
+</section>
+
+<div class="cw">
+  <article class="ab">
+    <p class="ld">冷蔵庫を開けたら、いつ買ったかわからない食材が奥から出てきた——そんな経験は誰にでもあります。「冷蔵庫の中身管理アプリ」は数多くありますが、多くは在庫を手入力する必要があり、結局続きません。この記事では、手入力の手間をなくしながら食材を使い切る仕組みと、フードロスを防ぐカケイシピの活用法を解説します。</p>
+
+    <h2 id="problem">冷蔵庫管理アプリが続かない理由</h2>
+    <ul>
+      <li>買った食材を1つずつ手入力するのが面倒で、数日で更新をやめてしまう</li>
+      <li>賞味期限だけ管理しても、「何を作るか」までは提案してくれない</li>
+      <li>冷蔵庫の実際の中身と、アプリ上の記録がすぐにズレてしまう</li>
+    </ul>
+    <p>結果として、冷蔵庫の奥で野菜がしなび、気づけば捨てることになる——というサイクルが繰り返されます。</p>
+
+    <div class="sg">
+      <div class="sc">
+        <div class="sn">643万t</div>
+        <div class="su">日本の年間食品ロス量<br>（農林水産省2023年）</div>
+      </div>
+      <div class="sc">
+        <div class="sn">約半分</div>
+        <div class="su">食品ロスに占める<br>家庭系の割合の目安</div>
+      </div>
+      <div class="sc">
+        <div class="sn">レシート撮影</div>
+        <div class="su">手入力の代わりに<br>使う記録方法</div>
+      </div>
+    </div>
+
+    <h2 id="how-it-works">「入力しない」冷蔵庫管理という発想</h2>
+    <p>カケイシピは、冷蔵庫の中身を手入力させる代わりに、<strong>買い物のレシートを撮影するだけ</strong>で購入した食材を自動記録します。手入力の手間がないため、記録が途切れません。</p>
+    <div class="flow">
+      <div class="flow-item">
+        <span class="flow-icon">📸</span>
+        <div class="flow-step">STEP 1</div>
+        <div class="flow-desc">買い物のレシートを撮影</div>
+      </div>
+      <div class="flow-item">
+        <span class="flow-icon">🥕</span>
+        <div class="flow-step">STEP 2</div>
+        <div class="flow-desc">購入した食材が自動でリスト化される</div>
+      </div>
+      <div class="flow-item">
+        <span class="flow-icon">🤖</span>
+        <div class="flow-step">STEP 3</div>
+        <div class="flow-desc">AIがその食材で作れるレシピを提案</div>
+      </div>
+      <div class="flow-item">
+        <span class="flow-icon">✅</span>
+        <div class="flow-step">STEP 4</div>
+        <div class="flow-desc">調理して使い切り、廃棄をゼロに</div>
+      </div>
+    </div>
+
+    <h2 id="benefits">冷蔵庫の食材を使い切ることで得られること</h2>
+    <div class="cg">
+      <div class="cc">
+        <span class="ci">♻️</span>
+        <div class="ct">フードロスの削減</div>
+        <div class="cd">買った食材を意識的に使い切るレシピが提案されるので、しなびる・傷むまで放置することが減ります。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">💰</span>
+        <div class="ct">無駄な出費の削減</div>
+        <div class="cd">捨てるはずだった食材を使い切ることで、実質的に食費を下げる効果があります。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">🧊</span>
+        <div class="ct">冷蔵庫がすっきりする</div>
+        <div class="cd">「何が入っているかわからない」状態がなくなり、必要以上に買い足すことも減ります。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">🌍</span>
+        <div class="ct">フードロス対策への貢献</div>
+        <div class="cd">家庭からの食品ロスを減らすことは、家計だけでなく環境負荷の軽減にもつながります。</div>
+      </div>
+    </div>
+
+    <div class="tb">
+      <div class="tl">賞味期限管理アプリとの違い</div>
+      <p>賞味期限を記録するだけのアプリは「期限が近い」と教えてくれても、「じゃあ何を作ればいいか」までは提案しません。カケイシピは購入履歴からAIが具体的なレシピまで提案するため、通知を見て終わりにならず、実際に食材を使い切る行動までつながります。</p>
+    </div>
+
+    <h2 id="voices">ユーザーの声</h2>
+    <div class="voice">
+      <p class="voice-text">冷蔵庫アプリを何度も試しましたが、入力が続かず結局野菜を腐らせていました。レシートを撮るだけでいいカケイシピは、気づいたら記録が続いていて、冷蔵庫の中身が整理された状態を保てるようになりました。</p>
+      <div class="voice-attr">— 30代・共働き</div>
+    </div>
+
+    <h2 id="faq">よくある質問</h2>
+    <div class="faq">
+      <div class="faq-item">
+        <div class="faq-q">冷蔵庫の中身を手入力せずにレシピ提案してもらう方法はありますか？</div>
+        <div class="faq-a">カケイシピでは、レシートを撮影するだけで購入した食材が記録され、その食材からAIがレシピを提案します。まだ使っていない食材を優先的に使うレシピも提案されます。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">フードロス対策アプリとレシピアプリの違いは何ですか？</div>
+        <div class="faq-a">フードロス対策アプリは賞味期限管理に特化していることが多く、レシピアプリは食材入力によるレシピ検索に特化しています。カケイシピは購入履歴の記録・フードロス対策・レシピ提案・家計簿を1つに統合しています。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">家庭の食品ロスはどのくらい発生していますか？</div>
+        <div class="faq-a">農林水産省の発表によると、日本の年間食品ロス量は約643万tにのぼります。買った食材を使い切ることが、家庭でできる最も効果的な対策の一つです。</div>
+      </div>
+    </div>
+
+    <div class="cb">
+      <h3>今日の買い物からフードロス対策を始める</h3>
+      <p>Googleアカウントがあれば登録不要。レシートを1枚撮影するだけです。</p>
+      <a href="../login.html" class="bc2">無料で今すぐ試す</a>
+    </div>
+
+    <h2 id="summary">まとめ</h2>
+    <p>冷蔵庫の中身管理で挫折する最大の原因は「手入力の手間」です。カケイシピは、買い物のレシートを撮影するだけで購入した食材を記録し、AIがその食材で作れるレシピを提案することで、入力の手間なくフードロス対策を実現します。食材を腐らせて捨てる罪悪感から解放され、家計と環境の両方にやさしい食生活を続けられます。</p>
+  </article>
+
+  <aside class="sb">
+    <div class="sbc">
+      <h4>目次</h4>
+      <ul class="toc">
+        <li><a href="#problem">続かない理由</a></li>
+        <li><a href="#how-it-works">入力しない管理の発想</a></li>
+        <li><a href="#benefits">得られること</a></li>
+        <li><a href="#voices">ユーザーの声</a></li>
+        <li><a href="#faq">よくある質問</a></li>
+        <li><a href="#summary">まとめ</a></li>
+      </ul>
+    </div>
+    <div class="sbc">
+      <h4>関連記事</h4>
+      <a href="/blog/receipt-to-recipe.html" class="ra">
+        <div class="ri" style="background:#e3f2fd">📸</div>
+        <div>
+          <div class="rt">レシートからレシピを作るアプリ</div>
+          <div class="rm">買った食材から献立を自動提案</div>
+        </div>
+      </a>
+      <a href="/blog/shopping-to-recipe.html" class="ra">
+        <div class="ri" style="background:#e8f5ee">🛒</div>
+        <div>
+          <div class="rt">買い物した食材からレシピを自動作成</div>
+          <div class="rm">カケイシピの最強機能を徹底解説</div>
+        </div>
+      </a>
+      <a href="/blog/food-cost-only-app.html" class="ra">
+        <div class="ri" style="background:#fff3e0">🍽️</div>
+        <div>
+          <div class="rt">食費管理アプリのおすすめ</div>
+          <div class="rm">食費だけを見える化する方法</div>
+        </div>
+      </a>
+      <a href="/blog/ai-recipe-weekly-plan.html" class="ra">
+        <div class="ri" style="background:#f3e5f5">🤖</div>
+        <div>
+          <div class="rt">AIで週間献立を自動作成</div>
+          <div class="rm">食費節約の新常識</div>
+        </div>
+      </a>
+    </div>
+  </aside>
+</div>
+
+<nav class="prevnext">
+  <a class="pn-link pn-prev" href="/blog/food-cost-only-app.html"><span class="pn-dir">← 前の記事</span><span class="pn-title">食費管理アプリのおすすめ</span></a>
+  <span class="pn-link pn-empty"></span>
+</nav>
+<footer class="ft">
+  <div class="fl">
+    <a href="../index.html">ホーム</a>
+    <a href="../blog.html">ブログ</a>
+    <a href="../index.html#pricing">料金プラン</a>
+    <a href="../terms.html">利用規約</a>
+    <a href="../privacy.html">プライバシーポリシー</a>
+    <a href="../tokushoho.html">特定商取引法に基づく表記</a>
+    <a href="../contact.html">お問い合わせ</a>
+  </div>
+  <p>© 2026 カケイシピ · AIレシート家計簿</p>
+</footer>
+</body>
+</html>
