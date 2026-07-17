@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="../redirect.js"></script>
+        <!-- GA4 (Google Analytics) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+  <script src="../analytics.js"></script>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="../manifest.json" />
+<title>買い物リストを自動作成するアプリ｜レシピから買い忘れゼロ・買い物効率化</title>
+  <meta name="description" content="献立・レシピから必要な食材を自動で買い物リスト化するアプリの使い方。買い忘れ防止・重複購入防止・買い物効率化を実現するカケイシピの買い物リスト機能を解説。" />
+  <style>
+    .prevnext{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;gap:16px;flex-wrap:wrap}
+    .pn-link{flex:1;min-width:200px;display:flex;flex-direction:column;gap:4px;padding:16px 18px;background:#fff;border:1px solid #e2e8e6;border-radius:12px;text-decoration:none;transition:border-color .15s,transform .1s}
+    .pn-link:hover{border-color:#2D7D52;transform:translateY(-2px)}
+    .pn-next{text-align:right}
+    .pn-dir{font-size:.75rem;color:#2D7D52;font-weight:700}
+    .pn-title{font-size:.88rem;color:#0F2318;line-height:1.4}
+    .pn-empty{visibility:hidden;pointer-events:none}
+    @media(prefers-color-scheme:dark){.pn-link{background:#132219;border-color:#1E3D2A}.pn-title{color:#E4EDE7}}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    :root[data-theme="light"]{--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--gp:#F0F8F2}
+    :root[data-theme="dark"]{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#0d3024 0%,#061a0e 100%);padding:80px 24px 100px;position:relative;overflow:hidden}
+    .ah::before{content:"";position:absolute;top:-60px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(45,125,82,.3) 0%,transparent 70%);border-radius:50%}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto;position:relative;z-index:1}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(45,125,82,.4);color:#a8d8bb;border:1px solid rgba(45,125,82,.6);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:700;color:#fff;line-height:1.3;margin-bottom:20px;text-shadow:0 2px 20px rgba(0,0,0,.4)}
+    .ah .tagline{font-size:1rem;color:rgba(255,255,255,.7);margin-bottom:24px;line-height:1.7}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
+    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
+    .su{font-size:.85rem;color:var(--im);margin-top:4px}
+    .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:32px 0}
+    .cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+    .ci{font-size:1.8rem;margin-bottom:10px;display:block}
+    .ct{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px}
+    .cd{font-size:.82rem;color:var(--is);line-height:1.6}
+    .flow{display:flex;gap:0;margin:32px 0;overflow-x:auto;padding-bottom:8px}
+    .flow-item{flex:1;min-width:140px;text-align:center;padding:20px 10px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);position:relative;margin-right:28px;box-shadow:var(--sh)}
+    .flow-item:last-child{margin-right:0}
+    .flow-item::after{content:"→";position:absolute;right:-22px;top:50%;transform:translateY(-50%);color:var(--gm);font-size:1.2rem;font-weight:700}
+    .flow-item:last-child::after{display:none}
+    .flow-icon{font-size:1.8rem;display:block;margin-bottom:10px}
+    .flow-step{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.06em;margin-bottom:4px}
+    .flow-desc{font-size:.8rem;color:var(--is);line-height:1.5}
+    .voice{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;margin:16px 0;box-shadow:var(--sh);position:relative}
+    .voice::before{content:"\"";font-family:serif;font-size:3rem;color:var(--gl);position:absolute;top:-4px;left:16px;line-height:1}
+    .voice-text{padding-top:20px;font-size:.9rem;color:var(--is);line-height:1.8;font-style:italic}
+    .voice-attr{margin-top:12px;font-size:.8rem;color:var(--im);font-style:normal}
+    .cb{background:linear-gradient(135deg,#1E5C3A 0%,#0d3024 100%);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.5rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:16px 44px;font-size:1.05rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s;box-shadow:0 4px 20px rgba(232,98,26,.4)}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .faq{margin:16px 0}
+    .faq-item{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px 20px;margin-bottom:12px;box-shadow:var(--sh)}
+    .faq-q{font-size:.92rem;font-weight:700;color:var(--ink);margin-bottom:8px;display:flex;gap:8px}
+    .faq-q::before{content:"Q";color:var(--or);font-weight:800}
+    .faq-a{font-size:.88rem;color:var(--is);line-height:1.8;display:flex;gap:8px}
+    .faq-a::before{content:"A";color:var(--gm);font-weight:800;flex-shrink:0}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}}
+    @media(max-width:600px){.hn{display:none}.sg{grid-template-columns:1fr}.flow{flex-direction:column}.flow-item{margin-right:0;margin-bottom:24px}.flow-item::after{content:"↓";right:50%;top:auto;bottom:-22px;transform:translateX(50%)}}
+  </style>
+  <link rel="canonical" href="https://get-tohon.online/blog/shopping-list-auto.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://get-tohon.online/blog/shopping-list-auto.html" />
+  <meta property="og:title" content="買い物リストを自動作成するアプリ｜レシピから買い忘れゼロ・買い物効率化" />
+  <meta property="og:description" content="献立・レシピから必要な食材を自動で買い物リスト化するアプリの使い方を解説。" />
+  <meta property="og:image" content="https://get-tohon.online/ogp.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "買い物リストを自動作成するアプリ｜レシピから買い忘れゼロ・買い物効率化",
+    "description": "献立・レシピから必要な食材を自動で買い物リスト化するアプリの使い方。買い忘れ防止・重複購入防止・買い物効率化を実現する機能を解説。",
+    "datePublished": "2026-07-17",
+    "dateModified": "2026-07-17",
+    "url": "https://get-tohon.online/blog/shopping-list-auto.html",
+    "author": { "@type": "Organization", "name": "カケイシピ", "url": "https://get-tohon.online/" },
+    "publisher": { "@type": "Organization", "name": "カケイシピ", "url": "https://get-tohon.online/" },
+    "isPartOf": { "@type": "Blog", "name": "カケイシピ ブログ", "url": "https://get-tohon.online/blog.html" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "買い物リストはレシピから自動で作れますか？", "acceptedAnswer": { "@type": "Answer", "text": "カケイシピでは、提案されたレシピや献立プランに必要な食材を、そのまま買い物リストに追加できます。手動でメモを作る手間がありません。" } },
+      { "@type": "Question", "name": "家族で買い物リストを共有できますか？", "acceptedAnswer": { "@type": "Answer", "text": "世帯共有機能を使うと、家族間で同じ買い物リストをリアルタイムに共有でき、誰かが買った商品はチェックが同期されるため、重複購入を防げます。" } },
+      { "@type": "Question", "name": "買い物リストと家計簿は連動していますか？", "acceptedAnswer": { "@type": "Answer", "text": "買い物リストの商品を購入した後、そのままレシートを撮影すれば家計簿に記録され、次のレシピ提案にも反映されます。" } }
+    ]
+  }
+  </script>
+</head>
+<body>
+<header class="hd">
+  <a href="../index.html" class="hl">カケイシピ</a>
+  <nav class="hn"><a href="../index.html">ホーム</a><a href="../blog.html">ブログ</a><a href="../index.html#pricing">料金</a></nav>
+  <a href="../login.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <nav class="bc">
+      <a href="../index.html">カケイシピ</a><span>/</span>
+      <a href="../blog.html">ブログ</a><span>/</span>
+      <span>買い物リストを自動作成</span>
+    </nav>
+    <span class="ac">買い物効率化</span>
+    <h1>買い物リストを自動作成するアプリ<br>買い忘れ・重複購入をゼロに</h1>
+    <p class="tagline">献立が決まれば、必要な食材はもう分かっています。<br>レシピから買い物リストへワンタップでつなげる方法を紹介します。</p>
+    <div class="am">
+      <span>2026年7月17日</span>
+      <span>読了目安：7分</span>
+    </div>
+  </div>
+</section>
+
+<div class="cw">
+  <article class="ab">
+    <p class="ld">スーパーで「あれ、これ家にあったっけ？」と迷ったり、必要なものを買い忘れて再訪する——買い物リストを作る手間を惜しんだ結果の無駄です。この記事では、レシピ・献立から必要な食材を自動でリスト化し、買い忘れと重複購入をなくす方法を解説します。</p>
+
+    <h2 id="problem">手書き・メモアプリの買い物リストが続かない理由</h2>
+    <ul>
+      <li>献立を決めてから、必要な食材を自分で書き出す二度手間がある</li>
+      <li>冷蔵庫に何があるか忘れて、同じ調味料を何度も買ってしまう</li>
+      <li>家族に頼んだ買い物が、リストと違うものになってしまう</li>
+    </ul>
+
+    <div class="sg">
+      <div class="sc">
+        <div class="sn">ワンタップ</div>
+        <div class="su">レシピから買い物リストへ<br>追加する操作</div>
+      </div>
+      <div class="sc">
+        <div class="sn">リアルタイム</div>
+        <div class="su">家族間でリストを<br>共有・同期</div>
+      </div>
+      <div class="sc">
+        <div class="sn">自動連携</div>
+        <div class="su">購入後は<br>家計簿にも反映</div>
+      </div>
+    </div>
+
+    <h2 id="how-it-works">レシピから買い物リストへの自動連携</h2>
+    <div class="flow">
+      <div class="flow-item">
+        <span class="flow-icon">🤖</span>
+        <div class="flow-step">STEP 1</div>
+        <div class="flow-desc">AIが提案したレシピ・週間献立を確認</div>
+      </div>
+      <div class="flow-item">
+        <span class="flow-icon">➕</span>
+        <div class="flow-step">STEP 2</div>
+        <div class="flow-desc">足りない食材だけを買い物リストに追加</div>
+      </div>
+      <div class="flow-item">
+        <span class="flow-icon">🛒</span>
+        <div class="flow-step">STEP 3</div>
+        <div class="flow-desc">スーパーでリストを見ながらチェックして購入</div>
+      </div>
+      <div class="flow-item">
+        <span class="flow-icon">🧾</span>
+        <div class="flow-step">STEP 4</div>
+        <div class="flow-desc">レシートを撮影して家計簿へ自動記録</div>
+      </div>
+    </div>
+
+    <h2 id="benefits">買い物リスト自動化で得られること</h2>
+    <div class="cg">
+      <div class="cc">
+        <span class="ci">✅</span>
+        <div class="ct">買い忘れ防止</div>
+        <div class="cd">献立に必要な食材がそのままリスト化されるので、必要なものを書き漏らしません。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">🔁</span>
+        <div class="ct">重複購入の防止</div>
+        <div class="cd">家族で共有されたリストなら、誰かが買ったものはチェック済みとして同期されます。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">⏱️</span>
+        <div class="ct">買い物時間の短縮</div>
+        <div class="cd">売り場を行ったり来たりする無駄がなくなり、レジまでスムーズに進めます。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">💰</span>
+        <div class="ct">衝動買いの抑制</div>
+        <div class="cd">リストにないものを買う機会が減り、無駄な出費を防げます。</div>
+      </div>
+    </div>
+
+    <div class="tb">
+      <div class="tl">家計簿・レシピ提案との三位一体連携</div>
+      <p>買い物リストが単体の機能だと、結局「作って終わり」になりがちです。カケイシピは、買い物リスト→購入→家計簿記録→次のレシピ提案という一連の流れが1つのアプリでつながっているため、リストを作るモチベーションが自然に維持されます。</p>
+    </div>
+
+    <h2 id="voices">ユーザーの声</h2>
+    <div class="voice">
+      <p class="voice-text">共働きで買い物を分担していますが、リストが共有されるので「これ買った？」の確認連絡がなくなりました。無駄な二重買いが減って、地味に助かっています。</p>
+      <div class="voice-attr">— 30代・共働き夫婦</div>
+    </div>
+
+    <h2 id="faq">よくある質問</h2>
+    <div class="faq">
+      <div class="faq-item">
+        <div class="faq-q">買い物リストはレシピから自動で作れますか？</div>
+        <div class="faq-a">提案されたレシピや献立プランに必要な食材を、そのまま買い物リストに追加できます。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">家族で買い物リストを共有できますか？</div>
+        <div class="faq-a">世帯共有機能でリアルタイムに共有され、購入済みのチェックも同期されるため重複購入を防げます。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">買い物リストと家計簿は連動していますか？</div>
+        <div class="faq-a">購入後にレシートを撮影すれば家計簿に記録され、次のレシピ提案にも反映されます。</div>
+      </div>
+    </div>
+
+    <div class="cb">
+      <h3>今日の献立から買い物リストを作ってみる</h3>
+      <p>Googleアカウントがあれば登録不要。まずレシピ提案を試してみてください。</p>
+      <a href="../login.html" class="bc2">無料で今すぐ試す</a>
+    </div>
+
+    <h2 id="summary">まとめ</h2>
+    <p>買い物リストを手動で作る手間こそが、続かない最大の原因です。レシピ・献立から自動でリスト化し、家族で共有し、購入後は家計簿に自動反映されるカケイシピなら、買い忘れも重複購入も防ぎながら、買い物そのものを効率化できます。</p>
+  </article>
+
+  <aside class="sb">
+    <div class="sbc">
+      <h4>目次</h4>
+      <ul class="toc">
+        <li><a href="#problem">続かない理由</a></li>
+        <li><a href="#how-it-works">自動連携の仕組み</a></li>
+        <li><a href="#benefits">得られること</a></li>
+        <li><a href="#voices">ユーザーの声</a></li>
+        <li><a href="#faq">よくある質問</a></li>
+        <li><a href="#summary">まとめ</a></li>
+      </ul>
+    </div>
+    <div class="sbc">
+      <h4>関連記事</h4>
+      <a href="/blog/food-cost-cut-20000.html" class="ra">
+        <div class="ri" style="background:#fff3e0">🥗</div>
+        <div><div class="rt">食費を月2万円削減する方法</div><div class="rm">買い物リストの作り方</div></div>
+      </a>
+      <a href="/blog/ai-recipe-weekly-plan.html" class="ra">
+        <div class="ri" style="background:#f3e5f5">🤖</div>
+        <div><div class="rt">AIで週間献立を自動作成</div><div class="rm">食費節約の新常識</div></div>
+      </a>
+      <a href="/blog/family-kakeibo.html" class="ra">
+        <div class="ri" style="background:#e8f5ee">👨‍👩‍👧</div>
+        <div><div class="rt">夫婦・家族で共有できる家計簿</div><div class="rm">共働き家庭の家計管理術</div></div>
+      </a>
+      <a href="/blog/receipt-to-recipe.html" class="ra">
+        <div class="ri" style="background:#e3f2fd">📸</div>
+        <div><div class="rt">レシートからレシピを作るアプリ</div><div class="rm">買った食材から献立を自動提案</div></div>
+      </a>
+    </div>
+  </aside>
+</div>
+
+<nav class="prevnext">
+  <a class="pn-link pn-prev" href="/blog/fridge-ai-recipe.html"><span class="pn-dir">← 前の記事</span><span class="pn-title">冷蔵庫の中身からレシピを提案するAI</span></a>
+  <a class="pn-link pn-next" href="/blog/price-tracker-app.html"><span class="pn-dir">次の記事 →</span><span class="pn-title">食材の底値管理アプリ</span></a>
+</nav>
+<footer class="ft">
+  <div class="fl">
+    <a href="../index.html">ホーム</a>
+    <a href="../blog.html">ブログ</a>
+    <a href="../index.html#pricing">料金プラン</a>
+    <a href="../terms.html">利用規約</a>
+    <a href="../privacy.html">プライバシーポリシー</a>
+    <a href="../tokushoho.html">特定商取引法に基づく表記</a>
+    <a href="../contact.html">お問い合わせ</a>
+  </div>
+  <p>© 2026 カケイシピ · AIレシート家計簿</p>
+</footer>
+</body>
+</html>

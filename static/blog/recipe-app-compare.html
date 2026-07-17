@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="../redirect.js"></script>
+        <!-- GA4 (Google Analytics) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+  <script src="../analytics.js"></script>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="../manifest.json" />
+<title>レシピ自動生成アプリ比較2026年版｜食材入力型・在庫管理型・レシート連携型の違い</title>
+  <meta name="description" content="AIレシピ・献立自動生成アプリを「食材入力型」「在庫管理型」「レシート連携型」の3タイプに分けて比較。それぞれの手間・精度・家計簿連携の違いとカケイシピの立ち位置を解説。" />
+  <style>
+    .prevnext{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;gap:16px;flex-wrap:wrap}
+    .pn-link{flex:1;min-width:200px;display:flex;flex-direction:column;gap:4px;padding:16px 18px;background:#fff;border:1px solid #e2e8e6;border-radius:12px;text-decoration:none;transition:border-color .15s,transform .1s}
+    .pn-link:hover{border-color:#2D7D52;transform:translateY(-2px)}
+    .pn-next{text-align:right}
+    .pn-dir{font-size:.75rem;color:#2D7D52;font-weight:700}
+    .pn-title{font-size:.88rem;color:#0F2318;line-height:1.4}
+    .pn-empty{visibility:hidden;pointer-events:none}
+    @media(prefers-color-scheme:dark){.pn-link{background:#132219;border-color:#1E3D2A}.pn-title{color:#E4EDE7}}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    :root[data-theme="light"]{--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--gp:#F0F8F2}
+    :root[data-theme="dark"]{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#0d3024 0%,#061a0e 100%);padding:80px 24px 100px;position:relative;overflow:hidden}
+    .ah::before{content:"";position:absolute;top:-60px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(45,125,82,.3) 0%,transparent 70%);border-radius:50%}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto;position:relative;z-index:1}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(45,125,82,.4);color:#a8d8bb;border:1px solid rgba(45,125,82,.6);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:700;color:#fff;line-height:1.3;margin-bottom:20px;text-shadow:0 2px 20px rgba(0,0,0,.4)}
+    .ah .tagline{font-size:1rem;color:rgba(255,255,255,.7);margin-bottom:24px;line-height:1.7}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    table.cmp{width:100%;border-collapse:collapse;margin:24px 0;font-size:.85rem}
+    table.cmp th,table.cmp td{border:1px solid var(--bd);padding:10px 12px;text-align:left;vertical-align:top}
+    table.cmp th{background:var(--gp);color:var(--ink);font-weight:700}
+    table.cmp td{color:var(--is)}
+    .cg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+    .ci{font-size:1.8rem;margin-bottom:10px;display:block}
+    .ct{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px}
+    .cd{font-size:.82rem;color:var(--is);line-height:1.6}
+    .voice{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;margin:16px 0;box-shadow:var(--sh);position:relative}
+    .voice::before{content:"\"";font-family:serif;font-size:3rem;color:var(--gl);position:absolute;top:-4px;left:16px;line-height:1}
+    .voice-text{padding-top:20px;font-size:.9rem;color:var(--is);line-height:1.8;font-style:italic}
+    .voice-attr{margin-top:12px;font-size:.8rem;color:var(--im);font-style:normal}
+    .cb{background:linear-gradient(135deg,#1E5C3A 0%,#0d3024 100%);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
+    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.5rem;color:#fff;margin-bottom:12px}
+    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
+    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:16px 44px;font-size:1.05rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s;box-shadow:0 4px 20px rgba(232,98,26,.4)}
+    .bc2:hover{background:var(--od);transform:translateY(-2px)}
+    .sb{position:sticky;top:80px}
+    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
+    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+    .toc{list-style:none}
+    .toc li{margin-bottom:8px}
+    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
+    .toc a:hover{color:var(--gm)}
+    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
+    .ra:last-child{margin-bottom:0}
+    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .faq{margin:16px 0}
+    .faq-item{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px 20px;margin-bottom:12px;box-shadow:var(--sh)}
+    .faq-q{font-size:.92rem;font-weight:700;color:var(--ink);margin-bottom:8px;display:flex;gap:8px}
+    .faq-q::before{content:"Q";color:var(--or);font-weight:800}
+    .faq-a{font-size:.88rem;color:var(--is);line-height:1.8;display:flex;gap:8px}
+    .faq-a::before{content:"A";color:var(--gm);font-weight:800;flex-shrink:0}
+    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
+    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
+    .ft a:hover{color:#fff}
+    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.cg{grid-template-columns:1fr}table.cmp{display:block;overflow-x:auto;white-space:nowrap}}
+    @media(max-width:600px){.hn{display:none}}
+  </style>
+  <link rel="canonical" href="https://get-tohon.online/blog/recipe-app-compare.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://get-tohon.online/blog/recipe-app-compare.html" />
+  <meta property="og:title" content="レシピ自動生成アプリ比較2026年版｜食材入力型・在庫管理型・レシート連携型の違い" />
+  <meta property="og:description" content="AIレシピ・献立自動生成アプリを3タイプに分けて比較。手間・精度・家計簿連携の違いを解説。" />
+  <meta property="og:image" content="https://get-tohon.online/ogp.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "レシピ自動生成アプリ比較2026年版｜食材入力型・在庫管理型・レシート連携型の違い",
+    "description": "AIレシピ・献立自動生成アプリを「食材入力型」「在庫管理型」「レシート連携型」の3タイプに分けて比較し、それぞれの手間・精度・家計簿連携の違いを解説。",
+    "datePublished": "2026-07-17",
+    "dateModified": "2026-07-17",
+    "url": "https://get-tohon.online/blog/recipe-app-compare.html",
+    "author": { "@type": "Organization", "name": "カケイシピ", "url": "https://get-tohon.online/" },
+    "publisher": { "@type": "Organization", "name": "カケイシピ", "url": "https://get-tohon.online/" },
+    "isPartOf": { "@type": "Blog", "name": "カケイシピ ブログ", "url": "https://get-tohon.online/blog.html" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "AIレシピアプリにはどんな種類がありますか？", "acceptedAnswer": { "@type": "Answer", "text": "大きく分けて「食材を手入力してレシピを検索する食材入力型」「冷蔵庫の在庫を管理する在庫管理型」「レシートから購入履歴を自動記録するレシート連携型」の3タイプがあります。" } },
+      { "@type": "Question", "name": "家計簿と連携しているレシピアプリはありますか？", "acceptedAnswer": { "@type": "Answer", "text": "多くのレシピアプリはレシピ提案のみに特化していますが、カケイシピはレシート連携型として、購入履歴の家計簿記録とレシピ提案を同時に行える点が特徴です。" } },
+      { "@type": "Question", "name": "どのタイプのレシピアプリが一番続けやすいですか？", "acceptedAnswer": { "@type": "Answer", "text": "一般的に、入力の手間が少ないアプリほど継続率が高い傾向があります。レシートを撮影するだけで完結するレシート連携型は、手入力の手間がない分続けやすいとされています。" } }
+    ]
+  }
+  </script>
+</head>
+<body>
+<header class="hd">
+  <a href="../index.html" class="hl">カケイシピ</a>
+  <nav class="hn"><a href="../index.html">ホーム</a><a href="../blog.html">ブログ</a><a href="../index.html#pricing">料金</a></nav>
+  <a href="../login.html" class="hc">無料で始める</a>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <nav class="bc">
+      <a href="../index.html">カケイシピ</a><span>/</span>
+      <a href="../blog.html">ブログ</a><span>/</span>
+      <span>レシピ自動生成アプリ比較</span>
+    </nav>
+    <span class="ac">比較記事</span>
+    <h1>レシピ自動生成アプリ比較2026年版<br>3つのタイプの違いを理解する</h1>
+    <p class="tagline">AIレシピアプリと一口に言っても、入力方式によって使い勝手は大きく異なります。<br>タイプ別に特徴を整理し、自分に合うアプリの選び方を解説します。</p>
+    <div class="am">
+      <span>2026年7月17日</span>
+      <span>読了目安：9分</span>
+    </div>
+  </div>
+</section>
+
+<div class="cw">
+  <article class="ab">
+    <p class="ld">「AI 献立」「AI レシピ」で検索すると数多くのアプリがヒットしますが、実は入力方式によって大きく3つのタイプに分類できます。この記事では、それぞれのタイプの仕組み・メリット・デメリットを整理し、自分の生活スタイルに合ったアプリの選び方を解説します。</p>
+
+    <h2 id="types">レシピ自動生成アプリの3タイプ</h2>
+    <table class="cmp">
+      <tr><th>タイプ</th><th>入力方法</th><th>メリット</th><th>デメリット</th></tr>
+      <tr>
+        <td><strong>①食材入力型</strong></td>
+        <td>ユーザーが食材名を手入力・選択</td>
+        <td>手元にない食材でも検索できる自由度</td>
+        <td>入力が面倒で続かないことが多い</td>
+      </tr>
+      <tr>
+        <td><strong>②在庫管理型</strong></td>
+        <td>冷蔵庫の在庫リストを事前登録</td>
+        <td>賞味期限管理と組み合わせやすい</td>
+        <td>在庫の登録・更新の手間がかかる</td>
+      </tr>
+      <tr>
+        <td><strong>③レシート連携型</strong></td>
+        <td>レシートを撮影するだけで自動記録</td>
+        <td>入力の手間がほぼゼロ。家計簿と連携しやすい</td>
+        <td>レシートを撮る習慣が前提になる</td>
+      </tr>
+    </table>
+    <p>カケイシピは③の<strong>レシート連携型</strong>にあたります。買い物のたびにレシートを撮影する行動はすでに家計管理の一部として定着しやすく、そこにレシピ提案を組み合わせることで、無理なく継続できる設計になっています。</p>
+
+    <h2 id="detail">タイプ別の詳しい特徴</h2>
+    <div class="cg">
+      <div class="cc">
+        <span class="ci">✍️</span>
+        <div class="ct">食材入力型</div>
+        <div class="cd">「今日は鶏肉と玉ねぎがある」と自分で入力するタイプ。手元の食材を自由に指定できる反面、入力の手間が継続の壁になりやすいです。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">🧊</span>
+        <div class="ct">在庫管理型</div>
+        <div class="cd">冷蔵庫の中身をあらかじめ登録しておくタイプ。賞味期限アラートと相性が良い一方、実際の在庫とのズレが起きやすい課題があります。</div>
+      </div>
+      <div class="cc">
+        <span class="ci">📸</span>
+        <div class="ct">レシート連携型</div>
+        <div class="cd">レシートを撮影するだけで購入履歴が記録され、そのままレシピ提案に使われるタイプ。入力の手間がなく、家計簿とも自然に連携します。</div>
+      </div>
+    </div>
+
+    <h2 id="how-choose">どのタイプを選ぶべきか</h2>
+    <ul>
+      <li><strong>とにかく続けやすさを重視する</strong>なら、入力の手間が最も少ないレシート連携型がおすすめです</li>
+      <li><strong>賞味期限管理も同時にしたい</strong>なら在庫管理型が向いていますが、入力を継続できるかがポイントです</li>
+      <li><strong>手元にない食材でも柔軟にレシピを探したい</strong>なら食材入力型が便利です</li>
+    </ul>
+
+    <div class="tb">
+      <div class="tl">家計簿との連携で選ぶという視点</div>
+      <p>レシピアプリ単体で選ぶのではなく、「家計簿と連携しているかどうか」も重要な基準です。カケイシピはレシート連携型として、購入履歴の家計簿記録とレシピ提案を同時に行えるため、食費の管理とレシピの悩み解消を1つのアプリで両立できます。</p>
+    </div>
+
+    <h2 id="voices">ユーザーの声</h2>
+    <div class="voice">
+      <p class="voice-text">食材を手入力するタイプのアプリを使っていましたが、結局面倒で開かなくなりました。レシートを撮るだけのタイプに変えてから、自然と毎日使うようになりました。</p>
+      <div class="voice-attr">— 30代・共働き</div>
+    </div>
+
+    <h2 id="faq">よくある質問</h2>
+    <div class="faq">
+      <div class="faq-item">
+        <div class="faq-q">AIレシピアプリにはどんな種類がありますか？</div>
+        <div class="faq-a">「食材入力型」「在庫管理型」「レシート連携型」の3タイプに大別できます。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">家計簿と連携しているレシピアプリはありますか？</div>
+        <div class="faq-a">カケイシピはレシート連携型として、購入履歴の家計簿記録とレシピ提案を同時に行える点が特徴です。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">どのタイプのレシピアプリが一番続けやすいですか？</div>
+        <div class="faq-a">入力の手間が少ないアプリほど継続率が高い傾向があります。レシートを撮影するだけで完結するレシート連携型は続けやすいとされています。</div>
+      </div>
+    </div>
+
+    <div class="cb">
+      <h3>レシート連携型のレシピ提案を試してみる</h3>
+      <p>Googleアカウントがあれば登録不要。今日の買い物のレシートから始められます。</p>
+      <a href="../login.html" class="bc2">無料で今すぐ試す</a>
+    </div>
+
+    <h2 id="summary">まとめ</h2>
+    <p>レシピ自動生成アプリは「食材入力型」「在庫管理型」「レシート連携型」の3タイプに分けられ、それぞれ入力の手間と精度のバランスが異なります。継続のしやすさを重視するなら、レシートを撮るだけで完結し、家計簿とも連携できるレシート連携型が有力な選択肢です。</p>
+  </article>
+
+  <aside class="sb">
+    <div class="sbc">
+      <h4>目次</h4>
+      <ul class="toc">
+        <li><a href="#types">3タイプ一覧</a></li>
+        <li><a href="#detail">タイプ別の特徴</a></li>
+        <li><a href="#how-choose">選び方</a></li>
+        <li><a href="#voices">ユーザーの声</a></li>
+        <li><a href="#faq">よくある質問</a></li>
+        <li><a href="#summary">まとめ</a></li>
+      </ul>
+    </div>
+    <div class="sbc">
+      <h4>関連記事</h4>
+      <a href="/blog/receipt-to-recipe.html" class="ra">
+        <div class="ri" style="background:#e3f2fd">📸</div>
+        <div><div class="rt">レシートからレシピを作るアプリ</div><div class="rm">買った食材から献立を自動提案</div></div>
+      </a>
+      <a href="/blog/fridge-ai-recipe.html" class="ra">
+        <div class="ri" style="background:#e8f5ee">🧊</div>
+        <div><div class="rt">冷蔵庫の中身からレシピを提案するAI</div><div class="rm">フードロス対策</div></div>
+      </a>
+      <a href="/blog/kakeibo-app-compare.html" class="ra">
+        <div class="ri" style="background:#fff3e0">⚖️</div>
+        <div><div class="rt">家計簿アプリ比較2026年版</div><div class="rm">マネーフォワード・Zaimと比較</div></div>
+      </a>
+      <a href="/blog/ai-recipe-weekly-plan.html" class="ra">
+        <div class="ri" style="background:#f3e5f5">🤖</div>
+        <div><div class="rt">AIで週間献立を自動作成</div><div class="rm">食費節約の新常識</div></div>
+      </a>
+    </div>
+  </aside>
+</div>
+
+<nav class="prevnext">
+  <a class="pn-link pn-prev" href="/blog/price-tracker-app.html"><span class="pn-dir">← 前の記事</span><span class="pn-title">食材の底値管理アプリ</span></a>
+  <span class="pn-link pn-empty"></span>
+</nav>
+<footer class="ft">
+  <div class="fl">
+    <a href="../index.html">ホーム</a>
+    <a href="../blog.html">ブログ</a>
+    <a href="../index.html#pricing">料金プラン</a>
+    <a href="../terms.html">利用規約</a>
+    <a href="../privacy.html">プライバシーポリシー</a>
+    <a href="../tokushoho.html">特定商取引法に基づく表記</a>
+    <a href="../contact.html">お問い合わせ</a>
+  </div>
+  <p>© 2026 カケイシピ · AIレシート家計簿</p>
+</footer>
+</body>
+</html>
