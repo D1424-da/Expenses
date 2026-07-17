@@ -1,0 +1,36 @@
+/* ============================================================
+   BRAND TOKENS — カケイシピ
+   ランディングページ（landing.css）とアプリ（style.css）の
+   両方が参照するブランドカラーの単一ソース
+   ============================================================ */
+:root {
+  --green-deep:  #1E5C3A;
+  --green-mid:   #2D7D52;
+  --green-light: #EAF3EE;
+  --green-pale:  #F7FAF8;
+  --orange:      #E8621A;
+  --orange-dark: #C4511A;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --green-deep:  #0D2B1E;
+    --green-mid:   #5E9B74;
+    --green-light: #162A20;
+    --green-pale:  #0F0F11;
+  }
+}
+:root[data-theme="dark"] {
+  --green-deep:  #0D2B1E;
+  --green-mid:   #5E9B74;
+  --green-light: #162A20;
+  --green-pale:  #0F0F11;
+}
+:root[data-theme="light"] {
+  --green-deep:  #1E5C3A;
+  --green-mid:   #2D7D52;
+  --green-light: #EAF3EE;
+  --green-pale:  #F7FAF8;
+  --orange:      #E8621A;
+  --orange-dark: #C4511A;
+}
