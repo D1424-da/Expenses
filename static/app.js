@@ -17,7 +17,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
-  getRedirectResult, signOut, onAuthStateChanged,
+  getRedirectResult, signOut, onAuthStateChanged, getAdditionalUserInfo,
   createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
@@ -122,6 +122,7 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     $("login-screen").hidden = true;
     $("app").hidden = false;
+    if (typeof window.trackPageview === "function") window.trackPageview("/app/home", "家計簿ホーム");
     setupApp();
   } else {
     if (unsubscribe) unsubscribe();
@@ -138,6 +139,7 @@ onAuthStateChanged(auth, (user) => {
     closeModal("account-modal");
     $("app").hidden = true;
     $("login-screen").hidden = false;
+    if (typeof window.trackPageview === "function") window.trackPageview("/app/login", "ログイン");
   }
 });
 
@@ -169,7 +171,12 @@ $("copy-url-btn") && ($("copy-url-btn").onclick = async () => {
 });
 
 getRedirectResult(auth).then((result) => {
-  if (result?.user) log("リダイレクトログイン成功:", result.user.email);
+  if (result?.user) {
+    log("リダイレクトログイン成功:", result.user.email);
+    if (getAdditionalUserInfo(result)?.isNewUser && typeof window.trackEvent === "function") {
+      window.trackEvent("sign_up", { method: "google" });
+    }
+  }
 }).catch((err) => {
   if (err.code === "auth/credential-already-in-use") return;
   logErr("getRedirectResult エラー:", err.code, err.message);
@@ -195,6 +202,9 @@ $("google-login").onclick = async () => {
     } else {
       const result = await signInWithPopup(auth, provider);
       log("ポップアップログイン成功:", result.user.email);
+      if (getAdditionalUserInfo(result)?.isNewUser && typeof window.trackEvent === "function") {
+        window.trackEvent("sign_up", { method: "google" });
+      }
     }
   } catch (err) {
     if (err.code !== "auth/cancelled-popup-request" && err.code !== "auth/popup-closed-by-user") {
@@ -238,6 +248,7 @@ if (_emailForm) {
     try {
       if (_emailMode === "signup") {
         await createUserWithEmailAndPassword(auth, email, pass);
+        if (typeof window.trackEvent === "function") window.trackEvent("sign_up", { method: "email" });
       } else {
         await signInWithEmailAndPassword(auth, email, pass);
       }

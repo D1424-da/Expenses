@@ -18,9 +18,27 @@ export function escapeHtml(s) {
 }
 
 // ---- モーダル共通（開閉・背景タップ/Escで閉じる・背景スクロール抑止） --------
+// モーダルIDごとの計測用タイトル（CMSサイトのページタイトルに相当）
+const MODAL_TITLES = {
+  "recipe-modal": "レシピ提案",
+  "budget-modal": "予算設定",
+  "shopping-modal": "買い物リスト",
+  "compare-modal": "最安値比較",
+  "household-modal": "世帯設定",
+  "saved-recipes-modal": "保存したレシピ",
+  "trend-modal": "推移グラフ",
+  "week-modal": "週の内訳",
+  "day-modal": "日別内訳",
+  "account-modal": "アカウント",
+  "upgrade-modal": "プレミアムプラン",
+};
+
 export function openModal(id) {
   $(id).hidden = false;
   document.body.classList.add("modal-open");
+  if (typeof window.trackPageview === "function") {
+    window.trackPageview(`/app/${id}`, MODAL_TITLES[id] || id);
+  }
 }
 
 export function closeModal(id) {
