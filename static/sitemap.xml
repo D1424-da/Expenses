@@ -151,6 +151,70 @@
     <priority>0.9</priority>
   </url>
 
+  <!-- ブログ記事 — 新規作成（2026年6月後半〜7月前半・追加シリーズ） -->
+  <url>
+    <loc>https://get-tohon.online/blog/couple-food-cost.html</loc>
+    <lastmod>2026-07-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/food-cost-savings-tips.html</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/savings-weekly-menu.html</loc>
+    <lastmod>2026-07-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/solo-food-cost-gender.html</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/fridge-organize-savings.html</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/kakeibo-food-tracking.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/shopping-savings-tips.html</loc>
+    <lastmod>2026-06-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/food-budget-app.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/receipt-app-free.html</loc>
+    <lastmod>2026-06-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- ブログ記事 — 新規作成（2026年6月） -->
   <url>
     <loc>https://get-tohon.online/blog/budget-category-tips.html</loc>
