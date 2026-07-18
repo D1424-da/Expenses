@@ -52,7 +52,56 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- ブログ記事 — 新規作成（2026年7月前半） -->
+  <!-- ブログ記事 — 新規作成（2026年7月前半・食費節約シリーズ） -->
+  <url>
+    <loc>https://get-tohon.online/blog/solo-food-cost.html</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/family4-food-cost.html</loc>
+    <lastmod>2026-07-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/weekly-meal-plan.html</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/jisui-savings.html</loc>
+    <lastmod>2026-07-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/savings-bento.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/quick-recipe.html</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/savings-life.html</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <url>
     <loc>https://get-tohon.online/blog/recipe-app-compare.html</loc>
     <lastmod>2026-07-17</lastmod>
