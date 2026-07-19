@@ -100,7 +100,7 @@ async def sync_subscription(uid: str, email: str) -> dict:
     for customer in customers.auto_paging_iter():
         subs = stripe.Subscription.list(customer=customer.id, status="all", limit=5)
         for sub in subs.auto_paging_iter():
-            if sub.get("metadata", {}).get("uid") == uid or True:
+            if sub.get("metadata", {}).get("uid") == uid:
                 _persist_subscription(uid, sub, customer.id)
                 return {"status": sub.get("status"), "synced": True}
     return {"status": "not_found", "synced": False}
@@ -201,7 +201,11 @@ async def ensure_trial(uid: str) -> dict:
         .collection("settings")
         .document("subscription")
     )
-    snap = ref.get()
+    try:
+        snap = ref.get()
+    except Exception:
+        logger.warning("ensure_trial: Firestore get failed, skipping trial start for uid=%s", uid)
+        return {"started": False}
     if snap.exists:
         return {"started": False}
 

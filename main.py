@@ -162,8 +162,7 @@ async def suggest_recipe(
         logger.error("Recipe suggest RuntimeError: %s", msg)
         if "GEMINI_API_KEY が設定されていません" in msg:
             raise HTTPException(503, "レシピ提案サービスが設定されていません（GEMINI_API_KEY を確認してください）。") from exc
-        # Gemini からのエラー詳細（429課金/レート制限など）をそのまま返して調査しやすくする
-        raise HTTPException(503, f"Gemini API でエラーが発生しました: {msg[:300]}") from exc
+        raise HTTPException(503, "Gemini API でエラーが発生しました。食材の数を減らして再試行してください。") from exc
     except Exception as exc:  # noqa: BLE001
         logger.exception("Recipe suggestion failed")
         raise HTTPException(500, "レシピの提案に失敗しました。時間をおいて再試行してください。") from exc
