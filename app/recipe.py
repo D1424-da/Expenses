@@ -184,6 +184,20 @@ def suggest_recipes(
     return text
 
 
+_VERTEX_MODEL_MAP = {
+    "gemini-2.0-flash": "gemini-2.0-flash-001",
+    "gemini-2.5-flash": "gemini-2.5-flash-001",
+    "gemini-1.5-flash": "gemini-1.5-flash-001",
+    "gemini-1.5-pro": "gemini-1.5-pro-001",
+    "gemini-flash-latest": "gemini-2.0-flash-001",
+}
+
+
+def _to_vertex_model(model: str) -> str:
+    """Gemini Developer API のモデル名を Vertex AI 用に変換する。"""
+    return _VERTEX_MODEL_MAP.get(model, model)
+
+
 def _call_with_fallback(body: dict, timeout: int) -> dict:
     """Gemini Developer API → Vertex AI の順で generateContent を呼ぶ。"""
     model = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
@@ -208,7 +222,7 @@ def _call_with_fallback(body: dict, timeout: int) -> dict:
             from app import vertex as _vertex
             token = _vertex._get_access_token()
             location = os.environ.get("VERTEX_LOCATION", "us-central1")
-            vertex_model = os.environ.get("VERTEX_MODEL") or model
+            vertex_model = os.environ.get("VERTEX_MODEL") or _to_vertex_model(model)
             host = "aiplatform.googleapis.com" if location == "global" else f"{location}-aiplatform.googleapis.com"
             url = (
                 f"https://{host}/v1/projects/{project}/locations/{location}"
