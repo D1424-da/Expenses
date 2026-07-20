@@ -72,7 +72,15 @@ def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dic
     if not project:
         raise RuntimeError("GOOGLE_CLOUD_PROJECT が設定されていません。")
     location = os.environ.get("VERTEX_LOCATION", "us-central1")
-    model = os.environ.get("VERTEX_MODEL") or os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+    _VERTEX_MODEL_MAP = {
+        "gemini-2.0-flash": "gemini-2.0-flash-001",
+        "gemini-2.5-flash": "gemini-2.5-flash-001",
+        "gemini-1.5-flash": "gemini-1.5-flash-001",
+        "gemini-1.5-pro": "gemini-1.5-pro-001",
+        "gemini-flash-latest": "gemini-2.0-flash-001",
+    }
+    _raw_model = os.environ.get("VERTEX_MODEL") or os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+    model = _VERTEX_MODEL_MAP.get(_raw_model, _raw_model)
 
     token = _get_access_token()
     b64 = base64.standard_b64encode(image_bytes).decode("ascii")
