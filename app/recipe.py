@@ -3,12 +3,19 @@
 食材リスト・人数・提案種別（1食分 or 週間献立）を受け取り、
 家庭向けのレシピをマークダウンテキストで返す。
 量が不明な食材はGeminiに家庭的な目安量で補完させる。
+
+呼び出し順:
+1. Gemini Developer API（GEMINI_API_KEY が設定済みの場合）
+2. Vertex AI（GOOGLE_CLOUD_PROJECT + 認証が設定済みの場合）
 """
 from __future__ import annotations
 
+import logging
 import os
 
 from app import net
+
+logger = logging.getLogger("uvicorn.error")
 
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
 
@@ -140,9 +147,6 @@ def suggest_recipes(
     """食材リストと人数からレシピ提案テキストを返す。"""
     # select タイプは朝・昼・夜×3のレシピを生成するため応答が長く、タイムアウトを延長する
     timeout = 120 if recipe_type == "select" else 60
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY が設定されていません。")
 
     notes = [_NOTES["common"]]
     if max_minutes:
@@ -169,11 +173,8 @@ def suggest_recipes(
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.7},
     }
-    url = (
-        "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{GEMINI_MODEL}:generateContent"
-    )
-    result = net.post_json(url, body, headers={"x-goog-api-key": api_key}, service="Gemini Recipe API", timeout=timeout)
+
+    result = _call_with_fallback(body, timeout)
     try:
         text = result["candidates"][0]["content"]["parts"][0]["text"]
     except (KeyError, IndexError, TypeError):
@@ -181,3 +182,43 @@ def suggest_recipes(
     if not text or not text.strip():
         raise RuntimeError("Gemini がレシピを生成できませんでした。")
     return text
+
+
+def _call_with_fallback(body: dict, timeout: int) -> dict:
+    """Gemini Developer API → Vertex AI の順で generateContent を呼ぶ。"""
+    model = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
+    api_key = os.environ.get("GEMINI_API_KEY")
+    errors: list[str] = []
+
+    if api_key:
+        url = (
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+            f"{model}:generateContent"
+        )
+        try:
+            return net.post_json(url, body, headers={"x-goog-api-key": api_key}, service="Gemini Recipe API", timeout=timeout)
+        except Exception as exc:
+            logger.warning("Gemini Developer API レシピ生成失敗、Vertex AI へフォールバック: %s", exc)
+            errors.append(f"Gemini: {exc}")
+
+    # Vertex AI フォールバック
+    project = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("VERTEX_PROJECT")
+    if project:
+        try:
+            from app import vertex as _vertex
+            token = _vertex._get_access_token()
+            location = os.environ.get("VERTEX_LOCATION", "us-central1")
+            vertex_model = os.environ.get("VERTEX_MODEL") or model
+            host = "aiplatform.googleapis.com" if location == "global" else f"{location}-aiplatform.googleapis.com"
+            url = (
+                f"https://{host}/v1/projects/{project}/locations/{location}"
+                f"/publishers/google/models/{vertex_model}:generateContent"
+            )
+            return net.post_json(url, body, headers={"Authorization": f"Bearer {token}"}, service="Vertex AI Recipe API", timeout=timeout)
+        except Exception as exc:
+            logger.exception("Vertex AI レシピ生成失敗")
+            errors.append(f"Vertex AI: {exc}")
+
+    if not errors:
+        raise RuntimeError("GEMINI_API_KEY も GOOGLE_CLOUD_PROJECT も設定されていません。")
+    raise RuntimeError("レシピ生成に失敗しました: " + " / ".join(errors))
