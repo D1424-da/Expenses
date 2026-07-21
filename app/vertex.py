@@ -74,10 +74,10 @@ def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dic
     location = os.environ.get("VERTEX_LOCATION", "us-central1")
     _VERTEX_MODEL_MAP = {
         "gemini-2.0-flash": "gemini-2.0-flash-001",
-        "gemini-2.5-flash": "gemini-2.5-flash-preview-05-20",
+        "gemini-2.5-flash": "gemini-2.5-flash",
         "gemini-1.5-flash": "gemini-1.5-flash-001",
         "gemini-1.5-pro": "gemini-1.5-pro-001",
-        "gemini-flash-latest": "gemini-2.0-flash-001",
+        "gemini-flash-latest": "gemini-2.5-flash",
     }
     _raw_model = os.environ.get("VERTEX_MODEL") or os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
     model = _VERTEX_MODEL_MAP.get(_raw_model, _raw_model)
