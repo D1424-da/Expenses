@@ -66,36 +66,47 @@ def _get_access_token() -> str:
         return creds.token
 
 
+# プロジェクトによって Vertex AI で使えるモデル名が異なる（Model Garden の
+# 有効化状況次第）ため、VERTEX_MODEL 未指定時は候補を順に試す。
+_VERTEX_MODEL_CANDIDATES = [
+    "gemini-2.0-flash-001",
+    "gemini-2.5-flash",
+    "gemini-1.5-flash-001",
+    "gemini-1.5-flash-002",
+    "gemini-1.5-pro-001",
+]
+
+
 def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dict:
     """Vertex AI（Gemini）で画像から構造化レシートデータを抽出する。"""
     project = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("VERTEX_PROJECT")
     if not project:
         raise RuntimeError("GOOGLE_CLOUD_PROJECT が設定されていません。")
     location = os.environ.get("VERTEX_LOCATION", "us-central1")
-    _VERTEX_MODEL_MAP = {
-        "gemini-2.0-flash": "gemini-2.0-flash-001",
-        "gemini-2.5-flash": "gemini-2.5-flash",
-        "gemini-1.5-flash": "gemini-1.5-flash-001",
-        "gemini-1.5-pro": "gemini-1.5-pro-001",
-        "gemini-flash-latest": "gemini-2.5-flash",
-    }
-    _raw_model = os.environ.get("VERTEX_MODEL") or os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
-    model = _VERTEX_MODEL_MAP.get(_raw_model, _raw_model)
+    env_model = os.environ.get("VERTEX_MODEL")
+    candidates = [env_model] if env_model else _VERTEX_MODEL_CANDIDATES
 
     token = _get_access_token()
     b64 = base64.standard_b64encode(image_bytes).decode("ascii")
 
     # global は host にリージョン接頭辞を付けない。
     host = "aiplatform.googleapis.com" if location == "global" else f"{location}-aiplatform.googleapis.com"
-    url = (
-        f"https://{host}/v1/projects/{project}/locations/{location}"
-        f"/publishers/google/models/{model}:generateContent"
-    )
-    result = net.post_json(
-        url,
-        gemini.build_request_body(b64, content_type),
-        headers={"Authorization": f"Bearer {token}"},
-        service="Vertex AI",
-    )
-    structured, text = gemini.parse_generate_content(result)
-    return gemini.normalize_receipt(structured, text, engine="vertex")
+    body = gemini.build_request_body(b64, content_type)
+
+    errors: list[str] = []
+    for model in candidates:
+        url = (
+            f"https://{host}/v1/projects/{project}/locations/{location}"
+            f"/publishers/google/models/{model}:generateContent"
+        )
+        try:
+            result = net.post_json(
+                url, body,
+                headers={"Authorization": f"Bearer {token}"},
+                service="Vertex AI",
+            )
+            structured, text = gemini.parse_generate_content(result)
+            return gemini.normalize_receipt(structured, text, engine="vertex")
+        except Exception as exc:
+            errors.append(f"{model}: {exc}")
+    raise RuntimeError("Vertex AI: 利用可能なモデルが見つかりませんでした / " + " / ".join(errors))

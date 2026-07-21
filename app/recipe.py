@@ -192,6 +192,16 @@ _VERTEX_MODEL_MAP = {
     "gemini-flash-latest": "gemini-2.5-flash",
 }
 
+# プロジェクトによって Vertex AI で使えるモデル名が異なる（Model Garden の
+# 有効化状況次第）ため、候補を順番に試して最初に成功したものを使う。
+_VERTEX_MODEL_CANDIDATES = [
+    "gemini-2.0-flash-001",
+    "gemini-2.5-flash",
+    "gemini-1.5-flash-001",
+    "gemini-1.5-flash-002",
+    "gemini-1.5-pro-001",
+]
+
 
 def _to_vertex_model(model: str) -> str:
     """Gemini Developer API のモデル名を Vertex AI 用に変換する。"""
@@ -215,20 +225,26 @@ def _call_with_fallback(body: dict, timeout: int) -> dict:
             logger.warning("Gemini Developer API レシピ生成失敗、Vertex AI へフォールバック: %s", exc)
             errors.append(f"Gemini: {exc}")
 
-    # Vertex AI フォールバック
+    # Vertex AI フォールバック（VERTEX_MODEL 指定があればそれのみ、なければ候補を順に試す）
     project = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("VERTEX_PROJECT")
     if project:
+        env_model = os.environ.get("VERTEX_MODEL")
+        candidates = [env_model] if env_model else _VERTEX_MODEL_CANDIDATES
         try:
             from app import vertex as _vertex
             token = _vertex._get_access_token()
             location = os.environ.get("VERTEX_LOCATION", "us-central1")
-            vertex_model = os.environ.get("VERTEX_MODEL") or _to_vertex_model(model)
             host = "aiplatform.googleapis.com" if location == "global" else f"{location}-aiplatform.googleapis.com"
-            url = (
-                f"https://{host}/v1/projects/{project}/locations/{location}"
-                f"/publishers/google/models/{vertex_model}:generateContent"
-            )
-            return net.post_json(url, body, headers={"Authorization": f"Bearer {token}"}, service="Vertex AI Recipe API", timeout=timeout)
+            for vertex_model in candidates:
+                url = (
+                    f"https://{host}/v1/projects/{project}/locations/{location}"
+                    f"/publishers/google/models/{vertex_model}:generateContent"
+                )
+                try:
+                    return net.post_json(url, body, headers={"Authorization": f"Bearer {token}"}, service="Vertex AI Recipe API", timeout=timeout)
+                except Exception as exc:
+                    logger.warning("Vertex AI モデル %s 失敗: %s", vertex_model, exc)
+                    errors.append(f"Vertex AI({vertex_model}): {exc}")
         except Exception as exc:
             logger.exception("Vertex AI レシピ生成失敗")
             errors.append(f"Vertex AI: {exc}")
