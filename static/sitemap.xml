@@ -424,6 +424,48 @@
     <priority>0.7</priority>
   </url>
 
+  <url>
+    <loc>https://get-tohon.online/blog/matomegai-weekly-list.html</loc>
+    <lastmod>2026-05-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/tsukurioki-weekly-plan.html</loc>
+    <lastmod>2026-05-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/rinyushoku-kondate.html</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/kenko-kondate-app.html</loc>
+    <lastmod>2026-06-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/koureisha-kondate.html</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/kondatehyo-template.html</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <!-- 法務ページ -->
   <url>
     <loc>https://get-tohon.online/terms.html</loc>
