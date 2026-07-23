@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/tokens.css" />
+  <title>ページが見つかりません - カケイシピ</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background: var(--bg, #F7F8F4);
+      color: var(--ink, #12200F);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0A1910; --ink: #DFF0E4; --ink2: #80B896; --sur: #0F2418; --bd: #1A3D28; --g1: #2A7A5E; }
+    }
+    .header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--bd, #D8E8E0);
+    }
+    .header a {
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--ink, #12200F);
+    }
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .error-code {
+      font-size: 6rem;
+      font-weight: 800;
+      color: var(--g1, #1A5240);
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .error-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .error-desc {
+      color: var(--ink2, #3D5C47);
+      font-size: .95rem;
+      line-height: 1.7;
+      margin-bottom: 32px;
+      max-width: 440px;
+    }
+    .links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .links a {
+      display: inline-block;
+      padding: 10px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: .9rem;
+      font-weight: 600;
+      transition: opacity .15s;
+    }
+    .links a:hover { opacity: .85; }
+    .btn-primary {
+      background: var(--g1, #1A5240);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: var(--sur, #FFFFFF);
+      color: var(--g1, #1A5240);
+      border: 1.5px solid var(--bd, #D8E8E0);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="/">🍳 カケイシピ</a>
+  </header>
+  <div class="container">
+    <div class="error-code">404</div>
+    <h1 class="error-title">ページが見つかりません</h1>
+    <p class="error-desc">お探しのページは移動・削除された可能性があります。URLをご確認のうえ、以下のリンクからお探しください。</p>
+    <div class="links">
+      <a href="/" class="btn-primary">トップページへ</a>
+      <a href="/blog.html" class="btn-secondary">ブログ一覧へ</a>
+    </div>
+  </div>
+</body>
+</html>
