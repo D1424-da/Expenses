@@ -48,7 +48,7 @@ import { dbSetUser, dbClearHousehold, dbBase } from "./db-paths.js";
 import { initHousehold, loadHousehold, clearHousehold, openHousehold } from "./household.js";
 import {
   initBilling, startBillingSync, stopBillingSync, ensureTrial,
-  checkGate, renderUsageBar, FREE_LIMIT, isPremium, openPortal, premiumExpiryLabel,
+  checkGate, renderUsageBar, isPremium, openPortal, premiumExpiryLabel,
 } from "./stripe-billing.js";
 
 window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message, e.filename, e.lineno));
