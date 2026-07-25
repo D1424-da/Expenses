@@ -107,7 +107,6 @@
         <button class="pc-nav-item" id="pcnav-budget"><span class="pcnav-icon">💰</span><span class="pcnav-label">予算</span></button>
         <button class="pc-nav-item" id="pcnav-trend"><span class="pcnav-icon">📈</span><span class="pcnav-label">月別グラフ</span></button>
         <div class="pcnav-divider"></div>
-        <button class="pc-nav-item" id="pcnav-household"><span class="pcnav-icon">👨‍👩‍👧</span><span class="pcnav-label">世帯グループ</span></button>
       </div>
     </nav>
 
@@ -528,38 +527,6 @@
       </div>
     </div>
 
-    <!-- 世帯グループ管理 -->
-    <div id="household-modal" class="modal" hidden>
-      <div class="modal-box" role="dialog" aria-modal="true" aria-label="世帯グループ">
-        <div class="modal-head">
-          <h2>👨‍👩‍👧 世帯グループ</h2>
-          <button id="household-close" aria-label="閉じる">✕</button>
-        </div>
-        <p class="hint">家族と家計簿を共有できます。グループを作成してコードを共有するか、コードを入力して参加してください。</p>
-        <div id="household-status" class="household-status-box"></div>
-
-        <!-- グループ未参加時 -->
-        <div id="household-create-sec" class="household-section">
-          <h3 class="household-section-title">グループを作成する</h3>
-          <p class="household-hint">新しいグループを作成し、招待コードで家族を招待できます。</p>
-          <button id="household-create-btn" class="primary" type="button">グループを作成</button>
-        </div>
-
-        <div id="household-join-sec" class="household-section">
-          <h3 class="household-section-title">グループに参加する</h3>
-          <p class="household-hint">グループ管理者から招待コードを受け取って入力してください。</p>
-          <div class="household-join-row">
-            <input id="household-code-input" type="text" placeholder="招待コード（8文字）" autocomplete="off" maxlength="8" />
-            <button id="household-join-btn" type="button">参加</button>
-          </div>
-        </div>
-
-        <!-- グループ参加済み時 -->
-        <div id="household-leave-sec" class="household-section" hidden>
-          <button id="household-leave-btn" class="household-leave-btn" type="button">グループから退出</button>
-        </div>
-      </div>
-    </div>
 
     <!-- アップグレードモーダル（無料プラン上限到達時） -->
     <div id="upgrade-modal" class="modal" hidden>
@@ -585,7 +552,6 @@
                 <li>✅ 記録件数 <strong>無制限</strong></li>
                 <li>✅ AI レシートOCR</li>
                 <li>✅ レシピ提案</li>
-                <li>✅ 世帯共有</li>
                 <li>✅ CSVエクスポート</li>
                 <li>✅ 最安値アラート</li>
               </ul>
@@ -659,10 +625,6 @@
       <button class="bnav-item" id="bnav-recipe" aria-label="レシピを提案">
         <span class="bnav-icon">🍳</span>
         <span class="bnav-label">レシピ提案</span>
-      </button>
-      <button class="bnav-item" id="bnav-household" aria-label="世帯グループ">
-        <span class="bnav-icon">👨‍👩‍👧</span>
-        <span class="bnav-label">世帯</span>
       </button>
     </nav>
   </div>
