@@ -44,8 +44,7 @@ import { initTrend } from "./trend-view.js";
 import { initSavedRecipes } from "./saved-recipes.js";
 import { initShoppingList, startSync as startShoppingSync, stopSync as stopShoppingSync } from "./shopping-list.js";
 import { initMealPlan, startMealPlanSync, stopMealPlanSync } from "./meal-plan.js";
-import { dbSetUser, dbClearHousehold, dbBase } from "./db-paths.js";
-import { initHousehold, loadHousehold, clearHousehold, openHousehold } from "./household.js";
+import { dbSetUser, dbBase } from "./db-paths.js";
 import {
   initBilling, startBillingSync, stopBillingSync, ensureTrial,
   checkGate, renderUsageBar, isPremium, openPortal, premiumExpiryLabel,
@@ -132,8 +131,6 @@ onAuthStateChanged(auth, (user) => {
     // B-1: ログアウト時にキャッシュをクリアして他ユーザーへのデータ漏洩を防ぐ
     _allExpensesCache = null;
     resetList();
-    clearHousehold();
-    dbClearHousehold();
     // 前のユーザーが開いたままにしたモーダルを次のユーザーに引き継がないようにする
     closeModal("upgrade-modal");
     closeModal("account-modal");
@@ -291,14 +288,7 @@ let _setupRunning = false;
 async function setupApp() {
   if (_setupRunning) return;
   _setupRunning = true;
-  // G-5: ログインユーザーを db-paths.js に登録し、世帯メンバーシップを確認
   dbSetUser(currentUser.uid);
-  try {
-    await loadHousehold(currentUser.uid, db);
-  } catch (err) {
-    logErr("世帯読み込みエラー（個人モードで続行）:", err.message);
-    dbClearHousehold();
-  }
 
   if (!appInitialized) {
     const sel = $("f-category");
@@ -339,11 +329,6 @@ async function setupApp() {
     initSavedRecipes({ db, getUser: () => currentUser });
     initShoppingList({ db, getUser: () => currentUser });
     initMealPlan({ db, getUser: () => currentUser });
-    initHousehold({
-      db,
-      getUser: () => currentUser,
-      onChanged: _onHouseholdChanged,
-    });
     initBilling({ db, getUser: () => currentUser, onSubChange: () => renderSummary() });
     $("usage-bar").querySelector(".usage-upgrade").onclick = () => openModal("upgrade-modal");
 
@@ -376,7 +361,6 @@ async function setupApp() {
       expenses: currentExpenses,
       initialPeriod: "month",
     });
-    $("bnav-household").onclick = () => openHousehold().catch((err) => { logErr("世帯モーダルエラー:", err.message); });
 
     // G-1: CSV エクスポート
     $("export-btn").onclick = _exportCsv;
@@ -394,7 +378,6 @@ async function setupApp() {
     $("pcnav-compare").onclick    = () => $("compare-btn").click();
     $("pcnav-budget").onclick     = () => $("budget-btn").click();
     $("pcnav-trend").onclick      = () => $("trend-btn").click();
-    if ($("pcnav-household")) $("pcnav-household").onclick = () => openHousehold().catch((err) => { logErr("世帯モーダルエラー:", err.message); });
 
     bindModalDismiss();
 
@@ -601,25 +584,6 @@ function _onFormSaved(dateStr, wasEdit) {
   _jumpToMonthOf(dateStr);
   if (wasEdit) $("expense-list").scrollIntoView({ behavior: "smooth" });
   if (!_advanceQueue()) $("ocr-status").hidden = true;
-}
-
-// ---- G-5: 世帯切替後のリセット ---------------------------------------------
-async function _onHouseholdChanged() {
-  if (!currentUser) return;
-  // Firestore リスナーを張り直して正しいコレクションを購読する
-  _allExpensesCache = null;
-  if (unsubscribe) { unsubscribe(); unsubscribe = null; }
-  stopShoppingSync();
-  stopMealPlanSync();
-  await loadBudget();
-  renderSummary();
-  startShoppingSync();
-  startMealPlanSync((map) => {
-    updateMealPlans(map);
-    renderCalendar(currentExpenses, currentMonth);
-    maybeRefreshDayModal();
-  });
-  subscribeMonth();
 }
 
 // ---- G-1: CSV エクスポート --------------------------------------------------
