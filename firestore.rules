@@ -60,7 +60,8 @@ service cloud.firestore {
     function validRecipe(d) {
       return d.title is string && d.title.size() <= 200
         && d.markdown is string && d.markdown.size() <= 50000
-        && (!('items' in d) || (d.items is list && d.items.size() <= 100));
+        && (!('items' in d) || (d.items is list && d.items.size() <= 100))
+        && (!('category' in d) || (d.category is string && d.category.size() <= 50));
     }
     match /users/{userId}/savedRecipes/{recipeId} {
       allow read, delete: if isOwner(userId);

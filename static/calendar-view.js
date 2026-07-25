@@ -7,8 +7,10 @@ import { log, logErr } from "./log.js";
 import { categoryBreakdown } from "./stats.js";
 import { CATEGORIES } from "./firebase-config.js";
 import { saveMeal, deleteMeal } from "./meal-plan.js";
+import { addItemsToList } from "./shopping-list.js";
 
 let _onAddExpense, _onEdit, _onDelete, _onInlineSave;
+let _currentWeekIdx = -1;
 let _expenses  = [];
 let _mealPlans = {};
 let _selectedDay = null;
@@ -33,7 +35,8 @@ export function initCalendar({ onAddExpense, onEdit, onDelete, onInlineSave }) {
   $("day-category").value = "食費";
   $("day-close").onclick  = () => closeModal("day-modal");
   $("day-form").onsubmit  = _handleDayAdd;
-  $("week-close").onclick = () => closeModal("week-modal");
+  $("week-close").onclick    = () => closeModal("week-modal");
+  $("week-shopping-btn").onclick = _buildWeekShoppingList;
   $("day-prev").onclick   = () => _navigateDay(-1);
   $("day-next").onclick   = () => _navigateDay(1);
 
@@ -254,12 +257,56 @@ function _expensesByDay(expenses) {
 function _openWeekModal(idx) {
   const wk = _weekBreakdowns[idx];
   if (!wk) return;
+  _currentWeekIdx = idx;
   const fmt = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
   $("week-modal-title").textContent =
     wk.start && wk.end ? `${fmt(wk.start)}〜${fmt(wk.end)} の内訳` : "週の内訳";
   $("week-total").textContent = yen(wk.total);
   renderCatBars($("week-bars"), wk.byCat);
   openModal("week-modal");
+}
+
+async function _buildWeekShoppingList() {
+  const wk = _weekBreakdowns[_currentWeekIdx];
+  if (!wk || !wk.start) return;
+  const btn = $("week-shopping-btn");
+  btn.disabled = true;
+  btn.textContent = "⏳ 食材を収集中…";
+  try {
+    const { _extractIngredients } = window.__recipeHelpers__ || {};
+    const allNames = [];
+    const cur = new Date(wk.start);
+    while (cur <= wk.end) {
+      const key = dayKey(cur);
+      const mp = _mealPlans[key];
+      if (mp) {
+        for (const slot of ["朝食", "お弁当", "夕食"]) {
+          const md = mp[slot + "レシピ"] || "";
+          if (md && _extractIngredients) {
+            allNames.push(..._extractIngredients(md));
+          }
+        }
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+    const unique = [...new Set(allNames)].filter(Boolean);
+    if (!unique.length) {
+      btn.textContent = "⚠️ この週に食材が見つかりません";
+      setTimeout(() => { btn.textContent = "🛒 この週の買い物リストを作る"; btn.disabled = false; }, 2500);
+      return;
+    }
+    const { _attachStores } = window.__recipeHelpers__ || {};
+    const items = _attachStores ? await _attachStores(unique) : unique;
+    const added = await addItemsToList(items);
+    btn.textContent = `✅ ${added}品目を買い物リストに追加しました`;
+    setTimeout(() => { btn.textContent = "🛒 この週の買い物リストを作る"; }, 3000);
+  } catch (err) {
+    logErr("週間買い物リスト生成エラー:", err.message, err);
+    btn.textContent = "⚠️ 追加に失敗しました";
+    setTimeout(() => { btn.textContent = "🛒 この週の買い物リストを作る"; }, 2500);
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // ---- 日付モーダル -------------------------------------------------------------
