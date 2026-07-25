@@ -103,13 +103,13 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget, db, getUser 
     $(id).addEventListener("change", () => { _saveFamily(); _updateFamilyToggleLabel(); });
   });
 
-  // 食材選択モードタブ（購入履歴 / 予算から）
-  $("recipe-mode-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
+  // 食材選択モードカード（購入履歴 / 予算から）
+  $("recipe-mode-tabs").querySelectorAll(".recipe-card").forEach((btn) => {
     btn.onclick = () => {
       _budgetMode = btn.dataset.mode === "budget";
-      _setActiveTab("recipe-mode-tabs", btn);
-      $("recipe-period-label").textContent = _budgetMode ? "残り予算の計算対象" : "食材の購入期間";
-      $("recipe-budget-info").hidden = !_budgetMode;
+      _setActiveCard("recipe-mode-tabs", btn);
+      $("recipe-period-section").hidden = _budgetMode;
+      $("recipe-budget-section").hidden = !_budgetMode;
       if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
     };
   });
@@ -132,11 +132,11 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget, db, getUser 
     if (_periodFrom > _periodTo) { _periodFrom = _periodTo; $("recipe-date-from").value = _periodFrom; }
     if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
   });
-  // 種別タブ
-  $("recipe-type-tabs").querySelectorAll(".recipe-tab").forEach((btn) => {
+  // 種別カード（今夜の1品 / 週間献立）
+  $("recipe-type-tabs").querySelectorAll(".recipe-card").forEach((btn) => {
     btn.onclick = () => {
       _activeType = btn.dataset.rtype;
-      _setActiveTab("recipe-type-tabs", btn);
+      _setActiveCard("recipe-type-tabs", btn);
       $("recipe-plan-start-row").hidden = _activeType !== "weekly";
       $("recipe-select-day-row").hidden = _activeType !== "select";
       $("recipe-plan-range-error").hidden = true;
@@ -144,9 +144,16 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget, db, getUser 
       _renderIngredients();
     };
   });
-  // 週間献立：開始日・終了日（最大7日間）
-  $("recipe-plan-start").addEventListener("change", _validatePlanRange);
-  $("recipe-plan-end").addEventListener("change", _validatePlanRange);
+  // 週間献立：開始日のみ入力（終了日は+6日自動計算）
+  $("recipe-plan-start").addEventListener("change", (e) => {
+    const start = e.target.value;
+    if (start) {
+      const end = new Date(start + "T00:00:00");
+      end.setDate(end.getDate() + 6);
+      $("recipe-plan-end").value = dayKey(end);
+    }
+    $("recipe-plan-range-error").hidden = true;
+  });
   // 朝・昼・夜を選ぶ：対象日
   $("recipe-select-day").addEventListener("change", (e) => {
     _selectedDay = e.target.value || _selectedDay;
@@ -219,9 +226,9 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
   // 期間ショートカット初期値を設定（日付入力も連動）
   _applyPeriodShortcut(initialPeriod);
   _setActiveTabByValue("recipe-period-tabs", "data-period", initialPeriod);
-  _setActiveTabByValue("recipe-type-tabs", "data-rtype", _activeType);
+  _setActiveCardByValue("recipe-type-tabs", "data-rtype", _activeType);
 
-  // 週間献立開始日・終了日を選択日基準（開始日+6日=1週間）に初期化
+  // 週間献立開始日（終了日はonChangeで自動設定）
   $("recipe-plan-start").value = selectedDay || "";
   if (selectedDay) {
     const endDefault = new Date(selectedDay + "T00:00:00");
@@ -232,15 +239,15 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
   }
   $("recipe-plan-start-row").hidden = true;
   $("recipe-plan-range-error").hidden = true;
-  // 朝・昼・夜を選ぶ：対象日を選択日に初期化
+  // 朝・昼・夜（後方互換）
   $("recipe-select-day").value = selectedDay || "";
   $("recipe-select-day-row").hidden = true;
 
   _budgetMode = false;
   _budgetSelectedItems = [];
-  _setActiveTabByValue("recipe-mode-tabs", "data-mode", "history");
-  $("recipe-period-label").textContent = "食材の購入期間";
-  $("recipe-budget-info").hidden = true;
+  _setActiveCardByValue("recipe-mode-tabs", "data-mode", "history");
+  $("recipe-period-section").hidden = false;
+  $("recipe-budget-section").hidden = true;
 
   _lastMarkdown = "";
   _lastItems = [];
@@ -387,11 +394,16 @@ async function _suggest() {
     _showStatus("error", $("recipe-plan-range-error").textContent);
     return;
   }
-  const items = [...$("recipe-ingredients").querySelectorAll(".recipe-chip")]
+  const chipContainer = _budgetMode
+    ? ($("recipe-budget-chips") || $("recipe-ingredients"))
+    : $("recipe-ingredients");
+  const items = [...chipContainer.querySelectorAll(".recipe-chip")]
     .map((el) => el.dataset.name || el.textContent.trim())
     .filter(Boolean);
   if (!items.length) {
-    _showStatus("error", "食材が見つかりません。期間を変更するか、明細付きのレシートを保存してください。");
+    _showStatus("error", _budgetMode
+      ? "食材が見つかりません。予算を設定するか、レシートを登録してください。"
+      : "食材が見つかりません。期間を変更するか、明細付きのレシートを保存してください。");
     return;
   }
   const itemLimit = _activeType === "select" ? 15 : 50;
@@ -682,6 +694,17 @@ function _setActiveTabByValue(containerId, attr, value) {
   });
 }
 
+function _setActiveCard(containerId, activeBtn) {
+  $(containerId).querySelectorAll(".recipe-card").forEach((b) => b.classList.remove("active"));
+  activeBtn.classList.add("active");
+}
+
+function _setActiveCardByValue(containerId, attr, value) {
+  $(containerId).querySelectorAll(".recipe-card").forEach((b) => {
+    b.classList.toggle("active", b.getAttribute(attr) === value);
+  });
+}
+
 function _showStatus(type, text) {
   const s = $("recipe-status");
   s.className = "status " + type;
@@ -692,7 +715,7 @@ function _showStatus(type, text) {
 // ---- 予算モード：過去購入履歴から予算内食材を自動選択 -------------------------
 
 async function _renderBudgetIngredients() {
-  const chips = $("recipe-ingredients");
+  const chips = $("recipe-budget-chips") || $("recipe-ingredients");
   chips.innerHTML = `<span class="recipe-empty-hint">💰 予算内の食材を計算中…</span>`;
   $("recipe-budget-status").textContent = "";
   $("recipe-budget-total").textContent  = "";
@@ -785,7 +808,7 @@ async function _renderBudgetIngredients() {
 }
 
 function _renderBudgetChips() {
-  const chips = $("recipe-ingredients");
+  const chips = $("recipe-budget-chips") || $("recipe-ingredients");
   chips.innerHTML = _budgetSelectedItems.map((item) =>
     `<span class="recipe-chip recipe-chip-budget" data-name="${escapeHtml(item.name)}" title="推定 ${yen(item.estimatedPrice)} — タップで除外">
       ${escapeHtml(item.name)}<button class="chip-remove" type="button" aria-label="${escapeHtml(item.name)}を除外">×</button>

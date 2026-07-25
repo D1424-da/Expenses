@@ -1798,3 +1798,52 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   from { opacity: 0; transform: translateX(-50%) translateY(12px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
+
+/* レシピウィザード */
+.recipe-wizard-step { margin-bottom: 14px; }
+.recipe-step-label { font-size: 0.78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+.recipe-card-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.recipe-card {
+  flex: 1; min-width: 120px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 12px 10px; border-radius: 12px; border: 2px solid var(--border);
+  background: var(--stone); cursor: pointer; transition: border-color .15s, background .15s;
+  font-family: inherit; text-align: center;
+}
+.recipe-card:hover { border-color: var(--sage); background: var(--sage-light); }
+.recipe-card.active { border-color: var(--sage); background: var(--sage-light); }
+.recipe-card-icon { font-size: 1.4rem; line-height: 1; }
+.recipe-card-title { font-size: 0.88rem; font-weight: 700; color: var(--ink); }
+.recipe-card-desc { font-size: 0.73rem; color: var(--muted); }
+.recipe-advanced { margin-top: 6px; border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; }
+.recipe-advanced-toggle {
+  display: block; padding: 10px 14px; font-size: 0.83rem; font-weight: 600;
+  color: var(--muted); cursor: pointer; list-style: none; user-select: none;
+  background: var(--stone);
+}
+.recipe-advanced-toggle::-webkit-details-marker { display: none; }
+.recipe-advanced-toggle::before { content: "▶ "; font-size: 0.7rem; }
+details[open] .recipe-advanced-toggle::before { content: "▼ "; }
+.recipe-advanced-body { padding: 12px 14px; border-top: 1px solid var(--border); }
+#recipe-budget-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; margin-top: 8px; }
+
+/* 保存レシピ — カテゴリフィルター */
+.saved-recipes-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.sr-filter-tag {
+  padding: 4px 12px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: var(--stone); font-size: 0.78rem; font-weight: 600; color: var(--ink);
+  cursor: pointer; transition: border-color .15s, background .15s;
+}
+.sr-filter-tag:hover { border-color: var(--sage); }
+.sr-filter-tag.active { border-color: var(--sage); background: var(--sage-light); color: var(--sage-dark, var(--sage)); }
+.sr-category-tag {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  background: var(--sage-light); color: var(--sage-dark, var(--sage));
+  font-size: 0.72rem; font-weight: 600; margin-right: 4px;
+}
+
+/* 保存レシピ — 献立スロットピッカー */
+.meal-slot-btns { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+.meal-slot-btns button { flex: 1; min-width: 80px; padding: 8px 6px; border-radius: 10px; font-size: 0.85rem; }
+.saved-recipe-plan-date-row { margin-bottom: 8px; }
+.saved-recipe-plan-date-row label { font-size: 0.83rem; font-weight: 600; }
+.saved-recipe-plan-date-row input[type="date"] { margin-left: 6px; font-size: 0.85rem; }

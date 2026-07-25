@@ -1,15 +1,13 @@
 // Stripe サブスクリプション管理 — プラン確認・アップグレードモーダル・チェックアウト。
 //
-// 無料プラン: 月10件まで記録可能。
-// プレミアム: 記録件数無制限（月額サブスク）。
+// 無料プラン: 14日間トライアルのみ。トライアル終了後は課金が必要。
+// プレミアム: 記録件数無制限（¥500/月サブスク）。
 import {
   getDoc, onSnapshot, doc,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { OCR_API_BASE } from "./firebase-config.js";
 import { openModal, closeModal, $ } from "./dom-utils.js";
 import { log, logErr } from "./log.js";
-
-export const FREE_LIMIT = 10;
 
 let _db, _getUser, _onSubChange;
 let _sub = null;         // キャッシュ済みサブスクリプション情報
@@ -94,31 +92,19 @@ export function isPremium() {
   return true;
 }
 
-// 新規保存の前に呼ぶ。制限内なら true、超えていたらモーダルを開いて false。
-// isEdit: 編集の場合は無条件 true（件数制限対象外）。
-export function checkGate(currentMonthCount, isEdit = false) {
+// 新規保存の前に呼ぶ。プレミアムなら true、そうでなければアップグレードモーダルを開いて false。
+// isEdit: 編集の場合は無条件 true。
+export function checkGate(_count, isEdit = false) {
   if (isEdit) return true;
   if (isPremium()) return true;
-  if (currentMonthCount < FREE_LIMIT) return true;
   openModal("upgrade-modal");
   return false;
 }
 
-// 残り件数バナーを更新する。
-export function renderUsageBar(currentMonthCount) {
+// 使用状況バナー（無料枠廃止のため何もしない）。
+export function renderUsageBar(_count) {
   const bar = $("usage-bar");
-  if (!bar) return;
-  if (isPremium()) {
-    bar.hidden = true;
-    return;
-  }
-  const remaining = Math.max(0, FREE_LIMIT - currentMonthCount);
-  bar.hidden = false;
-  bar.querySelector(".usage-count").textContent =
-    remaining === 0
-      ? "今月の無料記録（10件）に達しました"
-      : `今月あと ${remaining} 件 記録できます（無料プラン）`;
-  bar.querySelector(".usage-upgrade").hidden = remaining > 3;
+  if (bar) bar.hidden = true;
 }
 
 function _updatePremiumBadge() {
