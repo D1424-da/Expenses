@@ -184,16 +184,23 @@ function _showInlineEdit(id, rowEl) {
   ).join("");
 
   const items = e.items || [];
+  const _itemRowHtml = (it = {}) => `
+    <div class="ei-item-edit-row">
+      <div class="ei-item-edit-main">
+        <input type="text" class="ei-item-n" value="${escapeHtml(it.name || "")}" placeholder="商品名" />
+        <input type="number" class="ei-item-p" value="${it.price != null ? it.price : ""}" inputmode="numeric" placeholder="金額" min="0" step="1" />
+        <button type="button" class="ei-item-rm" aria-label="削除">✕</button>
+      </div>
+      <div class="ei-item-edit-qty">
+        <input type="number" class="ei-item-q" value="${it.qty != null ? it.qty : ""}" min="0" step="0.1" inputmode="decimal" placeholder="数量" />
+        <input type="text" class="ei-item-u" value="${escapeHtml(it.unit || "")}" placeholder="g / 個 / 袋" maxlength="6" />
+      </div>
+    </div>`;
   const itemsAccordion = items.length ? `
     <details class="ei-items-edit-details">
       <summary class="ei-items-edit-summary">明細も編集（${items.length}件）</summary>
       <div class="ei-items-edit-body">
-        ${items.map((it) => `
-          <div class="ei-item-edit-row">
-            <input type="text" class="ei-item-n" value="${escapeHtml(it.name || "")}" placeholder="商品名" />
-            <input type="number" class="ei-item-p" value="${it.price != null ? it.price : ""}" inputmode="numeric" placeholder="金額" min="0" step="1" />
-            <button type="button" class="ei-item-rm" aria-label="削除">✕</button>
-          </div>`).join("")}
+        ${items.map((it) => _itemRowHtml(it)).join("")}
         <button type="button" class="ei-item-add">＋ 追加</button>
       </div>
     </details>` : "";
@@ -235,9 +242,9 @@ function _showInlineEdit(id, rowEl) {
         ev.preventDefault();
         const body = details.querySelector(".ei-items-edit-body");
         const addBtn = details.querySelector(".ei-item-add");
-        const newRow = document.createElement("div");
-        newRow.className = "ei-item-edit-row";
-        newRow.innerHTML = `<input type="text" class="ei-item-n" placeholder="商品名" /><input type="number" class="ei-item-p" inputmode="numeric" placeholder="金額" min="0" step="1" /><button type="button" class="ei-item-rm" aria-label="削除">✕</button>`;
+        const tmp = document.createElement("template");
+        tmp.innerHTML = _itemRowHtml();
+        const newRow = tmp.content.firstElementChild;
         body.insertBefore(newRow, addBtn);
         newRow.querySelector(".ei-item-n").focus();
       }
@@ -263,7 +270,14 @@ function _showInlineEdit(id, rowEl) {
         payload.items = [...rowEl.querySelectorAll(".ei-item-edit-row")].map((row, idx) => {
           const name  = row.querySelector(".ei-item-n")?.value.trim() || "";
           const price = Number(row.querySelector(".ei-item-p")?.value) || 0;
-          return { ...(items[idx] || {}), name, price };
+          const qtyVal  = row.querySelector(".ei-item-q")?.value;
+          const unitVal = row.querySelector(".ei-item-u")?.value.trim() || "";
+          const item = { ...(items[idx] || {}), name, price };
+          if (qtyVal !== "" && qtyVal != null) item.qty = Number(qtyVal);
+          else delete item.qty;
+          if (unitVal) item.unit = unitVal;
+          else delete item.unit;
+          return item;
         }).filter((it) => it.name);
       }
       await _onInlineSave?.(id, payload);
