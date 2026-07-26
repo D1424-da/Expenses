@@ -192,10 +192,12 @@
           </label>
           <label>メモ<input type="text" id="f-memo" placeholder="任意" /></label>
 
-          <details id="items-details">
-            <summary>明細（<span id="items-count">0</span>件）</summary>
-            <div id="items-list" class="items-list"></div>
-          </details>
+          <div id="items-details">
+            <button type="button" id="items-toggle-btn" class="items-toggle-btn">
+              <span id="items-prefix">＋ 明細を追加</span>（<span id="items-count">0</span>件）
+            </button>
+            <div id="items-list" class="items-list" hidden></div>
+          </div>
           <p class="items-qty-global-hint" id="items-qty-global-hint" hidden>
             💡 各明細に数量・単位を入力すると、レシピ提案の精度が向上します
           </p>
