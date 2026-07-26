@@ -11,6 +11,7 @@ import { log, logErr } from "./log.js";
 
 let _db, _getUser, _onSubChange;
 let _sub = null;         // キャッシュ済みサブスクリプション情報
+let _subLoaded = false;  // 初回スナップショット受信済みフラグ
 let _unsubSub = null;    // Firestore リスナーの解除関数
 
 export function initBilling({ db, getUser, onSubChange }) {
@@ -35,6 +36,7 @@ export function startBillingSync() {
   const ref = doc(_db, "users", user.uid, "settings", "subscription");
   _unsubSub = onSnapshot(ref, (snap) => {
     _sub = snap.exists() ? snap.data() : null;
+    _subLoaded = true;
     log("課金状態更新:", _sub?.status ?? "無料");
     _updatePremiumBadge();
     // トライアル開始などでプレミアム状態が変わったら、利用状況バナーやゲートを即座に再反映する
@@ -64,6 +66,7 @@ export async function ensureTrial() {
 export function stopBillingSync() {
   if (_unsubSub) { _unsubSub(); _unsubSub = null; }
   _sub = null;
+  _subLoaded = false;
 }
 
 // サブスク解約済み（期間終了後に無料プランへ戻る）なら期限の表示文字列を返す。有効期限なしなら null。
@@ -93,9 +96,10 @@ export function isPremium() {
 }
 
 // 新規保存の前に呼ぶ。プレミアムなら true、そうでなければアップグレードモーダルを開いて false。
-// isEdit: 編集の場合は無条件 true。
+// isEdit: 編集の場合は無条件 true。課金情報未ロード時は楽観的に許可する。
 export function checkGate(_count, isEdit = false) {
   if (isEdit) return true;
+  if (!_subLoaded) return true; // 課金情報読み込み中は許可（初回ロード直後の誤ブロックを防ぐ）
   if (isPremium()) return true;
   openModal("upgrade-modal");
   return false;
