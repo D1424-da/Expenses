@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="/redirect.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+  <script src="/analytics.js"></script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>イオン・スーパーで買った食材からレシピを自動作成｜レシートを撮るだけで献立が決まるアプリ - カケイシピ</title>
+  <meta name="description" content="イオンやスーパーでのお買い物後、レシートを1枚撮影するだけで買った食材からレシピを自動提案するアプリ「カケイシピ」を紹介。OCR技術で品目を自動認識し、その日の夕飯から週間献立まで提案します。" />
+  <style>
+    .prevnext{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;gap:16px;flex-wrap:wrap}
+    .pn-link{flex:1;min-width:200px;display:flex;flex-direction:column;gap:4px;padding:16px 18px;background:#fff;border:1px solid #e2e8e6;border-radius:12px;text-decoration:none;transition:border-color .15s,transform .1s}
+    .pn-link:hover{border-color:#2D7D52;transform:translateY(-2px)}
+    .pn-next{text-align:right}
+    .pn-dir{font-size:.75rem;color:#2D7D52;font-weight:700}
+    .pn-title{font-size:.88rem;color:#0F2318;line-height:1.4}
+    @media(prefers-color-scheme:dark){.pn-link{background:#132219;border-color:#1E3D2A}.pn-title{color:#E4EDE7}}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    :root[data-theme="light"]{--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--gp:#F0F8F2}
+    :root[data-theme="dark"]{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#0d3024 0%,#061a0e 100%);padding:80px 24px 100px;position:relative;overflow:hidden}
+    .ah::before{content:"";position:absolute;top:-60px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(45,125,82,.3) 0%,transparent 70%);border-radius:50%}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto;position:relative;z-index:1}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(45,125,82,.4);color:#a8d8bb;border:1px solid rgba(45,125,82,.6);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:700;color:#fff;line-height:1.3;margin-bottom:20px;text-shadow:0 2px 20px rgba(0,0,0,.4)}
+    .ah .tagline{font-size:1rem;color:rgba(255,255,255,.7);margin-bottom:24px;line-height:1.7}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
+    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
+    .ab strong{color:var(--ink)}
+    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
+    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
+    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
+    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;margin-bottom:8px}
+    .tb p{margin:0;color:var(--is);font-size:.9rem}
+    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
+    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
+    .su{font-size:.85rem;color:var(--im);margin-top:4px}
+    .flow{display:flex;gap:0;margin:32px 0;overflow-x:auto;padding-bottom:8px}
+    .fs{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:90px}
+    .fi{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;background:var(--gl)}
+    .fn{font-size:.75rem;font-weight:700;color:var(--ink);text-align:center;line-height:1.3}
+    .fa{font-size:1.2rem;color:var(--im);flex-shrink:0;align-self:center;padding:0 2px}
+    .demo{background:var(--sf);border:2px solid var(--gm);border-radius:20px;padding:28px;margin:32px 0;box-shadow:var(--sl)}
+    .demo-title{font-size:.78rem;font-weight:700;color:var(--gm);letter-spacing:.1em;margin-bottom:16px}
+    .demo-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+    .demo-tag{background:var(--gl);color:var(--gd);border-radius:100px;padding:5px 12px;font-size:.82rem;font-weight:600}
+    .demo-arrow{text-align:center;font-size:1.4rem;color:var(--gm);margin:12px 0}
+    .demo-recipes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .demo-recipe{background:var(--gp);border:1px solid var(--gl);border-radius:var(--r);padding:12px;text-align:center}
+    .demo-icon{font-size:1.4rem;display:block;margin-bottom:4px}
+    .demo-name{font-size:.8rem;font-weight:700;color:var(--ink)}
+    .cta{background:linear-gradient(135deg,var(--gd),var(--gm));border-radius:20px;padding:40px 32px;margin:48px 0;text-align:center;color:#fff}
+    .cta h3{font-size:1.4rem;font-weight:700;margin-bottom:12px}
+    .cta p{opacity:.85;margin-bottom:24px;line-height:1.7}
+    .cta-btn{display:inline-block;background:#fff;color:var(--gd);border-radius:100px;padding:14px 36px;font-weight:700;font-size:1rem;text-decoration:none;transition:transform .15s,box-shadow .15s}
+    .cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+    .faq{margin:32px 0}
+    .fq{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);margin-bottom:12px}
+    .fq-q{padding:18px 20px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:12px}
+    .fq-q::before{content:"Q";background:var(--gm);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0}
+    .fq-a{padding:0 20px 18px 56px;color:var(--is);font-size:.9rem;line-height:1.8}
+    aside{position:sticky;top:80px}
+    .sb{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh);margin-bottom:20px}
+    .sb h3{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bd)}
+    .sb ul{list-style:none;padding:0}
+    .sb li{padding:6px 0;border-bottom:1px solid var(--bd);font-size:.85rem}
+    .sb li:last-child{border-bottom:none}
+    .sb a{color:var(--gm);text-decoration:none}
+    .sb a:hover{text-decoration:underline}
+    .ra{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd);text-decoration:none}
+    .ra:last-child{border-bottom:none}
+    .ri{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+    .rt{font-size:.82rem;font-weight:700;color:var(--ink);line-height:1.3}
+    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
+    .ft{background:#0F2318;padding:40px 24px 32px;margin-top:60px}
+    .fl{max-width:1080px;margin:0 auto 20px;display:flex;flex-wrap:wrap;gap:12px 24px}
+    .fl a{color:rgba(255,255,255,.6);text-decoration:none;font-size:.82rem}
+    .fl a:hover{color:#fff}
+    .ft p{max-width:1080px;margin:0 auto;font-size:.78rem;color:rgba(255,255,255,.3);text-align:center}
+    @media(max-width:768px){.cw{grid-template-columns:1fr}.sg{grid-template-columns:repeat(2,1fr)}.demo-recipes{grid-template-columns:repeat(2,1fr)}aside{position:static}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a href="/" class="hl">カケイシピ <span>家計×レシピ</span></a>
+  <nav class="hn"><a href="/blog.html">ブログ</a><a href="/" class="hc">無料で試す</a></nav>
+</header>
+
+<div class="ah">
+  <div class="ai">
+    <div class="bc"><a href="/">ホーム</a><span>›</span><a href="/blog.html">ブログ</a><span>›</span>スーパーレシピ</div>
+    <span class="ac">🛒 レシート×レシピ</span>
+    <h1>イオン・スーパーで買った食材から<br />レシピを自動作成するアプリ</h1>
+    <p class="tagline">レシートを1枚撮影するだけ。イオンやスーパーで買った食材をAIが自動認識して、今夜の夕飯から週間献立まで自動提案するアプリの使い方を解説します。</p>
+    <div class="am"><span>📅 2026年7月26日</span><span>⏱ 約5分で読めます</span></div>
+  </div>
+</div>
+
+<div class="cw">
+  <article class="ab">
+    <p class="ld">「イオンで買い物してきたけど、これで何が作れる？」——スーパーのレシートをスマホで撮影するだけで、買った食材からレシピを自動提案してくれるアプリを使えば、帰宅後の「今夜何作ろう」悩みがゼロになります。</p>
+
+    <h2 id="how">レシートからレシピが作られる仕組み</h2>
+    <p>カケイシピのAI-OCR機能は、スマホカメラで撮影したレシート画像を解析して店名・品目・金額・数量を自動読み取りします。読み取った食材情報をもとに、AIが「今夜作れるレシピ」を提案します。</p>
+
+    <div class="flow">
+      <div class="fs"><div class="fi">🏪</div><div class="fn">スーパーで買い物</div></div>
+      <div class="fa">→</div>
+      <div class="fs"><div class="fi">📸</div><div class="fn">レシートを撮影</div></div>
+      <div class="fa">→</div>
+      <div class="fs"><div class="fi">🧠</div><div class="fn">AI-OCRで食材認識</div></div>
+      <div class="fa">→</div>
+      <div class="fs"><div class="fi">🍳</div><div class="fn">レシピを自動提案</div></div>
+    </div>
+
+    <h3>イオン・スーパーのレシートで読み取れるもの</h3>
+    <p>カケイシピのOCRは国内の主要スーパー（イオン・イトーヨーカドー・西友・マルエツ・業務スーパーなど）のレシート形式に対応しています。読み取り可能な情報は以下の通りです。</p>
+    <ul>
+      <li><strong>品目名</strong>（豚バラ肉、キャベツ、豆腐など）</li>
+      <li><strong>金額</strong>（品目ごと・合計）</li>
+      <li><strong>数量・単位</strong>（300g、1袋など）</li>
+      <li><strong>店名・日付</strong>（食費記録に自動登録）</li>
+    </ul>
+
+    <div class="sg">
+      <div class="sc"><div class="sn">30秒</div><div class="su">レシート1枚の読み取り時間</div></div>
+      <div class="sc"><div class="sn">95%</div><div class="su">主要スーパーの認識精度</div></div>
+      <div class="sc"><div class="sn">3品以上</div><div class="su">食材あれば献立提案可能</div></div>
+    </div>
+
+    <h2 id="demo">実際の提案例</h2>
+    <p>たとえばイオンで「豚バラ肉・キャベツ・にんじん・豆腐・卵」を買った場合、カケイシピはこのような提案をします。</p>
+
+    <div class="demo">
+      <div class="demo-title">📸 READ — 今日の買い物食材</div>
+      <div class="demo-tags">
+        <span class="demo-tag">豚バラ肉 300g</span>
+        <span class="demo-tag">キャベツ 1/2個</span>
+        <span class="demo-tag">にんじん 2本</span>
+        <span class="demo-tag">豆腐 1丁</span>
+        <span class="demo-tag">卵 6個</span>
+      </div>
+      <div class="demo-arrow">↓ AI がレシピを提案</div>
+      <div class="demo-recipes">
+        <div class="demo-recipe"><span class="demo-icon">🥘</span><div class="demo-name">豚バラキャベツ炒め</div></div>
+        <div class="demo-recipe"><span class="demo-icon">🍲</span><div class="demo-name">豚汁</div></div>
+        <div class="demo-recipe"><span class="demo-icon">🥚</span><div class="demo-name">麻婆豆腐</div></div>
+      </div>
+    </div>
+
+    <h2 id="weekly">週間献立への活用</h2>
+    <p>週1回まとめ買いをする場合、レシートを撮影した後に「週間献立」モードでAIに提案させることもできます。買った食材のバランスを考慮しながら7日分の夕食プランを自動作成し、献立カレンダーに一括登録します。</p>
+    <p>カレンダーに登録された献立から<strong>買い物リストを逆算する機能</strong>もあるため、次の買い物では「何を補充すればよいか」を自動で教えてくれます。</p>
+
+    <div class="tb"><div class="tl">💡 節約効果</div><p>買った食材でレシピを決めることで、食材の使い切りが促進されます。カケイシピユーザーの調査では、フードロスが平均30%以上削減されたという結果が出ています。</p></div>
+
+    <h2 id="price">食費管理との連動</h2>
+    <p>レシートから読み取った金額は自動的に食費記録として登録されます。月別・カテゴリ別の集計グラフも自動生成されるため、「イオンでの食費はいくらか」「今月の食費はあと何円使えるか」が一目でわかります。</p>
+    <p>予算を設定しておけば、残り予算に収まるレシピだけを提案する<strong>予算連動モード</strong>も利用できます。</p>
+
+    <h2 id="start">始め方</h2>
+    <ol>
+      <li>スマホでカケイシピにアクセス（Googleアカウントでログイン）</li>
+      <li>スーパーから帰ったらレシートをスマホカメラで撮影</li>
+      <li>AIが食材を自動認識・読み取り結果を確認して保存</li>
+      <li>「レシピ提案」をタップして今夜の夕飯を選ぶ</li>
+      <li>献立カレンダーに登録して週間計画を完成させる</li>
+    </ol>
+
+    <div class="cta">
+      <h3>今夜のスーパーの買い物から始めてみませんか？</h3>
+      <p>レシートを1枚撮るだけで、買った食材からAIがレシピを提案。<br />食費管理も同時に完了します。14日間無料トライアル・カード不要。</p>
+      <a href="/" class="cta-btn">無料で試してみる →</a>
+    </div>
+
+    <h2 id="faq">よくある質問</h2>
+    <div class="faq">
+      <div class="fq">
+        <div class="fq-q">手書きのレシートや感熱紙が古いものでも読み取れますか？</div>
+        <div class="fq-a">感熱紙の印字が薄い場合は読み取り精度が下がることがあります。明るい場所でまっすぐ撮影することで精度が向上します。読み取り結果は保存前に編集できます。</div>
+      </div>
+      <div class="fq">
+        <div class="fq-q">複数枚のレシートをまとめて読み取れますか？</div>
+        <div class="fq-a">はい。複数ファイルを同時に選択してアップロードできます。スーパーのレシートと薬局のレシートを同時に処理することも可能です。</div>
+      </div>
+      <div class="fq">
+        <div class="fq-q">アレルギーのある食材を除いてレシピを提案できますか？</div>
+        <div class="fq-a">現在は提案されたレシピから自分で選ぶ形ですが、アレルギー除外設定は今後追加予定の機能です。</div>
+      </div>
+    </div>
+
+    <h2 id="summary">まとめ</h2>
+    <p>イオンやスーパーでの買い物後にレシートを1枚撮影するだけで、買った食材からAIがレシピを自動提案——それがカケイシピの最大の特徴です。「今夜何作ろう」の悩みを解消しながら、食費の自動記録・予算管理・フードロス削減まで一気に実現できます。まずは14日間の無料トライアルでお試しください。</p>
+  </article>
+
+  <aside>
+    <div class="sb">
+      <h3>目次</h3>
+      <ul>
+        <li><a href="#how">レシピが作られる仕組み</a></li>
+        <li><a href="#demo">実際の提案例</a></li>
+        <li><a href="#weekly">週間献立への活用</a></li>
+        <li><a href="#price">食費管理との連動</a></li>
+        <li><a href="#start">始め方</a></li>
+        <li><a href="#faq">よくある質問</a></li>
+        <li><a href="#summary">まとめ</a></li>
+      </ul>
+    </div>
+    <div class="sb">
+      <h3>関連記事</h3>
+      <a href="/blog/receipt-to-recipe.html" class="ra">
+        <div class="ri" style="background:#e8f5ee">🧾</div>
+        <div><div class="rt">レシートからレシピを作るアプリ</div><div class="rm">買った食材から自動で献立提案</div></div>
+      </a>
+      <a href="/blog/shopping-to-recipe.html" class="ra">
+        <div class="ri" style="background:#e3f2fd">🛒</div>
+        <div><div class="rt">買い物食材からレシピを自動作成</div><div class="rm">カケイシピの最強機能解説</div></div>
+      </a>
+      <a href="/blog/receipt-ocr-how-it-works.html" class="ra">
+        <div class="ri" style="background:#fff3e0">📸</div>
+        <div><div class="rt">レシートOCRの仕組みと活用法</div><div class="rm">自動入力の仕組みを解説</div></div>
+      </a>
+      <a href="/blog/price-compare-supermarket.html" class="ra">
+        <div class="ri" style="background:#f3e5f5">💰</div>
+        <div><div class="rt">スーパーの価格比較で食費節約</div><div class="rm">安い店・特売の賢い活用法</div></div>
+      </a>
+    </div>
+  </aside>
+</div>
+
+<nav class="prevnext">
+  <a class="pn-link" href="/blog/receipt-to-recipe.html"><span class="pn-dir">← 前の記事</span><span class="pn-title">レシートからレシピを作るアプリ｜買った食材から自動で献立を提案</span></a>
+  <a class="pn-link pn-next" href="/blog/shopping-to-recipe.html"><span class="pn-dir">次の記事 →</span><span class="pn-title">買い物した食材からレシピを自動作成｜カケイシピの最強機能を徹底解説</span></a>
+</nav>
+<footer class="ft">
+  <div class="fl">
+    <a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/index.html#pricing">料金プラン</a>
+    <a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a>
+    <a href="/tokushoho.html">特定商取引法に基づく表記</a><a href="/contact.html">お問い合わせ</a>
+  </div>
+  <p>© 2026 カケイシピ · AIレシート家計簿</p>
+</footer>
+</body>
+</html>
