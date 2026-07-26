@@ -126,6 +126,7 @@ function _renderItems(items) {
   $("items-list").innerHTML = "";
   for (const it of items) _addItemRow(it.name, it.price, it.category, it.qty, it.unit);
   _updateItemsCount();
+  if (items.length > 0) $("items-details").open = true;
 }
 
 function _addItemRow(name = "", price = 0, category = "", qty = "", unit = "") {
