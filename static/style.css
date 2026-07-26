@@ -613,13 +613,13 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 }
 .ei-item-rm {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: none;
   background: none;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   cursor: pointer;
   border-radius: 50%;
   display: flex;
@@ -628,6 +628,7 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   transition: background 0.12s, color 0.12s;
 }
 .ei-item-rm:hover { background: #fee2e2; color: #dc2626; }
+.ei-item-rm:active { background: #fecaca; }
 .ei-item-add {
   align-self: flex-start;
   margin-top: 2px;
@@ -649,12 +650,14 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   display: flex; gap: 8px; margin-bottom: 12px;
 }
 .day-nav button {
-  flex: 1; font-size: 0.88rem; padding: 7px 12px;
+  flex: 1; font-size: 0.92rem; font-weight: 600;
+  padding: 12px 12px; min-height: 48px;
   background: var(--stone); border: 1.5px solid var(--border);
   border-radius: var(--r-btn); cursor: pointer; color: var(--ink-2);
   transition: background 0.15s;
 }
 .day-nav button:hover:not(:disabled) { background: var(--sage-light); color: var(--sage-deep); }
+.day-nav button:active:not(:disabled) { background: var(--sage-light); }
 .day-nav button:disabled { opacity: 0.38; cursor: default; }
 
 .empty {
@@ -1304,27 +1307,30 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   font-family: inherit;
 }
 .bnav-item:hover { color: var(--sage); }
-.bnav-icon { font-size: 1.25rem; line-height: 1; }
-.bnav-label { font-size: 0.6rem; font-weight: 700; letter-spacing: .02em; }
+.bnav-item.active { color: var(--sage); }
+.bnav-icon { font-size: 1.3rem; line-height: 1; }
+.bnav-label { font-size: 0.68rem; font-weight: 700; letter-spacing: .02em; }
 
 /* FAB */
 .fab {
   position: fixed;
-  bottom: calc(56px + env(safe-area-inset-bottom, 0) + 12px);
+  bottom: calc(56px + env(safe-area-inset-bottom, 0) + 14px);
   left: 50%;
   transform: translateX(-50%);
-  width: 54px; height: 54px;
-  border-radius: 18px;
+  width: 62px; height: 62px;
+  border-radius: 20px;
   background: var(--sage);
   color: #fff;
   border: none;
-  box-shadow: 0 4px 20px rgba(75,122,94,0.4);
+  box-shadow: 0 6px 24px rgba(75,122,94,0.5), 0 2px 8px rgba(0,0,0,0.15);
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   cursor: pointer;
   z-index: 31;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-.fab:hover { filter: brightness(1.1); }
+.fab:hover { filter: brightness(1.08); }
+.fab:active { transform: translateX(-50%) scale(0.94); box-shadow: 0 3px 12px rgba(75,122,94,0.4); }
 
 /* ============================================================
    PC NAV BAR
@@ -1376,7 +1382,8 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
    SMALL MOBILE TWEAKS
    ============================================================ */
 @media (max-width: 520px) {
-  .row { flex-direction: column; }
+  /* 店名/支店名 行だけ縦並びに（日付/金額は2列維持） */
+  .row.row-store { flex-direction: column; }
   .cal-grid { gap: 2px; }
   .cal-day, .cal-week { min-height: 44px; }
   .cal-amt, .cal-week { font-size: 0.6rem; }
