@@ -21,7 +21,8 @@ import {
   createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFirestore, collection, addDoc,
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  collection, addDoc,
   query, where, orderBy, onSnapshot, getDocs, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -98,7 +99,9 @@ async function _syncStripeSubscription(user) {
 // ---- Firebase 初期化 -------------------------------------------------------
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
-const db = getFirestore(fbApp);
+const db = initializeFirestore(fbApp, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+});
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 log("Firebase初期化完了", {
