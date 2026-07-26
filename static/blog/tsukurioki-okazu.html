@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="/redirect.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+  <script src="/analytics.js"></script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>作り置きおかず・おかず作り置きを献立カレンダーで管理｜週末まとめて作るAI活用術 - カケイシピ</title>
+  <meta name="description" content="週末に作り置きおかずをまとめて作り、平日の夕飯を楽にする方法を解説。カケイシピのAIレシピ提案と献立カレンダーで、作り置きおかずの計画から買い物リスト作成まで自動化できます。" />
+  <style>
+    .prevnext{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;gap:16px;flex-wrap:wrap}
+    .pn-link{flex:1;min-width:200px;display:flex;flex-direction:column;gap:4px;padding:16px 18px;background:#fff;border:1px solid #e2e8e6;border-radius:12px;text-decoration:none;transition:border-color .15s,transform .1s}
+    .pn-link:hover{border-color:#2D7D52;transform:translateY(-2px)}
+    .pn-next{text-align:right}
+    .pn-dir{font-size:.75rem;color:#2D7D52;font-weight:700}
+    .pn-title{font-size:.88rem;color:#0F2318;line-height:1.4}
+    @media(prefers-color-scheme:dark){.pn-link{background:#132219;border-color:#1E3D2A}.pn-title{color:#E4EDE7}}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
+    :root[data-theme="light"]{--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--gp:#F0F8F2}
+    :root[data-theme="dark"]{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318}
+    html{scroll-behavior:smooth}
+    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
+    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
+    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
+    .hn{display:flex;align-items:center;gap:20px}
+    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
+    .hn a:hover{color:#fff}
+    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .hc:hover{background:var(--od)}
+    .ah{background:linear-gradient(135deg,#0d3024 0%,#061a0e 100%);padding:80px 24px 100px;position:relative;overflow:hidden}
+    .ah::before{content:"";position:absolute;top:-60px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(45,125,82,.3) 0%,transparent 70%);border-radius:50%}
+    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+    .ai{max-width:760px;margin:0 auto;position:relative;z-index:1}
+    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
+    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
+    .bc span{opacity:.5}
+    .ac{display:inline-block;background:rgba(45,125,82,.4);color:#a8d8bb;border:1px solid rgba(45,125,82,.6);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
+    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:700;color:#fff;line-height:1.3;margin-bottom:20px;text-shadow:0 2px 20px rgba(0,0,0,.4)}
+    .ah .tagline{font-size:1rem;color:rgba(255,255,255,.7);margin-bottom:24px;line-height:1.7}
+    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
+    .ab{min-width:0}
+    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
+    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
+    .ab h3{font-size:1.1rem;font-weight:700;color:var(--ink);margin:28px 0 12px}
+    .ab p{color:var(--is);margin-bottom:20px;line-height:1.9}
+    .ab ul,.ab ol{color:var(--is);padding-left:20px;margin-bottom:20px}
+    .ab li{margin-bottom:8px;line-height:1.8}
+    .ab strong{color:var(--ink);font-weight:700}
+    .ab a{color:var(--gm);text-decoration:none}
+    .ab a:hover{text-decoration:underline}
+    .hl2{background:var(--gp);border:1px solid var(--gl);border-radius:var(--r);padding:24px 28px;margin-bottom:28px}
+    .hl2 h4{font-size:.85rem;font-weight:700;color:var(--gm);margin-bottom:12px;letter-spacing:.06em}
+    .hl2 ol{padding-left:18px;color:var(--is)}
+    .hl2 li{margin-bottom:6px;font-size:.95rem}
+    .hl2 li a{color:var(--gm);text-decoration:none;font-weight:500}
+    .hl2 li a:hover{text-decoration:underline}
+    .tb{width:100%;border-collapse:collapse;margin:24px 0 32px;font-size:.93rem}
+    .tb th{background:var(--gm);color:#fff;padding:10px 14px;text-align:left;font-weight:600}
+    .tb td{padding:10px 14px;border-bottom:1px solid var(--bd);color:var(--is);vertical-align:top}
+    .tb tr:last-child td{border-bottom:none}
+    .tb tr:nth-child(even) td{background:var(--gp)}
+    .ct{background:linear-gradient(135deg,var(--gd),#0d3024);border-radius:20px;padding:48px 40px;margin:48px 0;text-align:center}
+    .ct h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.5rem;color:#fff;margin-bottom:16px}
+    .ct p{color:rgba(255,255,255,.8);margin-bottom:28px;font-size:1rem;line-height:1.8}
+    .ct a{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
+    .ct a:hover{background:var(--od);transform:translateY(-2px)}
+    .ct small{display:block;color:rgba(255,255,255,.6);margin-top:14px;font-size:.82rem}
+    .fc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px 28px;margin-bottom:24px}
+    .fc summary{font-weight:700;color:var(--ink);cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;font-size:.98rem}
+    .fc summary::after{content:"＋";color:var(--gm);font-size:1.1rem;transition:transform .2s}
+    .fc[open] summary::after{content:"－"}
+    .fc p{margin-top:14px;color:var(--is);font-size:.95rem;line-height:1.8}
+    aside{position:sticky;top:80px}
+    .sw{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;margin-bottom:24px}
+    .sw h4{font-size:.85rem;font-weight:700;color:var(--is);letter-spacing:.08em;margin-bottom:16px}
+    .rw{display:flex;flex-direction:column;gap:12px}
+    .rl{display:flex;gap:12px;text-decoration:none;align-items:flex-start}
+    .ri{width:60px;height:60px;border-radius:8px;background:var(--gl);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+    .rt{font-size:.83rem;color:var(--ink);line-height:1.4;font-weight:500}
+    .rl:hover .rt{color:var(--gm)}
+    .ft{background:#0d2318;padding:48px 24px;text-align:center}
+    .ft a{color:rgba(255,255,255,.6);text-decoration:none;font-size:.85rem;margin:0 12px}
+    .ft a:hover{color:#fff}
+    .ft p{color:rgba(255,255,255,.4);font-size:.78rem;margin-top:20px}
+    .step-flow{display:flex;flex-direction:column;gap:0;margin:24px 0 32px}
+    .step-item{display:flex;gap:16px;align-items:flex-start;padding:20px 24px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);position:relative}
+    .step-item:not(:last-child){border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:none}
+    .step-item+.step-item{border-top-left-radius:0;border-top-right-radius:0}
+    .step-num{width:32px;height:32px;border-radius:50%;background:var(--gm);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0}
+    .step-body{flex:1}
+    .step-title{font-weight:700;color:var(--ink);margin-bottom:6px}
+    .step-desc{color:var(--is);font-size:.93rem;line-height:1.7}
+    .card-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:24px 0 32px}
+    .card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center}
+    .card-icon{font-size:2rem;margin-bottom:10px}
+    .card-title{font-weight:700;color:var(--ink);margin-bottom:6px;font-size:.95rem}
+    .card-desc{font-size:.85rem;color:var(--is);line-height:1.6}
+    @media(max-width:768px){.cw{grid-template-columns:1fr}.hn a:not(.hc){display:none}aside{position:static}}
+  </style>
+</head>
+<body>
+<header class="hd">
+  <a class="hl" href="/">カケイシピ <span>家計×レシピ</span></a>
+  <nav class="hn">
+    <a href="/blog.html">ブログ</a>
+    <a href="/#pricing">料金</a>
+    <a class="hc" href="/">無料で試す</a>
+  </nav>
+</header>
+
+<section class="ah">
+  <div class="ai">
+    <div class="bc"><a href="/">ホーム</a><span>›</span><a href="/blog.html">ブログ</a><span>›</span><span>作り置きおかず</span></div>
+    <span class="ac">作り置き・献立</span>
+    <h1>作り置きおかずを献立カレンダーで管理<br>週末まとめて作るAI活用術</h1>
+    <p class="tagline">週末2時間の作り置きで、平日5日間の夕飯に困らない。<br>AIが作り置きレシピを提案→献立に自動反映→買い物リストも自動生成。</p>
+    <div class="am"><span>📅 2026年7月26日</span><span>⏱ 約8分</span></div>
+  </div>
+</section>
+
+<div class="cw">
+  <article class="ab">
+    <div class="hl2">
+      <h4>📋 目次</h4>
+      <ol>
+        <li><a href="#merit">作り置きおかずのメリット・デメリット</a></li>
+        <li><a href="#howto">AI×作り置きの基本フロー</a></li>
+        <li><a href="#plan">週末2時間で5日分を作る計画術</a></li>
+        <li><a href="#calendar">献立カレンダーへの登録と活用</a></li>
+        <li><a href="#shopping">まとめ買いリストの自動生成</a></li>
+        <li><a href="#faq">よくある質問</a></li>
+      </ol>
+    </div>
+
+    <p class="ld">作り置きおかずは「平日を楽にする」最強の時短術ですが、何を作るか計画するのが意外と大変。カケイシピのAIレシピ提案と献立カレンダーを組み合わせると、計画から買い物・作り置き・平日の夕飯まで一本のフローで管理できます。</p>
+
+    <h2 id="merit">作り置きおかずのメリット・デメリット</h2>
+    <div class="card-row">
+      <div class="card"><div class="card-icon">⏱</div><div class="card-title">平日が楽になる</div><div class="card-desc">帰宅後の調理時間を10分以下に短縮。温めるだけで夕飯完成。</div></div>
+      <div class="card"><div class="card-icon">💰</div><div class="card-title">食費が下がる</div><div class="card-desc">まとめ買い×食材使い切りで食費を20〜30%削減しやすい。</div></div>
+      <div class="card"><div class="card-icon">🗑</div><div class="card-title">食材ロスが減る</div><div class="card-desc">週初めに食材を使い切る計画を立てるので廃棄がほぼゼロに。</div></div>
+    </div>
+    <p>一方、「何を作れば1週間もつか」「冷蔵で何日持つか」「飽きずに使い回せるか」という計画部分が難しく、挫折の原因になりがちです。ここをAIに任せるのが本記事のポイントです。</p>
+
+    <h2 id="howto">AI×作り置きの基本フロー</h2>
+    <div class="step-flow">
+      <div class="step-item"><div class="step-num">1</div><div class="step-body"><div class="step-title">週末の予算・食材をアプリに登録</div><div class="step-desc">スーパーのレシートをOCRで撮影 or 手入力。今週の食費予算を設定します。</div></div></div>
+      <div class="step-item"><div class="step-num">2</div><div class="step-body"><div class="step-title">「週間献立」でAIに作り置き提案を依頼</div><div class="step-desc">「週間献立」モードを選択。「作り置き可能なおかずを多めに」とこだわり設定で指示します。</div></div></div>
+      <div class="step-item"><div class="step-num">3</div><div class="step-body"><div class="step-title">月〜金5日分のおかずレシピが生成される</div><div class="step-desc">主菜・副菜それぞれの作り置きレシピが提案されます。日持ちの目安（冷蔵○日）も表示。</div></div></div>
+      <div class="step-item"><div class="step-num">4</div><div class="step-body"><div class="step-title">献立カレンダーに自動反映</div><div class="step-desc">気に入ったレシピを「献立に設定」すると、週のカレンダーに自動で並びます。</div></div></div>
+      <div class="step-item"><div class="step-num">5</div><div class="step-body"><div class="step-title">買い物リストが自動生成される</div><div class="step-desc">献立が決まったら「この週の買い物リストを作る」ボタン1つで食材リスト完成。まとめ買いに活用。</div></div></div>
+    </div>
+
+    <h2 id="plan">週末2時間で5日分を作る計画術</h2>
+    <h3>作り置きに向くおかずの選び方</h3>
+    <p>AIが提案するレシピは「日持ち」を考慮していますが、特に作り置き向きのおかずは以下の条件を満たすものです。</p>
+    <table class="tb">
+      <thead><tr><th>カテゴリ</th><th>例</th><th>冷蔵の目安</th></tr></thead>
+      <tbody>
+        <tr><td>煮物・炒め煮</td><td>ひじきの煮物、切り干し大根</td><td>4〜5日</td></tr>
+        <tr><td>和え物・マリネ</td><td>ほうれん草のお浸し、キャロットラペ</td><td>3〜4日</td></tr>
+        <tr><td>肉の下味冷凍</td><td>鶏むね肉の塩麹漬け、豚の生姜焼きタレ漬け</td><td>冷凍2〜3週間</td></tr>
+        <tr><td>副菜・常備菜</td><td>きんぴらごぼう、南瓜の煮物</td><td>4〜5日</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2時間で作るタイムライン</h3>
+    <ul>
+      <li><strong>0〜30分</strong>：野菜の下処理・カット（まとめて行うと効率的）</li>
+      <li><strong>30〜60分</strong>：火を使う調理（煮物・炒め物を同時並行）</li>
+      <li><strong>60〜90分</strong>：和え物・マリネ・仕上げ</li>
+      <li><strong>90〜120分</strong>：保存容器に詰め・冷蔵・冷凍の振り分け</li>
+    </ul>
+    <p>AIが提案するレシピには所要時間が記載されているので、2時間に収まるよう品数を逆算できます。</p>
+
+    <h2 id="calendar">献立カレンダーへの登録と活用</h2>
+    <p>カケイシピの献立カレンダーでは、作り置きおかずを「夕食スロット」に登録しておくと、平日は「今夜これを出す」と確認するだけで済みます。</p>
+    <ul>
+      <li>朝食・お弁当・夕食の3スロットを日別に管理</li>
+      <li>保存済みのレシピを1タップでカレンダーに設定</li>
+      <li>週をまたいで同じ作り置きレシピを再利用可能</li>
+      <li>レシピ詳細（材料・手順）をカレンダーから直接参照できる</li>
+    </ul>
+
+    <h2 id="shopping">まとめ買いリストの自動生成</h2>
+    <p>週間献立が確定したら、「この週の買い物リストを作る」ボタンを押すだけで全レシピの食材が一覧化されます。同じ食材は自動で合算されるので、「鶏むね肉を何g買えばいいか」を手計算する必要がありません。</p>
+    <p>レシートOCRで購入記録を取ると、実際の支出と予算の差分もリアルタイムで確認できます。</p>
+
+    <div class="ct">
+      <h3>作り置き計画をAIに任せてみませんか？</h3>
+      <p>週間献立→買い物リスト→食費管理まで自動化。<br>14日間無料・カード登録不要ではじめられます。</p>
+      <a href="/">無料トライアルを始める →</a>
+      <small>14日間無料 · カード登録不要 · いつでも退会OK</small>
+    </div>
+
+    <h2 id="faq">よくある質問</h2>
+    <details class="fc"><summary>作り置きが苦手でも使えますか？</summary><p>はい。AIが「この食材で作れる冷蔵4日以上持つおかず」を提案するので、経験がなくても計画が立てやすくなります。まずは2〜3品から始めることをおすすめします。</p></details>
+    <details class="fc"><summary>何人分の作り置きレシピを提案してもらえますか？</summary><p>人数を設定すると分量が自動調整されます。1〜6人まで対応しています。</p></details>
+    <details class="fc"><summary>冷凍保存できるレシピは提案してもらえますか？</summary><p>「冷凍可能」のこだわり条件を設定すると、冷凍向きのレシピを優先して提案します。</p></details>
+    <details class="fc"><summary>作り置きレシピをカテゴリ分けして保存できますか？</summary><p>保存レシピに「作り置き」「常備菜」などカテゴリをつけて整理できます。次回以降は同じレシピを再利用するだけで計画が立てられます。</p></details>
+
+    <h2>まとめ</h2>
+    <p>作り置きおかずの最大のハードルは「何を作るか考える」計画段階です。カケイシピのAI献立提案を使えば、週の食材と予算を入力するだけで作り置き向きのおかずレシピが揃い、献立カレンダーと買い物リストまで自動で完成します。週末の2時間を有効活用して、平日の夕飯時間をぐっと楽にしましょう。</p>
+  </article>
+
+  <aside>
+    <div class="sw">
+      <h4>🥘 関連記事</h4>
+      <div class="rw">
+        <a class="rl" href="/blog/weekly-kondate-shopping.html"><div class="ri">🛒</div><span class="rt">1週間献立まとめ買いで食費を節約する方法</span></a>
+        <a class="rl" href="/blog/yuhan-kondate.html"><div class="ri">🍽</div><span class="rt">夕飯献立をAIが毎日自動提案</span></a>
+        <a class="rl" href="/blog/weekly-meal-plan.html"><div class="ri">📅</div><span class="rt">1週間の献立を事前に決める節約術</span></a>
+        <a class="rl" href="/blog/shopping-list-auto.html"><div class="ri">📝</div><span class="rt">買い物リストを自動生成するアプリ</span></a>
+      </div>
+    </div>
+    <div class="sw">
+      <h4>💡 カケイシピの作り置き機能</h4>
+      <ul style="padding-left:18px;color:var(--is);font-size:.9rem;line-height:2">
+        <li>AI作り置きレシピ提案</li>
+        <li>日持ち目安の自動表示</li>
+        <li>週間献立カレンダー</li>
+        <li>食材まとめ買いリスト</li>
+        <li>レシピ保存・カテゴリ管理</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<nav class="prevnext" aria-label="前後の記事">
+  <a class="pn-link" href="/blog/cooking-trouble-app.html"><span class="pn-dir">← 前の記事</span><span class="pn-title">料理の悩みを解決するアプリ</span></a>
+  <a class="pn-link pn-next" href="/blog/yuhan-kondate.html"><span class="pn-dir">次の記事 →</span><span class="pn-title">夕飯献立をAIが毎日自動提案する方法</span></a>
+</nav>
+
+<footer class="ft">
+  <div><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a><a href="/tokushoho.html">特定商取引法</a><a href="/contact.html">お問い合わせ</a></div>
+  <p>© 2026 カケイシピ — 家計簿×レシピ管理アプリ</p>
+</footer>
+<script>const root=document.documentElement;const saved=localStorage.getItem("theme");if(saved)root.setAttribute("data-theme",saved);</script>
+</body>
+</html>
