@@ -74,6 +74,42 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- ブログ記事 — 新規作成（2026年7月26日・キーワード追加シリーズ） -->
+  <url>
+    <loc>https://get-tohon.online/blog/dinner-app.html</loc>
+    <lastmod>2026-07-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/recipe-smartphone-manage.html</loc>
+    <lastmod>2026-07-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/excel-recipe-manage.html</loc>
+    <lastmod>2026-07-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/supermarket-receipt-recipe.html</loc>
+    <lastmod>2026-07-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://get-tohon.online/blog/cooking-trouble-app.html</loc>
+    <lastmod>2026-07-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- ブログ記事 — 新規作成（2026年7月後半） -->
   <url>
     <loc>https://get-tohon.online/blog/family-recipe-share.html</loc>
