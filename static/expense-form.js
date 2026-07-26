@@ -24,7 +24,16 @@ export function initForm(ctx) {
   addBtn.textContent = "＋ 明細を追加";
   addBtn.style.marginTop = "8px";
   addBtn.onclick = () => { _addItemRow(); _updateItemsCount(); };
-  $("items-details").appendChild(addBtn);
+  $("items-list").after(addBtn);
+
+  $("items-toggle-btn").onclick = () => {
+    const list = $("items-list");
+    const btn = $("items-toggle-btn");
+    const open = list.hidden;
+    list.hidden = !open;
+    btn.classList.toggle("open", open);
+    if (open && list.children.length === 0) { _addItemRow(); _updateItemsCount(); }
+  };
 }
 
 // OCR結果をフォームに流し込む。編集モードを解除してから埋める。
@@ -52,6 +61,8 @@ export function resetForm() {
   $("f-rawtext").value = "";
   $("f-engine").value = "manual";
   $("items-list").innerHTML = "";
+  $("items-list").hidden = true;
+  $("items-toggle-btn").classList.remove("open");
   _showPreview(null);
   _updateItemsCount();
   $("f-date").value = todayStr();
@@ -126,7 +137,10 @@ function _renderItems(items) {
   $("items-list").innerHTML = "";
   for (const it of items) _addItemRow(it.name, it.price, it.category, it.qty, it.unit);
   _updateItemsCount();
-  if (items.length > 0) $("items-details").open = true;
+  if (items.length > 0) {
+    $("items-list").hidden = false;
+    $("items-toggle-btn").classList.add("open");
+  }
 }
 
 function _addItemRow(name = "", price = 0, category = "", qty = "", unit = "") {
@@ -172,6 +186,7 @@ function _collectItems() {
 
 function _updateItemsCount() {
   const count = document.querySelectorAll(".item-row").length;
+  $("items-prefix").textContent = count > 0 ? "▼ 明細" : "＋ 明細を追加";
   $("items-count").textContent = count;
   const hint = $("items-qty-global-hint");
   if (hint) hint.hidden = count === 0;

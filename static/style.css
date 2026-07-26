@@ -397,7 +397,14 @@ input:focus, select:focus {
   padding: 7px 10px; background: var(--sage-light); border-radius: 8px;
   border-left: 3px solid var(--sage); line-height: 1.45;
 }
-#items-details summary { cursor: pointer; color: var(--muted); font-size: 0.83rem; font-weight: 600; }
+.items-toggle-btn {
+  width: 100%; padding: 10px 14px; border-radius: 10px;
+  border: 1.5px dashed var(--sage); background: var(--sage-light);
+  color: var(--sage-dark, var(--sage)); font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; text-align: left; display: flex; align-items: center; gap: 6px;
+}
+.items-toggle-btn:hover { background: var(--sage-mid, var(--sage-light)); }
+.items-toggle-btn.open { border-style: solid; }
 .form-preview img { max-width: 100%; border-radius: 12px; border: 1px solid var(--border); }
 .form-actions { display: flex; gap: 10px; }
 button {
