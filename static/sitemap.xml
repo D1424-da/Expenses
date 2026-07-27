@@ -641,4 +641,37 @@
     <priority>0.8</priority>
   </url>
 
+
+  <!-- 節約レシピ × 家族構成シリーズ（2026年7月27日追加） -->
+  <url>
+    <loc>https://get-tohon.online/blog/saving-recipe-main.html</loc>
+    <lastmod>2026-07-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://get-tohon.online/blog/saving-recipe-4family-week.html</loc>
+    <lastmod>2026-07-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://get-tohon.online/blog/saving-recipe-3family.html</loc>
+    <lastmod>2026-07-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://get-tohon.online/blog/saving-recipe-large-family.html</loc>
+    <lastmod>2026-07-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://get-tohon.online/blog/saving-recipe-tips-pro.html</loc>
+    <lastmod>2026-07-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
 </urlset>
