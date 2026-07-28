@@ -29,6 +29,11 @@
         "source": "/lp",
         "destination": "/",
         "type": 301
+      },
+      {
+        "source": "/index.html",
+        "destination": "/",
+        "type": 301
       }
     ],
     "rewrites": [
