@@ -24,14 +24,17 @@
         ]
       }
     ],
+    "redirects": [
+      {
+        "source": "/lp",
+        "destination": "/",
+        "type": 301
+      }
+    ],
     "rewrites": [
       {
         "source": "/blog",
         "destination": "/blog.html"
-      },
-      {
-        "source": "/lp",
-        "destination": "/index.html"
       },
       {
         "source": "**",
