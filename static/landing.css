@@ -768,3 +768,33 @@ body {
   line-height: 1.5;
 }
 .plan-safety p:last-child { margin-bottom: 0; }
+
+/* ── BLOG CARDS ── */
+.blog-card {
+  display: block;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: border-color .15s, transform .1s;
+}
+.blog-card:hover {
+  border-color: var(--green-mid);
+  transform: translateY(-2px);
+}
+.blog-more-btn {
+  display: inline-block;
+  padding: 12px 32px;
+  border: 2px solid var(--green-mid);
+  color: var(--green-mid);
+  border-radius: 100px;
+  font-size: .9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+.blog-more-btn:hover {
+  background: var(--green-mid);
+  color: #fff;
+}
