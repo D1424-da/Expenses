@@ -1,6 +1,7 @@
 (function() {
   var slides = document.querySelectorAll('#heroSlides .slide');
   var dots = document.querySelectorAll('.slide-dot');
+  if (!slides.length) return;
   var current = 0;
   var timer;
 
