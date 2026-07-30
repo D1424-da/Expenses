@@ -194,7 +194,26 @@
       </ul>
     </div>
 
-    <nav class="pn">
+    
+<style>
+.related-articles{margin:2rem 0;padding:1.5rem;background:#f8f9fc;border-radius:12px;border:1px solid #e0e4ea}
+.related-articles h3{font-size:1rem;font-weight:700;margin-bottom:1rem;color:#1a1a2e}
+.ra-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.75rem}
+.ra-card{display:block;padding:.85rem 1rem;background:#fff;border:1px solid #e0e4ea;border-radius:8px;text-decoration:none;color:#1a1a2e;font-size:.82rem;line-height:1.4;transition:box-shadow .15s,border-color .15s}
+.ra-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.08);border-color:#2980b9;color:#2980b9}
+.ra-tag{display:inline-block;font-size:.68rem;padding:1px 6px;border-radius:10px;background:#e8f2fd;color:#2980b9;margin-bottom:.35rem;font-weight:600}
+@media(prefers-color-scheme:dark){.related-articles{background:#1a1a2e;border-color:#2a2a3e}.ra-card{background:#232335;border-color:#2a2a3e;color:#e8e8f0}.ra-card:hover{border-color:#5dade2;color:#5dade2}.ra-tag{background:#1a2a3e;color:#5dade2}}
+</style>
+<section class="related-articles">
+<h3>📖 関連記事</h3>
+<div class="ra-grid">
+<a class="ra-card" href="/blog/solo-savings-recipe.html"><span class="ra-tag">節約</span><br>一人暮らし節約レシピ10選</a>
+<a class="ra-card" href="/blog/savings-recipe.html"><span class="ra-tag">節約</span><br>節約レシピの作り方</a>
+<a class="ra-card" href="/blog/savings-recipe-tips-pro.html"><span class="ra-tag">節約</span><br>節約主婦が実践する節約レシピの極意</a>
+<a class="ra-card" href="/blog/savings-recipe-main.html"><span class="ra-tag">節約</span><br>節約レシピ完全ガイド</a>
+</div>
+</section>
+<nav class="pn">
       <a class="pn-link pn-prev" href="/blog/savings-bento.html"><span class="pn-dir">← 前の記事</span><span class="pn-title">節約弁当の作り方</span></a>
       <a class="pn-link pn-next" href="/blog/savings-life.html"><span class="pn-dir">次の記事 →</span><span class="pn-title">節約生活の始め方</span></a>
     </nav>
