@@ -571,7 +571,7 @@ body {
   body { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
   .hero-inner { grid-template-columns: 1fr; text-align: center; gap: 24px; }
   .hero-actions { justify-content: center; }
-  .hero-visual { order: -1; }
+  .hero-visual { order: 1; }
   .hero { padding: 40px 20px 100px; }
   .phone { width: 160px; height: 300px; }
   .ps-total-amount { font-size: 15px; }
