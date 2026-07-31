@@ -1,9 +1,9 @@
 /* ============================================================
    BRAND TOKENS — カケイシピ
-   ランディングページ（landing.css）とアプリ（style.css）の
-   両方が参照するブランドカラーの単一ソース
+   共通ブランドカラーの単一ソース（landing.css・blog-article.css が参照）
    ============================================================ */
 :root {
+  /* Brand palette */
   --green-deep:  #1E5C3A;
   --green-mid:   #2D7D52;
   --green-light: #EAF3EE;
@@ -11,14 +11,17 @@
   --orange:      #E8621A;
   --orange-dark: #C4511A;
 
-  /* Article/semantic tokens */
-  --green-dark:  #1A4D2E;
-  --bg:          #F7F8F4;
-  --ink:         #12200F;
-  --ink-sub:     #3D5A3E;
-  --surface:     #FFFFFF;
-  --border:      #D6E8DB;
-  --green-pale-article: #EDF6F0;
+  /* Article-specific tokens (used by blog-article.css) */
+  --article-bg:          #F7F8F4;
+  --article-ink:         #12200F;
+  --article-ink-sub:     #3D5A3E;
+  --article-surface:     #FFFFFF;
+  --article-border:      #D6E8DB;
+  --article-pale:        #EDF6F0;
+  /* accent-bg: dark background version of brand green (badges, circles, headers) */
+  --article-accent-bg:   #1A4D2E;
+  /* accent-text: readable green for text/links on light bg */
+  --article-accent-text: #1A4D2E;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,13 +30,17 @@
     --green-mid:   #5E9B74;
     --green-light: #162A20;
     --green-pale:  #0F0F11;
-    --green-dark:  #7de8a8;
-    --bg:          #0f1a12;
-    --ink:         #e0ede3;
-    --ink-sub:     #9abfa0;
-    --surface:     #111d14;
-    --border:      #1e3a24;
-    --green-pale-article: #0f2a18;
+
+    --article-bg:          #0f1a12;
+    --article-ink:         #e0ede3;
+    --article-ink-sub:     #9abfa0;
+    --article-surface:     #111d14;
+    --article-border:      #1e3a24;
+    --article-pale:        #0f2a18;
+    /* dark bg circles/badges stay dark so white text stays readable */
+    --article-accent-bg:   #1e5c35;
+    /* text accent becomes light mint for readability on dark bg */
+    --article-accent-text: #7de8a8;
   }
 }
 :root[data-theme="dark"] {
@@ -41,13 +48,15 @@
   --green-mid:   #5E9B74;
   --green-light: #162A20;
   --green-pale:  #0F0F11;
-  --green-dark:  #7de8a8;
-  --bg:          #0f1a12;
-  --ink:         #e0ede3;
-  --ink-sub:     #9abfa0;
-  --surface:     #111d14;
-  --border:      #1e3a24;
-  --green-pale-article: #0f2a18;
+
+  --article-bg:          #0f1a12;
+  --article-ink:         #e0ede3;
+  --article-ink-sub:     #9abfa0;
+  --article-surface:     #111d14;
+  --article-border:      #1e3a24;
+  --article-pale:        #0f2a18;
+  --article-accent-bg:   #1e5c35;
+  --article-accent-text: #7de8a8;
 }
 :root[data-theme="light"] {
   --green-deep:  #1E5C3A;
