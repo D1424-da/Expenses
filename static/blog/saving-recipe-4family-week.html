@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="/redirect.js"></script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
   <script src="/analytics.js"></script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="/manifest.json" />
@@ -84,101 +83,17 @@
   </script>
   <title>4人家族の節約レシピ一週間｜食費2万円台を実現する献立と買い物リスト - カケイシピ</title>
   <meta name="description" content="4人家族の食費を月2万円台に抑える節約レシピ一週間分を公開。まとめ買い＋使い回しの黄金ルールと、AIで自動作成する買い物リストの活用法を解説します。" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; background: #f8faf9; color: #1a1a1a; line-height: 1.75; }
-    a { color: #2D7D52; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-
-    /* Header */
-    .site-header { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-    .site-header .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: #1a1a1a; }
-    .site-header .logo span { font-size: 26px; }
-    .header-cta { background: #2D7D52; color: #fff !important; padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; white-space: nowrap; }
-    .header-cta:hover { background: #236040; text-decoration: none !important; }
-
-    /* Hero */
-    .hero { background: linear-gradient(135deg, #0a2318 0%, #0d3024 100%); color: #fff; padding: 56px 24px 48px; text-align: center; }
-    .hero .badge { display: inline-block; background: rgba(93,214,138,0.2); border: 1px solid rgba(93,214,138,0.5); color: #5DD68A; border-radius: 100px; padding: 4px 16px; font-size: 13px; margin-bottom: 20px; }
-    .hero h1 { font-size: clamp(24px, 5vw, 38px); font-weight: 700; line-height: 1.35; margin-bottom: 16px; }
-    .hero h1 em { color: #5DD68A; font-style: normal; }
-    .hero .sub { color: rgba(255,255,255,0.7); font-size: 16px; max-width: 560px; margin: 0 auto; }
-
-    /* Article */
-    .article-wrap { max-width: 800px; margin: 0 auto; padding: 40px 20px 80px; }
-
-    /* Sections */
-    h2 { font-size: 22px; font-weight: 700; color: #0a2318; border-left: 4px solid #2D7D52; padding-left: 14px; margin: 48px 0 20px; }
-    h3 { font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 32px 0 12px; }
-    p { margin-bottom: 16px; }
-
-    /* Stats row */
-    .stat-row { display: flex; gap: 16px; flex-wrap: wrap; margin: 24px 0; }
-    .stat-box { flex: 1 1 140px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .stat-box .num { font-size: 28px; font-weight: 800; color: #2D7D52; display: block; }
-    .stat-box .label { font-size: 13px; color: #666; margin-top: 4px; }
-
-    /* Week menu table */
-    .week-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 15px; }
-    .week-table th { background: #0d3024; color: #fff; padding: 10px 12px; text-align: left; }
-    .week-table td { padding: 10px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
-    .week-table tr:nth-child(even) td { background: #f4faf7; }
-    .week-table .day { font-weight: 700; color: #2D7D52; white-space: nowrap; }
-    .week-table .cost { font-weight: 700; color: #1a1a1a; white-space: nowrap; }
-
-    /* Tip cards */
-    .tip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin: 24px 0; }
-    .tip-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .tip-card .tip-num { width: 32px; height: 32px; background: #2D7D52; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; margin-bottom: 10px; }
-    .tip-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
-    .tip-card p { font-size: 14px; color: #555; margin: 0; }
-
-    /* Shopping list */
-    .shop-list { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; margin: 24px 0; }
-    .shop-list h3 { font-size: 17px; font-weight: 700; margin-bottom: 16px; color: #0a2318; }
-    .shop-category { margin-bottom: 16px; }
-    .shop-category .cat-title { font-size: 14px; font-weight: 700; color: #2D7D52; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #e5e7eb; }
-    .shop-items { display: flex; flex-wrap: wrap; gap: 8px; }
-    .shop-item { background: #f4faf7; border: 1px solid #c9e8d7; border-radius: 6px; padding: 4px 12px; font-size: 14px; }
-
-    /* Highlight box */
-    .highlight-box { background: linear-gradient(135deg, #f0faf5, #e8f7ef); border: 1px solid #a8d8bb; border-radius: 12px; padding: 24px; margin: 24px 0; }
-    .highlight-box .icon { font-size: 28px; margin-bottom: 8px; }
-    .highlight-box h3 { font-size: 18px; font-weight: 700; color: #0a2318; margin-bottom: 8px; }
-    .highlight-box p { font-size: 15px; color: #333; margin: 0; }
-
-    /* FAQ */
-    .faq-list { margin: 24px 0; }
-    .faq-item { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 12px; }
-    .faq-item .q { font-weight: 700; color: #0a2318; margin-bottom: 10px; display: flex; gap: 10px; }
-    .faq-item .q::before { content: "Q"; background: #2D7D52; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; margin-top: 1px; }
-    .faq-item .a { color: #444; font-size: 15px; display: flex; gap: 10px; }
-    .faq-item .a::before { content: "A"; background: #f0faf5; color: #2D7D52; border: 1px solid #2D7D52; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-
-    /* CTA */
-    .cta-block { background: linear-gradient(135deg, #0a2318, #0d3024); border-radius: 16px; padding: 40px 32px; text-align: center; color: #fff; margin: 48px 0; }
-    .cta-block h2 { border: none; padding: 0; color: #fff; margin-bottom: 12px; font-size: 22px; }
-    .cta-block p { color: rgba(255,255,255,0.75); margin-bottom: 24px; }
-    .cta-btn { display: inline-block; background: #5DD68A; color: #0a2318 !important; font-weight: 700; padding: 14px 36px; border-radius: 10px; font-size: 16px; }
-    .cta-btn:hover { background: #4bc575; text-decoration: none !important; }
-    .cta-note { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 12px; }
-
-    /* Footer */
-    .site-footer { background: #0a2318; color: rgba(255,255,255,0.6); text-align: center; padding: 32px 24px; font-size: 14px; }
-    .site-footer a { color: rgba(255,255,255,0.6); }
-
-    @media (max-width: 600px) {
-      .stat-row { gap: 10px; }
-      .week-table { font-size: 13px; }
-      .week-table th, .week-table td { padding: 8px; }
-    }
-  </style>
+  <link rel="stylesheet" href="/tokens.css" />
+  <link rel="stylesheet" href="/blog-article.css" />
 </head>
 <body>
 
-<header class="site-header">
-  <a href="/" class="logo"><span>🍳</span>カケイシピ</a>
-  <a href="/" class="header-cta">無料で試す</a>
+<header class="bh">
+  <a class="bh-logo" href="/">カケイシピ</a>
+  <nav class="bh-nav">
+    <a href="/blog.html">ブログ一覧</a>
+    <a href="/login.html" class="bh-cta">無料で試す</a>
+  </nav>
 </header>
 
 <div class="hero">
@@ -396,10 +311,14 @@
   </p>
 
 </div>
-
-<footer class="site-footer">
-  <p>&copy; 2024 カケイシピ｜家計管理×レシピ提案アプリ</p>
-  <p style="margin-top:8px;"><a href="/blog/">ブログ</a> | <a href="/">トップ</a></p>
+  </article>
+</main>
+<footer class="bf">
+  <a href="/">カケイシピ TOP</a>
+  <a href="/blog.html">ブログ一覧</a>
+  <a href="/terms.html">利用規約</a>
+  <a href="/privacy.html">プライバシーポリシー</a>
+  <p>© 2026 カケイシピ</p>
 </footer>
 
 </body>
