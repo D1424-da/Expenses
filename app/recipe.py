@@ -189,18 +189,20 @@ _VERTEX_MODEL_MAP = {
     "gemini-2.5-flash": "gemini-2.5-flash",  # 2026-10-20 サポート終了予定
     "gemini-1.5-flash": "gemini-1.5-flash-001",
     "gemini-1.5-pro": "gemini-1.5-pro-001",
-    "gemini-flash-latest": "gemini-2.0-flash-001",
+    "gemini-flash-latest": "gemini-3.1-flash-lite",
 }
 
 # プロジェクトによって Vertex AI で使えるモデル名が異なる（Model Garden の
 # 有効化状況次第）ため、候補を順番に試して最初に成功したものを使う。
 _VERTEX_MODEL_CANDIDATES = [
+    "gemini-3.1-flash-lite",   # Gemini 2.5廃止の推奨移行先
+    "gemini-3.5-flash",
     "gemini-2.0-flash-001",
     "gemini-2.0-flash-002",
     "gemini-1.5-flash-001",
     "gemini-1.5-flash-002",
     "gemini-1.5-pro-001",
-    "gemini-2.5-flash",  # 2026-10-20 サポート終了予定
+    "gemini-2.5-flash",        # 2026-10-20 サポート終了予定
 ]
 
 
