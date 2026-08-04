@@ -11,7 +11,7 @@ AI Studio のプロジェクトに紐づく。一方こちらは **Vertex AI**
 必要な環境変数:
 - ``GOOGLE_CLOUD_PROJECT``           : 課金が紐づく GCP プロジェクトID（必須）
 - ``VERTEX_LOCATION``                : リージョン（既定 ``us-central1``。``global`` 可）
-- ``VERTEX_MODEL`` / ``GEMINI_MODEL``: モデル（既定 ``gemini-2.5-flash``）
+- ``VERTEX_MODEL`` / ``GEMINI_MODEL``: モデル（既定 ``gemini-2.0-flash-001``）
 - 認証は次のいずれか:
     - ``GOOGLE_SERVICE_ACCOUNT_JSON`` : サービスアカウント鍵のJSON文字列（Render向け）
     - ``GOOGLE_APPLICATION_CREDENTIALS`` : 鍵ファイルのパス（ADC 標準）
@@ -69,11 +69,14 @@ def _get_access_token() -> str:
 # プロジェクトによって Vertex AI で使えるモデル名が異なる（Model Garden の
 # 有効化状況次第）ため、VERTEX_MODEL 未指定時は候補を順に試す。
 _VERTEX_MODEL_CANDIDATES = [
+    "gemini-3.1-flash-lite",   # Gemini 2.5廃止の推奨移行先
+    "gemini-3.5-flash",
     "gemini-2.0-flash-001",
-    "gemini-2.5-flash",
+    "gemini-2.0-flash-002",
     "gemini-1.5-flash-001",
     "gemini-1.5-flash-002",
     "gemini-1.5-pro-001",
+    "gemini-2.5-flash",        # 2026-10-20 サポート終了予定
 ]
 
 
