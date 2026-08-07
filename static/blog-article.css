@@ -308,7 +308,8 @@ body {
 /* ── PREV/NEXT NAV ── */
 .pn, .prevnext { display: flex; gap: 12px; margin-top: 48px; flex-wrap: wrap; }
 .pn-link {
-  flex: 1;
+  flex: 1 1 calc(50% - 6px);
+  max-width: calc(50% - 6px);
   min-width: 0;
   display: block;
   padding: 14px 18px;
@@ -492,7 +493,7 @@ body {
   .am-toc { padding: 14px 16px; }
   .card-grid, .benefit-grid, .os-grid, .kasa-grid, .ingredient-grid { grid-template-columns: 1fr; }
   .pn { flex-direction: column; }
-  .pn-link { min-width: 100%; }
+  .pn-link { min-width: 100%; max-width: 100%; }
   .pn-title { white-space: normal; }
   .stat-num, .r-num { font-size: 1.5rem; }
   table { font-size: .82rem; }
