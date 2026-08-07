@@ -77,50 +77,10 @@ body {
   padding-right: 0;
 }
 .am-sidebar {
-  width: 220px;
+  width: 200px;
   flex-shrink: 0;
   position: sticky;
   top: 72px;
-  max-height: calc(100vh - 90px);
-  overflow-y: auto;
-  scrollbar-width: none;
-  padding: 4px 0 32px;
-}
-.am-sidebar::-webkit-scrollbar { display: none; }
-
-/* Sidebar TOC */
-.sb-toc {
-  background: var(--article-surface, #fff);
-  border: 1px solid var(--article-border, #D6E8DB);
-  border-radius: 10px;
-  padding: 16px 18px;
-  margin-bottom: 16px;
-}
-.sb-toc-title {
-  font-size: .7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  color: var(--article-ink-sub, #3D5A3E);
-  margin-bottom: 10px;
-}
-.sb-toc ol {
-  padding-left: 16px;
-  margin: 0;
-  font-size: .8rem;
-  line-height: 1.9;
-}
-.sb-toc a {
-  color: var(--article-ink, #12200F);
-  text-decoration: none;
-  opacity: .7;
-  transition: color .15s, opacity .15s;
-  display: block;
-}
-.sb-toc a:hover,
-.sb-toc a.sb-active {
-  color: var(--green-mid, #2D7D52);
-  opacity: 1;
 }
 
 /* Sidebar CTA */
