@@ -253,18 +253,28 @@
 (function(){
   var list = document.getElementById('sb-toc-list');
   if (!list) return;
-  var hs = document.querySelectorAll('main h2[id], article h2[id]');
-  if (!hs.length) return;
-  hs.forEach(function(h){
-    var li = document.createElement('li');
-    var a = document.createElement('a');
-    a.href = '#' + h.id;
-    a.textContent = h.textContent;
-    li.appendChild(a);
-    list.appendChild(li);
-  });
+  // Copy links from the inline am-toc (hidden on desktop but still in DOM)
+  var inlineToc = document.querySelector('.am-toc ol');
+  if (inlineToc && inlineToc.children.length) {
+    list.innerHTML = inlineToc.innerHTML;
+  } else {
+    // Fallback: build from h2[id]
+    var hs = document.querySelectorAll('main h2[id], article h2[id]');
+    if (!hs.length) return;
+    hs.forEach(function(h){
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+  }
   // Scroll spy
   var links = list.querySelectorAll('a');
+  if (!links.length) return;
+  var hs2 = document.querySelectorAll('main h2[id], article h2[id]');
+  if (!hs2.length) return;
   var obs = new IntersectionObserver(function(entries){
     entries.forEach(function(e){
       if (e.isIntersecting) {
@@ -274,7 +284,7 @@
       }
     });
   }, {rootMargin:'-10% 0px -80% 0px'});
-  hs.forEach(function(h){ obs.observe(h); });
+  hs2.forEach(function(h){ obs.observe(h); });
 })();
 </script>
 </body>
