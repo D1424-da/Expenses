@@ -1,40 +1,39 @@
-// レシート家計簿 — エントリポイント。
+// レシート家計簿 — エントリポイント（司令塔）。
 //
-// Firebase の初期化・認証・Firestore 購読・OCRキューを担当する薄い司令塔。
-// 画面描画の詳細は各ビューモジュールに委譲している。
+// 各モジュールを初期化し、コールバックで結線するだけにとどめる。
+// ビジネスロジックや DOM 操作は各専門モジュールに委譲している。
 //
-// 役割分担:
-//   expense-form.js  : 入力フォーム・編集・削除
-//   list-view.js     : 店舗別一覧の描画
-//   calendar-view.js : カレンダー・週計・日付モーダル
-//   compare-view.js  : 最安値比較モーダル
-//   ocr-client.js    : 画像縮小・バックエンドOCR・ブラウザ内PaddleOCR
-//   history.js       : 履歴正規化（Gemini基準の正解辞書）
-//   stats.js         : カテゴリ集計（純粋関数）
-//   parser.js        : OCRテキスト → 家計簿項目の抽出
-//   dom-utils.js     : DOM取得・表示整形・モーダル共通
-//   log.js           : デバッグログ
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
-  getRedirectResult, signOut, onAuthStateChanged, getAdditionalUserInfo,
-  createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
-  collection, addDoc,
-  query, where, orderBy, onSnapshot, getDocs, serverTimestamp,
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+// モジュール一覧:
+//   firebase-init.js   : Firebase 初期化
+//   app-state.js       : 共有ミュータブル状態
+//   auth.js            : 認証（Google / メール / インアプリブラウザ）
+//   firestore-data.js  : Firestore データアクセス
+//   summary.js         : サマリー描画・最安値アラート
+//   ocr-queue.js       : OCR キュー管理
+//   csv-export.js      : CSV エクスポート
+//   expense-form.js    : 入力フォーム・編集・削除
+//   list-view.js       : 店舗別一覧の描画
+//   calendar-view.js   : カレンダー・週計・日付モーダル
+//   compare-view.js    : 最安値比較モーダル
+//   ocr-client.js      : 画像縮小・バックエンドOCR・ブラウザ内PaddleOCR
+//   history.js         : 履歴正規化（Gemini基準の正解辞書）
+//   stats.js           : カテゴリ集計（純粋関数）
+//   parser.js          : OCRテキスト → 家計簿項目の抽出
+//   dom-utils.js       : DOM取得・表示整形・モーダル共通
+//   log.js             : デバッグログ
 
-import { firebaseConfig, OCR_API_BASE, CATEGORIES } from "./firebase-config.js";
-import { parseReceipt } from "./parser.js";
+import { CATEGORIES, OCR_API_BASE } from "./firebase-config.js";
 import { log, logErr } from "./log.js";
+import { $, dayKey, monthKey, monthLabel, bindModalDismiss, openModal, closeModal } from "./dom-utils.js";
+import { state } from "./app-state.js";
+import { watchAuthState, auth, signOut } from "./auth.js";
 import {
-  $, yen, escapeHtml, dayKey, monthKey, monthLabel, renderCatBars, bindModalDismiss, openModal, closeModal,
-} from "./dom-utils.js";
-import { requestBackendOcr, preprocessImage, runClientOcr, prewarmOcr } from "./ocr-client.js";
-import { TRUSTED_ENGINES, normalizeWithHistory } from "./history.js";
-import { categoryBreakdown, buildPriceHistory, lowestPriceAlerts } from "./stats.js";
+  expensesCol, fetchAllExpenses, fetchMonthExpenses,
+  subscribeMonth, addCalendarExpense,
+} from "./firestore-data.js";
+import { renderSummary, thisMonthCount } from "./summary.js";
+import { handleFiles, advanceQueue, skipCurrent, prewarmOcr } from "./ocr-queue.js";
+import { exportCsv } from "./csv-export.js";
 import { initForm, fillForm, resetForm, editExpense, deleteExpense, inlineSave } from "./expense-form.js";
 import { renderList, setFilter, resetList } from "./list-view.js";
 import { initCalendar, renderCalendar, maybeRefreshDayModal, updateMealPlans } from "./calendar-view.js";
@@ -45,7 +44,7 @@ import { initTrend } from "./trend-view.js";
 import { initSavedRecipes } from "./saved-recipes.js";
 import { initShoppingList, startSync as startShoppingSync, stopSync as stopShoppingSync } from "./shopping-list.js";
 import { initMealPlan, startMealPlanSync, stopMealPlanSync } from "./meal-plan.js";
-import { dbSetUser, dbBase } from "./db-paths.js";
+import { dbSetUser } from "./db-paths.js";
 import {
   initBilling, startBillingSync, stopBillingSync, ensureTrial,
   checkGate, renderUsageBar, isPremium, openPortal, premiumExpiryLabel,
@@ -55,29 +54,26 @@ window.addEventListener("error", (e) => logErr("未捕捉エラー:", e.message,
 window.addEventListener("unhandledrejection", (e) => logErr("未処理のPromise拒否:", e.reason));
 log("app.js 読み込み開始");
 
-// Stripe Checkout からのリダイレクト結果を検出してトーストを表示
+// ---- Stripe Checkout リダイレクト結果 --------------------------------------
 const _checkoutResult = (() => {
   const params = new URLSearchParams(location.search);
   const result = params.get("checkout");
   if (!result) return null;
   history.replaceState(null, "", location.pathname);
+  const s = document.createElement("div");
   if (result === "success") {
-    const s = document.createElement("div");
     s.className = "toast toast-success";
     s.textContent = "🎉 プレミアムプランへようこそ！サブスクリプションを確認中…";
-    document.body.appendChild(s);
     setTimeout(() => s.remove(), 8000);
   } else if (result === "cancel") {
-    const s = document.createElement("div");
     s.className = "toast";
     s.textContent = "支払いはキャンセルされました。";
-    document.body.appendChild(s);
     setTimeout(() => s.remove(), 4000);
   }
+  if (result === "success" || result === "cancel") document.body.appendChild(s);
   return result;
 })();
 
-// チェックアウト成功時に Stripe → Firestore を手動同期する（Webhook の遅延対策）
 async function _syncStripeSubscription(user) {
   if (_checkoutResult !== "success") return;
   try {
@@ -96,295 +92,157 @@ async function _syncStripeSubscription(user) {
   }
 }
 
-// ---- Firebase 初期化 -------------------------------------------------------
-const fbApp = initializeApp(firebaseConfig);
-const auth = getAuth(fbApp);
-const db = initializeFirestore(fbApp, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-});
-const provider = new GoogleAuthProvider();
-provider.setCustomParameters({ prompt: "select_account" });
-log("Firebase初期化完了", {
-  projectId: firebaseConfig.projectId,
-  authDomain: firebaseConfig.authDomain,
-  origin: location.origin,
-  href: location.href,
-});
-
-// ---- 状態 ------------------------------------------------------------------
-let currentUser = null;
-let currentMonth = new Date();
-let currentExpenses = [];
-let unsubscribe = null;
-
-// ---- 認証 ------------------------------------------------------------------
-onAuthStateChanged(auth, (user) => {
-  log("認証状態の変化:", user ? `ログイン中 (${user.email})` : "未ログイン");
-  currentUser = user;
-  if (user) {
-    $("login-screen").hidden = true;
-    $("app").hidden = false;
-    if (typeof window.trackPageview === "function") window.trackPageview("/app/home", "家計簿ホーム");
-    setupApp();
-  } else {
-    if (unsubscribe) unsubscribe();
-    stopShoppingSync();
-    stopMealPlanSync();
-    stopBillingSync();
-    // B-1: ログアウト時にキャッシュをクリアして他ユーザーへのデータ漏洩を防ぐ
-    _allExpensesCache = null;
-    resetList();
-    // 前のユーザーが開いたままにしたモーダルを次のユーザーに引き継がないようにする
-    closeModal("upgrade-modal");
-    closeModal("account-modal");
-    $("app").hidden = true;
-    $("login-screen").hidden = false;
-    if (typeof window.trackPageview === "function") window.trackPageview("/app/login", "ログイン");
-  }
-});
-
-// LINE / Instagram / Facebook などのインアプリブラウザを検知する。
-// これらのWebViewではGoogleのOAuthが完全にブロックされるため、外部ブラウザへ誘導する。
-const _ua = navigator.userAgent;
-const _isInAppBrowser = /Line\/|FBAN|FBAV|Instagram|MicroMessenger/i.test(_ua);
-const _isMobile = /Android|iPhone|iPad|iPod/i.test(_ua);
-// Safari は ITP でリダイレクト認証が失敗するため、ポップアップを使う。
-// iOS Chrome は UA に "CriOS" を含み "chrome" は含まないため、明示的に除外する。
-const _isSafari = /Safari/i.test(_ua) && !/Chrome|CriOS|Android/i.test(_ua);
-
-if (_isInAppBrowser) {
-  log("インアプリブラウザを検知:", _ua);
-  const warning = $("inapp-warning");
-  if (warning) warning.hidden = false;
-  const loginBtn = $("google-login");
-  if (loginBtn) loginBtn.hidden = true;
+// ---- 月ナビゲーション -------------------------------------------------------
+function _renderMonth() {
+  $("current-month").textContent = monthLabel(state.currentMonth);
 }
 
-$("copy-url-btn") && ($("copy-url-btn").onclick = async () => {
-  try {
-    await navigator.clipboard.writeText(location.href);
-    $("copy-url-btn").textContent = "✅ コピーしました";
-    setTimeout(() => { $("copy-url-btn").textContent = "🔗 URLをコピー"; }, 2500);
-  } catch {
-    prompt("URLをコピーしてください:", location.href);
+function _shiftMonth(delta) {
+  state.currentMonth.setMonth(state.currentMonth.getMonth() + delta);
+  _renderMonth();
+  subscribeMonth(_onSnapshotUpdate);
+}
+
+function _jumpToMonthOf(dateStr) {
+  const target = new Date(dateStr + "T00:00:00");
+  if (monthKey(target) !== monthKey(state.currentMonth)) {
+    state.currentMonth = target;
+    _renderMonth();
+    subscribeMonth(_onSnapshotUpdate);
   }
-});
+}
 
-getRedirectResult(auth).then((result) => {
-  if (result?.user) {
-    log("リダイレクトログイン成功:", result.user.email);
-    if (getAdditionalUserInfo(result)?.isNewUser && typeof window.trackEvent === "function") {
-      window.trackEvent("sign_up", { method: "google" });
-    }
-  }
-}).catch((err) => {
-  if (err.code === "auth/credential-already-in-use") return;
-  logErr("getRedirectResult エラー:", err.code, err.message);
-  // Safari では redirect を使わないのでエラー表示しない
-  if (_isSafari) return;
-  const el = $("login-error");
-  el.textContent = "ログインに失敗しました: " + (err.code || err.message);
-  el.hidden = false;
-});
+// ---- Firestore 購読コールバック --------------------------------------------
+function _onSnapshotUpdate(expenses) {
+  clearExpensesCache();
+  renderList(expenses, { onEdit: editExpense, onDelete: _deleteAndClearCache, onInlineSave: _inlineSave });
+  renderCalendar(expenses, state.currentMonth);
+  maybeRefreshDayModal();
+  requestAnimationFrame(renderSummary);
+}
 
-let _googleLoginBusy = false;
-$("google-login").onclick = async () => {
-  if (_googleLoginBusy) return;
-  _googleLoginBusy = true;
-  const btn = $("google-login");
-  btn.disabled = true;
-  const useRedirect = _isMobile && !_isSafari;
-  log("ログインボタン押下:", useRedirect ? "redirect" : "popup");
-  $("login-error").hidden = true;
-  try {
-    if (useRedirect) {
-      await signInWithRedirect(auth, provider);
-    } else {
-      const result = await signInWithPopup(auth, provider);
-      log("ポップアップログイン成功:", result.user.email);
-      if (getAdditionalUserInfo(result)?.isNewUser && typeof window.trackEvent === "function") {
-        window.trackEvent("sign_up", { method: "google" });
-      }
-    }
-  } catch (err) {
-    if (err.code !== "auth/cancelled-popup-request" && err.code !== "auth/popup-closed-by-user") {
-      logErr("ログインエラー:", err.code, err.message, err);
-      const el = $("login-error");
-      el.textContent = "ログインに失敗しました: " + (err.code || err.message);
-      el.hidden = false;
-    }
-  } finally {
-    _googleLoginBusy = false;
-    btn.disabled = false;
-  }
-};
+// ---- キャッシュ付きコールバック --------------------------------------------
+async function _deleteAndClearCache(id) {
+  await deleteExpense(id);
+  state.allExpensesCache = null;
+}
 
-// メール/パスワード認証
-const _emailForm = $("email-login-form");
-if (_emailForm) {
-  const _modeToggle    = $("email-mode-toggle");
-  const _emailInput    = $("email-input");
-  const _passwordInput = $("password-input");
-  const _emailError    = $("email-login-error");
-  const _submitBtn     = $("email-submit-btn");
-  const _resetBtn      = $("email-reset-btn");
-  let _emailMode = "login"; // "login" | "signup"
+async function _inlineSave(id, payload) {
+  await inlineSave(id, payload);
+  state.allExpensesCache = null;
+}
 
-  _modeToggle && (_modeToggle.onclick = () => {
-    _emailMode = _emailMode === "login" ? "signup" : "login";
-    _submitBtn.textContent = _emailMode === "signup" ? "新規登録" : "ログイン";
-    _modeToggle.textContent = _emailMode === "signup"
-      ? "すでにアカウントをお持ちの方はこちら"
-      : "アカウントを新規作成";
-    _emailError.hidden = true;
-  });
+function _onFormSaved(dateStr, wasEdit) {
+  state.allExpensesCache = null;
+  _jumpToMonthOf(dateStr);
+  if (wasEdit) $("expense-list").scrollIntoView({ behavior: "smooth" });
+  if (!advanceQueue()) $("ocr-status").hidden = true;
+}
 
-  _emailForm.onsubmit = async (e) => {
-    e.preventDefault();
-    const email = _emailInput.value.trim();
-    const pass  = _passwordInput.value;
-    _emailError.hidden = true;
-    _submitBtn.disabled = true;
-    try {
-      if (_emailMode === "signup") {
-        await createUserWithEmailAndPassword(auth, email, pass);
-        if (typeof window.trackEvent === "function") window.trackEvent("sign_up", { method: "email" });
-      } else {
-        await signInWithEmailAndPassword(auth, email, pass);
-      }
-    } catch (err) {
-      logErr("メールログインエラー:", err.code);
-      const msgs = {
-        "auth/user-not-found": "メールアドレスが見つかりません。",
-        "auth/wrong-password": "パスワードが違います。",
-        "auth/email-already-in-use": "このメールアドレスはすでに登録されています。",
-        "auth/weak-password": "パスワードは6文字以上にしてください。",
-        "auth/invalid-email": "メールアドレスの形式が正しくありません。",
-        "auth/invalid-credential": "メールアドレスまたはパスワードが違います。",
-      };
-      _emailError.textContent = msgs[err.code] || "エラー: " + (err.code || err.message);
-      _emailError.hidden = false;
-    } finally {
-      _submitBtn.disabled = false;
-    }
-  };
-
-  _resetBtn && (_resetBtn.onclick = async () => {
-    const email = _emailInput.value.trim();
-    if (!email) { _emailError.textContent = "メールアドレスを入力してください。"; _emailError.hidden = false; return; }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      _emailError.textContent = "パスワードリセットメールを送信しました。";
-      _emailError.style.color = "var(--c-ok, green)";
-      _emailError.hidden = false;
-    } catch (err) {
-      _emailError.textContent = "送信に失敗しました: " + (err.code || err.message);
-      _emailError.style.color = "";
-      _emailError.hidden = false;
-    }
-  });
+async function _addCalendarExpenseChecked({ date, store, amount, category }) {
+  if (!checkGate(thisMonthCount())) return;
+  await addCalendarExpense({ date, store, amount, category });
+  _jumpToMonthOf(date);
 }
 
 // ---- アプリ初期化 ----------------------------------------------------------
 let appInitialized = false;
-let _setupRunning = false;
-async function setupApp() {
+let _setupRunning  = false;
+
+async function setupApp(user) {
   if (_setupRunning) return;
   _setupRunning = true;
-  dbSetUser(currentUser.uid);
+  dbSetUser(user.uid);
 
   if (!appInitialized) {
+    // カテゴリ選択肢を生成
     const sel = $("f-category");
     for (const c of CATEGORIES) sel.add(new Option(c, c));
 
-    // G-2: 検索フィルターのカテゴリ選択肢を生成
     const catFilter = $("list-cat-filter");
     if (catFilter) {
       for (const c of CATEGORIES) catFilter.add(new Option(c, c));
       const _debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
-      $("list-search").oninput  = _debounce((e) => setFilter(e.target.value, catFilter.value), 300);
-      catFilter.onchange        = (e) => setFilter($("list-search").value, e.target.value);
+      $("list-search").oninput = _debounce((e) => setFilter(e.target.value, catFilter.value), 300);
+      catFilter.onchange       = (e) => setFilter($("list-search").value, e.target.value);
     }
 
     initForm({
-      db,
-      getUser: () => currentUser,
+      db: null, // firestore-data 経由のため不要だが型互換のため残す
+      getUser:      () => state.currentUser,
       expensesCol,
-      onSaved: _onFormSaved,
-      onBeforeSave: () => checkGate(_thisMonthCount()),
+      onSaved:      _onFormSaved,
+      onBeforeSave: () => checkGate(thisMonthCount()),
     });
     initCalendar({
-      onAddExpense: _addCalendarExpense,
-      onEdit: editExpense,
-      onDelete: _deleteAndClearCache,
+      onAddExpense: _addCalendarExpenseChecked,
+      onEdit:       editExpense,
+      onDelete:     _deleteAndClearCache,
       onInlineSave: _inlineSave,
     });
     initCompare({ fetchAllExpenses });
-    initRecipe({ getToken: () => currentUser?.getIdToken(), fetchAllExpenses, getBudget, db, getUser: () => currentUser });
+    initRecipe({ getToken: () => state.currentUser?.getIdToken(), fetchAllExpenses, getBudget, db: null, getUser: () => state.currentUser });
     initBudget({
-      db,
-      getUser: () => currentUser,
-      categories: CATEGORIES,
-      onUpdated: renderSummary,
-      getCurrentMonth: () => currentMonth,
+      db: null,
+      getUser:          () => state.currentUser,
+      categories:       CATEGORIES,
+      onUpdated:        renderSummary,
+      getCurrentMonth:  () => state.currentMonth,
     });
     initTrend({ fetchMonthExpenses });
-    initSavedRecipes({ db, getUser: () => currentUser });
-    initShoppingList({ db, getUser: () => currentUser });
-    initMealPlan({ db, getUser: () => currentUser });
-    initBilling({ db, getUser: () => currentUser, onSubChange: () => renderSummary() });
+    initSavedRecipes({ db: null, getUser: () => state.currentUser });
+    initShoppingList({ db: null, getUser: () => state.currentUser });
+    initMealPlan({ db: null, getUser: () => state.currentUser });
+    initBilling({ db: null, getUser: () => state.currentUser, onSubChange: () => renderSummary() });
     $("usage-bar").querySelector(".usage-upgrade").onclick = () => openModal("upgrade-modal");
 
     // アカウントモーダル
     $("account-btn").onclick = () => {
-      $("account-user-email").textContent = currentUser?.email ?? "";
+      $("account-user-email").textContent = state.currentUser?.email ?? "";
       const premium = isPremium();
-      $("account-plan-free").hidden = premium;
+      $("account-plan-free").hidden    = premium;
       $("account-plan-premium").hidden = !premium;
       const expiry = premiumExpiryLabel();
-      $("account-plan-expiry").hidden = !expiry;
+      $("account-plan-expiry").hidden  = !expiry;
       $("account-plan-expiry").textContent = expiry ?? "";
       openModal("account-modal");
     };
-    $("account-close").onclick = () => closeModal("account-modal");
+    $("account-close").onclick      = () => closeModal("account-modal");
     $("account-upgrade-btn").onclick = () => { closeModal("account-modal"); openModal("upgrade-modal"); };
-    $("account-portal-btn").onclick = () => openPortal();
-    $("logout").onclick = () => { stopShoppingSync(); stopMealPlanSync(); signOut(auth); };
-    $("prev-month").onclick = () => shiftMonth(-1);
-    $("next-month").onclick = () => shiftMonth(1);
-    $("file-input").onchange = handleFiles;
-    $("camera-input").onchange = handleFiles;
-    $("skip-btn").onclick = skipCurrent;
-    $("fab-camera").onclick = () => $("camera-input").click();
-    $("bnav-home").onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
-    $("bnav-calendar").onclick = () => $("calendar").scrollIntoView({ behavior: "smooth" });
-    $("bnav-shopping").onclick = () => $("shopping-btn").click();
-    $("bnav-recipe").onclick = () => openRecipeModal({
+    $("account-portal-btn").onclick  = () => openPortal();
+    $("logout").onclick              = () => { stopShoppingSync(); stopMealPlanSync(); signOut(auth); };
+    $("prev-month").onclick          = () => _shiftMonth(-1);
+    $("next-month").onclick          = () => _shiftMonth(1);
+    $("file-input").onchange         = handleFiles;
+    $("camera-input").onchange       = handleFiles;
+    $("skip-btn").onclick            = skipCurrent;
+    $("fab-camera").onclick          = () => $("camera-input").click();
+    $("bnav-home").onclick           = () => window.scrollTo({ top: 0, behavior: "smooth" });
+    $("bnav-calendar").onclick       = () => $("calendar").scrollIntoView({ behavior: "smooth" });
+    $("bnav-shopping").onclick       = () => $("shopping-btn").click();
+    $("bnav-recipe").onclick         = () => openRecipeModal({
       selectedDay: dayKey(new Date()),
-      expenses: currentExpenses,
+      expenses:    state.currentExpenses,
       initialPeriod: "month",
     });
+    $("export-btn").onclick = exportCsv;
 
-    // G-1: CSV エクスポート
-    $("export-btn").onclick = _exportCsv;
-
-    // PC nav
+    // PC ナビ
     $("pcnav-home").onclick     = () => window.scrollTo({ top: 0, behavior: "smooth" });
     $("pcnav-calendar").onclick = () => $("calendar").scrollIntoView({ behavior: "smooth" });
     $("pcnav-recipe").onclick   = () => openRecipeModal({
       selectedDay: dayKey(new Date()),
-      expenses: currentExpenses,
+      expenses:    state.currentExpenses,
       initialPeriod: "month",
     });
-    $("pcnav-shopping").onclick   = () => $("shopping-btn").click();
-    $("pcnav-saved").onclick      = () => $("saved-recipes-btn").click();
-    $("pcnav-compare").onclick    = () => $("compare-btn").click();
-    $("pcnav-budget").onclick     = () => $("budget-btn").click();
-    $("pcnav-trend").onclick      = () => $("trend-btn").click();
+    $("pcnav-shopping").onclick = () => $("shopping-btn").click();
+    $("pcnav-saved").onclick    = () => $("saved-recipes-btn").click();
+    $("pcnav-compare").onclick  = () => $("compare-btn").click();
+    $("pcnav-budget").onclick   = () => $("budget-btn").click();
+    $("pcnav-trend").onclick    = () => $("trend-btn").click();
 
     bindModalDismiss();
 
-    // G-3: Service Worker 登録
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js")
         .then((r) => log("SW 登録:", r.scope))
@@ -394,344 +252,36 @@ async function setupApp() {
     prewarmOcr();
     appInitialized = true;
   }
+
   try {
     startBillingSync();
     ensureTrial();
-    _syncStripeSubscription(currentUser);
+    _syncStripeSubscription(user);
     await loadBudget();
     renderSummary();
     startShoppingSync();
     startMealPlanSync((map) => {
       updateMealPlans(map);
-      renderCalendar(currentExpenses, currentMonth);
+      renderCalendar(state.currentExpenses, state.currentMonth);
       maybeRefreshDayModal();
     });
-    renderMonth();
-    subscribeMonth();
+    _renderMonth();
+    subscribeMonth(_onSnapshotUpdate);
   } finally {
     _setupRunning = false;
   }
 }
 
-function shiftMonth(delta) {
-  currentMonth.setMonth(currentMonth.getMonth() + delta);
-  renderMonth();
-  subscribeMonth();
+function teardownApp() {
+  if (state.unsubscribe) state.unsubscribe();
+  stopShoppingSync();
+  stopMealPlanSync();
+  stopBillingSync();
+  state.allExpensesCache = null;
+  resetList();
+  closeModal("upgrade-modal");
+  closeModal("account-modal");
 }
 
-function renderMonth() {
-  $("current-month").textContent = monthLabel(currentMonth);
-}
-
-// ---- Firestore -------------------------------------------------------------
-function expensesCol() {
-  return collection(db, ...dbBase(), "expenses");
-}
-
-async function fetchAllExpenses() {
-  const cutoff = new Date();
-  cutoff.setFullYear(cutoff.getFullYear() - 2);
-  const q = query(expensesCol(), where("date", ">=", cutoff.toISOString().slice(0, 10)));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => d.data());
-}
-
-async function fetchAllExpensesUnlimited() {
-  const snap = await getDocs(expensesCol());
-  return snap.docs.map((d) => d.data());
-}
-
-async function fetchMonthExpenses(month) {
-  const start = monthKey(month) + "-01";
-  const next  = new Date(month.getFullYear(), month.getMonth() + 1, 1);
-  const end   = monthKey(next) + "-01";
-  const q = query(
-    expensesCol(),
-    where("date", ">=", start),
-    where("date", "<",  end),
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => d.data());
-}
-
-function subscribeMonth() {
-  if (unsubscribe) unsubscribe();
-  const start = monthKey(currentMonth) + "-01";
-  const next = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
-  const end = monthKey(next) + "-01";
-  const q = query(
-    expensesCol(),
-    where("date", ">=", start),
-    where("date", "<", end),
-    orderBy("date", "desc"),
-  );
-  log("Firestore購読開始:", monthKey(currentMonth), "uid:", currentUser.uid);
-  unsubscribe = onSnapshot(
-    q,
-    (snap) => {
-      currentExpenses = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      clearExpensesCache(); // 支出が更新されたらレシピモーダルのキャッシュを無効化
-      log("Firestore更新:", currentExpenses.length, "件");
-      renderList(currentExpenses, { onEdit: editExpense, onDelete: _deleteAndClearCache, onInlineSave: _inlineSave });
-      renderCalendar(currentExpenses, currentMonth);
-      maybeRefreshDayModal();
-      // サマリー（非同期の全件フェッチを含む）は描画フレームの後に遅延実行
-      requestAnimationFrame(renderSummary);
-    },
-    (err) => {
-      logErr("Firestore購読エラー:", err.code, err.message, err);
-      const s = $("ocr-status");
-      s.hidden = false;
-      s.className = "status error";
-      s.textContent = "データ取得に失敗しました（Firebaseの設定/ルールを確認してください）: " + err.message;
-    },
-  );
-}
-
-// ---- サマリー --------------------------------------------------------------
-function renderSummary() {
-  const total = currentExpenses.reduce((s, e) => s + (e.amount || 0), 0);
-  $("summary-total").textContent = yen(total);
-  $("summary-count").textContent = currentExpenses.length
-    ? `${currentExpenses.length}件の記録` : "記録なし";
-  renderUsageBar(_thisMonthCount());
-
-  const bars = $("category-bars");
-  const usedBudget = renderBudgetBars(currentExpenses, bars);
-  if (!usedBudget) renderCatBars(bars, categoryBreakdown(currentExpenses));
-
-  // 最安値アラート（全件取得が必要なので非同期で後からレンダリング）
-  _refreshAlerts();
-}
-
-let _allExpensesCache = null;
-
-// 今月（実際のカレンダー月）の記録件数を返す。制限判定・バー表示に使う。
-// 閲覧中の月ではなく常に「今月」を基準にすることで、過去月ナビゲートによる
-// 制限回避を防ぐ。
-function _thisMonthCount() {
-  const todayKey = monthKey(new Date());
-  if (monthKey(currentMonth) === todayKey) return currentExpenses.length;
-  if (_allExpensesCache) {
-    return _allExpensesCache.filter(
-      (e) => typeof e.date === "string" && e.date.startsWith(todayKey)
-    ).length;
-  }
-  return 0; // キャッシュ未ロード時は許可側に倒す
-}
-
-async function _refreshAlerts() {
-  const el = $("lowest-alerts");
-  if (!el) return;
-  try {
-    if (!_allExpensesCache) {
-      _allExpensesCache = await fetchAllExpenses();
-    }
-    // 今月を除いた過去履歴でのみ最安値を算出（今月の購入と比較する）
-    const curMonthKey = monthKey(currentMonth);
-    const pastExpenses = _allExpensesCache.filter(
-      (e) => typeof e.date === "string" && !e.date.startsWith(curMonthKey),
-    );
-    const pastPriceHistory = buildPriceHistory(pastExpenses);
-    const alerts = lowestPriceAlerts(pastPriceHistory, currentExpenses);
-    if (!alerts.length) { el.hidden = true; return; }
-    el.hidden = false;
-    const foodCats = new Set(["食費", "外食"]);
-    const food  = alerts.filter((a) => foodCats.has(a.category));
-    const daily = alerts.filter((a) => !foodCats.has(a.category));
-    const _alertRows = (arr) => arr.map((a) =>
-      `<div class="alert-row">
-        <span class="alert-name">${escapeHtml(a.name)}</span>
-        <span class="alert-detail">${escapeHtml(a.store)} <strong>${yen(a.price)}</strong>（過去最安！）</span>
-      </div>`).join("");
-    let html = `<div class="alert-title">🎉 今月のお得な買い物</div>`;
-    if (food.length)  html += `<div class="alert-section">🍱 食料品</div>${_alertRows(food)}`;
-    if (daily.length) html += `<div class="alert-section">🧴 日用品</div>${_alertRows(daily)}`;
-    el.innerHTML = html;
-  } catch (_) {
-    el.hidden = true;
-  }
-}
-
-// ---- カレンダーからの直接追加（calendar-view のコールバック） --------------
-async function _addCalendarExpense({ date, store, amount, category }) {
-  if (!checkGate(_thisMonthCount())) return;
-  await addDoc(expensesCol(), {
-    date, store, branch: "", amount, category,
-    memo: "", items: [], rawText: "", ocrEngine: "manual",
-    createdAt: serverTimestamp(),
-  });
-  log("カレンダーから追加:", date, amount);
-  // キャッシュに追記して全件再フェッチを回避（onSnapshot で currentExpenses は自動更新される）
-  if (_allExpensesCache) {
-    _allExpensesCache.push({ date, store, branch: "", amount, category, memo: "", items: [], ocrEngine: "manual" });
-  }
-  _jumpToMonthOf(date);
-}
-
-// D-1: 削除時もキャッシュを破棄して最安値アラートが陳腐化しないようにする
-async function _deleteAndClearCache(id) {
-  await deleteExpense(id);
-  _allExpensesCache = null;
-}
-
-async function _inlineSave(id, payload) {
-  await inlineSave(id, payload);
-  _allExpensesCache = null;
-}
-
-// ---- フォーム保存後のコールバック（expense-form のコールバック） ------------
-function _onFormSaved(dateStr, wasEdit) {
-  // D-1: 編集・追加後にキャッシュを破棄（次回アラート表示時に正確な価格を反映）
-  _allExpensesCache = null;
-  _jumpToMonthOf(dateStr);
-  if (wasEdit) $("expense-list").scrollIntoView({ behavior: "smooth" });
-  if (!_advanceQueue()) $("ocr-status").hidden = true;
-}
-
-// ---- G-1: CSV エクスポート --------------------------------------------------
-async function _exportCsv() {
-  const btn = $("export-btn");
-  btn.disabled = true;
-  btn.textContent = "⏳ 準備中…";
-  try {
-    const all = await fetchAllExpensesUnlimited();
-    const rows = [
-      ["日付", "店名", "支店名", "金額", "カテゴリ", "メモ", "品目名", "品目価格", "OCRエンジン"],
-    ];
-    for (const e of all) {
-      const items = e.items || [];
-      if (!items.length) {
-        rows.push([e.date, e.store || "", e.branch || "", e.amount, e.category || "", e.memo || "", "", "", e.ocrEngine || ""]);
-      } else {
-        items.forEach((it, i) => {
-          rows.push([e.date, e.store || "", e.branch || "", i === 0 ? e.amount : "", e.category || "", e.memo || "", it.name || "", it.price || "", i === 0 ? e.ocrEngine || "" : ""]);
-        });
-      }
-    }
-    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\r\n");
-    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }); // BOM付きでExcel対応
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `家計簿_${monthKey(new Date())}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    log("CSVエクスポート:", all.length, "件");
-  } catch (err) {
-    logErr("CSVエクスポートエラー:", err.message, err);
-    alert("エクスポートに失敗しました: " + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "📥 CSV";
-  }
-}
-
-function _jumpToMonthOf(dateStr) {
-  const target = new Date(dateStr + "T00:00:00");
-  if (monthKey(target) !== monthKey(currentMonth)) {
-    currentMonth = target;
-    renderMonth();
-    subscribeMonth();
-  }
-}
-
-// ---- OCR キュー（複数枚対応） ----------------------------------------------
-let ocrQueue = [];
-let ocrTotal = 0;
-
-function handleFiles(e) {
-  const files = [...e.target.files];
-  e.target.value = "";
-  if (!files.length) return;
-  ocrQueue = files;
-  ocrTotal = files.length;
-  _processNext();
-}
-
-function _queuePrefix() {
-  if (ocrTotal <= 1) return "";
-  return `(${ocrTotal - ocrQueue.length}/${ocrTotal}枚目) `;
-}
-
-function _processNext() {
-  if (!ocrQueue.length) { ocrTotal = 0; $("skip-btn").hidden = true; return; }
-  $("skip-btn").hidden = ocrTotal <= 1;
-  _ocrAndShow(ocrQueue.shift());
-}
-
-function _advanceQueue() {
-  if (ocrQueue.length) { _processNext(); return true; }
-  if (ocrTotal > 1) {
-    const s = $("ocr-status");
-    s.hidden = false;
-    s.className = "status ok";
-    s.textContent = `✅ ${ocrTotal}枚すべて処理しました。`;
-  }
-  ocrTotal = 0;
-  $("skip-btn").hidden = true;
-  return false;
-}
-
-function skipCurrent() {
-  resetForm();
-  if (!_advanceQueue()) $("ocr-status").hidden = true;
-}
-
-async function _ocrInBrowser(file, status) {
-  const canvas = await preprocessImage(file);
-  const text = await runClientOcr(canvas, (p) => {
-    status.textContent = `🔍 文字を読み取り中… ${Math.round(p * 100)}%`;
-  });
-  return parseReceipt(text);
-}
-
-async function _ocrAndShow(file) {
-  log("OCR開始:", file.name, file.type, `${Math.round(file.size / 1024)}KB`,
-    OCR_API_BASE ? "(バックエンド)" : "(ブラウザ内PaddleOCR)");
-  const status = $("ocr-status");
-  status.hidden = false;
-  status.className = "status loading";
-  status.textContent = `📤 ${_queuePrefix()}読み取り中… (数秒かかります)`;
-  try {
-    let data;
-    if (OCR_API_BASE) {
-      try {
-        status.textContent = "🤖 AIで読み取り中…";
-        data = await requestBackendOcr(
-          file,
-          () => (currentUser ? currentUser.getIdToken() : ""),
-          () => { status.textContent = "🤖 AIサーバーを起動中…（初回は少し時間がかかります）"; },
-        );
-        const used = data.engine || "不明";
-        log("バックエンド読み取り成功:", `エンジン=${used}`);
-        if (!TRUSTED_ENGINES.includes(used)) {
-          logErr(`⚠️ Gemini/Vertex を使えず ${used} にフォールバックしました。AI のキー/課金状態を確認してください。`);
-        }
-      } catch (err) {
-        logErr("バックエンドOCR失敗、ブラウザ内PaddleOCRに切替:", err.message, err);
-        status.textContent = "🔍 文字を読み取り中…（PaddleOCR・初回はモデル取得で時間がかかります）";
-        data = await _ocrInBrowser(file, status);
-      }
-    } else {
-      data = await _ocrInBrowser(file, status);
-    }
-    log("OCR完了。抽出結果:", data);
-    if (data && !TRUSTED_ENGINES.includes(data.engine)) {
-      data = await normalizeWithHistory(data, fetchAllExpenses);
-    }
-    fillForm(data, URL.createObjectURL(file));
-    status.className = "status ok";
-    status.textContent =
-      `✅ ${_queuePrefix()}読み取りました。内容を確認して保存してください。` +
-      (ocrTotal > 1 ? "（保存すると次の画像へ進みます）" : "");
-    $("form-card").scrollIntoView({ behavior: "smooth" });
-  } catch (err) {
-    logErr("OCRエラー:", err.message || err, err);
-    status.className = "status error";
-    status.textContent = `⚠️ ${_queuePrefix()}` + (err.message || err) +
-      (ocrTotal > 1 ? "（「スキップ」で次へ進めます）" : "");
-  }
-}
+// ---- 認証状態の監視（エントリ） --------------------------------------------
+watchAuthState(setupApp, teardownApp);
