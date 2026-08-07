@@ -350,7 +350,9 @@ body {
 
 /* ── RELATED ARTICLES ── */
 .related-articles {
-  margin: 32px 0;
+  width: calc(100% - 32px);
+  max-width: 760px;
+  margin: 32px auto;
   padding: 20px 24px;
   background: var(--article-surface, #fff);
   border: 1px solid var(--article-border, #D6E8DB);
