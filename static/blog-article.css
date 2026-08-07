@@ -299,7 +299,9 @@ body {
   border: 1px solid var(--article-border, #D6E8DB);
   border-radius: 10px;
   padding: 20px 24px;
-  margin: 32px 0;
+  margin: 32px auto;
+  max-width: 760px;
+  width: calc(100% - 32px);
   font-size: .9rem;
 }
 .am-summary ul { padding-left: 20px; }
