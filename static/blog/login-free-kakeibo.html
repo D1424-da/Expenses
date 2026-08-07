@@ -1,104 +1,27 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="/redirect.js"></script>
-        <!-- GA4 (Google Analytics) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
-  <script src="/analytics.js"></script>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="stylesheet" href="/tokens.css" />
-  <link rel="stylesheet" href="/blog-article.css" />
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="/redirect.js"></script>
+<!-- GA4 (Google Analytics) -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+<script src="/analytics.js"></script>
+<link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
+<link href="/manifest.json" rel="manifest"/>
+<link href="/tokens.css" rel="stylesheet"/>
+<link href="/blog-article.css" rel="stylesheet"/>
 <title>ログイン不要・登録なしで使えるオンライン家計簿｜カケイシピ【2026年版】</title>
-  <meta name="description" content="アカウント登録なし・ログイン不要で今すぐ使えるオンライン家計簿を解説。ブラウザだけで家計管理できる理由と、Googleアカウントで30秒スタートできるカケイシピの特徴を紹介。「ログイン不要」家計簿の種類についても詳しく解説。カケイシピで試してみよう。" />
-  <style>
-    .prevnext{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;gap:16px;flex-wrap:wrap}
-    .pn-link{flex:1;min-width:200px;display:flex;flex-direction:column;gap:4px;padding:16px 18px;background:#fff;border:1px solid #e2e8e6;border-radius:12px;text-decoration:none;transition:border-color .15s,transform .1s}
-    .pn-link:hover{border-color:#2D7D52;transform:translateY(-2px)}
-    .pn-next{text-align:right}
-    .pn-dir{font-size:.75rem;color:#2D7D52;font-weight:700}
-    .pn-title{font-size:.88rem;color:#0F2318;line-height:1.4}
-    .pn-empty{visibility:hidden;pointer-events:none}
-    @media(prefers-color-scheme:dark){.pn-link{background:#132219;border-color:#1E3D2A}.pn-title{color:#E4EDE7}}
+<meta content="アカウント登録なし・ログイン不要で今すぐ使えるオンライン家計簿を解説。ブラウザだけで家計管理できる理由と、Googleアカウントで30秒スタートできるカケイシピの特徴を紹介。「ログイン不要」家計簿の種類についても詳しく解説。カケイシピで試してみよう。" name="description"/>
 
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
-    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
-    html{scroll-behavior:smooth}
-    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
-    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
-    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
-    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
-    .hn{display:flex;align-items:center;gap:20px}
-    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
-    .hn a:hover{color:#fff}
-    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
-    .hc:hover{background:var(--od)}
-    .ah{background:linear-gradient(135deg,#1a3a2c 0%,#0d2118 100%);padding:64px 24px 80px;position:relative;overflow:hidden}
-    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
-    .ai{max-width:760px;margin:0 auto}
-    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
-    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
-    .bc span{opacity:.5}
-    .ac{display:inline-block;background:rgba(255,255,255,.15);color:#a8d8bb;border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
-    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;line-height:1.35;margin-bottom:24px}
-    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
-    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
-    .ab{min-width:0}
-    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
-    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
-    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
-    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
-    .ab strong{color:var(--ink)}
-    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
-    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
-    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
-    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;margin-bottom:8px}
-    .tb p{margin:0;color:var(--is);font-size:.9rem}
-    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
-    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
-    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
-    .su{font-size:.85rem;color:var(--im);margin-top:4px}
-    .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:32px 0}
-    .cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
-    .ci{font-size:1.8rem;margin-bottom:10px;display:block}
-    .ct{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:6px}
-    .cd{font-size:.82rem;color:var(--is);line-height:1.6}
-    .cb{background:var(--gd);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
-    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;color:#fff;margin-bottom:12px}
-    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
-    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
-    .bc2:hover{background:var(--od);transform:translateY(-2px)}
-    .sb{position:sticky;top:80px}
-    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
-    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
-    .toc{list-style:none}
-    .toc li{margin-bottom:8px}
-    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
-    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
-    .toc a:hover{color:var(--gm)}
-    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
-    .ra:last-child{margin-bottom:0}
-    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
-    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
-    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
-    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
-    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
-    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
-    .ft a:hover{color:#fff}
-    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}}
-    @media(max-width:600px){.hn{display:none}.sg{grid-template-columns:1fr}}
-  </style>
-  <link rel="canonical" href="https://get-tohon.online/blog/login-free-kakeibo.html" />
-  <meta property="og:type" content="article" />
-  <meta property="og:url" content="https://get-tohon.online/blog/login-free-kakeibo.html" />
-  <meta property="og:title" content="ログイン不要・登録なしで使えるオンライン家計簿｜カケイシピ【2026年版】" />
-  <meta property="og:description" content="アカウント登録なし・ログイン不要で今すぐ使えるオンライン家計簿を解説。ブラウザだけで家計管理できる理由と、Googleアカウントで30秒スタートできるカケイシピの特徴を紹介。「ログイン不要」家計簿の種類についても詳しく解説。カケイシピで試してみよう。" />
-  <meta property="og:image" content="https://get-tohon.online/ogp.png" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <script type="application/ld+json">
+<link href="https://get-tohon.online/blog/login-free-kakeibo.html" rel="canonical"/>
+<meta content="article" property="og:type"/>
+<meta content="https://get-tohon.online/blog/login-free-kakeibo.html" property="og:url"/>
+<meta content="ログイン不要・登録なしで使えるオンライン家計簿｜カケイシピ【2026年版】" property="og:title"/>
+<meta content="アカウント登録なし・ログイン不要で今すぐ使えるオンライン家計簿を解説。ブラウザだけで家計管理できる理由と、Googleアカウントで30秒スタートできるカケイシピの特徴を紹介。「ログイン不要」家計簿の種類についても詳しく解説。カケイシピで試してみよう。" property="og:description"/>
+<meta content="https://get-tohon.online/ogp.png" property="og:image"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -124,7 +47,7 @@
     }
   }
   </script>
-  <script type="application/ld+json">
+<script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -169,148 +92,108 @@
 </script>
 </head>
 <body>
-<header class="hd">
-  <a href="/" class="hl">カケイシピ</a>
-  <nav class="hn"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/index.html#pricing">料金</a></nav>
-  <a href="/login.html" class="hc">無料で始める</a>
+<header class="bh">
+  <a class="bh-logo" href="/">カケイシピ</a>
+  <nav class="bh-nav">
+    <a href="/blog.html">ブログ一覧</a>
+    <a href="/login.html" class="bh-cta">無料で試す</a>
+  </nav>
 </header>
-
-<section class="ah">
-  <div class="ai">
-    <div class="bc"><a href="/">ホーム</a><span>›</span><a href="/blog.html">ブログ</a><span>›</span><span>ログイン不要の家計簿</span></div>
-    <span class="ac">オンライン家計簿</span>
-    <h1>登録・ログイン不要ですぐ使える<br>オンライン家計簿の選び方【2026年版】</h1>
-    <div class="am"><span>📅 2026年4月8日</span><span>⏱ 読了時間：約5分</span></div>
-  <a class="ra-card" href="/blog/savings-life.html"><span class="ra-tag">節約</span><br>節約生活を続けるための習慣とコツ</a>
-<a class="ra-card" href="/blog/solo-kondate.html"><span class="ra-tag">献立</span><br>一人暮らしの献立アイデアと時短術</a>
-<a class="ra-card" href="/blog/receipt-kakeibo-basics.html"><span class="ra-tag">家計簿</span><br>レシート家計簿の基本と続けるコツ</a>
-</div>
-</section>
-
-<div class="cw">
-<article class="ab">
-<p class="ld">「とりあえず今日から家計簿をつけたい」「アカウント登録が面倒で後回しにしてしまう」——そんな方に向けて、ログイン不要・登録なしでもすぐ使えるオンライン家計簿の選び方と、登録するなら30秒で始められるGoogleログイン型の利便性を徹底比較します。</p>
+<main class="am-wrap">
+  <article class="am">
+    <div class="am-eyebrow"><a href="/blog.html" class="am-cat">オンライン家計簿</a></div>
+    <h1 class="am-title">登録・ログイン不要ですぐ使える<br/>オンライン家計簿の選び方【2026年版】</h1>
+    <div class="am"><span>📅 2026年4月8日</span></div>
+    <p class="am-lead">「とりあえず今日から家計簿をつけたい」「アカウント登録が面倒で後回しにしてしまう」——そんな方に向けて、ログイン不要・登録なしでもすぐ使えるオンライン家計簿の選び方と、登録するなら30秒で始められるGoogleログイン型の利便性を徹底比較します。</p>
+    <nav class="am-toc">
+      <div class="am-toc-title">目次</div>
+      <ol>
+        <li><a href="#types">ログイン不要家計簿の種類</a></li>
+        <li><a href="#merit">オンライン家計簿のメリット</a></li>
+        <li><a href="#recipe-feature">買い物データがレシピに</a></li>
+        <li><a href="#how-to-start">今すぐ始める方法</a></li>
+        <li><a href="#faq">よくある質問</a></li>
+      </ol>
+    </nav>
+    
 
 <h2 id="types">「ログイン不要」家計簿の種類</h2>
 <p>ひとくちに「ログイン不要の家計簿」といっても、実態は大きく2種類あります。</p>
-
 <h3>①完全ローカル型（データがブラウザ内のみ）</h3>
 <p>ブラウザのlocalStorageやIndexedDBにデータを保存するタイプ。アカウント不要で即スタートできる反面、<strong>ブラウザを変えるとデータが消え</strong>、PCとスマホで同期できません。バックアップも手動CSVになりがちです。</p>
-
 <h3>②Googleログイン型（クラウド同期あり）</h3>
 <p>Googleアカウントで30秒ログインすれば、あとはどのデバイスからでもデータが同期されます。カケイシピはこのタイプで、<strong>パスワード設定不要・Googleアカウントがあればすぐ始められる</strong>のが特徴です。14日間無料トライアルで全機能を試してから始められます。</p>
-
-<div class="sg">
-  <div class="sc"><div class="sn">30秒</div><div class="su">Googleログインで開始</div></div>
-  <div class="sc"><div class="sn">14日間</div><div class="su">無料トライアル期間</div></div>
-  <div class="sc"><div class="sn">¥500</div><div class="su">月額（税込）</div></div>
+<div class="card-grid">
+<div class="stat-card"><div class="stat-num">30秒</div><div class="stat-unit">Googleログインで開始</div></div>
+<div class="stat-card"><div class="stat-num">14日間</div><div class="stat-unit">無料トライアル期間</div></div>
+<div class="stat-card"><div class="stat-num">¥500</div><div class="stat-unit">月額（税込）</div></div>
 </div>
-
 <h2 id="merit">オンライン家計簿が便利な理由</h2>
 <p>スマホアプリをインストールせず、ブラウザだけで家計管理できるオンライン家計簿のメリットをまとめます。</p>
-
-<div class="cg">
-  <div class="cc"><span class="ci">📱</span><div class="ct">どのデバイスからでもアクセス</div><div class="cd">スマホ・タブレット・PCのブラウザから同じデータを確認。外出先でレシートを記録して、帰宅後PCで月次集計を確認できます。</div></div>
-  <div class="cc"><span class="ci">🔄</span><div class="ct">リアルタイムで自動同期</div><div class="cd">家族が外でレシートを記録すれば、自宅のPCにも即時反映。共有家計簿として夫婦・家族で使えます。</div></div>
-  <div class="cc"><span class="ci">💾</span><div class="ct">データが消えない安心感</div><div class="cd">スマホが壊れても、機種変更しても、クラウドにデータが残ります。ローカル保存型と違い、ブラウザのキャッシュクリアでも失われません。</div></div>
-  <div class="cc"><span class="ci">🍳</span><div class="ct">AIレシピ提案も使える</div><div class="cd">カケイシピでは買い物したもの（レシートの品目）からAIが自動でレシピを提案。今日買ってきた食材で「今夜何を作るか」を即解決します。</div></div>
+<div class="card-grid">
+<div class="card"><span class="card-icon">📱</span><div class="card-title">どのデバイスからでもアクセス</div><div class="card-desc">スマホ・タブレット・PCのブラウザから同じデータを確認。外出先でレシートを記録して、帰宅後PCで月次集計を確認できます。</div></div>
+<div class="card"><span class="card-icon">🔄</span><div class="card-title">リアルタイムで自動同期</div><div class="card-desc">家族が外でレシートを記録すれば、自宅のPCにも即時反映。共有家計簿として夫婦・家族で使えます。</div></div>
+<div class="card"><span class="card-icon">💾</span><div class="card-title">データが消えない安心感</div><div class="card-desc">スマホが壊れても、機種変更しても、クラウドにデータが残ります。ローカル保存型と違い、ブラウザのキャッシュクリアでも失われません。</div></div>
+<div class="card"><span class="card-icon">🍳</span><div class="card-title">AIレシピ提案も使える</div><div class="card-desc">カケイシピでは買い物したもの（レシートの品目）からAIが自動でレシピを提案。今日買ってきた食材で「今夜何を作るか」を即解決します。</div></div>
 </div>
-
 <h2 id="recipe-feature">買い物データがすぐ献立に変わる</h2>
 <p>カケイシピのオンライン家計簿には、家計管理だけでなく<strong>買い物したものからレシピを自動作成する機能</strong>が搭載されています。スーパーのレシートをカメラで撮るだけでAIが品目を読み取り、購入した食材をもとにその日の夕食メニューを提案してくれます。</p>
-
-<div class="tb">
-  <div class="tl">POINT</div>
-  <p>「鶏むね肉・もやし・しょうが」を買ったとAIが認識すると、「鶏もやし炒め」や「鶏むね肉の生姜焼き」などをすぐに提案。冷蔵庫の残り物も加えて献立を最適化できます。</p>
+<div class="highlight-box">
+<div class="tl">POINT</div>
+<p>「鶏むね肉・もやし・しょうが」を買ったとAIが認識すると、「鶏もやし炒め」や「鶏むね肉の生姜焼き」などをすぐに提案。冷蔵庫の残り物も加えて献立を最適化できます。</p>
 </div>
-
 <p>このレシピ提案機能は<strong>インターネット接続さえあればブラウザから利用可能</strong>。追加インストール不要で、家計管理と献立管理が一つのアプリで完結します。</p>
-
 <h2 id="how-to-start">今すぐ始める方法</h2>
 <ol>
-  <li>このページ右上の「無料で始める」ボタンをクリック</li>
-  <li>「Google でログイン」ボタンを押す（30秒で完了）</li>
-  <li>スマホのカメラでレシートを撮影、またはPCから手入力</li>
-  <li>AIが品目を認識して自動でレシピ提案</li>
+<li>このページ右上の「無料で始める」ボタンをクリック</li>
+<li>「Google でログイン」ボタンを押す（30秒で完了）</li>
+<li>スマホのカメラでレシートを撮影、またはPCから手入力</li>
+<li>AIが品目を認識して自動でレシピ提案</li>
 </ol>
-
 <p>パスワード設定は不要。Googleアカウントがあれば、面倒な会員登録フォームの入力は一切ありません。</p>
-
-<div class="cb">
-  <h3>今日から家計管理を始めよう</h3>
-  <p>登録30秒・14日間無料トライアル。Googleアカウントがあればすぐスタートできます。</p>
-  <a href="/login.html" class="bc2">無料で始める →</a>
+<div class="cta-box">
+<h3>今日から家計管理を始めよう</h3>
+<p>登録30秒・14日間無料トライアル。Googleアカウントがあればすぐスタートできます。</p>
+<a class="cta-btn" href="/login.html">無料で始める →</a>
 </div>
-
 <h2 id="faq">よくある質問</h2>
 <h3>Q. 本当にメールアドレス登録は不要ですか？</h3>
 <p>はい。カケイシピはGoogleアカウントでのログインのみ対応しており、メールアドレスや独自パスワードの登録は必要ありません。Googleアカウント（Gmailなど）があればすぐ使えます。</p>
-
 <h3>Q. データはどこに保存されますか？</h3>
 <p>Googleのクラウドデータベース（Firebase Firestore）に安全に保存されます。デバイスを変えても、ブラウザを変えても、同じデータにアクセスできます。</p>
-
 <h3>Q. 無料でどこまで使えますか？</h3>
 <p>14日間の無料トライアル中は家計記録・レシートOCR・レシピ提案がすべて使えます。トライアル後は¥500/月（税込）のサブスクリプションで引き続き全機能を利用できます。いつでも解約可能です。</p>
 <div class="faq-block">
 <h2>よくある質問</h2>
 <div class="faq-item"><p class="faq-q">Q. 家計簿アプリは無料で使えますか？</p><p class="faq-a">A. カケイシピは14日間無料トライアルで全機能を試せます。トライアル後は月額500円で利用できます。</p></div><div class="faq-item"><p class="faq-q">Q. スマホだけで家計簿をつけられますか？</p><p class="faq-a">A. はい。カケイシピはスマホのブラウザから使えるPWAアプリです。アプリのインストールは不要です。</p></div><div class="faq-item"><p class="faq-q">Q. レシートを自動で読み取れますか？</p><p class="faq-a">A. カケイシピのOCR機能でレシートを撮影するだけで支出を自動入力できます。</p></div>
 </div>
-</article>
 
-<aside class="sb">
-  <div class="sbc">
-    <h4>目次</h4>
-    <ul class="toc">
-      <li><a href="#types">ログイン不要家計簿の種類</a></li>
-      <li><a href="#merit">オンライン家計簿のメリット</a></li>
-      <li><a href="#recipe-feature">買い物データがレシピに</a></li>
-      <li><a href="#how-to-start">今すぐ始める方法</a></li>
-      <li><a href="#faq">よくある質問</a></li>
-    </ul>
-  </div>
-  <div class="sbc">
-    <h4>関連記事</h4>
-    <a href="/blog/web-kakeibo-free.html" class="ra">
-      <div class="ri" style="background:linear-gradient(135deg,#1a2c4a,#0d1a28)">🌐</div>
-      <div><div class="rt">無料で使えるブラウザ家計簿Webアプリ完全ガイド</div><div class="rm">家計簿Webアプリ</div></div>
-    </a>
-    <a href="/blog/pc-kakeibo-browser.html" class="ra">
-      <div class="ri" style="background:linear-gradient(135deg,#1a3a2c,#0d2818)">💻</div>
-      <div><div class="rt">PC・ブラウザで使う家計簿の選び方</div><div class="rm">パソコン家計簿</div></div>
-    </a>
-    <a href="/blog/no-ads-kakeibo.html" class="ra">
-      <div class="ri" style="background:linear-gradient(135deg,#3a2c1a,#281a0d)">🚫</div>
-      <div><div class="rt">広告なし・無料の家計簿アプリ</div><div class="rm">広告なし家計簿</div></div>
-    </a>
-  </div>
-</aside>
-</div>
-
-
+  </article>
+</main>
 <section class="related-articles">
 <h3>📖 関連記事</h3>
 <div class="ra-grid">
-<a class="ra-card" href="/blog/windows-mac-kakeibo.html"><span class="ra-tag">家計簿</span><br>Windows・Mac両対応の家計簿ソフト不要！</a>
-<a class="ra-card" href="/blog/web-kakeibo-free.html"><span class="ra-tag">家計簿</span><br>インストール不要！無料で使えるブラウザ家計簿</a>
-<a class="ra-card" href="/blog/spending-analysis.html"><span class="ra-tag">家計簿</span><br>支出管理アプリで家計分析</a>
-<a class="ra-card" href="/blog/receipt-app-free.html"><span class="ra-tag">家計簿</span><br>レシートを撮影するだけで使える無料家計簿アプリ比較</a>
+<a class="ra-card" href="/blog/windows-mac-kakeibo.html"><span class="ra-tag">家計簿</span><br/>Windows・Mac両対応の家計簿ソフト不要！</a>
+<a class="ra-card" href="/blog/web-kakeibo-free.html"><span class="ra-tag">家計簿</span><br/>インストール不要！無料で使えるブラウザ家計簿</a>
+<a class="ra-card" href="/blog/spending-analysis.html"><span class="ra-tag">家計簿</span><br/>支出管理アプリで家計分析</a>
+<a class="ra-card" href="/blog/receipt-app-free.html"><span class="ra-tag">家計簿</span><br/>レシートを撮影するだけで使える無料家計簿アプリ比較</a>
 </div>
 </section>
 <nav class="prevnext">
-  <a class="pn-link pn-prev" href="/blog/kakeibo-csv-graph.html"><span class="pn-dir">← 前の記事</span><span class="pn-title">家計簿CSVエクスポート＆グラフで支出を見える化</span></a>
-  <a class="pn-link pn-next" href="/blog/family-kakeibo.html"><span class="pn-dir">次の記事 →</span><span class="pn-title">夫婦・家族で共有できる家計簿アプリ2026</span></a>
+<a class="pn-link pn-prev" href="/blog/kakeibo-csv-graph.html"><span class="pn-dir">← 前の記事</span><span class="pn-title">家計簿CSVエクスポート＆グラフで支出を見える化</span></a>
+<a class="pn-link pn-next" href="/blog/family-kakeibo.html"><span class="pn-dir">次の記事 →</span><span class="pn-title">夫婦・家族で共有できる家計簿アプリ2026</span></a>
 </nav>
-<footer class="ft">
-  <div class="fl">
-    <a href="/">ホーム</a>
-    <a href="/blog.html">ブログ</a>
-    <a href="/index.html#pricing">料金プラン</a>
-    <a href="/terms.html" rel="nofollow">利用規約</a>
-    <a href="/privacy.html" rel="nofollow">プライバシーポリシー</a>
-    <a href="/tokushoho.html">特定商取引法に基づく表記</a>
-    <a href="/contact.html">お問い合わせ</a>
-  </div>
-  <p>© 2026 カケイシピ · AIレシート家計簿</p>
+<footer class="bf">
+<div class="fl">
+<a href="/">ホーム</a>
+<a href="/blog.html">ブログ</a>
+<a href="/index.html#pricing">料金プラン</a>
+<a href="/terms.html" rel="nofollow">利用規約</a>
+<a href="/privacy.html" rel="nofollow">プライバシーポリシー</a>
+<a href="/tokushoho.html">特定商取引法に基づく表記</a>
+<a href="/contact.html">お問い合わせ</a>
+</div>
+<p>© 2026 カケイシピ · AIレシート家計簿</p>
 </footer>
 </body>
 </html>

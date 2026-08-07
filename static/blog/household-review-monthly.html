@@ -1,112 +1,27 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="/redirect.js"></script>
-        <!-- GA4 (Google Analytics) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
-  <script src="/analytics.js"></script>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="stylesheet" href="/tokens.css" />
-  <link rel="stylesheet" href="/blog-article.css" />
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="/redirect.js"></script>
+<!-- GA4 (Google Analytics) -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+<script src="/analytics.js"></script>
+<link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
+<link href="/manifest.json" rel="manifest"/>
+<link href="/tokens.css" rel="stylesheet"/>
+<link href="/blog-article.css" rel="stylesheet"/>
 <title>月次家計レビューの習慣化｜毎月30分で家計を改善し続ける方法</title>
-  <meta name="description" content="月次家計レビューを習慣化して家計を改善し続ける方法を解説。月末に30分だけ振り返りをするだけで貯金が増える。カケイシピのグラフ・集計機能でレビューを効率化。なぜ月次レビューが大切なのか、月次レビューで確認する6つのポイントについても詳しく解説。カケイシピで試してみよう。" />
-  <style>
-    .prevnext{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;gap:16px;flex-wrap:wrap}
-    .pn-link{flex:1;min-width:200px;display:flex;flex-direction:column;gap:4px;padding:16px 18px;background:#fff;border:1px solid #e2e8e6;border-radius:12px;text-decoration:none;transition:border-color .15s,transform .1s}
-    .pn-link:hover{border-color:#2D7D52;transform:translateY(-2px)}
-    .pn-next{text-align:right}
-    .pn-dir{font-size:.75rem;color:#2D7D52;font-weight:700}
-    .pn-title{font-size:.88rem;color:#0F2318;line-height:1.4}
-    .pn-empty{visibility:hidden;pointer-events:none}
-    @media(prefers-color-scheme:dark){.pn-link{background:#132219;border-color:#1E3D2A}.pn-title{color:#E4EDE7}}
+<meta content="月次家計レビューを習慣化して家計を改善し続ける方法を解説。月末に30分だけ振り返りをするだけで貯金が増える。カケイシピのグラフ・集計機能でレビューを効率化。なぜ月次レビューが大切なのか、月次レビューで確認する6つのポイントについても詳しく解説。カケイシピで試してみよう。" name="description"/>
 
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--gd:#1E5C3A;--gm:#2D7D52;--gl:#D4ECD9;--gp:#F0F8F2;--or:#E8621A;--od:#C4511A;--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--sh:0 2px 16px rgba(30,92,58,.10);--sl:0 8px 40px rgba(30,92,58,.16);--r:14px}
-    @media(prefers-color-scheme:dark){:root{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318;--sh:0 2px 16px rgba(0,0,0,.4);--sl:0 8px 40px rgba(0,0,0,.5)}}
-    :root[data-theme="light"]{--bg:#F7FAF8;--sf:#FFFFFF;--bd:#D6E8DB;--ink:#0F2318;--is:#4A6355;--im:#8AAA96;--gp:#F0F8F2}
-    :root[data-theme="dark"]{--bg:#0C1A11;--sf:#132219;--bd:#1E3D2A;--ink:#E4EDE7;--is:#8ABFA0;--im:#4A7A5C;--gp:#0F2318}
-    html{scroll-behavior:smooth}
-    body{font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px}
-    .hd{position:sticky;top:0;z-index:100;background:rgba(30,92,58,.96);backdrop-filter:blur(12px);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
-    .hl{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.04em;text-decoration:none}
-    .hl span{font-size:.75rem;opacity:.7;margin-left:6px;font-weight:400}
-    .hn{display:flex;align-items:center;gap:20px}
-    .hn a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.875rem}
-    .hn a:hover{color:#fff}
-    .hc{background:var(--or);color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
-    .hc:hover{background:var(--od)}
-    .ah{background:linear-gradient(135deg,#1a2c3a 0%,#0d1a28 100%);padding:64px 24px 80px;position:relative;overflow:hidden}
-    .ah::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:60px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
-    .ai{max-width:760px;margin:0 auto}
-    .bc{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:24px}
-    .bc a{color:rgba(255,255,255,.6);text-decoration:none}
-    .bc span{opacity:.5}
-    .ac{display:inline-block;background:rgba(255,255,255,.15);color:#a8d8bb;border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 14px;font-size:.78rem;letter-spacing:.06em;margin-bottom:20px}
-    .ah h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;line-height:1.35;margin-bottom:24px}
-    .am{display:flex;align-items:center;gap:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
-    .cw{max-width:1080px;margin:0 auto;padding:60px 24px 100px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:start}
-    .ab{min-width:0}
-    .ld{font-size:1.05rem;color:var(--is);line-height:1.9;margin-bottom:40px;padding-left:16px;border-left:3px solid var(--gm)}
-    .ab h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;font-weight:700;color:var(--ink);margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--gl)}
-    .ab h3{font-size:1.1rem;font-weight:700;color:var(--gd);margin:32px 0 12px}
-    .ab p{color:var(--is);line-height:1.9;margin-bottom:20px}
-    .ab strong{color:var(--ink)}
-    .ab ul,.ab ol{padding-left:24px;margin-bottom:20px}
-    .ab li{color:var(--is);line-height:1.8;margin-bottom:6px}
-    .tb{background:var(--gp);border:1px solid var(--gl);border-left:4px solid var(--gm);border-radius:0 var(--r) var(--r) 0;padding:20px 24px;margin:32px 0}
-    .tl{font-size:.75rem;font-weight:700;color:var(--gm);letter-spacing:.08em;margin-bottom:8px}
-    .tb p{margin:0;color:var(--is);font-size:.9rem}
-    .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
-    .sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--sh)}
-    .sn{font-size:2rem;font-weight:800;color:var(--gm);font-variant-numeric:tabular-nums;line-height:1.1}
-    .su{font-size:.85rem;color:var(--im);margin-top:4px}
-    .checklist{list-style:none;padding:0;margin:24px 0}
-    .checklist li{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--bd);color:var(--is);font-size:.9rem;line-height:1.7}
-    .checklist li:last-child{border-bottom:none}
-    .chk{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;background:var(--gm);color:#fff;font-size:.8rem;flex-shrink:0;margin-top:2px}
-    .timeline{position:relative;padding-left:32px;margin:32px 0}
-    .timeline::before{content:"";position:absolute;left:10px;top:0;bottom:0;width:2px;background:var(--gl)}
-    .tl-item{position:relative;margin-bottom:28px}
-    .tl-item::before{content:"";position:absolute;left:-26px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--gm);border:3px solid var(--sf)}
-    .tl-time{font-size:.78rem;color:var(--gm);font-weight:700;margin-bottom:4px}
-    .tl-title{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:4px}
-    .tl-desc{font-size:.85rem;color:var(--is);line-height:1.6}
-    .cb{background:var(--gd);border-radius:20px;padding:40px;text-align:center;margin:48px 0}
-    .cb h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.4rem;color:#fff;margin-bottom:12px}
-    .cb p{color:#a8d8bb;font-size:.9rem;margin-bottom:24px}
-    .bc2{display:inline-block;background:var(--or);color:#fff;border-radius:100px;padding:14px 36px;font-size:1rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s}
-    .bc2:hover{background:var(--od);transform:translateY(-2px)}
-    .sb{position:sticky;top:80px}
-    .sbc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:24px}
-    .sbc h4{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
-    .toc{list-style:none}
-    .toc li{margin-bottom:8px}
-    .toc a{font-size:.85rem;color:var(--is);text-decoration:none;display:flex;align-items:center;gap:8px}
-    .toc a::before{content:"·";color:var(--gm);font-size:1.2rem}
-    .toc a:hover{color:var(--gm)}
-    .ra{display:flex;gap:12px;align-items:center;text-decoration:none;margin-bottom:16px}
-    .ra:last-child{margin-bottom:0}
-    .ri{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
-    .rt{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.4}
-    .rm{font-size:.75rem;color:var(--im);margin-top:2px}
-    .ft{background:var(--gd);color:rgba(255,255,255,.7);text-align:center;padding:32px 24px;font-size:.85rem}
-    .fl{display:flex;justify-content:center;gap:24px;margin-bottom:16px;flex-wrap:wrap}
-    .ft a{color:rgba(255,255,255,.6);text-decoration:none}
-    .ft a:hover{color:#fff}
-    @media(max-width:900px){.cw{grid-template-columns:1fr}.sb{position:static}.sg{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:600px){.hn{display:none}.sg{grid-template-columns:1fr}}
-  </style>
-  <link rel="canonical" href="https://get-tohon.online/blog/household-review-monthly.html" />
-  <meta property="og:type" content="article" />
-  <meta property="og:url" content="https://get-tohon.online/blog/household-review-monthly.html" />
-  <meta property="og:title" content="月次家計レビューの習慣化｜毎月30分で家計を改善し続ける方法" />
-  <meta property="og:description" content="月次家計レビューを習慣化して家計を改善し続ける方法を解説。月末に30分だけ振り返りをするだけで貯金が増える。カケイシピのグラフ・集計機能でレビューを効率化。なぜ月次レビューが大切なのか、月次レビューで確認する6つのポイントについても詳しく解説。カケイシピで試してみよう。" />
-  <meta property="og:image" content="https://get-tohon.online/ogp.png" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <script type="application/ld+json">
+<link href="https://get-tohon.online/blog/household-review-monthly.html" rel="canonical"/>
+<meta content="article" property="og:type"/>
+<meta content="https://get-tohon.online/blog/household-review-monthly.html" property="og:url"/>
+<meta content="月次家計レビューの習慣化｜毎月30分で家計を改善し続ける方法" property="og:title"/>
+<meta content="月次家計レビューを習慣化して家計を改善し続ける方法を解説。月末に30分だけ振り返りをするだけで貯金が増える。カケイシピのグラフ・集計機能でレビューを効率化。なぜ月次レビューが大切なのか、月次レビューで確認する6つのポイントについても詳しく解説。カケイシピで試してみよう。" property="og:description"/>
+<meta content="https://get-tohon.online/ogp.png" property="og:image"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -132,7 +47,7 @@
     }
   }
   </script>
-  <script type="application/ld+json">
+<script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -177,203 +92,153 @@
 </script>
 </head>
 <body>
-<header class="hd">
-  <a href="/" class="hl">カケイシピ</a>
-  <nav class="hn"><a href="/">ホーム</a><a href="/blog.html">ブログ</a><a href="/index.html#pricing">料金</a></nav>
-  <a href="/login.html" class="hc">無料で始める</a>
+<header class="bh">
+  <a class="bh-logo" href="/">カケイシピ</a>
+  <nav class="bh-nav">
+    <a href="/blog.html">ブログ一覧</a>
+    <a href="/login.html" class="bh-cta">無料で試す</a>
+  </nav>
 </header>
-
-<section class="ah">
-  <div class="ai">
-    <nav class="bc">
-      <a href="/">カケイシピ</a><span>/</span>
-      <a href="/blog.html">ブログ</a><span>/</span>
-      <span>月次家計レビュー</span>
-    </nav>
-    <span class="ac">家計管理・習慣化</span>
-    <h1>月次家計レビューの習慣化<br>毎月30分で家計を改善し続ける方法</h1>
-    <div class="am">
-      <span>2026年6月10日</span>
-      <span>読了目安：7分</span>
-    </div>
-  <a class="ra-card" href="/blog/savings-life.html"><span class="ra-tag">節約</span><br>節約生活を続けるための習慣とコツ</a>
-<a class="ra-card" href="/blog/solo-kondate.html"><span class="ra-tag">献立</span><br>一人暮らしの献立アイデアと時短術</a>
-<a class="ra-card" href="/blog/receipt-kakeibo-basics.html"><span class="ra-tag">家計簿</span><br>レシート家計簿の基本と続けるコツ</a>
-</div>
-</section>
-
-<div class="cw">
-  <article class="ab">
-    <p class="ld">家計管理で挫折する多くの人が「記録はするけど振り返らない」状態に陥っています。月次レビューは、記録した数字を「改善」につなげる最重要ステップ。月末のたった30分が、家計を継続的に改善し貯金を増やし続ける習慣を作ります。</p>
-
-    <h2 id="why-review">なぜ月次レビューが大切なのか</h2>
-    <p>家計簿をつけているのに貯金が増えない人に共通しているのは、<strong>記録しても振り返りをしていない</strong>ことです。支出を記録するだけでは、問題を「知っている」状態にすぎません。レビューをすることで初めて「理解して改善する」サイクルが回り始めます。</p>
-
-    <div class="sg">
-      <div class="sc">
-        <div class="sn">3倍</div>
-        <div class="su">月次レビューをする人が<br>しない人より貯蓄増加率が高い</div>
-      </div>
-      <div class="sc">
-        <div class="sn">30分</div>
-        <div class="su">月次レビューに<br>必要な平均時間</div>
-      </div>
-      <div class="sc">
-        <div class="sn">¥15,000</div>
-        <div class="su">月次レビュー習慣者の<br>平均月間節約額</div>
-      </div>
-    </div>
-
-    <h2 id="what-to-review">月次レビューで確認する6つのポイント</h2>
-    <ul class="checklist">
-      <li>
-        <span class="chk">1</span>
-        <div><strong>収支バランス</strong>：今月の収入 - 支出 = いくら残ったか（または赤字か）を確認</div>
-      </li>
-      <li>
-        <span class="chk">2</span>
-        <div><strong>カテゴリ別支出</strong>：食費・外食費・娯楽費・光熱費など、カテゴリ別の内訳を先月と比較</div>
-      </li>
-      <li>
-        <span class="chk">3</span>
-        <div><strong>予算オーバーの項目</strong>：設定した予算をオーバーしたカテゴリはどこか、理由は何かを特定</div>
-      </li>
-      <li>
-        <span class="chk">4</span>
-        <div><strong>イレギュラー支出</strong>：急な出費・特別支出を把握し、来月の計画に反映する</div>
-      </li>
-      <li>
-        <span class="chk">5</span>
-        <div><strong>良かった点の確認</strong>：節約できた項目を必ず確認し、モチベーションを維持する</div>
-      </li>
-      <li>
-        <span class="chk">6</span>
-        <div><strong>来月の目標設定</strong>：今月の振り返りをもとに、来月の数値目標を決める</div>
-      </li>
-    </ul>
-
-    <h2 id="how-to-do">30分月次レビューのタイムライン</h2>
-    <div class="timeline">
-      <div class="tl-item">
-        <div class="tl-time">0〜5分</div>
-        <div class="tl-title">今月の収支を確認する</div>
-        <div class="tl-desc">カケイシピのトップ画面で今月の総支出を確認。収入と比較して黒字・赤字をすぐに把握。</div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-time">5〜15分</div>
-        <div class="tl-title">カテゴリ別グラフを見る</div>
-        <div class="tl-desc">グラフ画面でカテゴリ別支出を確認。「食費が多い月だったな」「外食を減らせた」など、先月との比較で傾向を掴む。</div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-time">15〜22分</div>
-        <div class="tl-title">食費の内訳を深掘りする</div>
-        <div class="tl-desc">食費はほとんどの家庭で最大のカテゴリ。どの店でいくら使ったか、何を多く買ったかを確認。カケイシピの購入履歴でスーパー別・食品カテゴリ別の詳細がわかる。</div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-time">22〜28分</div>
-        <div class="tl-title">来月の改善ポイントを決める</div>
-        <div class="tl-desc">「外食費を3,000円減らす」「お菓子・間食を減らす」など、1〜2個の具体的なアクションを決める。多くを変えようとしない。</div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-time">28〜30分</div>
-        <div class="tl-title">来月の買い物計画を立てる</div>
-        <div class="tl-desc">カケイシピのレシピ自動作成機能を活用した献立計画を立て、食費予算内で収まるよう買い物リストを作成。</div>
-      </div>
-    </div>
-
-    <h2 id="recipe-review">レシピ機能と組み合わせた家計改善</h2>
-    <p>月次レビューで「食費が多かった」とわかっても、翌月どう改善すればいいかわからない人も多いです。カケイシピの<strong>買い物からレシピを自動作成する機能</strong>を使うと、食費改善の具体的な行動に繋げやすくなります。</p>
-
-    <div class="tb">
-      <div class="tl">カケイシピの活用フロー</div>
-      <p>月次レビューで食費オーバーを確認 → 翌月の食費予算を設定 → 特売品・旬の食材を購入 → 購入した食材からレシピを自動提案 → 献立が決まるので外食衝動が減る → 結果的に食費が予算内に収まる。このサイクルが月を重ねるごとに精度を増します。</p>
-    </div>
-
-    <h2 id="habit">月次レビューを習慣にする3つのコツ</h2>
-    <ul>
-      <li><strong>固定日を決める</strong>：「毎月末日」「給料日の前日」など日付を決めてリマインダーをセット</li>
-      <li><strong>ハードルを下げる</strong>：完璧な分析は不要。「今月の食費は多かった/少なかった」だけでも十分</li>
-      <li><strong>パートナー・家族と一緒に行う</strong>：家族で月次レビューをすると情報共有になり、節約意識も高まる</li>
-    </ul>
-
-    <div class="cb">
-      <h3>カケイシピで月次レビューを効率化</h3>
-      <p>グラフ・カテゴリ集計・レシピ提案がひとつに。<br>月末30分のレビューがずっと楽になります。</p>
-      <a href="/login.html" class="bc2">無料で始める</a>
-    </div>
-
-    <h2 id="summary">まとめ</h2>
-    <p>月次家計レビューは、家計管理を「記録だけ」から「継続的な改善」へ進化させる最重要ステップです。毎月末30分だけ、今月の収支・カテゴリ別支出・改善点を確認し来月の目標を決める。カケイシピのグラフ・集計機能と<strong>レシピ自動作成機能</strong>を組み合わせれば、このサイクルがどんどん楽になります。小さな振り返りの習慣が、大きな貯金増加につながります。</p>
-  <div class="faq-block">
-<h2>よくある質問</h2>
-<div class="faq-item"><p class="faq-q">Q. 家計簿アプリは無料で使えますか？</p><p class="faq-a">A. カケイシピは14日間無料トライアルで全機能を試せます。トライアル後は月額500円で利用できます。</p></div><div class="faq-item"><p class="faq-q">Q. スマホだけで家計簿をつけられますか？</p><p class="faq-a">A. はい。カケイシピはスマホのブラウザから使えるPWAアプリです。アプリのインストールは不要です。</p></div><div class="faq-item"><p class="faq-q">Q. レシートを自動で読み取れますか？</p><p class="faq-a">A. カケイシピのOCR機能でレシートを撮影するだけで支出を自動入力できます。</p></div>
-</div>
-</article>
-
-  <aside class="sb">
-    <div class="sbc">
-      <h3>目次</h3>
-      <ul class="toc">
+<main class="am-wrap">
+  <article class="am">
+    <div class="am-eyebrow"><a href="/blog.html" class="am-cat">家計管理・習慣化</a></div>
+    <h1 class="am-title">月次家計レビューの習慣化<br/>毎月30分で家計を改善し続ける方法</h1>
+    <div class="am"><span>2026年6月10日</span></div>
+    <p class="am-lead">家計管理で挫折する多くの人が「記録はするけど振り返らない」状態に陥っています。月次レビューは、記録した数字を「改善」につなげる最重要ステップ。月末のたった30分が、家計を継続的に改善し貯金を増やし続ける習慣を作ります。</p>
+    <nav class="am-toc">
+      <div class="am-toc-title">目次</div>
+      <ol>
         <li><a href="#why-review">なぜ月次レビューが大切なのか</a></li>
         <li><a href="#what-to-review">確認する6つのポイント</a></li>
         <li><a href="#how-to-do">30分レビューのタイムライン</a></li>
         <li><a href="#recipe-review">レシピ機能と組み合わせた家計改善</a></li>
         <li><a href="#habit">習慣にする3つのコツ</a></li>
         <li><a href="#summary">まとめ</a></li>
-      </ul>
-    </div>
-    <div class="sbc">
-      <h3>関連記事</h3>
-      <a href="/blog/spending-analysis.html" class="ra">
-        <div class="ri" style="background:#e8f5ee">📊</div>
-        <div>
-          <div class="rt">支出管理アプリで家計分析</div>
-          <div class="rm">月別・カテゴリ別で見える化</div>
-        </div>
-      </a>
-      <a href="/blog/savings-improvement.html" class="ra">
-        <div class="ri" style="background:#fff8e1">💰</div>
-        <div>
-          <div class="rt">節約アプリで貯金を増やす方法</div>
-          <div class="rm">家計改善の実践ガイド</div>
-        </div>
-      </a>
-      <a href="/blog/budget-category-tips.html" class="ra">
-        <div class="ri" style="background:#f3e5f5">📂</div>
-        <div>
-          <div class="rt">カテゴリ別予算管理のコツ</div>
-          <div class="rm">無理なく続けられる設定方法</div>
-        </div>
-      </a>
-    </div>
-  </aside>
+      </ol>
+    </nav>
+    
+
+<h2 id="why-review">なぜ月次レビューが大切なのか</h2>
+<p>家計簿をつけているのに貯金が増えない人に共通しているのは、<strong>記録しても振り返りをしていない</strong>ことです。支出を記録するだけでは、問題を「知っている」状態にすぎません。レビューをすることで初めて「理解して改善する」サイクルが回り始めます。</p>
+<div class="card-grid">
+<div class="stat-card">
+<div class="stat-num">3倍</div>
+<div class="stat-unit">月次レビューをする人が<br/>しない人より貯蓄増加率が高い</div>
+</div>
+<div class="stat-card">
+<div class="stat-num">30分</div>
+<div class="stat-unit">月次レビューに<br/>必要な平均時間</div>
+</div>
+<div class="stat-card">
+<div class="stat-num">¥15,000</div>
+<div class="stat-unit">月次レビュー習慣者の<br/>平均月間節約額</div>
+</div>
+</div>
+<h2 id="what-to-review">月次レビューで確認する6つのポイント</h2>
+<ul class="checklist">
+<li>
+<span class="chk">1</span>
+<div><strong>収支バランス</strong>：今月の収入 - 支出 = いくら残ったか（または赤字か）を確認</div>
+</li>
+<li>
+<span class="chk">2</span>
+<div><strong>カテゴリ別支出</strong>：食費・外食費・娯楽費・光熱費など、カテゴリ別の内訳を先月と比較</div>
+</li>
+<li>
+<span class="chk">3</span>
+<div><strong>予算オーバーの項目</strong>：設定した予算をオーバーしたカテゴリはどこか、理由は何かを特定</div>
+</li>
+<li>
+<span class="chk">4</span>
+<div><strong>イレギュラー支出</strong>：急な出費・特別支出を把握し、来月の計画に反映する</div>
+</li>
+<li>
+<span class="chk">5</span>
+<div><strong>良かった点の確認</strong>：節約できた項目を必ず確認し、モチベーションを維持する</div>
+</li>
+<li>
+<span class="chk">6</span>
+<div><strong>来月の目標設定</strong>：今月の振り返りをもとに、来月の数値目標を決める</div>
+</li>
+</ul>
+<h2 id="how-to-do">30分月次レビューのタイムライン</h2>
+<div class="timeline">
+<div class="tl-item">
+<div class="tl-time">0〜5分</div>
+<div class="tl-title">今月の収支を確認する</div>
+<div class="tl-desc">カケイシピのトップ画面で今月の総支出を確認。収入と比較して黒字・赤字をすぐに把握。</div>
+</div>
+<div class="tl-item">
+<div class="tl-time">5〜15分</div>
+<div class="tl-title">カテゴリ別グラフを見る</div>
+<div class="tl-desc">グラフ画面でカテゴリ別支出を確認。「食費が多い月だったな」「外食を減らせた」など、先月との比較で傾向を掴む。</div>
+</div>
+<div class="tl-item">
+<div class="tl-time">15〜22分</div>
+<div class="tl-title">食費の内訳を深掘りする</div>
+<div class="tl-desc">食費はほとんどの家庭で最大のカテゴリ。どの店でいくら使ったか、何を多く買ったかを確認。カケイシピの購入履歴でスーパー別・食品カテゴリ別の詳細がわかる。</div>
+</div>
+<div class="tl-item">
+<div class="tl-time">22〜28分</div>
+<div class="tl-title">来月の改善ポイントを決める</div>
+<div class="tl-desc">「外食費を3,000円減らす」「お菓子・間食を減らす」など、1〜2個の具体的なアクションを決める。多くを変えようとしない。</div>
+</div>
+<div class="tl-item">
+<div class="tl-time">28〜30分</div>
+<div class="tl-title">来月の買い物計画を立てる</div>
+<div class="tl-desc">カケイシピのレシピ自動作成機能を活用した献立計画を立て、食費予算内で収まるよう買い物リストを作成。</div>
+</div>
+</div>
+<h2 id="recipe-review">レシピ機能と組み合わせた家計改善</h2>
+<p>月次レビューで「食費が多かった」とわかっても、翌月どう改善すればいいかわからない人も多いです。カケイシピの<strong>買い物からレシピを自動作成する機能</strong>を使うと、食費改善の具体的な行動に繋げやすくなります。</p>
+<div class="highlight-box">
+<div class="tl">カケイシピの活用フロー</div>
+<p>月次レビューで食費オーバーを確認 → 翌月の食費予算を設定 → 特売品・旬の食材を購入 → 購入した食材からレシピを自動提案 → 献立が決まるので外食衝動が減る → 結果的に食費が予算内に収まる。このサイクルが月を重ねるごとに精度を増します。</p>
+</div>
+<h2 id="habit">月次レビューを習慣にする3つのコツ</h2>
+<ul>
+<li><strong>固定日を決める</strong>：「毎月末日」「給料日の前日」など日付を決めてリマインダーをセット</li>
+<li><strong>ハードルを下げる</strong>：完璧な分析は不要。「今月の食費は多かった/少なかった」だけでも十分</li>
+<li><strong>パートナー・家族と一緒に行う</strong>：家族で月次レビューをすると情報共有になり、節約意識も高まる</li>
+</ul>
+<div class="cta-box">
+<h3>カケイシピで月次レビューを効率化</h3>
+<p>グラフ・カテゴリ集計・レシピ提案がひとつに。<br/>月末30分のレビューがずっと楽になります。</p>
+<a class="cta-btn" href="/login.html">無料で始める</a>
+</div>
+<h2 id="summary">まとめ</h2>
+<p>月次家計レビューは、家計管理を「記録だけ」から「継続的な改善」へ進化させる最重要ステップです。毎月末30分だけ、今月の収支・カテゴリ別支出・改善点を確認し来月の目標を決める。カケイシピのグラフ・集計機能と<strong>レシピ自動作成機能</strong>を組み合わせれば、このサイクルがどんどん楽になります。小さな振り返りの習慣が、大きな貯金増加につながります。</p>
+<div class="faq-block">
+<h2>よくある質問</h2>
+<div class="faq-item"><p class="faq-q">Q. 家計簿アプリは無料で使えますか？</p><p class="faq-a">A. カケイシピは14日間無料トライアルで全機能を試せます。トライアル後は月額500円で利用できます。</p></div><div class="faq-item"><p class="faq-q">Q. スマホだけで家計簿をつけられますか？</p><p class="faq-a">A. はい。カケイシピはスマホのブラウザから使えるPWAアプリです。アプリのインストールは不要です。</p></div><div class="faq-item"><p class="faq-q">Q. レシートを自動で読み取れますか？</p><p class="faq-a">A. カケイシピのOCR機能でレシートを撮影するだけで支出を自動入力できます。</p></div>
 </div>
 
-
+  </article>
+</main>
 <section class="related-articles">
 <h3>📖 関連記事</h3>
 <div class="ra-grid">
-<a class="ra-card" href="/blog/windows-mac-kakeibo.html"><span class="ra-tag">家計簿</span><br>Windows・Mac両対応の家計簿ソフト不要！</a>
-<a class="ra-card" href="/blog/web-kakeibo-free.html"><span class="ra-tag">家計簿</span><br>インストール不要！無料で使えるブラウザ家計簿</a>
-<a class="ra-card" href="/blog/spending-analysis.html"><span class="ra-tag">家計簿</span><br>支出管理アプリで家計分析</a>
-<a class="ra-card" href="/blog/simple-kakeibo-continue.html"><span class="ra-tag">家計簿</span><br>シンプルだから続く！面倒じゃない家計簿</a>
+<a class="ra-card" href="/blog/windows-mac-kakeibo.html"><span class="ra-tag">家計簿</span><br/>Windows・Mac両対応の家計簿ソフト不要！</a>
+<a class="ra-card" href="/blog/web-kakeibo-free.html"><span class="ra-tag">家計簿</span><br/>インストール不要！無料で使えるブラウザ家計簿</a>
+<a class="ra-card" href="/blog/spending-analysis.html"><span class="ra-tag">家計簿</span><br/>支出管理アプリで家計分析</a>
+<a class="ra-card" href="/blog/simple-kakeibo-continue.html"><span class="ra-tag">家計簿</span><br/>シンプルだから続く！面倒じゃない家計簿</a>
 </div>
 </section>
 <nav class="prevnext">
-  <a class="pn-link pn-prev" href="/blog/price-compare-supermarket.html"><span class="pn-dir">← 前の記事</span><span class="pn-title">スーパーの価格比較で食費を節約</span></a>
-  <a class="pn-link pn-next" href="/blog/receipt-ocr-how-it-works.html"><span class="pn-dir">次の記事 →</span><span class="pn-title">レシートOCRの仕組みと活用法</span></a>
+<a class="pn-link pn-prev" href="/blog/price-compare-supermarket.html"><span class="pn-dir">← 前の記事</span><span class="pn-title">スーパーの価格比較で食費を節約</span></a>
+<a class="pn-link pn-next" href="/blog/receipt-ocr-how-it-works.html"><span class="pn-dir">次の記事 →</span><span class="pn-title">レシートOCRの仕組みと活用法</span></a>
 </nav>
-<footer class="ft">
-  <div class="fl">
-    <a href="/">ホーム</a>
-    <a href="/blog.html">ブログ</a>
-    <a href="/index.html#pricing">料金プラン</a>
-    <a href="/terms.html" rel="nofollow">利用規約</a>
-    <a href="/privacy.html" rel="nofollow">プライバシーポリシー</a>
-    <a href="/tokushoho.html">特定商取引法に基づく表記</a>
-    <a href="/contact.html">お問い合わせ</a>
-  </div>
-  <p>© 2026 カケイシピ · AIレシート家計簿</p>
+<footer class="bf">
+<div class="fl">
+<a href="/">ホーム</a>
+<a href="/blog.html">ブログ</a>
+<a href="/index.html#pricing">料金プラン</a>
+<a href="/terms.html" rel="nofollow">利用規約</a>
+<a href="/privacy.html" rel="nofollow">プライバシーポリシー</a>
+<a href="/tokushoho.html">特定商取引法に基づく表記</a>
+<a href="/contact.html">お問い合わせ</a>
+</div>
+<p>© 2026 カケイシピ · AIレシート家計簿</p>
 </footer>
 </body>
 </html>
