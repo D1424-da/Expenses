@@ -356,7 +356,11 @@ body {
   border-radius: 12px;
 }
 .related-articles h3 { font-size: .95rem; font-weight: 700; margin-bottom: 14px; }
-.ra-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.ra-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
 .ra-card {
   display: block;
   padding: 12px 14px;
