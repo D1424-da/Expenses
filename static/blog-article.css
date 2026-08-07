@@ -574,6 +574,11 @@ body {
   .bh { background: rgba(15,26,18,.95); }
 }
 
+/* ── SIDEBAR VISIBLE: hide inline TOC on desktop ── */
+@media (min-width: 1025px) {
+  .am-toc { display: none; }
+}
+
 /* ── RESPONSIVE: TABLET ── */
 @media (max-width: 1024px) {
   /* Sidebar collapses — article returns to single-column centered layout */
