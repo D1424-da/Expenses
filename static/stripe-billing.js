@@ -44,6 +44,10 @@ export function startBillingSync() {
   }, (err) => {
     logErr("課金状態取得エラー:", err.message);
     _sub = null;
+    // エラー時もロード完了とみなしてゲートを閉じる（フェイルクローズ）。
+    // _subLoaded が false のままだと checkGate が全員を楽観的に許可してしまう。
+    _subLoaded = true;
+    if (_onSubChange) _onSubChange();
   });
 }
 

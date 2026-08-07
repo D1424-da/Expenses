@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -22,16 +23,30 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.routes import ocr, recipe, stripe_routes
+from app.stripe_billing import startup_firebase_admin
 
 BASE_DIR   = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
-app = FastAPI(title="レシートOCRサービス")
+
+@asynccontextmanager
+async def _lifespan(application: FastAPI):
+    startup_firebase_admin()
+    yield
+
+
+app = FastAPI(title="レシートOCRサービス", lifespan=_lifespan)
 
 
 def _allowed_origins() -> list[str]:
-    """CORS_ORIGINS（カンマ区切り）から許可オリジンを組み立てる。"""
-    origins = os.environ.get("CORS_ORIGINS", "*").strip()
+    """CORS_ORIGINS（カンマ区切り）から許可オリジンを組み立てる。
+
+    未設定時は空リスト（フェイルクローズ）。ローカル開発には
+    CORS_ORIGINS=http://localhost:8000 のように明示的に設定すること。
+    """
+    origins = os.environ.get("CORS_ORIGINS", "").strip()
+    if not origins:
+        return []
     if origins == "*":
         return ["*"]
     return [o.strip() for o in origins.split(",") if o.strip()]

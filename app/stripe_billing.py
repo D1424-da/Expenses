@@ -27,15 +27,17 @@ STRIPE_PRICE_ID       = os.environ.get("STRIPE_PRICE_ID", "")
 APP_URL               = os.environ.get("APP_URL", "https://get-tohon.online")
 BETA_CODES            = {c.strip().upper() for c in os.environ.get("BETA_CODES", "").split(",") if c.strip()}
 
-# ---- Firebase Admin SDK（遅延初期化） ---------------------------------------
+# ---- Firebase Admin SDK -------------------------------------------------------
+# startup_firebase_admin() を FastAPI の startup イベントから一度だけ呼ぶこと。
+# リクエストごとの遅延初期化は非同期競合（複数リクエストが同時に initialize_app を
+# 呼ぼうとする）やマルチワーカー環境での "app already exists" エラーを招く。
 
 _firestore_client = None
 
 
-def _get_firestore():
+def startup_firebase_admin() -> None:
+    """アプリ起動時に一度だけ呼ぶ。Firebase Admin SDK を初期化して Firestore クライアントを準備する。"""
     global _firestore_client
-    if _firestore_client is not None:
-        return _firestore_client
     try:
         import firebase_admin
         from firebase_admin import credentials, firestore as admin_fs
@@ -51,10 +53,16 @@ def _get_firestore():
             firebase_admin.initialize_app(cred)
 
         _firestore_client = admin_fs.client()
-        return _firestore_client
+        logger.info("Firebase Admin SDK を初期化しました。")
     except Exception as exc:  # noqa: BLE001
-        logger.error("Firebase Admin SDK の初期化に失敗しました: %s", exc)
-        raise HTTPException(503, "サブスクリプション機能が設定されていません。") from exc
+        logger.warning("Firebase Admin SDK の初期化に失敗しました（Stripe 機能は無効）: %s", exc)
+        # 起動は続行する。実際に Firestore を使う関数内で 503 を返す。
+
+
+def _get_firestore():
+    if _firestore_client is not None:
+        return _firestore_client
+    raise HTTPException(503, "サブスクリプション機能が設定されていません。")
 
 
 # ---- Stripe 操作 ------------------------------------------------------------

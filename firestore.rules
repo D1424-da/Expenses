@@ -10,7 +10,7 @@ service cloud.firestore {
         && (!('branch' in d) || (d.branch is string && d.branch.size() <= 100))
         && (!('category' in d) || (d.category is string && d.category.size() <= 30))
         && (!('memo' in d) || (d.memo is string && d.memo.size() <= 500))
-        && (!('items' in d) || d.items is list)
+        && (!('items' in d) || (d.items is list && d.items.size() <= 80))
         && (!('rawText' in d) || (d.rawText is string && d.rawText.size() <= 20000));
     }
 
@@ -18,10 +18,28 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
+    // サブスクリプションが有効（プレミアム or トライアル期間内）かをサーバー側で判定する。
+    // クライアントサイドの checkGate() はあくまで UX 補助であり、
+    // 書き込みの最終判断はここで行う。
+    function isPremium(userId) {
+      let sub = get(/databases/$(database)/documents/users/$(userId)/settings/subscription).data;
+      // beta プランは status:'active' のみ有効
+      return (sub.plan == 'beta' && sub.status == 'active')
+        // 通常プラン: active かつ期限内（currentPeriodEnd が未来）
+        || (sub.status == 'active'
+            && sub.currentPeriodEnd is number
+            && sub.currentPeriodEnd > request.time.toMillis() / 1000);
+    }
+
+    function canWrite(userId) {
+      return isOwner(userId) && isPremium(userId);
+    }
+
     // 各ユーザーは自分のデータ（users/{uid}/...）にのみアクセス可能。
+    // 書き込みはサーバー側でサブスクリプション有効性を確認してから許可する。
     match /users/{userId}/expenses/{expenseId} {
       allow read, delete: if isOwner(userId);
-      allow create, update: if isOwner(userId) && validExpense(request.resource.data);
+      allow create, update: if canWrite(userId) && validExpense(request.resource.data);
     }
 
     // 設定（予算・買い物リスト）。ドキュメントIDは決め打ち（budget / shoppingList）。
