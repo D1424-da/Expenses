@@ -268,7 +268,7 @@
 (function(){
   var list = document.getElementById('sb-toc-list');
   if (!list) return;
-  var hs = document.querySelectorAll('.am h2[id]');
+  var hs = document.querySelectorAll('main h2[id], article h2[id]');
   if (!hs.length) return;
   hs.forEach(function(h){
     var li = document.createElement('li');
