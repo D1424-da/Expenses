@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v15";
+const CACHE = "receipt-v16";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
@@ -74,6 +74,9 @@ self.addEventListener("fetch", (e) => {
     );
     return;
   }
+
+  // ブログ用CSS・トークンはSWキャッシュを使わずネットワーク直取得（更新即反映）
+  if (url.pathname === '/blog-article.css' || url.pathname === '/tokens.css') return;
 
   // 静的アセット: キャッシュ優先、なければネット取得してキャッシュ
   e.respondWith(
