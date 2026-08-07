@@ -416,6 +416,48 @@ body {
 .app-name { font-weight: 700; }
 .app-tag { font-size: .72rem; color: var(--article-ink-sub, #3D5A3E); }
 
+/* ── BEFORE / AFTER & CHECKLIST ── */
+.before-after {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 20px 0 28px;
+}
+.ba-card {
+  background: var(--article-surface, #fff);
+  border: 1px solid var(--article-border, #D6E8DB);
+  border-radius: 10px;
+  padding: 18px;
+}
+.ba-label {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.ba-label.before, .ba-amount.before { color: #b04444; }
+.ba-label.after, .ba-amount.after { color: var(--green-mid, #2D7D52); }
+.ba-amount { font-size: 1.8rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.ba-desc { font-size: .82rem; color: var(--article-ink-sub, #3D5A3E); margin-top: 4px; }
+
+.checklist { list-style: none; padding: 0; margin: 20px 0; }
+.checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--article-border, #D6E8DB);
+  color: var(--article-ink-sub, #3D5A3E);
+}
+.checklist li:last-child { border-bottom: none; }
+.checklist li::before {
+  content: "✓";
+  color: var(--green-mid, #2D7D52);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
 /* ── PROS / CONS ── */
 .pros, .cons { list-style: none; padding: 0; }
 .pros li::before { content: "✅ "; }
