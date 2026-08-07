@@ -99,6 +99,7 @@
 <a class="bh-cta" href="/login.html">無料で試す</a>
 </nav>
 </header>
+<div class="am-layout">
 <main class="am-wrap">
 <article class="am">
 <div class="am-eyebrow"><a class="am-cat" href="/blog.html">家計簿Webアプリ</a></div>
@@ -199,6 +200,18 @@
 </nav>
 </article>
 </main>
+<aside class="am-sidebar">
+<nav class="sb-toc">
+<div class="sb-toc-title">目次</div>
+<ol id="sb-toc-list"></ol>
+</nav>
+<div class="sb-cta">
+<p class="sb-cta-title">献立・レシピ・食費を<br/>まとめて管理しよう</p>
+<a class="sb-cta-btn" href="/login.html">無料で試す →</a>
+<p class="sb-cta-note">14日間無料・カード不要</p>
+</div>
+</aside>
+</div>
 
 
 
@@ -221,5 +234,33 @@
 </div>
 <p>© 2026 カケイシピ · AIレシート家計簿</p>
 </footer>
+<script>
+(function(){
+  var list = document.getElementById('sb-toc-list');
+  if (!list) return;
+  var hs = document.querySelectorAll('.am h2[id]');
+  if (!hs.length) return;
+  hs.forEach(function(h){
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent;
+    li.appendChild(a);
+    list.appendChild(li);
+  });
+  // Scroll spy
+  var links = list.querySelectorAll('a');
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) {
+        links.forEach(function(l){ l.classList.remove('sb-active'); });
+        var active = list.querySelector('a[href="#'+e.target.id+'"]');
+        if (active) active.classList.add('sb-active');
+      }
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  hs.forEach(function(h){ obs.observe(h); });
+})();
+</script>
 </body>
 </html>
