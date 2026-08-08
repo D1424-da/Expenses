@@ -83,7 +83,8 @@ function _render(expenses) {
     }
   }
 
-  $("empty-msg").hidden = expenses.length > 0;
+  const emptyMsg = $("empty-msg");
+  if (emptyMsg) emptyMsg.hidden = expenses.length > 0;
   if (!filtered.length) {
     if (expenses.length > 0) {
       list.innerHTML = `<p class="empty">条件に一致する記録がありません。</p>`;

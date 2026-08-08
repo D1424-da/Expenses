@@ -37,7 +37,7 @@
         <li><span class="lf-icon">🍳</span>「今夜何作ろう…」も、冷蔵庫の食材からAIが提案</li>
       </ul>
       <!-- PC専用：ペルソナへの共感メッセージ -->
-      <p class="login-brand-persona">毎日忙しくて、家計も料理も自信がない。<br />そんなお母さんのために作りました。</p>
+      <p class="login-brand-persona">毎日忙しくて、家計も料理も後回しになっている方のために作りました。</p>
     </div>
     <!-- 下部 / 右パネル：ログインカード -->
     <div class="login-card">
@@ -78,14 +78,16 @@
     <header class="topbar">
       <h1>カケイシピ</h1>
       <div class="topbar-right">
-        <button id="shopping-btn" class="topbar-btn" title="買い物リスト">
+        <!-- モバイルのみ表示（PCナビバーに同機能あり） -->
+        <button id="shopping-btn" class="topbar-btn topbar-btn--mobile-only" title="買い物リスト">
           🛒<span id="shopping-badge" class="shopping-badge" hidden></span>
         </button>
-        <button id="saved-recipes-btn" class="topbar-btn" title="保存済みレシピ">📚</button>
-        <button id="compare-btn" class="topbar-btn" title="価格比較">🔎 価格比較</button>
-        <button id="export-btn" class="topbar-btn" title="CSVでエクスポート">📥 CSV</button>
+        <button id="saved-recipes-btn" class="topbar-btn topbar-btn--mobile-only" title="保存済みレシピ">📚</button>
+        <!-- PC・モバイル共通 -->
+        <!-- PCナビから参照されるため DOM に残す（表示はPCナビ側） -->
+        <button id="compare-btn" class="topbar-btn topbar-btn--mobile-only" title="価格比較" aria-hidden="true" tabindex="-1" style="display:none">🔎</button>
+        <button id="export-btn" class="topbar-btn topbar-btn--pc-hidden" title="CSVでエクスポート">📥 CSV</button>
         <span id="premium-badge" class="premium-badge" hidden title="プレミアムプラン"></span>
-        <a href="blog.html" class="topbar-btn topbar-btn--blog" title="ブログ">📝 ブログ</a>
         <button id="account-btn" class="topbar-btn topbar-btn--account" title="アカウント">⚙️</button>
       </div>
     </header>
@@ -130,6 +132,7 @@
             <button id="prev-month" aria-label="前の月">‹</button>
             <span id="current-month"></span>
             <button id="next-month" aria-label="次の月">›</button>
+            <button id="today-month" class="today-month-btn" aria-label="今月に戻る" hidden>今月</button>
           </div>
         </div>
         <div class="summary-body">
@@ -227,7 +230,12 @@
         </div>
         <p id="list-filter-count" class="list-filter-count" hidden></p>
         <div id="expense-list" class="expense-list"></div>
-        <p id="empty-msg" class="empty" hidden>まだ記録がありません。<br />レシートを撮って始めましょう 📸</p>
+        <div id="empty-msg" class="empty-state" hidden>
+          <div class="empty-state-icon" aria-hidden="true">📸</div>
+          <p class="empty-state-title">まだ記録がありません</p>
+          <p class="empty-state-sub">レシートを撮影すると、金額・店名・品目を自動で読み取ります。</p>
+          <button class="empty-state-cta" id="empty-cta-btn" type="button">レシートを撮ってみる</button>
+        </div>
       </section>
     </main>
 
