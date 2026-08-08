@@ -95,6 +95,11 @@ async function _syncStripeSubscription(user) {
 // ---- 月ナビゲーション -------------------------------------------------------
 function _renderMonth() {
   $("current-month").textContent = monthLabel(state.currentMonth);
+  const todayBtn = $("today-month");
+  if (todayBtn) {
+    const isCurrentMonth = monthKey(state.currentMonth) === monthKey(new Date());
+    todayBtn.hidden = isCurrentMonth;
+  }
 }
 
 function _shiftMonth(delta) {
@@ -213,6 +218,12 @@ async function setupApp(user) {
     $("logout").onclick              = () => { stopShoppingSync(); stopMealPlanSync(); signOut(auth); };
     $("prev-month").onclick          = () => _shiftMonth(-1);
     $("next-month").onclick          = () => _shiftMonth(1);
+    $("empty-cta-btn")?.addEventListener("click", () => $("fab-camera")?.click());
+    $("today-month")?.addEventListener("click", () => {
+      state.currentMonth = new Date();
+      _renderMonth();
+      subscribeMonth(_onSnapshotUpdate);
+    });
     $("file-input").onchange         = handleFiles;
     $("camera-input").onchange       = handleFiles;
     $("skip-btn").onclick            = skipCurrent;

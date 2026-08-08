@@ -5,6 +5,7 @@
   --sage:        #4B7A5E;
   --sage-light:  #EAF3EE;
   --sage-deep:   #1E4D38;
+  --primary:     #4B7A5E;
   --petal:       #FAEAE7;
   --petal-ink:   #B85C50;
   --stone:       #F6F4F1;
@@ -136,6 +137,16 @@ body {
   justify-content: center;
 }
 .month-picker button:hover { background: var(--sage-light); }
+.today-month-btn {
+  width: auto !important;
+  padding: 0 10px !important;
+  font-size: 0.72rem !important;
+  font-weight: 700;
+  background: var(--sage) !important;
+  color: #fff !important;
+  border-color: var(--sage) !important;
+}
+.today-month-btn:hover { filter: brightness(1.08); }
 .month-picker span {
   font-size: 0.95rem;
   font-weight: 700;
@@ -158,6 +169,10 @@ body {
 .topbar-btn:hover { background: var(--border); }
 .topbar-btn--logout { color: var(--muted); }
 .topbar-btn--blog { text-decoration: none; display: inline-flex; align-items: center; }
+/* PC では PCナビバーに同機能があるためトップバーの重複ボタンを非表示 */
+@media (min-width: 769px) {
+  .topbar-btn--mobile-only { display: none !important; }
+}
 
 #shopping-btn, #saved-recipes-btn, #compare-btn {
   background: var(--stone);
@@ -377,9 +392,12 @@ input, select {
   font-family: inherit;
 }
 input:focus, select:focus {
-  outline: none;
   border-color: var(--sage);
   box-shadow: 0 0 0 3px var(--sage-light);
+}
+input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
 }
 .items-list { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
 .item-row { display: flex; flex-direction: column; gap: 4px; }
@@ -498,7 +516,7 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   flex: 1; min-width: 0;
   font-size: 0.85rem; padding: 7px 9px;
   border: 1.5px solid var(--border); border-radius: var(--r-input);
-  background: var(--stone); color: var(--ink); outline: none;
+  background: var(--stone); color: var(--ink);
 }
 .ei-inline-row input:focus, .ei-inline-row select:focus {
   border-color: var(--sage); box-shadow: 0 0 0 3px var(--sage-light);
@@ -580,7 +598,6 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .ei-item-edit-qty .ei-item-u:focus {
   border-color: var(--sage);
   box-shadow: 0 0 0 3px var(--sage-light);
-  outline: none;
 }
 .ei-item-edit-main .ei-item-n {
   flex: 2;
@@ -609,7 +626,6 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .ei-item-edit-main .ei-item-p:focus {
   border-color: var(--sage);
   box-shadow: 0 0 0 3px var(--sage-light);
-  outline: none;
 }
 .ei-item-rm {
   flex-shrink: 0;
@@ -667,6 +683,43 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   font-size: 0.88rem;
   line-height: 1.7;
 }
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 24px 32px;
+  text-align: center;
+}
+.empty-state-icon {
+  font-size: 3rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+.empty-state-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.empty-state-sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 26ch;
+  line-height: 1.6;
+}
+.empty-state-cta {
+  margin-top: 6px;
+  padding: 10px 22px;
+  background: var(--sage);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-btn);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+.empty-state-cta:hover { filter: brightness(1.08); }
 
 /* ============================================================
    LOGIN
@@ -788,7 +841,7 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .email-divider::before,.email-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 .email-form { display: flex; flex-direction: column; gap: 10px; }
 .email-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--r-btn); font-size: 0.95rem; background: var(--bg); color: var(--fg); box-sizing: border-box; }
-.email-input:focus { outline: none; border-color: var(--primary); }
+.email-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--sage-light); }
 .email-submit-btn { width: 100%; padding: 13px; background: var(--primary); color: #fff; border: none; border-radius: var(--r-btn); font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity .15s; }
 .email-submit-btn:hover { opacity: .88; }
 .email-submit-btn:disabled { opacity: .5; cursor: default; }
@@ -1007,7 +1060,7 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   border: 1.5px solid var(--border); border-radius: 10px;
   background: var(--card); color: var(--ink);
 }
-.meal-editor-input:focus { outline: none; border-color: var(--sage); }
+.meal-editor-input:focus { border-color: var(--sage); box-shadow: 0 0 0 3px var(--sage-light); }
 .meal-del-btn, .meal-recipe-btn {
   flex-shrink: 0; background: none; border: none; cursor: pointer;
   font-size: 1rem; padding: 4px 5px; border-radius: 7px; line-height: 1;
@@ -1198,7 +1251,8 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .budget-input-wrap { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--r-input); overflow: hidden; flex: 1; background: var(--card); }
 .budget-yen-prefix { padding: 0 8px; color: var(--muted); font-size: 0.9rem; }
 .budget-input-wrap input { border: none; border-radius: 0; padding: 9px 8px 9px 0; }
-.budget-input-wrap input:focus { outline: none; box-shadow: none; }
+.budget-input-wrap input:focus { border-color: var(--sage); }
+.budget-input-wrap:focus-within { box-shadow: 0 0 0 3px var(--sage-light); border-color: var(--sage); }
 .budget-row { display: flex; flex-direction: column; gap: 5px; padding: 4px 0; }
 .budget-row-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 0.83rem; }
 .budget-amount { font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -1305,9 +1359,23 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   color: var(--muted);
   min-height: 56px;
   font-family: inherit;
+  position: relative;
 }
 .bnav-item:hover { color: var(--sage); }
-.bnav-item.active { color: var(--sage); }
+.bnav-item.active {
+  color: var(--sage);
+}
+.bnav-item.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 3px;
+  background: var(--sage);
+  border-radius: 0 0 3px 3px;
+}
 .bnav-icon { font-size: 1.3rem; line-height: 1; }
 .bnav-label { font-size: 0.68rem; font-weight: 700; letter-spacing: .02em; }
 
@@ -1889,3 +1957,14 @@ details[open] .recipe-advanced-toggle::before { content: "▼ "; }
 .saved-recipe-plan-date-row { margin-bottom: 8px; }
 .saved-recipe-plan-date-row label { font-size: 0.83rem; font-weight: 600; }
 .saved-recipe-plan-date-row input[type="date"] { margin-left: 6px; font-size: 0.85rem; }
+
+/* ============================================================
+   MOTION ACCESSIBILITY
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

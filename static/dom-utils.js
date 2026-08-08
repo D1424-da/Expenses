@@ -33,18 +33,56 @@ const MODAL_TITLES = {
   "upgrade-modal": "プレミアムプラン",
 };
 
-export function openModal(id) {
-  $(id).hidden = false;
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+// モーダルを開いたトリガー要素を記憶する（閉じた後にフォーカスを戻すため）
+const _triggerMap = new Map();
+
+export function openModal(id, trigger) {
+  const modal = $(id);
+  modal.hidden = false;
   document.body.classList.add("modal-open");
   if (typeof window.trackPageview === "function") {
     window.trackPageview(`/app/${id}`, MODAL_TITLES[id] || id);
   }
+  // トリガーを記録（引数未指定時はフォーカス中の要素）
+  _triggerMap.set(id, trigger ?? document.activeElement);
+  // モーダル内の最初のフォーカス可能要素へ移動
+  const first = modal.querySelector(FOCUSABLE);
+  if (first) first.focus();
+  // フォーカストラップ
+  modal._trapHandler = (e) => _trapFocus(e, modal);
+  modal.addEventListener("keydown", modal._trapHandler);
 }
 
 export function closeModal(id) {
-  $(id).hidden = true;
+  const modal = $(id);
+  if (modal._trapHandler) {
+    modal.removeEventListener("keydown", modal._trapHandler);
+    modal._trapHandler = null;
+  }
+  modal.hidden = true;
   if (!document.querySelector(".modal:not([hidden])")) {
     document.body.classList.remove("modal-open");
+  }
+  // トリガーにフォーカスを戻す
+  const trigger = _triggerMap.get(id);
+  if (trigger && typeof trigger.focus === "function") trigger.focus();
+  _triggerMap.delete(id);
+}
+
+function _trapFocus(e, modal) {
+  if (e.key !== "Tab") return;
+  const focusable = [...modal.querySelectorAll(FOCUSABLE)].filter(
+    (el) => !el.closest("[hidden]")
+  );
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last  = focusable[focusable.length - 1];
+  if (e.shiftKey) {
+    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+  } else {
+    if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
   }
 }
 
