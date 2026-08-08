@@ -2,11 +2,10 @@
 // 他のモジュールはここから auth/db/provider をインポートする。
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getAuth, GoogleAuthProvider, connectAuthEmulator,
+  getAuth, GoogleAuthProvider,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
-  connectFirestoreEmulator, memoryLocalCache,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 import { firebaseConfig } from "./firebase-config.js";
@@ -17,12 +16,14 @@ const _useEmulator = typeof window !== "undefined" && window.__USE_EMULATOR__ ==
 export const fbApp = initializeApp(firebaseConfig);
 export const auth  = getAuth(fbApp);
 export const db    = initializeFirestore(fbApp, {
-  localCache: _useEmulator
-    ? memoryLocalCache()
-    : persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
 });
 
 if (_useEmulator) {
+  const { connectAuthEmulator } =
+    await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+  const { connectFirestoreEmulator } =
+    await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
   connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
   connectFirestoreEmulator(db, "127.0.0.1", 8080);
   log("Firebase Emulator に接続しました");
