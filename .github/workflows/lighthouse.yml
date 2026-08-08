@@ -1,0 +1,68 @@
+name: Lighthouse CI
+
+# PR と main への push でパフォーマンス/アクセシビリティ/SEO スコアを計測する。
+# スコアが閾値を下回ると CI が失敗し、劣化を検知できる。
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    name: Lighthouse (login.html / index.html)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11.9"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Python deps
+        run: pip install -r requirements-dev.txt
+
+      - name: Install Node deps
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.14.x
+
+      - name: Install Chrome
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      # FastAPI サーバーをバックグラウンドで起動
+      # FIREBASE_PROJECT_ID を空にすることで Firebase Admin SDK の初期化をスキップ
+      - name: Start FastAPI server
+        run: |
+          STRIPE_SECRET_KEY="" \
+          STRIPE_WEBHOOK_SECRET="" \
+          GEMINI_API_KEY="" \
+          FIREBASE_PROJECT_ID="" \
+          uvicorn main:app --host 0.0.0.0 --port 8765 --log-level warning &
+          # ヘルスチェックが通るまで最大20秒待つ
+          for i in $(seq 1 20); do
+            curl -sf http://localhost:8765/api/health && break
+            sleep 1
+          done
+
+      - name: Run Lighthouse CI
+        run: lhci autorun
+        env:
+          LHCI_BUILD_CONTEXT__CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }}
+          # browser-actions/setup-chrome でインストールした Chrome を使用
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}

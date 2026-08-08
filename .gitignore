@@ -25,3 +25,4 @@ serviceAccount*.json
 # Playwright
 test-results/
 playwright-report/
+.lighthouseci/
