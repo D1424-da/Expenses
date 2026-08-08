@@ -21,3 +21,7 @@ serviceAccount*.json
 *service-account*.json
 *-adminsdk-*.json
 .claude/
+
+# Playwright
+test-results/
+playwright-report/

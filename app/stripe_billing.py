@@ -54,7 +54,7 @@ def startup_firebase_admin() -> None:
 
         _firestore_client = admin_fs.client()
         logger.info("Firebase Admin SDK を初期化しました。")
-    except Exception as exc:  # noqa: BLE001
+    except BaseException as exc:  # noqa: BLE001 — pyo3 PanicException は BaseException
         logger.warning("Firebase Admin SDK の初期化に失敗しました（Stripe 機能は無効）: %s", exc)
         # 起動は続行する。実際に Firestore を使う関数内で 503 を返す。
 
