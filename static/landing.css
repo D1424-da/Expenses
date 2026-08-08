@@ -492,7 +492,7 @@ body {
 }
 .cta-banner p { color: #a8d8bb; margin-bottom: 36px; font-size: .95rem; }
 .cta-banner .btn-primary { font-size: 1.05rem; padding: 16px 40px; }
-.cta-note { margin-top: 16px; font-size: .78rem; color: #7db899; }
+.cta-note { margin-top: 16px; font-size: .78rem; color: #a8d8bb; }
 
 /* ── FOOTER ── */
 .footer {
@@ -516,12 +516,12 @@ body {
 }
 .footer-links a {
   font-size: .82rem;
-  color: #5a7d69;
+  color: #7db899;
   text-decoration: none;
   transition: color .15s;
 }
 .footer-links a:hover { color: #a8d8bb; }
-.footer-copy { font-size: .78rem; color: #3d5c4a; }
+.footer-copy { font-size: .78rem; color: #7db899; }
 
 /* ── MOBILE BOTTOM CTA ── */
 .mobile-cta-bar {
