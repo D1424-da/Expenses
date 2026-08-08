@@ -128,7 +128,7 @@ body {
 .hero-eyebrow {
   display: inline-block;
   background: rgba(255,255,255,.15);
-  color: #a8d8bb;
+  color: #fff;
   border: 1px solid rgba(255,255,255,.2);
   border-radius: 100px;
   padding: 4px 14px;
@@ -187,7 +187,7 @@ body {
 .hero-note {
   margin-top: 14px;
   font-size: .78rem;
-  color: #7db899;
+  color: #a8d8bb;
 }
 
 /* ── PHONE MOCKUP ── */
