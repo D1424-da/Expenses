@@ -12,25 +12,42 @@ permissions:
 
 jobs:
   python:
+    name: Python テスト (pytest)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11.9"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
       - name: Install deps
         run: pip install -r requirements-dev.txt
+
       - name: Run pytest
-        run: python -m pytest tests/ -q
+        run: python -m pytest tests/ -v --tb=short --no-header -q
+        env:
+          # 外部 API キーは不要（全てモック）
+          STRIPE_SECRET_KEY: ""
+          STRIPE_WEBHOOK_SECRET: ""
+          GEMINI_API_KEY: ""
+          FIREBASE_PROJECT_ID: ""
 
   frontend:
+    name: JS テスト (vitest)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
+          cache: npm
+
       - name: Install deps
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
+
       - name: Run vitest
         run: npm test
