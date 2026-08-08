@@ -2,7 +2,6 @@
   "ci": {
     "collect": {
       "url": [
-        "http://localhost:8765/login.html",
         "http://localhost:8765/index.html"
       ],
       "numberOfRuns": 1,
