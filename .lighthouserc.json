@@ -1,0 +1,41 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "http://localhost:8765/login.html",
+        "http://localhost:8765/index.html"
+      ],
+      "numberOfRuns": 1,
+      "settings": {
+        "maxWaitForFcp": 20000,
+        "maxWaitForLoad": 40000,
+        "chromeFlags": "--no-sandbox --disable-setuid-sandbox",
+        "throttlingMethod": "simulate",
+        "formFactor": "desktop",
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1280,
+          "height": 800,
+          "deviceScaleFactor": 1
+        }
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance":    ["warn",  { "minScore": 0.5 }],
+        "categories:accessibility":  ["error", { "minScore": 0.85 }],
+        "categories:best-practices": ["error", { "minScore": 0.8 }],
+        "categories:seo":            ["error", { "minScore": 0.8 }],
+        "color-contrast":            ["error", { "minScore": 1 }],
+        "document-title":            ["error", { "minScore": 1 }],
+        "html-has-lang":             ["error", { "minScore": 1 }],
+        "meta-viewport":             ["error", { "minScore": 1 }],
+        "meta-description":          ["warn",  { "minScore": 1 }]
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
+    }
+  }
+}
