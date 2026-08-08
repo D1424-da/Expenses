@@ -205,6 +205,12 @@ def parse_store(text: str) -> str:
         # 電話番号や住所っぽい行は除外
         if re.search(r"(tel|電話|〒|\d{2,4}-\d{2,4}-\d{3,4})", line, re.IGNORECASE):
             continue
+        # 「東京都渋谷区」「大阪市北区」等の住所行を除外
+        if re.search(r"[都道府県][^\s]{0,10}[市区町村郡]", line):
+            continue
+        # 時刻・電話番号などノイズ行（_is_noise_line と共通ロジック）を除外
+        if _is_noise_line(line):
+            continue
         # 「毎日! 新鮮! 激安!」のような宣伝スローガン（!が複数）は店名にしない
         if len(re.findall(r"[!！]", line)) >= 2:
             continue
