@@ -750,7 +750,7 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   color: #fff; letter-spacing: .04em; line-height: 1;
 }
 .login-brand-sub {
-  font-size: .78rem; color: rgba(255,255,255,.45);
+  font-size: .78rem; color: rgba(255,255,255,.80);
   letter-spacing: .18em; margin-top: 6px; margin-bottom: 18px;
 }
 .login-brand-tagline {
@@ -766,7 +766,7 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 }
 .login-features li {
   display: flex; align-items: flex-start; gap: 12px;
-  font-size: .88rem; color: rgba(255,255,255,.7);
+  font-size: .88rem; color: rgba(255,255,255,.85);
   line-height: 1.5;
 }
 .lf-icon { font-size: 1.15rem; flex-shrink: 0; margin-top: 1px; }
@@ -816,7 +816,6 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   font-size: .68rem;
   text-align: center;
   color: var(--muted);
-  opacity: .75;
 }
 .login-legal-link a { color: var(--muted); text-decoration: none; }
 .login-legal-link a:hover { text-decoration: underline; }
