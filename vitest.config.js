@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     exclude: [
       "e2e/**",
+      "tests-rules/**",
       "node_modules/**",
     ],
   },

@@ -3,9 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:rules": "vitest run --config vitest.rules.config.js"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.1",
     "vitest": "^2.1.8"
   },
   "vitest": {
