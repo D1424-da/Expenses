@@ -138,9 +138,9 @@ function _updatePremiumBadge() {
     }
   }
 
-  // ベータユーザーには Stripe ポータルボタンを表示しない（顧客 ID 未作成のため）
+  // トライアル・ベータユーザーには Stripe ポータルボタンを表示しない（顧客 ID 未作成のため）
   const portalWrap = $("account-portal-wrap");
-  if (portalWrap) portalWrap.hidden = _sub?.plan === "beta";
+  if (portalWrap) portalWrap.hidden = _sub?.plan === "beta" || _sub?.plan === "trial";
 }
 
 async function _redeemBetaCode() {
