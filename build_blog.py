@@ -1,0 +1,363 @@
+#!/usr/bin/env python3
+"""
+Build paginated blog index pages, category pages, and sitemap.
+Reads /home/user/Expenses/static/blog/articles.json as single source of truth.
+"""
+import json
+import math
+import os
+from pathlib import Path
+from datetime import datetime
+
+# ── Config ────────────────────────────────────────────────────────────────
+STATIC = Path("/home/user/Expenses/static")
+ARTICLES_JSON = STATIC / "blog" / "articles.json"
+ARTICLES_PER_PAGE = 24
+BASE_URL = "https://get-tohon.online"
+
+# Category slug mapping
+CATEGORY_SLUGS = {
+    "節約術":    "setsuyaku",
+    "家計管理":  "kakeibo",
+    "献立・レシピ": "kondate",
+    "レシピ":    "recipe",
+    "アプリ活用": "app",
+    "ライフスタイル": "lifestyle",
+    "節約レシピ": "setsuyaku-recipe",
+    "その他":    "other",
+}
+
+# All canonical categories for navigation
+NAV_CATEGORIES = [
+    ("節約術",    "setsuyaku"),
+    ("家計管理",  "kakeibo"),
+    ("献立・レシピ", "kondate"),
+    ("アプリ活用", "app"),
+    ("ライフスタイル", "lifestyle"),
+]
+
+# ── Load articles ──────────────────────────────────────────────────────────
+with open(ARTICLES_JSON, encoding="utf-8") as f:
+    all_articles = json.load(f)
+
+# Only include indexable articles
+articles = [a for a in all_articles if not a["noindex"]]
+articles.sort(key=lambda a: a["date"], reverse=True)
+
+print(f"Total indexable articles: {len(articles)}")
+
+
+# ── Helpers ────────────────────────────────────────────────────────────────
+def format_date_jp(date_str):
+    """2026-07-09 → 2026年07月09日"""
+    try:
+        d = datetime.strptime(date_str, "%Y-%m-%d")
+        return f"{d.year}年{d.month:02d}月{d.day:02d}日"
+    except:
+        return date_str
+
+
+def html_head(title, description, canonical, prev_url=None, next_url=None):
+    """Generate <head> for blog index pages"""
+    prev_link = f'  <link rel="prev" href="{BASE_URL}{prev_url}" />\n' if prev_url else ""
+    next_link = f'  <link rel="next" href="{BASE_URL}{next_url}" />\n' if next_url else ""
+    return f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="/redirect.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+  <script src="/analytics.js"></script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>{title}</title>
+  <meta name="description" content="{description}" />
+  <link rel="canonical" href="{BASE_URL}{canonical}" />
+{prev_link}{next_link}  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{BASE_URL}{canonical}" />
+  <meta property="og:title" content="{title}" />
+  <meta property="og:description" content="{description}" />
+  <meta property="og:image" content="{BASE_URL}/ogp.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{title}" />
+  <meta name="twitter:description" content="{description}" />
+  <meta name="twitter:image" content="{BASE_URL}/ogp.png" />
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "カケイシピ ブログ｜食費節約・家計管理・レシピ",
+    "description": "{description}",
+    "url": "{BASE_URL}{canonical}",
+    "inLanguage": "ja",
+    "publisher": {{
+      "@type": "Organization",
+      "name": "カケイシピ",
+      "url": "{BASE_URL}/",
+      "logo": {{"@type": "ImageObject", "url": "{BASE_URL}/favicon.svg"}}
+    }}
+  }}
+  </script>
+  <link rel="stylesheet" href="/tokens.css" />
+  <link rel="stylesheet" href="/blog-index.css" />
+</head>"""
+
+
+def header_html():
+    return """
+<header class="bh">
+  <a class="bh-logo" href="/">カケイシピ</a>
+  <nav class="bh-nav">
+    <a href="/blog.html">ブログ一覧</a>
+    <a class="bh-cta" href="/login.html">無料で試す</a>
+  </nav>
+</header>"""
+
+
+def footer_html():
+    return """
+<footer class="bf">
+  <div class="bf-logo">カケイシピ</div>
+  <nav class="bf-links">
+    <a href="/">カケイシピ TOP</a>
+    <a href="/blog.html">ブログ一覧</a>
+    <a href="/terms.html" rel="nofollow">利用規約</a>
+    <a href="/privacy.html" rel="nofollow">プライバシーポリシー</a>
+  </nav>
+  <p>© 2026 カケイシピ</p>
+</footer>"""
+
+
+def cat_nav_html(active_slug=None):
+    items = ['<a href="/blog.html" class="cat-btn{}">すべて</a>'.format(
+        ' active' if active_slug is None else '')]
+    for name, slug in NAV_CATEGORIES:
+        cls = ' active' if slug == active_slug else ''
+        items.append(f'<a href="/blog/cat/{slug}.html" class="cat-btn{cls}">{name}</a>')
+    return '<nav class="cat-nav">\n      ' + '\n      '.join(items) + '\n    </nav>'
+
+
+def card_html(article):
+    date_jp = format_date_jp(article["date"])
+    title = article["title"].replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;')
+    excerpt = article["excerpt"].replace('<', '&lt;').replace('>', '&gt;')
+    category = article["category"].replace('<', '&lt;')
+    emoji = article["emoji"]
+    url = article["url"]
+    return f"""      <a href="{url}" class="blog-card">
+        <div class="blog-card-img">{emoji}</div>
+        <div class="blog-card-body">
+          <div class="blog-card-cat">{category}</div>
+          <h2 class="blog-card-title">{title}</h2>
+          <p class="blog-card-excerpt">{excerpt}</p>
+          <div class="blog-card-date">{date_jp}</div>
+        </div>
+      </a>"""
+
+
+def pagination_html(page, total_pages, url_fn):
+    parts = []
+    if page > 1:
+        parts.append(f'<a href="{url_fn(page - 1)}" class="page-btn page-prev">← 前のページ</a>')
+    parts.append(f'<span class="page-current">{page} / {total_pages}</span>')
+    if page < total_pages:
+        parts.append(f'<a href="{url_fn(page + 1)}" class="page-btn page-next">次のページ →</a>')
+    return '<nav class="pagination">\n      ' + '\n      '.join(parts) + '\n    </nav>'
+
+
+def page_url(n):
+    return "/blog.html" if n == 1 else f"/blog-p{n}.html"
+
+
+# ── A. Paginated Index Pages ───────────────────────────────────────────────
+total = len(articles)
+total_pages = math.ceil(total / ARTICLES_PER_PAGE)
+
+for page in range(1, total_pages + 1):
+    start = (page - 1) * ARTICLES_PER_PAGE
+    end = start + ARTICLES_PER_PAGE
+    page_articles = articles[start:end]
+
+    canonical = page_url(page)
+    prev_url = page_url(page - 1) if page > 1 else None
+    next_url = page_url(page + 1) if page < total_pages else None
+
+    title = "食費節約・家計管理・レシピの情報ブログ｜カケイシピ公式"
+    if page > 1:
+        title = f"ブログ記事一覧（{page}ページ目）｜カケイシピ"
+    description = f"カケイシピ公式ブログ。食費節約・家計管理・レシピの実践記事{total}本。ページ{page}/{total_pages}。"
+
+    cards = "\n".join(card_html(a) for a in page_articles)
+    pager = pagination_html(page, total_pages, page_url)
+
+    # Featured article block on page 1
+    featured_block = ""
+    if page == 1:
+        featured_block = """
+    <!-- Featured Article -->
+    <a href="/blog/shopping-to-recipe.html" class="featured-card">
+      <div class="featured-visual">
+        <div class="feat-flow">
+          <div class="feat-step">🛒 今日の買い物を記録</div>
+          <div class="feat-arrow">↓</div>
+          <div class="feat-step">📋 食材リストが自動生成</div>
+          <div class="feat-arrow">↓</div>
+          <div class="feat-result">🍳 レシピを自動提案</div>
+        </div>
+      </div>
+      <div class="featured-body">
+        <div class="featured-label">⭐ 注目機能</div>
+        <span class="featured-tag">カケイシピの最強機能</span>
+        <h2 class="featured-title">買い物した食材からレシピを自動作成<br>食材ロスゼロ・献立悩みゼロを実現</h2>
+        <p class="featured-excerpt">スーパーで買った食材を記録するだけで、その食材を使ったレシピが自動提案されます。献立に悩む時間をなくし、食材を使い切ることで月1〜2万円の食費節約を実現するカケイシピの核心機能を徹底解説。</p>
+        <div class="featured-meta">
+          <span>2026年07月09日</span>
+          <span class="featured-cat-badge">レシピ</span>
+        </div>
+      </div>
+    </a>
+"""
+
+    hero_h1 = "食費節約・家計管理・レシピのブログ"
+    hero_p = f"一人暮らしから家族まで、食費節約と献立管理の実践情報{total}本"
+
+    html_out = f"""{html_head(title, description, canonical, prev_url, next_url)}
+<body>
+{header_html()}
+
+  <main class="blog-main">
+    <div class="blog-hero">
+      <h1>{hero_h1}</h1>
+      <p>{hero_p}</p>
+    </div>
+
+    {cat_nav_html()}
+{featured_block}
+    <div class="blog-grid">
+{cards}
+    </div>
+
+    {pager}
+  </main>
+
+{footer_html()}
+</body>
+</html>"""
+
+    out_path = STATIC / ("blog.html" if page == 1 else f"blog-p{page}.html")
+    out_path.write_text(html_out, encoding="utf-8")
+    print(f"  Written: {out_path.name} ({len(page_articles)} articles)")
+
+print(f"Generated {total_pages} index pages")
+
+
+# ── B. Category Pages ──────────────────────────────────────────────────────
+cat_dir = STATIC / "blog" / "cat"
+cat_dir.mkdir(exist_ok=True)
+
+from collections import defaultdict
+cat_articles = defaultdict(list)
+for a in articles:
+    cat = a["category"]
+    # Map to normalized category name if needed
+    for std_cat in CATEGORY_SLUGS:
+        if cat == std_cat:
+            cat_articles[std_cat].append(a)
+            break
+    else:
+        cat_articles["その他"].append(a)
+
+for cat_name, slug in CATEGORY_SLUGS.items():
+    cat_arts = cat_articles.get(cat_name, [])
+    if not cat_arts:
+        print(f"  Skip (empty): {cat_name}")
+        continue
+
+    canonical = f"/blog/cat/{slug}.html"
+    title = f"{cat_name}の記事一覧｜カケイシピブログ"
+    description = f"カケイシピブログの{cat_name}カテゴリ記事一覧。全{len(cat_arts)}本。食費節約・家計管理・レシピの実践情報。"
+
+    cards = "\n".join(card_html(a) for a in cat_arts)
+
+    html_out = f"""{html_head(title, description, canonical)}
+<body>
+{header_html()}
+
+  <main class="blog-main">
+    <div class="blog-hero">
+      <h1>{cat_name}の記事</h1>
+      <p>{cat_name}に関する実践記事 全{len(cat_arts)}本</p>
+    </div>
+
+    {cat_nav_html(active_slug=slug)}
+
+    <div class="blog-grid">
+{cards}
+    </div>
+
+    <div class="cat-back">
+      <a href="/blog.html" class="cat-back-link">← すべての記事を見る</a>
+    </div>
+  </main>
+
+{footer_html()}
+</body>
+</html>"""
+
+    out_path = cat_dir / f"{slug}.html"
+    out_path.write_text(html_out, encoding="utf-8")
+    print(f"  Written: blog/cat/{slug}.html ({len(cat_arts)} articles)")
+
+print("Generated category pages")
+
+
+# ── C. Sitemap ────────────────────────────────────────────────────────────
+sitemap_urls = []
+
+# Main pages
+main_pages = [
+    ("/", "weekly"),
+    ("/blog.html", "daily"),
+    ("/login.html", "monthly"),
+]
+for path, freq in main_pages:
+    sitemap_urls.append(f"""  <url>
+    <loc>{BASE_URL}{path}</loc>
+    <changefreq>{freq}</changefreq>
+    <priority>{"1.0" if path == "/" else "0.9"}</priority>
+  </url>""")
+
+# Paginated index pages (page 2+)
+for page in range(2, total_pages + 1):
+    sitemap_urls.append(f"""  <url>
+    <loc>{BASE_URL}{page_url(page)}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>""")
+
+# Category pages
+for cat_name, slug in CATEGORY_SLUGS.items():
+    if cat_articles.get(cat_name):
+        sitemap_urls.append(f"""  <url>
+    <loc>{BASE_URL}/blog/cat/{slug}.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>""")
+
+# Article pages
+for a in articles:
+    sitemap_urls.append(f"""  <url>
+    <loc>{BASE_URL}{a["url"]}</loc>
+    <lastmod>{a["date"]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>""")
+
+sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+sitemap_xml += "\n".join(sitemap_urls)
+sitemap_xml += "\n</urlset>\n"
+
+(STATIC / "sitemap.xml").write_text(sitemap_xml, encoding="utf-8")
+print(f"Generated sitemap.xml with {len(sitemap_urls)} URLs")
