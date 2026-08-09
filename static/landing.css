@@ -798,3 +798,9 @@ body {
   background: var(--green-mid);
   color: #fff;
 }
+
+/* ── PC向けヒーローメッセージ ── */
+.hero-pc-note { margin-top: 8px; }
+.hero-pc-badge { display: inline-block; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3); border-radius: 100px; padding: 4px 14px; font-size: .78rem; font-weight: 700; margin-bottom: 12px; color: rgba(255,255,255,.9); }
+.hero-pc-note p { font-size: .88rem; color: rgba(255,255,255,.8); line-height: 1.7; margin-bottom: 16px; }
+.hero-pc-actions { display: flex; gap: 12px; flex-wrap: wrap; }

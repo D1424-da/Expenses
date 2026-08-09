@@ -668,3 +668,16 @@ body {
 /* ── STAT CARD GRID (3カラム用) ── */
 .card-grid.stat-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 .stat-card { text-align: center; justify-content: center; flex-direction: column; }
+
+/* ── PC向けCTA（blog-cta.jsで差し替え） ── */
+.am-cta-pc { display: flex; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; }
+.am-cta-pc-text { flex: 1; min-width: 200px; text-align: left; }
+.am-cta-pc-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; opacity: 1; }
+.am-cta-pc-sub { font-size: .9rem; line-height: 1.7; opacity: .85; margin-bottom: 12px; }
+.am-cta-pc-free { font-size: .78rem; opacity: .65; }
+.am-cta-pc-qr { flex-shrink: 0; text-align: center; }
+.am-cta-pc-qr svg { width: 140px; height: 140px; border-radius: 8px; background: white; padding: 6px; display: block; }
+.am-cta-pc-qr-label { font-size: .72rem; opacity: .7; margin-top: 6px; }
+.am-cta-pc-blog { margin-top: 20px; text-align: center; }
+.am-cta-pc-blog-btn { display: inline-block; color: rgba(255,255,255,.9); border: 1px solid rgba(255,255,255,.4); border-radius: 100px; padding: 10px 24px; font-size: .88rem; text-decoration: none; transition: background .15s; }
+.am-cta-pc-blog-btn:hover { background: rgba(255,255,255,.15); }
