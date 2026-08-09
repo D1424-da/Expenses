@@ -681,3 +681,11 @@ body {
 .am-cta-pc-blog { margin-top: 20px; text-align: center; }
 .am-cta-pc-blog-btn { display: inline-block; color: rgba(255,255,255,.9); border: 1px solid rgba(255,255,255,.4); border-radius: 100px; padding: 10px 24px; font-size: .88rem; text-decoration: none; transition: background .15s; }
 .am-cta-pc-blog-btn:hover { background: rgba(255,255,255,.15); }
+
+/* ── 読了時間 ── */
+.am-reading-time {
+  font-size: .8rem;
+  color: var(--article-ink-sub, #3D5A3E);
+  opacity: .75;
+  margin: 4px 0 16px;
+}
