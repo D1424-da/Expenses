@@ -76,7 +76,7 @@ body {
   letter-spacing: .04em;
   text-decoration: none;
 }
-.header-logo span { font-size: .75rem; opacity: .7; margin-left: 6px; font-family: inherit; font-weight: 400; }
+.header-logo span { font-size: .75rem; color: rgba(255,255,255,.85); margin-left: 6px; font-family: inherit; font-weight: 400; }
 .header-cta {
   background: var(--orange);
   color: #fff;
