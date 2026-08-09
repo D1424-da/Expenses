@@ -1399,6 +1399,47 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .bnav-icon { font-size: 1.3rem; line-height: 1; }
 .bnav-label { font-size: 0.68rem; font-weight: 700; letter-spacing: .02em; }
 
+/* スマホ「もっと見る」ドロワー */
+.bnav-more-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+.bnav-more-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+}
+.bnav-more-sheet {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: var(--card);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 16px calc(16px + env(safe-area-inset-bottom, 0));
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+}
+.bnav-more-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.bnav-more-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 4px;
+  background: var(--stone);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--ink-2);
+}
+.bnav-more-item:hover { background: var(--border); }
+.bnav-more-icon { font-size: 1.5rem; line-height: 1; }
+.bnav-more-label { font-size: 0.68rem; font-weight: 700; }
+
 /* FAB */
 .fab {
   position: fixed;
