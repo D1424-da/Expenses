@@ -1462,6 +1462,8 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .pcnav-icon { font-size: 1rem; line-height: 1; }
 .pcnav-label { font-size: 0.8rem; }
 .pcnav-divider { width: 1px; height: 18px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+a.pc-nav-item { text-decoration: none; }
+a.pcnav-blog { margin-left: auto; color: var(--sage); }
 
 /* ============================================================
    SMALL MOBILE TWEAKS
