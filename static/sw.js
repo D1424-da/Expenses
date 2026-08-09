@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v16";
+const CACHE = "receipt-v17";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
@@ -9,15 +9,20 @@ const STATIC_ASSETS = [
   "/style.css",
   "/app.js",
   "/firebase-config.js",
+  "/firebase-init.js",
   "/db-paths.js",
+  "/app-state.js",
   "/dom-utils.js",
   "/log.js",
+  "/auth.js",
+  "/firestore-data.js",
   "/parser.js",
   "/expense-form.js",
   "/list-view.js",
   "/calendar-view.js",
   "/compare-view.js",
   "/ocr-client.js",
+  "/ocr-queue.js",
   "/recipe-view.js",
   "/saved-recipes.js",
   "/shopping-list.js",
@@ -26,8 +31,12 @@ const STATIC_ASSETS = [
   "/trend-view.js",
   "/budget-view.js",
   "/stats.js",
+  "/summary.js",
+  "/csv-export.js",
+  "/stripe-billing.js",
   "/redirect.js",
-
+  "/analytics.js",
+  "/blog-cta.js",
 ];
 
 self.addEventListener("install", (e) => {

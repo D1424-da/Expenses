@@ -219,6 +219,7 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget, db, getUser 
  * @param {string}  [opts.initialPeriod] - "day"|"week"|"month"（デフォルト "day"）
  */
 export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }) {
+  _expensesCache = null; // 月移動後の古いキャッシュを破棄
   _selectedDay = selectedDay;
   _expenses = expenses || [];
   _activeType = "meal";
