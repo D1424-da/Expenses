@@ -66,3 +66,26 @@ jobs:
           LHCI_BUILD_CONTEXT__CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }}
           # browser-actions/setup-chrome でインストールした Chrome を使用
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+
+      - name: Show color-contrast violations (デバッグ用)
+        if: failure()
+        run: |
+          python3 - <<'EOF'
+          import json, glob, sys
+          for path in glob.glob(".lighthouseci/*.json"):
+              try:
+                  data = json.load(open(path))
+              except Exception:
+                  continue
+              audits = data.get("audits", {})
+              cc = audits.get("color-contrast", {})
+              items = cc.get("details", {}).get("items", [])
+              if items:
+                  print(f"=== {path} ===")
+                  for it in items:
+                      node = it.get("node", {})
+                      print(f"  selector : {node.get('selector','?')}")
+                      print(f"  snippet  : {node.get('snippet','?')}")
+                      print(f"  explain  : {node.get('explanation','?')}")
+                      print()
+          EOF
