@@ -297,6 +297,9 @@ async function setupApp(user) {
       maybeRefreshDayModal();
     });
     _renderMonth();
+    // リダイレクトログイン直後にトークンが未確定の場合があるため
+    // Firestoreを購読する前に強制リフレッシュして権限エラーを防ぐ
+    await user.getIdToken(/* forceRefresh= */ true).catch(() => {});
     subscribeMonth(_onSnapshotUpdate);
   } finally {
     _setupRunning = false;
