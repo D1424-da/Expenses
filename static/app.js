@@ -27,6 +27,7 @@ import { log, logErr } from "./log.js";
 import { $, dayKey, monthKey, monthLabel, bindModalDismiss, openModal, closeModal } from "./dom-utils.js";
 import { state } from "./app-state.js";
 import { watchAuthState, auth, signOut } from "./auth.js";
+import { db } from "./firebase-init.js";
 import {
   expensesCol, fetchAllExpenses, fetchMonthExpenses,
   subscribeMonth, addCalendarExpense,
@@ -186,19 +187,19 @@ async function setupApp(user) {
       onInlineSave: _inlineSave,
     });
     initCompare({ fetchAllExpenses });
-    initRecipe({ getToken: () => state.currentUser?.getIdToken(), fetchAllExpenses, getBudget, db: null, getUser: () => state.currentUser });
+    initRecipe({ getToken: () => state.currentUser?.getIdToken(), fetchAllExpenses, getBudget, db, getUser: () => state.currentUser });
     initBudget({
-      db: null,
+      db,
       getUser:          () => state.currentUser,
       categories:       CATEGORIES,
       onUpdated:        renderSummary,
       getCurrentMonth:  () => state.currentMonth,
     });
     initTrend({ fetchMonthExpenses });
-    initSavedRecipes({ db: null, getUser: () => state.currentUser });
-    initShoppingList({ db: null, getUser: () => state.currentUser });
-    initMealPlan({ db: null, getUser: () => state.currentUser });
-    initBilling({ db: null, getUser: () => state.currentUser, onSubChange: () => renderSummary() });
+    initSavedRecipes({ db, getUser: () => state.currentUser });
+    initShoppingList({ db, getUser: () => state.currentUser });
+    initMealPlan({ db, getUser: () => state.currentUser });
+    initBilling({ db, getUser: () => state.currentUser, onSubChange: () => renderSummary() });
     $("usage-bar").querySelector(".usage-upgrade").onclick = () => openModal("upgrade-modal");
 
     // アカウントモーダル
