@@ -1,6 +1,6 @@
 export const firebaseConfig = {
   apiKey: "AIzaSyCJanik_5LtvXqDCVahBSPgF4vpWvlf72o",
-  authDomain: "get-tohon.online",
+  authDomain: "expenses-9af61.firebaseapp.com",
   projectId: "expenses-9af61",
   storageBucket: "expenses-9af61.firebasestorage.app",
   messagingSenderId: "277005147489",
