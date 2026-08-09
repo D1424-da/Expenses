@@ -127,11 +127,11 @@ function _updatePremiumBadge() {
       ? (() => { const d = new Date(end * 1000); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`; })()
       : null;
     if (_sub?.plan === "trial" && dateStr) {
-      badge.textContent = `🎁 トライアル中（${dateStr}まで）`;
-      badge.title = "無料トライアル期間中です。終了後は有料プランへの登録が必要になります。";
+      badge.textContent = `🎁 トライアル中`;
+      badge.title = `無料トライアル期間中（${dateStr}まで）。終了後は有料プランへの登録が必要になります。`;
     } else if (_sub?.cancelAtPeriodEnd && dateStr) {
-      badge.textContent = `✨ PRO（${dateStr}まで）`;
-      badge.title = "解約手続き済み — 上記日付以降は無料プランに戻ります";
+      badge.textContent = `✨ PRO`;
+      badge.title = `解約手続き済み — ${dateStr}以降は無料プランに戻ります`;
     } else {
       badge.textContent = "✨ PRO";
       badge.title = "プレミアムプラン";
