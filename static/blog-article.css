@@ -681,3 +681,77 @@ body {
 .am-cta-pc-blog { margin-top: 20px; text-align: center; }
 .am-cta-pc-blog-btn { display: inline-block; color: rgba(255,255,255,.9); border: 1px solid rgba(255,255,255,.4); border-radius: 100px; padding: 10px 24px; font-size: .88rem; text-decoration: none; transition: background .15s; }
 .am-cta-pc-blog-btn:hover { background: rgba(255,255,255,.15); }
+
+/* ── 読了時間 ── */
+.am-reading-time {
+  font-size: .8rem;
+  color: var(--article-ink-sub, #3D5A3E);
+  opacity: .75;
+  margin: 4px 0 16px;
+}
+
+/* ── 関連記事 ── */
+.am-related {
+  margin: 48px 0 32px;
+  padding-top: 32px;
+  border-top: 1px solid var(--article-border, #D6E8DB);
+}
+.am-related-title {
+  font-size: .8rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--article-ink-sub, #3D5A3E);
+  margin-bottom: 14px;
+}
+.rel-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rel-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--green-pale, #edf6f0);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--article-ink, #12200F);
+  transition: background .15s;
+}
+.rel-card:hover { background: var(--green-light, #d4ecdc); }
+.rel-card-emoji { font-size: 1.4rem; flex-shrink: 0; line-height: 1.2; }
+.rel-card-body { display: flex; flex-direction: column; gap: 3px; }
+.rel-card-title { font-size: .88rem; font-weight: 700; line-height: 1.5; }
+.rel-card-excerpt { font-size: .78rem; color: var(--article-ink-sub, #3D5A3E); line-height: 1.5; }
+
+/* ── 前後ナビ ── */
+.am-pn {
+  display: flex;
+  gap: 10px;
+  margin: 24px 0 32px;
+}
+.pn-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--article-border, #D6E8DB);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--article-ink, #12200F);
+  transition: background .15s;
+}
+.pn-item:hover { background: var(--green-pale, #edf6f0); }
+.pn-empty { border-color: transparent; }
+.pn-prev { align-items: flex-start; }
+.pn-next { align-items: flex-end; text-align: right; }
+.pn-dir { font-size: .7rem; color: var(--article-ink-sub, #3D5A3E); font-weight: 700; letter-spacing: .05em; }
+.pn-title { font-size: .82rem; font-weight: 600; line-height: 1.5; }
+
+@media (max-width: 480px) {
+  .am-pn { flex-direction: column; }
+  .pn-next { align-items: flex-start; text-align: left; }
+}
