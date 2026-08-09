@@ -245,6 +245,17 @@ async function setupApp(user) {
       expenses:    state.currentExpenses,
       initialPeriod: "month",
     });
+
+    // スマホ「もっと見る」ドロワー
+    const _drawer = $("bnav-more-drawer");
+    const _closeDrawer = () => { _drawer.hidden = true; };
+    $("bnav-more").onclick        = () => { _drawer.hidden = false; };
+    $("bnav-more-overlay").onclick = _closeDrawer;
+    $("bnav-saved").onclick       = () => { _closeDrawer(); $("saved-recipes-btn").click(); };
+    $("bnav-compare").onclick     = () => { _closeDrawer(); $("compare-btn").click(); };
+    $("bnav-budget").onclick      = () => { _closeDrawer(); $("budget-btn").click(); };
+    $("bnav-trend").onclick       = () => { _closeDrawer(); $("trend-btn").click(); };
+
     $("export-btn").onclick = exportCsv;
 
     // PC ナビ

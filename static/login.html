@@ -115,7 +115,6 @@
         <button class="pc-nav-item" id="pcnav-trend"><span class="pcnav-icon">📈</span><span class="pcnav-label">月別グラフ</span></button>
         <div class="pcnav-divider"></div>
         <a href="/blog.html" class="pc-nav-item pcnav-blog" target="_blank" rel="noopener"><span class="pcnav-icon">📖</span><span class="pcnav-label">ブログ</span></a>
-        <a href="/" class="pc-nav-item pcnav-top"><span class="pcnav-icon">🏠</span><span class="pcnav-label">TOPへ</span></a>
       </div>
     </nav>
 
@@ -626,6 +625,19 @@
     <button class="fab" id="fab-camera" aria-label="レシートを撮影">📷</button>
 
     <!-- ボトムナビ（モバイルのみ） -->
+    <!-- スマホ「もっと見る」ドロワー -->
+    <div id="bnav-more-drawer" class="bnav-more-drawer" hidden>
+      <div class="bnav-more-overlay" id="bnav-more-overlay"></div>
+      <div class="bnav-more-sheet">
+        <div class="bnav-more-grid">
+          <button class="bnav-more-item" id="bnav-saved"><span class="bnav-more-icon">📚</span><span class="bnav-more-label">保存レシピ</span></button>
+          <button class="bnav-more-item" id="bnav-compare"><span class="bnav-more-icon">🔎</span><span class="bnav-more-label">価格比較</span></button>
+          <button class="bnav-more-item" id="bnav-budget"><span class="bnav-more-icon">💰</span><span class="bnav-more-label">予算</span></button>
+          <button class="bnav-more-item" id="bnav-trend"><span class="bnav-more-icon">📈</span><span class="bnav-more-label">月別グラフ</span></button>
+        </div>
+      </div>
+    </div>
+
     <nav class="bottom-nav" aria-label="メインナビゲーション">
       <button class="bnav-item" id="bnav-home" aria-label="ホーム">
         <span class="bnav-icon">🏠</span>
@@ -642,6 +654,10 @@
       <button class="bnav-item" id="bnav-recipe" aria-label="レシピを提案">
         <span class="bnav-icon">🍳</span>
         <span class="bnav-label">レシピ提案</span>
+      </button>
+      <button class="bnav-item" id="bnav-more" aria-label="もっと見る">
+        <span class="bnav-icon">⋯</span>
+        <span class="bnav-label">もっと見る</span>
       </button>
     </nav>
   </div>
