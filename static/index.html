@@ -133,11 +133,21 @@
         予算を入れれば食材リストまで自動で作成。<br />
         食費の節約と料理の悩みを同時に解決します。
       </p>
-      <div class="hero-actions">
+      <!-- スマホ向けCTA（デフォルト） -->
+      <div class="hero-actions" id="hero-actions">
         <a class="btn-primary" href="/login.html">無料で試してみる →</a>
         <a class="btn-ghost" href="#features">機能を見る</a>
       </div>
-      <p class="hero-note">✓ Googleアカウントで即日登録 &nbsp;✓ 14日間無料 &nbsp;✓ クレカ登録不要</p>
+      <p class="hero-note" id="hero-note">✓ Googleアカウントで即日登録 &nbsp;✓ 14日間無料 &nbsp;✓ クレカ登録不要</p>
+      <!-- PC向けCTA（JS切替） -->
+      <div class="hero-pc-note" id="hero-pc-note" style="display:none">
+        <span class="hero-pc-badge">📱 スマホ専用アプリ</span>
+        <p>レシート撮影機能はスマホでご利用ください。<br>まずはブログで節約術を読んでみませんか？</p>
+        <div class="hero-pc-actions">
+          <a class="btn-primary" href="/blog.html">節約ブログを読む →</a>
+          <a class="btn-ghost" href="#features">機能を見る</a>
+        </div>
+      </div>
     </div>
     <div class="hero-visual" aria-hidden="true">
       <div class="phone-glow"></div>
@@ -570,5 +580,12 @@
 </footer>
 
 <script src="/slider.js"></script>
+<script>
+(function(){
+  if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||window.innerWidth<769)return;
+  var a=document.getElementById('hero-actions'),n=document.getElementById('hero-note'),b=document.getElementById('hero-pc-note');
+  if(a&&b){a.style.display='none';if(n)n.style.display='none';b.style.display='block';}
+})();
+</script>
 </body>
 </html>
