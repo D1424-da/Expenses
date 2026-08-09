@@ -1901,6 +1901,40 @@ a.pcnav-blog { margin-left: auto; color: var(--sage); }
   padding: 6px 9px;
 }
 
+/* ラベル付きtopbarボタン（アイコン＋テキスト縦並び） */
+.topbar-btn--labeled {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 4px 8px;
+  font-size: .65rem;
+  line-height: 1.1;
+}
+.topbar-btn--labeled .topbar-btn-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+.topbar-btn--labeled .topbar-btn-label {
+  font-size: .62rem;
+  letter-spacing: .01em;
+  opacity: .85;
+}
+
+/* アップグレードCTAボタン（無料ユーザー向け、スマホtopbar） */
+.topbar-btn--upgrade {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff !important;
+  border-color: transparent;
+  font-weight: 700;
+  font-size: .72rem;
+  padding: 5px 10px;
+  border-radius: 20px;
+}
+.topbar-btn--upgrade:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+}
+
 /* トースト通知 */
 .toast {
   position: fixed;
