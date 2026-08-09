@@ -8,8 +8,8 @@
   --green-mid:   #2D7D52;
   --green-light: #EAF3EE;
   --green-pale:  #F7FAF8;
-  --orange:      #E8621A;
-  --orange-dark: #C4511A;
+  --orange:      #C4511A;
+  --orange-dark: #A84516;
 
   /* Article-specific tokens (used by blog-article.css) */
   --article-bg:          #F7F8F4;
@@ -63,6 +63,6 @@
   --green-mid:   #2D7D52;
   --green-light: #EAF3EE;
   --green-pale:  #F7FAF8;
-  --orange:      #E8621A;
-  --orange-dark: #C4511A;
+  --orange:      #C4511A;
+  --orange-dark: #A84516;
 }
