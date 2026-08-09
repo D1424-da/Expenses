@@ -771,8 +771,9 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 }
 .lf-icon { font-size: 1.15rem; flex-shrink: 0; margin-top: 1px; }
 
-/* PC専用：ペルソナへの共感メッセージ（スマホでは非表示） */
+/* PC専用：ペルソナへの共感メッセージ・ブログリンク（スマホでは非表示） */
 .login-brand-persona { display: none; }
+.login-brand-blog-link { display: none; }
 
 /* ---- ログインカード（スマホ：下部ボトムシート） ---- */
 .login-card {
@@ -921,6 +922,23 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
     line-height: 1.8;
     border-left: 2px solid rgba(255,255,255,.15);
     padding-left: 16px;
+  }
+
+  /* ブログリンク（PCのみ表示） */
+  .login-brand-blog-link {
+    display: inline-block;
+    margin-top: 24px;
+    font-size: .88rem;
+    color: rgba(255,255,255,.75);
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 20px;
+    padding: 6px 16px;
+    transition: background .2s, color .2s;
+  }
+  .login-brand-blog-link:hover {
+    background: rgba(255,255,255,.15);
+    color: #fff;
   }
 
   /* 右パネル：ログインフォーム */
