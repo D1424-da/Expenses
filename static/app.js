@@ -203,6 +203,12 @@ async function setupApp(user) {
     $("usage-bar").querySelector(".usage-upgrade").onclick = () => openModal("upgrade-modal");
 
     // アカウントモーダル
+    // アップグレードCTAボタン（無料ユーザーのみtopbarに表示）
+    const _upgradeCta = $("upgrade-cta-btn");
+    if (_upgradeCta) {
+      _upgradeCta.onclick = () => openModal("upgrade-modal");
+    }
+
     $("account-btn").onclick = () => {
       $("account-user-email").textContent = state.currentUser?.email ?? "";
       const premium = isPremium();
@@ -211,6 +217,8 @@ async function setupApp(user) {
       const expiry = premiumExpiryLabel();
       $("account-plan-expiry").hidden  = !expiry;
       $("account-plan-expiry").textContent = expiry ?? "";
+      // topbarのアップグレードCTA：無料ユーザーのみ表示
+      if (_upgradeCta) _upgradeCta.hidden = premium;
       openModal("account-modal");
     };
     $("account-close").onclick      = () => closeModal("account-modal");

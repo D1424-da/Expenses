@@ -78,7 +78,7 @@
   <!-- アプリ本体（ログイン後に表示） -->
   <div id="app" hidden>
     <header class="topbar">
-      <h1>カケイシピ</h1>
+      <h1><a href="/" class="topbar-title-link">カケイシピ</a></h1>
       <div class="topbar-right">
         <!-- モバイルのみ表示（PCナビバーに同機能あり） -->
         <button id="shopping-btn" class="topbar-btn topbar-btn--mobile-only" title="買い物リスト">
@@ -88,10 +88,12 @@
         <!-- PC・モバイル共通 -->
         <!-- PCナビから参照されるため DOM に残す（表示はPCナビ側） -->
         <button id="compare-btn" class="topbar-btn topbar-btn--mobile-only" title="価格比較" aria-hidden="true" tabindex="-1" style="display:none">🔎</button>
-        <a href="/blog.html" class="topbar-btn topbar-btn--blog topbar-btn--mobile-only" title="節約ブログ" target="_blank" rel="noopener">📖</a>
+        <a href="/blog.html" class="topbar-btn topbar-btn--blog topbar-btn--mobile-only topbar-btn--labeled" title="節約ブログ" target="_blank" rel="noopener"><span class="topbar-btn-icon">📖</span><span class="topbar-btn-label">ブログ</span></a>
         <button id="export-btn" class="topbar-btn topbar-btn--pc-hidden" title="CSVでエクスポート">📥 CSV</button>
-        <span id="premium-badge" class="premium-badge" hidden title="プレミアムプラン"></span>
-        <button id="account-btn" class="topbar-btn topbar-btn--account" title="アカウント">⚙️</button>
+        <!-- PRO会員：バッジ表示。無料会員：アップグレードCTAとして表示 -->
+        <span id="premium-badge" class="premium-badge" hidden title="プレミアムプラン">✨ PRO</span>
+        <button id="upgrade-cta-btn" class="topbar-btn topbar-btn--upgrade topbar-btn--mobile-only" title="プレミアムにアップグレード" hidden>✨ <span class="topbar-btn-label">アップグレード</span></button>
+        <button id="account-btn" class="topbar-btn topbar-btn--account topbar-btn--labeled" title="アカウント設定"><span class="topbar-btn-icon">⚙️</span><span class="topbar-btn-label">設定</span></button>
       </div>
     </header>
 
@@ -113,6 +115,7 @@
         <button class="pc-nav-item" id="pcnav-trend"><span class="pcnav-icon">📈</span><span class="pcnav-label">月別グラフ</span></button>
         <div class="pcnav-divider"></div>
         <a href="/blog.html" class="pc-nav-item pcnav-blog" target="_blank" rel="noopener"><span class="pcnav-icon">📖</span><span class="pcnav-label">ブログ</span></a>
+        <a href="/" class="pc-nav-item pcnav-top"><span class="pcnav-icon">🏠</span><span class="pcnav-label">TOPへ</span></a>
       </div>
     </nav>
 
