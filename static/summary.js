@@ -1,5 +1,5 @@
 // サマリーエリアの描画: 合計金額・件数・カテゴリバー・最安値アラート。
-import { state } from "./app-state.js";
+import { state, expireAllExpensesCache } from "./app-state.js";
 import { $, yen, escapeHtml, monthKey, renderCatBars } from "./dom-utils.js";
 import { categoryBreakdown, buildPriceHistory, lowestPriceAlerts } from "./stats.js";
 import { renderBudgetBars } from "./budget-view.js";
@@ -36,8 +36,10 @@ async function _refreshAlerts() {
   const el = $("lowest-alerts");
   if (!el) return;
   try {
+    expireAllExpensesCache();
     if (!state.allExpensesCache) {
       state.allExpensesCache = await fetchAllExpenses();
+      state.allExpensesCacheAt = Date.now();
     }
     const curMonthKey  = monthKey(state.currentMonth);
     const pastExpenses = state.allExpensesCache.filter(

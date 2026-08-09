@@ -82,7 +82,5 @@ export async function addCalendarExpense({ date, store, amount, category }) {
     createdAt: serverTimestamp(),
   });
   log("カレンダーから追加:", date, amount);
-  if (state.allExpensesCache) {
-    state.allExpensesCache.push({ date, store, branch: "", amount, category, memo: "", items: [], ocrEngine: "manual" });
-  }
+  state.allExpensesCache = null;
 }
