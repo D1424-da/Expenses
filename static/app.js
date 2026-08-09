@@ -298,6 +298,7 @@ function teardownApp() {
   stopMealPlanSync();
   stopBillingSync();
   state.allExpensesCache = null;
+  state.allExpensesCacheAt = 0;
   resetList();
   closeModal("upgrade-modal");
   closeModal("account-modal");
