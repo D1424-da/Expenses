@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v18";
+const CACHE = "receipt-v19";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
@@ -71,7 +71,8 @@ self.addEventListener("fetch", (e) => {
     if (path === "/" || path === "/index.html" || path === "/login.html" || path === "/lp" || path.startsWith("/blog") || path === "/terms.html" ||
     path === "/privacy.html" ||
     path === "/tokushoho.html" ||
-    path === "/contact.html") {
+    path === "/contact.html" ||
+    path === "/admin.html") {
       return; // ブラウザのデフォルト処理に委ねる
     }
     // キャッシュ・ネットワークいずれも失敗した場合は必ずネットワークへ再フォールバックし、
