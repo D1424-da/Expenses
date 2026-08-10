@@ -751,6 +751,10 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   font-family: "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif;
   font-size: 3rem; font-weight: 800;
   color: #fff; letter-spacing: .04em; line-height: 1;
+  display: inline-block; text-decoration: none;
+}
+.login-brand-logo:hover, .login-brand-logo:focus-visible {
+  opacity: .85;
 }
 .login-brand-sub {
   font-size: .78rem; color: rgba(255,255,255,.80);
