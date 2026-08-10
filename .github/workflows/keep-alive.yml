@@ -14,8 +14,14 @@ jobs:
     steps:
       - name: Ping Render health endpoint
         run: |
+          # curl 自体が失敗（DNS/タイムアウト等）しても set -e でジョブごと
+          # 落とさないよう、失敗時は "000" にフォールバックする。
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             --max-time 30 \
-            https://receipt-ocr-ejrl.onrender.com/api/health)
+            https://receipt-ocr-ejrl.onrender.com/api/health || echo "000")
           echo "HTTP status: $STATUS"
-          [ "$STATUS" = "200" ] && echo "✅ Render is awake" || echo "⚠️ Render returned $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Render is awake"
+          else
+            echo "⚠️ Render returned $STATUS（一時的なコールドスタートの可能性あり。次回実行で再試行されます）"
+          fi
