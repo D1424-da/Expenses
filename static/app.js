@@ -318,5 +318,15 @@ function teardownApp() {
   closeModal("account-modal");
 }
 
+// ---- タブ非表示時にFirestore購読を停止してコスト削減 -----------------------
+document.addEventListener("visibilitychange", () => {
+  if (!appInitialized) return;
+  if (document.hidden) {
+    if (state.unsubscribe) { state.unsubscribe(); state.unsubscribe = null; }
+  } else {
+    subscribeMonth(_onSnapshotUpdate);
+  }
+});
+
 // ---- 認証状態の監視（エントリ） --------------------------------------------
 watchAuthState(setupApp, teardownApp);

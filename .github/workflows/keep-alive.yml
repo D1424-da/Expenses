@@ -1,0 +1,21 @@
+name: Keep Render Alive
+
+# Render 無料プランは 15 分アイドルでスリープする。
+# 10 分ごとに /api/health を叩いてスリープを防ぐ。
+# curl のみなので 1 回あたり約 10 秒・月間約 720 分の消費で済む。
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # 10分ごと（UTC）
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render health endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 \
+            https://receipt-ocr-ejrl.onrender.com/api/health)
+          echo "HTTP status: $STATUS"
+          [ "$STATUS" = "200" ] && echo "✅ Render is awake" || echo "⚠️ Render returned $STATUS"
