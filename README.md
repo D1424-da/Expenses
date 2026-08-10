@@ -1,13 +1,17 @@
-# 🧾 レシート家計簿 (Receipt Expense Tracker)
+# 🧾 カケイシピ (Receipt Expense Tracker × AI レシピ提案)
 
 レシートを写真で撮影し、OCR で日付・店名・金額・品目を自動で読み取って記録できる
 家計簿 Web アプリです。データは **Firebase** に保存されるため、同じ Google
 アカウントでログインすればスマホ・PC など**どの端末からでも同じ家計簿**を確認・
-編集できます。
+編集できます。家計簿だけでなく、**買った食材からAIが献立・レシピを提案**する
+機能や、買い物リスト・予算管理・Stripeによるプレミアム課金も備えています。
 
 OCR は**ブラウザ内（PaddleOCR / PP-OCRv5）でも実行**できるため**サーバー不要**で、
-GitHub Pages などの静的ホスティングだけで公開できます。バックエンドを設定した
-場合の読み取り優先順位は **Gemini ＞ Vertex AI ＞ Vision API ＞ ブラウザ内 PaddleOCR** です。
+Firebase Hosting だけでも公開できます。バックエンド（FastAPI）を設定した場合の
+読み取り優先順位は **Gemini ＞ Vertex AI ＞ Vision API ＞ ブラウザ内 PaddleOCR** です。
+
+公開URL: `get-tohon.online`（ランディングページ `index.html` → ログイン後は
+`login.html` がアプリ本体のエントリポイント）
 
 ## アーキテクチャ
 
@@ -32,13 +36,26 @@ GitHub Pages (静的ホスティング)          Firebase (無料 Spark プラ�
 
 ## 主な機能
 
-- 🔐 Google ログイン（端末をまたいで同じデータを表示）
-- 📷 レシート画像のアップロード / スマホカメラ撮影 → ブラウザ内 OCR 自動読み取り
+### 家計簿
+- 🔐 Google / メールログイン（端末をまたいで同じデータを表示）
+- 📷 レシート画像のアップロード / スマホカメラ撮影 → OCR 自動読み取り
 - ✍️ 読み取り結果（日付・店名・合計・カテゴリ・明細）の確認・修正・手入力
-- 🔄 Firestore のリアルタイム同期（別端末での変更が即反映）
-- 📊 月ごとの合計とカテゴリ別内訳バー（明細カテゴリで集計）、月切替・編集・削除
-- 🏬 店舗別一覧（店舗→支店→明細でグループ表示）
-- 📅 買い物カレンダー（日付タップで金額を直接入力、その日の合計と週間合計を表示。週計タップでカテゴリ別内訳）
+- 🔄 Firestore のリアルタイム同期（別端末での変更が即反映。タブ非表示時は自動で購読停止しコスト削減）
+- 📊 月ごとの合計とカテゴリ別内訳バー、月切替・編集・削除、CSVエクスポート
+- 🏬 店舗別一覧（店舗→支店→明細でグループ表示）、最安値比較
+- 📅 買い物カレンダー（日付タップで金額を直接入力、週計タップでカテゴリ別内訳）
+- 💰 カテゴリ別の月次予算設定・進捗バー表示
+- 📈 支出トレンド表示
+
+### AIレシピ・献立
+- 🍳 買った食材リストから AI（Gemini）が「今夜の1品」または「週間献立」を自動提案
+- 🛒 買い物リストの自動生成・複数端末での同期
+- 📝 献立プランの保存・カレンダー連携
+- ⭐ お気に入りレシピの保存
+
+### 課金・その他
+- 💳 Stripe によるプレミアムプラン（トライアル・使用量ゲート・カスタマーポータル）
+- 📖 SEOブログ（節約・レシピ関連記事、Note連携）
 
 ---
 
@@ -92,18 +109,19 @@ Firebase のサービスアカウント鍵を GitHub のシークレット `FIRE
 
 ---
 
-## 公開（GitHub Pages）
+## GitHub Actions ワークフロー一覧
 
-`static/` を GitHub Pages に公開するワークフロー（`.github/workflows/deploy-pages.yml`）
-を同梱しています。
+| ファイル | トリガー | 役割 |
+|---|---|---|
+| `deploy-firebase-hosting.yml` | `main` への push | Firebase Hosting に自動デプロイ |
+| `deploy-firestore-rules.yml` | `firestore.rules` / `firebase.json` 変更時 | Firestore ルールを自動デプロイ |
+| `test.yml` | PR 時のみ | pytest（Python）・vitest（JS）を実行 |
+| `lighthouse.yml` | 手動実行のみ（`workflow_dispatch`） | パフォーマンス/アクセシビリティ/SEOスコア計測 |
+| `keep-alive.yml` | 10分ごと（スケジュール） | Render 無料プランのスリープ防止（`/api/health` に ping） |
 
-1. GitHub リポジトリの **Settings → Pages → Source** を **「GitHub Actions」** に設定
-2. `main` ブランチに push（または Actions タブから手動実行）すると自動デプロイ
-3. 公開 URL（例: `https://<ユーザー名>.github.io/<リポジトリ名>/`）にアクセス
-
-公開後の注意：**Firebase コンソール → Authentication → Settings → 承認済みドメイン**
-に GitHub Pages のドメイン（`<ユーザー名>.github.io`）を追加してください
-（Google ログインに必要）。
+複数リポジトリで Actions の無料枠を共有しているため、push のたびに毎回全部
+走らせず、必要最小限（デプロイ + PRテストのみ自動）に絞っています。Lighthouse
+などは Actions タブから手動実行してください。
 
 ---
 
@@ -229,35 +247,57 @@ users/{uid}/expenses/{expenseId}
 
 ```
 .
-├── static/                  # フロントエンド（GitHub Pages / 静的ホスティングの公開対象）
-│   ├── index.html
-│   ├── app.js               # エントリポイント（画面のオーケストレーション）
-│   ├── ocr-client.js        # 画像縮小・バックエンドOCR呼び出し・PaddleOCR
-│   ├── history.js           # 履歴正規化（Gemini基準の正解辞書）
-│   ├── stats.js             # カテゴリ内訳・最安値比較の集計（純粋関数）
-│   ├── dom-utils.js         # DOM取得・表示整形・モーダル共通処理
-│   ├── log.js               # デバッグログ
-│   ├── parser.js            # OCRテキスト → 家計簿項目の抽出（ブラウザ用）
-│   ├── style.css
-│   └── firebase-config.js   # ← あなたの Firebase 設定に置き換える
+├── static/                  # フロントエンド（Firebase Hosting の公開対象）
+│   ├── index.html           # ランディングページ（LP）
+│   ├── login.html           # アプリ本体のエントリポイント（ログイン後の画面）
+│   ├── blog.html, blog-p2〜6.html, blog/*.html  # SEOブログ（135記事）
+│   ├── app.js                # エントリポイント（司令塔・画面のオーケストレーション）
+│   ├── auth.js                # 認証（Google / メール / インアプリブラウザ）
+│   ├── firestore-data.js      # Firestore データアクセス
+│   ├── ocr-client.js          # 画像縮小・バックエンドOCR呼び出し・PaddleOCR
+│   ├── recipe-view.js         # AIレシピ・献立提案UI
+│   ├── shopping-list.js       # 買い物リスト（複数端末同期）
+│   ├── meal-plan.js           # 献立プラン
+│   ├── saved-recipes.js       # お気に入りレシピ
+│   ├── budget-view.js         # カテゴリ別予算管理
+│   ├── trend-view.js          # 支出トレンド
+│   ├── stripe-billing.js      # Stripe プレミアム課金
+│   ├── history.js             # 履歴正規化（Gemini基準の正解辞書）
+│   ├── stats.js               # カテゴリ内訳・最安値比較の集計（純粋関数）
+│   ├── parser.js              # OCRテキスト → 家計簿項目の抽出（ブラウザ用）
+│   ├── sw.js                  # Service Worker（アプリシェルのオフラインキャッシュ）
+│   ├── style.css, blog-*.css, landing.css, tokens.css
+│   └── firebase-config.js     # ← あなたの Firebase 設定に置き換える
 ├── .github/workflows/
-│   └── deploy-pages.yml      # GitHub Pages 自動デプロイ
-├── firebase.json            # Hosting / ルールの設定
+│   ├── deploy-firebase-hosting.yml  # Firebase Hosting 自動デプロイ
+│   ├── deploy-firestore-rules.yml   # Firestore ルール自動デプロイ
+│   ├── test.yml                     # pytest / vitest（PR時のみ）
+│   ├── lighthouse.yml               # パフォーマンス計測（手動実行）
+│   └── keep-alive.yml               # Render スリープ防止（定期ping）
+├── firebase.json            # Hosting / ルールの設定（ブログはキャッシュ長め・アプリ本体はno-cache）
 ├── firestore.rules          # Firestore セキュリティルール
+├── storage.rules            # Storage セキュリティルール
 ├── .firebaserc              # ← プロジェクトID を設定
+├── render.yaml               # Render Blueprint（バックエンドのデプロイ設定）
 │
-├── main.py                  # (任意) 高精度OCR用 FastAPI サービス（ルーティングのみ）
+├── main.py                  # 高精度OCR・レシピ提案用 FastAPI サービス（ルーティングのみ）
 ├── app/
-│   ├── engines.py           # OCRエンジンの選択と多段フォールバック
-│   ├── security.py          # 画像検証・レート制限・Firebase認証
-│   ├── net.py               # Google系APIへのJSON POST共通処理
-│   ├── ocr.py               # OCR層（前処理 + エンジン切り替え）
-│   ├── gemini.py            # Gemini で画像→構造化抽出（高精度）
-│   ├── vertex.py            # Vertex AI 版 Gemini（Google Cloud 課金で動かす）
-│   ├── vision.py            # 保険: Gemini失敗時の Google Vision API フォールバック
-│   └── parser.py            # OCRテキスト抽出（parser.js と同等のロジック）
-├── Dockerfile               # (任意) OCRサービスのコンテナ
-└── requirements.txt
+│   ├── routes/
+│   │   ├── ocr.py            # OCR・ヘルスチェック
+│   │   ├── recipe.py         # レシピ・献立提案エンドポイント
+│   │   └── stripe_routes.py  # Stripe Webhook・サブスクリプション
+│   ├── engines.py            # OCRエンジンの選択と多段フォールバック
+│   ├── security.py           # 画像検証・レート制限・Firebase認証
+│   ├── recipe.py             # Gemini によるレシピ・献立提案ロジック
+│   ├── stripe_billing.py     # Stripe 連携・Firebase Admin 初期化
+│   ├── gemini.py             # Gemini で画像→構造化抽出（高精度OCR）
+│   ├── vertex.py             # Vertex AI 版 Gemini（Google Cloud 課金で動かす）
+│   ├── vision.py             # 保険: Gemini失敗時の Google Vision API フォールバック
+│   └── parser.py             # OCRテキスト抽出（parser.js と同等のロジック）
+├── docs/                     # 作業備忘録（改修の経緯・意思決定の記録）
+├── Dockerfile                # (任意) OCRサービスのコンテナ（Cloud Run向け）
+├── requirements*.txt         # base / gemini / dev 用途別に分割
+└── tests/, e2e/              # pytest / Playwright E2E テスト
 ```
 
 ## 精度についての注意
