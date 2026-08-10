@@ -8,7 +8,7 @@ import os
 from fastapi import APIRouter, File, Header, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
 
-from app import engines, security
+from app import debug_storage, engines, security
 from app.routes._shared import rate_limiter, FIREBASE_PROJECT_ID
 
 logger = logging.getLogger("uvicorn.error")
@@ -44,6 +44,11 @@ async def ocr_receipt(
         raise HTTPException(400, "空のファイルです。")
     if not security.looks_like_image(image_bytes):
         raise HTTPException(400, "画像ファイルとして認識できませんでした。")
+
+    # アプリ改善用の一時保存（DEBUG_RETAIN_RECEIPTS=true のときのみ・既定は無効）。
+    # OCR結果を待たずに非同期で実行し、保存の成否はレスポンスに影響しない。
+    if debug_storage.RETAIN_ENABLED:
+        asyncio.create_task(asyncio.to_thread(debug_storage.save_for_debug, image_bytes, file.content_type, uid))
 
     engine = os.environ.get("OCR_ENGINE", "tesseract").lower()
     if engine in engines.AI_ENGINES:
