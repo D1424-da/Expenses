@@ -890,9 +890,9 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
     background: linear-gradient(160deg, #245f3c 0%, #1E5C3A 55%, #163f28 100%);
   }
 
-  /* 背景装飾：薄い「取」の大文字 */
+  /* 背景装飾：薄い「計」の大文字（家計のイメージ） */
   .login-brand::before {
-    content: "取";
+    content: "計";
     position: absolute;
     right: -80px; bottom: -120px;
     font-size: 34rem; line-height: 1;

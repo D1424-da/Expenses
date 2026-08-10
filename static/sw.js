@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v19";
+const CACHE = "receipt-v20";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
@@ -75,12 +75,18 @@ self.addEventListener("fetch", (e) => {
     path === "/admin.html") {
       return; // ブラウザのデフォルト処理に委ねる
     }
-    // キャッシュ・ネットワークいずれも失敗した場合は必ずネットワークへ再フォールバックし、
-    // Promise reject によるブラウザの内部エラーページ（chrome-error://）表示を防ぐ。
+    // /app 等のSPAフォールバック先はネットワーク優先（常に最新のlogin.htmlを取得）。
+    // オフライン時のみキャッシュへフォールバックする。
     e.respondWith(
-      caches.match("/login.html")
-        .then((cached) => cached || fetch(e.request))
-        .catch(() => fetch(e.request)),
+      fetch("/login.html")
+        .then((resp) => {
+          if (resp && resp.ok) {
+            const clone = resp.clone();
+            caches.open(CACHE).then((c) => c.put("/login.html", clone));
+          }
+          return resp;
+        })
+        .catch(() => caches.match("/login.html").then((cached) => cached || fetch(e.request))),
     );
     return;
   }
@@ -88,7 +94,24 @@ self.addEventListener("fetch", (e) => {
   // ブログ用CSS・トークンはSWキャッシュを使わずネットワーク直取得（更新即反映）
   if (url.pathname === '/blog-article.css' || url.pathname === '/tokens.css') return;
 
-  // 静的アセット: キャッシュ優先、なければネット取得してキャッシュ
+  // CSS/JS: ネットワーク優先（更新をCACHEバージョン上げ忘れでも即反映）。
+  // オフライン時のみキャッシュにフォールバックする。
+  if (url.pathname.endsWith(".css") || url.pathname.endsWith(".js")) {
+    e.respondWith(
+      fetch(e.request)
+        .then((resp) => {
+          if (resp && resp.ok && resp.type === "basic") {
+            const clone = resp.clone();
+            caches.open(CACHE).then((c) => c.put(e.request, clone));
+          }
+          return resp;
+        })
+        .catch(() => caches.match(e.request)),
+    );
+    return;
+  }
+
+  // その他の静的アセット: キャッシュ優先、なければネット取得してキャッシュ
   e.respondWith(
     caches.match(e.request)
       .then((cached) => {
