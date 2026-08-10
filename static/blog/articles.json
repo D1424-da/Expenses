@@ -1415,8 +1415,8 @@
     "excerpt": "",
     "category": "その他",
     "emoji": "📝",
-    "canonical": "https://get-tohon.online/blog/saving-recipe-main.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/savings-recipe.html",
+    "noindex": true
   },
   {
     "slug": "saving-recipe-tips-pro",
@@ -1426,8 +1426,8 @@
     "excerpt": "",
     "category": "その他",
     "emoji": "📝",
-    "canonical": "https://get-tohon.online/blog/saving-recipe-tips-pro.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/savings-recipe.html",
+    "noindex": true
   },
   {
     "slug": "solo-kondate",
