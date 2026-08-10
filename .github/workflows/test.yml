@@ -1,10 +1,8 @@
 name: Tests
 
-# PR と main への push でテストを実行する。デプロイ系ワークフローとは独立。
+# PR 時のみテストを実行する（main push 時は省略して Actions 分数を節約）
 on:
   pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

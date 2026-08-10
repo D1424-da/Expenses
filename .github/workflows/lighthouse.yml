@@ -1,11 +1,7 @@
 name: Lighthouse CI
 
-# PR と main への push でパフォーマンス/アクセシビリティ/SEO スコアを計測する。
-# スコアが閾値を下回ると CI が失敗し、劣化を検知できる。
+# 手動実行のみ（Actions 分数節約のため自動トリガーを無効化）
 on:
-  pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
