@@ -40,3 +40,10 @@ services:
         sync: false   # 任意。未設定なら GEMINI_MODEL を使用
       - key: GOOGLE_SERVICE_ACCOUNT_JSON
         sync: false   # サービスアカウント鍵のJSON文字列（aiplatform.user 権限）
+      # ---- アプリ改善用：レシート画像の一時保存（任意・既定は無効） ----
+      - key: DEBUG_RETAIN_RECEIPTS
+        value: "false"   # "true" にするとOCR画像をFirebase Storageに一時保存する
+      - key: DEBUG_RETAIN_DAYS
+        value: "3"   # 保存日数。実際の自動削除は storage-lifecycle.json のGCSライフサイクルルールで行う（値を変えたらそちらも合わせて更新）
+      - key: ADMIN_UIDS
+        sync: false   # /admin.html から一時保存レシートを閲覧できる Firebase UID（カンマ区切り・Firebase Console→Authenticationで確認）

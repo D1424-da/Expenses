@@ -1,8 +1,13 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Firebase Storage は現在未使用（レシート画像はバックエンドAPIで処理し保存しない）。
-    // 誤って公開バケットになることを防ぐため、明示的に全アクセスを拒否する。
+    // クライアント（ブラウザ）からの read/write は常に全拒否。
+    //
+    // debug-receipts/ 配下には、DEBUG_RETAIN_RECEIPTS=true のときのみ
+    // バックエンド（Admin SDK）がアプリ改善用にレシート画像を一時保存する
+    // （既定は無効）。Admin SDK はこのルールをバイパスして書き込むため
+    // ここでの許可は不要。エンドユーザーやフロントからは常にアクセス不可。
+    // 自動削除は GCS バケットのライフサイクルルール（storage-lifecycle.json）で行う。
     match /{allPaths=**} {
       allow read, write: if false;
     }

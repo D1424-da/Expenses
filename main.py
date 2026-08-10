@@ -22,7 +22,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.routes import ocr, recipe, stripe_routes
+from app.routes import admin, ocr, recipe, stripe_routes
 from app.stripe_billing import startup_firebase_admin
 
 BASE_DIR   = Path(__file__).resolve().parent
@@ -62,6 +62,7 @@ app.add_middleware(
 app.include_router(ocr.router,           prefix="/api")
 app.include_router(recipe.router,        prefix="/api")
 app.include_router(stripe_routes.router, prefix="/api")
+app.include_router(admin.router,         prefix="/api")
 
 # フロント配信（ローカル開発用。本番は Firebase Hosting を使う）
 app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
