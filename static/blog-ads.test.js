@@ -105,6 +105,24 @@ describe("登録済みの掲載データ", () => {
     }
   });
 
+  it("全記事が広告の挿入先コンテナを持っている", async () => {
+    // 記事テンプレートは1種類ではない。<article> を持たない記事が5本あり、
+    // そこだけ広告がPC・スマホとも表示されていなかった。
+    // 新しいテンプレートを足したときに同じ穴が空くのを防ぐ。
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const dir = path.join(import.meta.dirname, "blog");
+    const files = fs.readdirSync(dir).filter((f) => f.endsWith(".html"));
+    expect(files.length).toBeGreaterThan(100);
+    const missing = files.filter((f) => {
+      const html = fs.readFileSync(path.join(dir, f), "utf8");
+      return !/<article[^>]*class="[^"]*\bam\b/.test(html)
+        && !/class="[^"]*\barticle-wrap\b/.test(html)
+        && !/class="[^"]*\bam-wrap\b/.test(html);
+    });
+    expect(missing, `広告の挿入先が無い記事: ${missing.join(", ")}`).toEqual([]);
+  });
+
   it("画像URLを設定する場合はCSP許可済みドメインを使う", async () => {
     const { AD_ITEMS } = await import("./blog-ads-data.js");
     const ALLOWED = [
