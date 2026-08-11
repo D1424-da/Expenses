@@ -2,8 +2,16 @@
 # Render ダッシュボードの「New +」→「Blueprint」でこのリポジトリを選ぶと、
 # このファイルに従ってサービスが作成される。
 #
-# GEMINI_API_KEY と CORS_ORIGINS は sync:false なので、作成時にダッシュボードで入力する
-# （= キーを Git に残さない）。
+# ⚠️ envVars の書き方で「どちらが正」かが変わる:
+#   value: を書いた変数  → このファイルが正。Blueprint 同期時に
+#                          ダッシュボードでの変更が上書き（巻き戻し）される。
+#   sync: false の変数   → ダッシュボードが正。ファイル側は値を持たない。
+#
+# 運用中に切り替える設定（OCR エンジン・デバッグ保存など）を value: で
+# 固定すると、デプロイのたびに設定が勝手に戻る。恒久的な既定値だけを
+# value: に置き、運用で変えるものは sync: false にすること。
+#
+# 秘密情報（API キー等）は全て sync:false でダッシュボード入力（= Git に残さない）。
 services:
   - type: web
     name: receipt-ocr
@@ -22,7 +30,9 @@ services:
       - key: RATE_GLOBAL
         value: "60"   # 全体/分
       - key: OCR_ENGINE
-        value: gemini   # gemini=Developer API / vertex=Vertex AI(Google Cloud課金)
+        sync: false   # gemini=Developer API / vertex=Vertex AI(Google Cloud課金)。
+                      # 課金状況で切り替えるためダッシュボード管理。
+                      # 未設定時のコード既定は tesseract なので必ず設定すること。
       - key: GEMINI_MODEL
         value: gemini-2.5-flash
       - key: CORS_ORIGINS
@@ -42,7 +52,9 @@ services:
         sync: false   # サービスアカウント鍵のJSON文字列（aiplatform.user 権限）
       # ---- アプリ改善用：レシート画像の一時保存（任意・既定は無効） ----
       - key: DEBUG_RETAIN_RECEIPTS
-        value: "false"   # "true" にするとOCR画像をFirebase Storageに一時保存する
+        sync: false   # "true" にするとOCR画像をFirebase Storageに一時保存する。
+                      # 調査時だけ有効化する運用のためダッシュボード管理。
+                      # 未設定時のコード既定は無効なので、消し忘れても保存はされない。
       - key: DEBUG_RETAIN_DAYS
         value: "3"   # 保存日数。実際の自動削除は storage-lifecycle.json のGCSライフサイクルルールで行う（値を変えたらそちらも合わせて更新）
       - key: ADMIN_UIDS
