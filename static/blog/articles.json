@@ -502,8 +502,8 @@
     "excerpt": "「今日何作ろう」を毎日考えるのをやめませんか。一週間分の献立を日曜30分でまとめて決める方法と、AIで自動作成するコツを解説します。",
     "category": "献立・レシピ",
     "emoji": "🍽️",
-    "canonical": "https://get-tohon.online/blog/kondate-week-simple.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/weekly-meal-plan.html",
+    "noindex": true
   },
   {
     "slug": "savings-bento",
@@ -1019,8 +1019,8 @@
     "excerpt": "「今日のレシピが決まらない」悩みを3分で解決する方法を紹介。冷蔵庫から決める手順・覚えておくと便利な料理パターン・AI活用術まで徹底解説します。",
     "category": "献立・レシピ",
     "emoji": "🍽️",
-    "canonical": "https://get-tohon.online/blog/todays-dinner-recipe.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/meal-plan-today.html",
+    "noindex": true
   },
   {
     "slug": "price-compare-supermarket",
@@ -1217,8 +1217,8 @@
     "excerpt": "「AI料理」という言葉が注目されていますが、具体的に何ができるのかわからない方も多いはず。AIは「レシピを考える」「献立を計画する」「買い物リストを作る」という3つの作業を一瞬でこなします。毎日の家事をどう楽にできるか、具体的に解説します。",
     "category": "献立・レシピ",
     "emoji": "🤖",
-    "canonical": "https://get-tohon.online/blog/ai-cooking.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/meal-plan-today.html",
+    "noindex": true
   },
   {
     "slug": "cooking-trouble-app",
@@ -1228,8 +1228,8 @@
     "excerpt": "料理の悩みは「献立が思い浮かばない」「作り方がわからない」「食費がかかりすぎる」など多岐にわたります。本記事では、AIアプリ「カケイシピ」がこれらの悩みをどう解決するかを具体的に紹介します。",
     "category": "献立・レシピ",
     "emoji": "🔧",
-    "canonical": "https://get-tohon.online/blog/cooking-trouble-app.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/meal-plan-today.html",
+    "noindex": true
   },
   {
     "slug": "diet-kondate-week",
@@ -1261,8 +1261,8 @@
     "excerpt": "「献立を簡単にしたい」という願望は、料理初心者から忙しい共働き世帯まで共通の悩みです。「簡単」にはいくつかの意味があります。①考えるのが簡単、②作るのが簡単、③買い物が簡単。カケイシピのAIはこの3つすべてを一度に解決します。",
     "category": "献立・レシピ",
     "emoji": "😊",
-    "canonical": "https://get-tohon.online/blog/easy-kondate.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/meal-plan-today.html",
+    "noindex": true
   },
   {
     "slug": "excel-recipe-manage",
@@ -1415,8 +1415,8 @@
     "excerpt": "",
     "category": "その他",
     "emoji": "📝",
-    "canonical": "https://get-tohon.online/blog/saving-recipe-main.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/savings-recipe.html",
+    "noindex": true
   },
   {
     "slug": "saving-recipe-tips-pro",
@@ -1426,8 +1426,8 @@
     "excerpt": "",
     "category": "その他",
     "emoji": "📝",
-    "canonical": "https://get-tohon.online/blog/saving-recipe-tips-pro.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/savings-recipe.html",
+    "noindex": true
   },
   {
     "slug": "solo-kondate",
