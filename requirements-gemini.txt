@@ -3,3 +3,5 @@
 # ブラウザ内 OCR にフォールバックする前提なので、サーバー側の Tesseract は使わない。
 # 共通依存（FastAPI / google-auth / requests）は base から取り込む。
 -r requirements-base.txt
+# 管理者ページのサムネイル生成用（未導入でも原寸を返すだけで動作は継続する）。
+pillow==12.2.0
