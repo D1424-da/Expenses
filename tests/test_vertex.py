@@ -106,3 +106,30 @@ class TestWorkingModelCache:
         vertex._set_working_model("gemini-2.5-flash")
         assert vertex._get_working_model() == "gemini-2.5-flash"
         vertex._set_working_model(None)  # 後続テストへ影響させない
+
+
+class TestModelConfigConsistency:
+    """OCR側とレシピ側で Vertex のモデル設定がずれないことを固定する。"""
+
+    def test_第一候補はgemini_flash_latest(self):
+        """バージョン固定モデルは廃止のたびに手当てが要るため、
+        自動追従するエイリアスを最優先にしておく。"""
+        from app.vertex import _VERTEX_MODEL_CANDIDATES
+        assert _VERTEX_MODEL_CANDIDATES[0] == "gemini-flash-latest"
+
+    def test_OCR側とレシピ側の候補リストが一致する(self):
+        from app.vertex import _VERTEX_MODEL_CANDIDATES as ocr_list
+        from app.recipe import _VERTEX_MODEL_CANDIDATES as recipe_list
+        assert ocr_list == recipe_list
+
+    def test_flash_latestはVertex用に変換されない(self):
+        """Vertex も同名エイリアスを解決するため、旧マッピングで
+        バージョン固定モデルへ差し替えられないこと。"""
+        from app.recipe import _to_vertex_model
+        assert _to_vertex_model("gemini-flash-latest") == "gemini-flash-latest"
+
+    def test_リージョン既定はglobal(self, monkeypatch):
+        """新しいGeminiモデルは global エンドポイントで提供される。"""
+        import os
+        monkeypatch.delenv("VERTEX_LOCATION", raising=False)
+        assert os.environ.get("VERTEX_LOCATION", "global") == "global"

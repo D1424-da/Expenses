@@ -194,14 +194,17 @@ _VERTEX_MODEL_MAP = {
     "gemini-2.5-flash": "gemini-2.5-flash",  # 2026-10-20 サポート終了予定
     "gemini-1.5-flash": "gemini-1.5-flash-001",
     "gemini-1.5-pro": "gemini-1.5-pro-001",
-    "gemini-flash-latest": "gemini-3.1-flash-lite",
+    # Vertex も同名のエイリアスを解決できるため変換不要
+    "gemini-flash-latest": "gemini-flash-latest",
 }
 
 # プロジェクトによって Vertex AI で使えるモデル名が異なる（Model Garden の
 # 有効化状況次第）ため、候補を順番に試して最初に成功したものを使う。
+# OCR 側（app/vertex.py）と順序を揃えること。
 _VERTEX_MODEL_CANDIDATES = [
-    "gemini-3.1-flash-lite",   # Gemini 2.5廃止の推奨移行先
+    "gemini-flash-latest",     # 最新のFlashを自動追従するエイリアス（推奨・廃止対応不要）
     "gemini-3.5-flash",
+    "gemini-3.1-flash-lite",
     "gemini-2.0-flash-001",
     "gemini-2.0-flash-002",
     "gemini-1.5-flash-001",
@@ -241,7 +244,7 @@ def _call_with_fallback(body: dict, timeout: int) -> dict:
         try:
             from app import vertex as _vertex
             token = _vertex._get_access_token()
-            location = os.environ.get("VERTEX_LOCATION", "us-central1")
+            location = os.environ.get("VERTEX_LOCATION", "global")
             host = "aiplatform.googleapis.com" if location == "global" else f"{location}-aiplatform.googleapis.com"
             for vertex_model in candidates:
                 url = (

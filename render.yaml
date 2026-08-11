@@ -34,7 +34,7 @@ services:
                       # 課金状況で切り替えるためダッシュボード管理。
                       # 未設定時のコード既定は tesseract なので必ず設定すること。
       - key: GEMINI_MODEL
-        value: gemini-2.5-flash
+        value: gemini-flash-latest   # 最新Flashを自動追従（モデル廃止のたびの手当てが不要）
       - key: CORS_ORIGINS
         sync: false   # 例: https://<ユーザー名>.github.io
       - key: GEMINI_API_KEY
@@ -45,9 +45,11 @@ services:
       - key: GOOGLE_CLOUD_PROJECT
         sync: false   # 無料トライアル課金が紐づく GCP プロジェクトID
       - key: VERTEX_LOCATION
-        value: us-central1   # リージョン（global も可）
+        value: global   # 新しいGeminiモデルは global エンドポイントで提供される。
+                        # 特定リージョンに固定したい場合のみ us-central1 等に変更する。
       - key: VERTEX_MODEL
-        sync: false   # 任意。未設定なら GEMINI_MODEL を使用
+        sync: false   # 任意。設定すると候補リストを使わずそのモデルのみ試すため、
+                      # 通常は未設定のままにして gemini-flash-latest を自動選択させる。
       - key: GOOGLE_SERVICE_ACCOUNT_JSON
         sync: false   # サービスアカウント鍵のJSON文字列（aiplatform.user 権限）
       # ---- アプリ改善用：レシート画像の一時保存（任意・既定は無効） ----
