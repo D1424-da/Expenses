@@ -62,7 +62,11 @@ def real_pil(monkeypatch):
     # 登録されたままになり SAVE が空で KeyError になる。PIL 配下を丸ごと外す。
     for name in [m for m in list(sys.modules) if m == "PIL" or m.startswith("PIL.")]:
         monkeypatch.delitem(sys.modules, name, raising=False)
-    pil_image = importlib.import_module("PIL.Image")
+    try:
+        pil_image = importlib.import_module("PIL.Image")
+    except ImportError:
+        # Pillow 未導入でもエラーにはしない（本体は未導入時に原寸を返す設計）。
+        pytest.skip("Pillow が未導入の環境")
     if not hasattr(pil_image, "MEDIANCUT"):  # モックを引き当てていたら検証をやめる
         pytest.skip("本物の Pillow が利用できない環境")
     pil_image.init()  # 画像フォーマットのプラグインを登録する

@@ -3,3 +3,5 @@
 pytest==8.3.4
 httpx==0.28.1
 numpy==2.4.6
+# 管理者ページのサムネイル生成テスト用（本番は requirements-gemini.txt 側で導入）。
+pillow==12.2.0
