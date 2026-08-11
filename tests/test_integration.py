@@ -380,3 +380,43 @@ class TestCorsIntegration:
                       headers={"Origin": "https://get-tohon.online",
                                "Access-Control-Request-Method": "GET"})
         assert r.headers.get("access-control-allow-origin") == "https://get-tohon.online"
+
+
+class TestDebugRetention:
+    """レシート画像の一時保存（DEBUG_RETAIN_RECEIPTS）の呼び出し保証。
+
+    asyncio.create_task() は戻り値を保持しないとGCで消えることがあり、
+    実際に保存が行われないまま「該当する画像はありません」となる不具合が
+    起きた。BackgroundTasks 経由で確実に呼ばれることを固定する。
+    """
+
+    def _post_ocr(self, client):
+        files = {"file": ("r.jpg", io.BytesIO(JPEG_MAGIC), "image/jpeg")}
+        return client.post("/api/ocr", files=files, headers={"Authorization": "Bearer fake"})
+
+    def test_有効なら保存が呼ばれる(self, client, fake_auth, monkeypatch):
+        monkeypatch.setenv("OCR_ENGINE", "gemini")
+        monkeypatch.setattr("app.debug_storage.RETAIN_ENABLED", True)
+        called = []
+        monkeypatch.setattr(
+            "app.debug_storage.save_for_debug",
+            lambda img, ct, uid: called.append((len(img), ct, uid)),
+        )
+        with patch("app.engines.extract_with_ai", return_value={"amount": 100}):
+            r = self._post_ocr(client)
+        assert r.status_code == 200
+        assert len(called) == 1, "BackgroundTasks 経由で save_for_debug が呼ばれること"
+        assert called[0][1] == "image/jpeg"
+
+    def test_無効なら保存は呼ばれない(self, client, fake_auth, monkeypatch):
+        monkeypatch.setenv("OCR_ENGINE", "gemini")
+        monkeypatch.setattr("app.debug_storage.RETAIN_ENABLED", False)
+        called = []
+        monkeypatch.setattr(
+            "app.debug_storage.save_for_debug",
+            lambda *a: called.append(a),
+        )
+        with patch("app.engines.extract_with_ai", return_value={"amount": 100}):
+            r = self._post_ocr(client)
+        assert r.status_code == 200
+        assert called == []

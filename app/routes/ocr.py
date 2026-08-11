@@ -5,7 +5,9 @@ import asyncio
 import logging
 import os
 
-from fastapi import APIRouter, File, Header, HTTPException, Request, UploadFile
+from fastapi import (
+    APIRouter, BackgroundTasks, File, Header, HTTPException, Request, UploadFile,
+)
 from fastapi.responses import JSONResponse
 
 from app import debug_storage, engines, security
@@ -27,6 +29,7 @@ def health() -> dict:
 @router.post("/ocr")
 async def ocr_receipt(
     request: Request,
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     authorization: str | None = Header(default=None),
 ) -> JSONResponse:
@@ -46,9 +49,13 @@ async def ocr_receipt(
         raise HTTPException(400, "画像ファイルとして認識できませんでした。")
 
     # アプリ改善用の一時保存（DEBUG_RETAIN_RECEIPTS=true のときのみ・既定は無効）。
-    # OCR結果を待たずに非同期で実行し、保存の成否はレスポンスに影響しない。
+    # asyncio.create_task() は戻り値を保持しないとGCでタスクごと消えることがある
+    # （イベントループは弱参照しか持たない）ため、レスポンス送信後に確実に実行される
+    # FastAPI の BackgroundTasks を使う。保存の成否はレスポンスに影響しない。
     if debug_storage.RETAIN_ENABLED:
-        asyncio.create_task(asyncio.to_thread(debug_storage.save_for_debug, image_bytes, file.content_type, uid))
+        background_tasks.add_task(
+            debug_storage.save_for_debug, image_bytes, file.content_type, uid,
+        )
 
     engine = os.environ.get("OCR_ENGINE", "tesseract").lower()
     if engine in engines.AI_ENGINES:
