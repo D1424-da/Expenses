@@ -316,10 +316,16 @@ print("Generated category pages")
 sitemap_urls = []
 
 # Main pages
+# /login.html は含めない。
+# firebase.json の rewrites で未定義パスがすべて login.html に流れるため、
+# login.html 自身に <meta name="robots" content="noindex, nofollow"> を
+# 付けてゴミURLのインデックスを防いでいる。
+# その noindex ページをサイトマップに載せると
+# 「インデックスして」と「するな」を同時に送る矛盾したシグナルになり、
+# Search Console に「送信されたURLに noindex タグが追加されています」が出る。
 main_pages = [
     ("/", "weekly"),
     ("/blog.html", "daily"),
-    ("/login.html", "monthly"),
 ]
 for path, freq in main_pages:
     sitemap_urls.append(f"""  <url>
