@@ -21,10 +21,13 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 import os
 import threading
 
 from app import gemini, net
+
+logger = logging.getLogger("uvicorn.error")
 
 _SCOPES = ["https://www.googleapis.com/auth/cloud-platform"]
 _creds_lock = threading.Lock()
@@ -109,7 +112,12 @@ def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dic
                 service="Vertex AI",
             )
             structured, text = gemini.parse_generate_content(result)
+            if model != candidates[0]:
+                logger.info("Vertex AI: モデル %s で成功しました（先頭候補は失敗）", model)
             return gemini.normalize_receipt(structured, text, engine="vertex")
         except Exception as exc:
+            # 候補を順に試す設計上ここは想定内の失敗だが、記録しないと
+            # 「Vertexが全滅した理由」が最後まで分からず切り分けできない。
+            logger.warning("Vertex AI: モデル %s 失敗: %s", model, str(exc)[:300])
             errors.append(f"{model}: {exc}")
     raise RuntimeError("Vertex AI: 利用可能なモデルが見つかりませんでした / " + " / ".join(errors))
