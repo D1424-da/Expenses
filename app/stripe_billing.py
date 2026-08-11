@@ -65,6 +65,15 @@ def _get_firestore():
     raise HTTPException(503, "サブスクリプション機能が設定されていません。")
 
 
+def _mask_email(email: str | None) -> str:
+    """ログ用にメールアドレスを伏せる（本人特定は uid で足りるため）。"""
+    if not email or "@" not in email:
+        return "(不明)"
+    local, _, domain = email.partition("@")
+    head = local[0] if local else ""
+    return f"{head}***@{domain}"
+
+
 # ---- Stripe 操作 ------------------------------------------------------------
 
 def _stripe():
@@ -98,6 +107,7 @@ async def create_checkout_session(uid: str, email: str) -> str:
         cancel_url=f"{APP_URL}/app?checkout=cancel",
         idempotency_key=f"checkout-{uid}-{int(time.time() // 300)}",
     )
+    logger.info("💳 有料登録: Checkout開始 uid=%s email=%s", uid, _mask_email(email))
     return session.url
 
 
@@ -148,6 +158,12 @@ async def handle_webhook(payload: bytes, sig_header: str) -> dict:
     if evt_type == "checkout.session.completed":
         session = event["data"]["object"]
         uid = session.get("metadata", {}).get("uid")
+        amount = session.get("amount_total")
+        logger.info(
+            "🎉 有料登録が成立: uid=%s email=%s 金額=%s%s",
+            uid, _mask_email(session.get("customer_email")),
+            amount, session.get("currency", ""),
+        )
         if uid and session.get("subscription"):
             sub = stripe.Subscription.retrieve(session["subscription"])
             _persist_subscription(uid, sub, session.get("customer"))
@@ -155,11 +171,18 @@ async def handle_webhook(payload: bytes, sig_header: str) -> dict:
     elif evt_type in ("customer.subscription.updated", "customer.subscription.deleted"):
         sub = event["data"]["object"]
         uid = sub.get("metadata", {}).get("uid")
+        if evt_type == "customer.subscription.deleted":
+            logger.info("👋 解約（サブスクリプション削除）: uid=%s", uid)
+        elif sub.get("cancel_at_period_end"):
+            logger.info("⚠️ 解約予約（期間終了で停止）: uid=%s status=%s", uid, sub.get("status"))
+        else:
+            logger.info("🔄 サブスクリプション更新: uid=%s status=%s", uid, sub.get("status"))
         if uid:
             _persist_subscription(uid, sub, sub.get("customer"))
 
     elif evt_type == "invoice.payment_failed":
         sub_id = event["data"]["object"].get("subscription")
+        logger.warning("💥 支払い失敗: subscription=%s", sub_id)
         if sub_id:
             sub = stripe.Subscription.retrieve(sub_id)
             uid = sub.get("metadata", {}).get("uid")
@@ -189,7 +212,7 @@ async def redeem_beta_code(uid: str, code: str) -> bool:
         "currentPeriodEnd": 9999999999,
         "updatedAt": admin_fs.SERVER_TIMESTAMP,
     })
-    logger.info("Beta code redeemed: uid=%s", uid)
+    logger.info("🎟️ ベータコード適用（無料プレミアム付与）: uid=%s", uid)
     return True
 
 
@@ -215,6 +238,7 @@ async def ensure_trial(uid: str) -> dict:
         logger.warning("ensure_trial: Firestore get failed, skipping trial start for uid=%s", uid)
         return {"started": False}
     if snap.exists:
+        # 2回目以降のログインではここを通る。新規判定のノイズになるので出さない。
         return {"started": False}
 
     now = int(time.time())
@@ -225,7 +249,10 @@ async def ensure_trial(uid: str) -> dict:
         "currentPeriodEnd": now + TRIAL_PERIOD_DAYS * 86400,
         "updatedAt": admin_fs.SERVER_TIMESTAMP,
     })
-    logger.info("Trial started: uid=%s", uid)
+    logger.info(
+        "🎁 無料登録（新規ユーザー）: uid=%s トライアル%d日間を開始",
+        uid, TRIAL_PERIOD_DAYS,
+    )
     return {"started": True}
 
 
@@ -252,4 +279,10 @@ def _persist_subscription(uid: str, subscription: dict, customer_id: str | None)
         "cancelAtPeriodEnd": cancel_at_period_end,
         "updatedAt": admin_fs.SERVER_TIMESTAMP,
     }, merge=True)
-    logger.info("Firestore subscription updated: uid=%s status=%s", uid, status)
+    period_end_str = (
+        time.strftime("%Y-%m-%d", time.localtime(period_end)) if period_end else "不明"
+    )
+    logger.info(
+        "📝 課金状態を保存: uid=%s status=%s 有効期限=%s 解約予約=%s",
+        uid, status, period_end_str, "あり" if cancel_at_period_end else "なし",
+    )

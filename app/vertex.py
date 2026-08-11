@@ -24,6 +24,7 @@ import json
 import logging
 import os
 import threading
+import time
 
 from app import gemini, net
 
@@ -92,7 +93,21 @@ def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dic
     env_model = os.environ.get("VERTEX_MODEL")
     candidates = [env_model] if env_model else _VERTEX_MODEL_CANDIDATES
 
-    token = _get_access_token()
+    logger.info(
+        "Vertex AI 呼び出し: project=%s location=%s model=%s 画像=%.1fKB",
+        project, location,
+        env_model or f"自動選択（候補{len(candidates)}件）",
+        len(image_bytes) / 1024,
+    )
+
+    try:
+        token = _get_access_token()
+    except Exception as exc:
+        # 認証はモデル選択より前段。ここで落ちるとモデル別ログすら出ないため
+        # 「認証で失敗した」ことを明示する（IAM権限・鍵JSONの不備の切り分け用）。
+        logger.error("Vertex AI 認証に失敗（サービスアカウント鍵/IAM権限を確認）: %s", exc)
+        raise
+
     b64 = base64.standard_b64encode(image_bytes).decode("ascii")
 
     # global は host にリージョン接頭辞を付けない。
@@ -100,6 +115,7 @@ def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dic
     body = gemini.build_request_body(b64, content_type)
 
     errors: list[str] = []
+    started = time.monotonic()
     for model in candidates:
         url = (
             f"https://{host}/v1/projects/{project}/locations/{location}"
@@ -112,9 +128,15 @@ def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dic
                 service="Vertex AI",
             )
             structured, text = gemini.parse_generate_content(result)
-            if model != candidates[0]:
-                logger.info("Vertex AI: モデル %s で成功しました（先頭候補は失敗）", model)
-            return gemini.normalize_receipt(structured, text, engine="vertex")
+            normalized = gemini.normalize_receipt(structured, text, engine="vertex")
+            logger.info(
+                "Vertex AI 成功: model=%s %.1f秒 店名=%s 金額=%s 明細=%d件",
+                model, time.monotonic() - started,
+                normalized.get("store") or "(未取得)",
+                normalized.get("amount"),
+                len(normalized.get("items") or []),
+            )
+            return normalized
         except Exception as exc:
             # 候補を順に試す設計上ここは想定内の失敗だが、記録しないと
             # 「Vertexが全滅した理由」が最後まで分からず切り分けできない。

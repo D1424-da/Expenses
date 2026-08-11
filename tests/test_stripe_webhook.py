@@ -431,3 +431,28 @@ class TestPersistSubscription:
                 headers={"stripe-signature": sig},
             )
         assert r.status_code == 503
+
+
+class TestMaskEmail:
+    """ログに個人情報をそのまま残さないためのマスク処理。"""
+
+    def test_ローカル部を伏せる(self):
+        from app.stripe_billing import _mask_email
+        assert _mask_email("taro.yamada@example.com") == "t***@example.com"
+
+    def test_1文字のローカル部でも壊れない(self):
+        from app.stripe_billing import _mask_email
+        assert _mask_email("a@example.com") == "a***@example.com"
+
+    def test_Noneや不正な値は不明を返す(self):
+        from app.stripe_billing import _mask_email
+        assert _mask_email(None) == "(不明)"
+        assert _mask_email("") == "(不明)"
+        assert _mask_email("not-an-email") == "(不明)"
+
+    def test_マスク後にローカル部が復元できない(self):
+        """先頭1文字以外がログに残らないこと。"""
+        from app.stripe_billing import _mask_email
+        masked = _mask_email("secretuser@example.com")
+        assert "secretuser" not in masked
+        assert "ecretuser" not in masked
