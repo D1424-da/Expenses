@@ -755,3 +755,47 @@ body {
   .am-pn { flex-direction: column; }
   .pn-next { align-items: flex-start; text-align: left; }
 }
+
+/* ── アフィリエイト広告枠 ──────────────────────────────
+   本文と視覚的に区別できるようにする（広告と記事内容の混同は
+   ステマ規制上も問題になるため、枠線とPRラベルで明確に分ける）。 */
+.ad-block {
+  margin: 28px 0;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--article-border, #e0e6e0);
+  border-radius: 10px;
+  background: #fff;
+}
+.ad-label {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--article-ink-sub, #3D5A3E);
+  margin: 0 0 10px;
+}
+.ad-cards { display: flex; flex-direction: column; gap: 10px; }
+.ad-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--article-bg-sub, #f7faf7);
+  text-decoration: none;
+  color: var(--article-ink, #12200F);
+}
+.ad-card:hover { background: var(--green-light, #d4ecdc); }
+.ad-card-img {
+  width: 72px; height: 72px;
+  object-fit: contain;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 6px;
+}
+.ad-card-body { display: flex; flex-direction: column; gap: 4px; }
+.ad-card-title { font-size: .88rem; font-weight: 700; line-height: 1.5; }
+.ad-card-note {
+  font-size: .78rem;
+  color: var(--article-ink-sub, #3D5A3E);
+  line-height: 1.5;
+}
