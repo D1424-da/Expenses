@@ -12,6 +12,42 @@ import { signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstati
 const $ = (id) => document.getElementById(id);
 const statusEl = $("status");
 
+/** 原寸画像をオーバーレイで拡大表示する（サムネイルでは文字が読めないため）。 */
+async function openViewer(url, filename, token) {
+  const overlay = $("viewer");
+  const imgEl = $("viewer-img");
+  const caption = $("viewer-caption");
+
+  caption.textContent = `${filename}（読み込み中…）`;
+  imgEl.removeAttribute("src");
+  overlay.hidden = false;
+
+  try {
+    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const blob = await r.blob();
+    // 前回のオブジェクトURLを解放してからdiff差し替え（開くたびにメモリが増えるのを防ぐ）
+    if (imgEl.dataset.objectUrl) URL.revokeObjectURL(imgEl.dataset.objectUrl);
+    const objectUrl = URL.createObjectURL(blob);
+    imgEl.dataset.objectUrl = objectUrl;
+    imgEl.src = objectUrl;
+    caption.textContent = filename;
+  } catch (err) {
+    caption.textContent = `${filename}（読み込みに失敗しました: ${err.message}）`;
+  }
+}
+
+function closeViewer() {
+  const overlay = $("viewer");
+  const imgEl = $("viewer-img");
+  overlay.hidden = true;
+  if (imgEl.dataset.objectUrl) {
+    URL.revokeObjectURL(imgEl.dataset.objectUrl);
+    delete imgEl.dataset.objectUrl;
+  }
+  imgEl.removeAttribute("src");
+}
+
 function fmtSize(bytes) {
   if (!bytes) return "-";
   const kb = bytes / 1024;
@@ -44,6 +80,8 @@ async function loadList(token) {
     const uid = item.name.split("/")[1] ?? "-";
     const filename = item.name.split("/").pop();
     const dlUrl = `${OCR_API_BASE}/api/admin/receipts/download?name=${encodeURIComponent(item.name)}`;
+    // 一覧では縮小版を使う（原寸を並べると1画面で十数MBの転送になる）
+    const thumbUrl = `${dlUrl}&w=200`;
 
     const tr = document.createElement("tr");
     const tdThumb = document.createElement("td");
@@ -51,11 +89,14 @@ async function loadList(token) {
     img.className = "thumb";
     img.loading = "lazy";
     img.alt = filename;
+    img.title = "クリックで拡大";
     // 画像取得も認証が要るため fetch → blob URL 化
-    fetch(dlUrl, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(thumbUrl, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => (r.ok ? r.blob() : null))
       .then((blob) => { if (blob) img.src = URL.createObjectURL(blob); })
       .catch(() => {});
+    // クリックで原寸を拡大表示（サムネイルでは文字が読めないため）
+    img.onclick = () => openViewer(dlUrl, filename, token);
     tdThumb.appendChild(img);
 
     const tdUid = document.createElement("td");
@@ -110,4 +151,14 @@ onAuthStateChanged(auth, async (user) => {
 
 $("login-btn").onclick = () => signInWithPopup(auth, provider).catch((e) => {
   statusEl.textContent = `ログイン失敗: ${e.message}`;
+});
+
+// ビューアを閉じる操作（背景クリック・×ボタン・Escキー）
+$("viewer").onclick = (e) => {
+  // 画像そのものをクリックしたときは閉じない（拡大表示を見続けたいため）
+  if (e.target === $("viewer-img")) return;
+  closeViewer();
+};
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !$("viewer").hidden) closeViewer();
 });
