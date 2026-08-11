@@ -74,8 +74,54 @@ describe("広告カードの必須属性", () => {
 describe("掲載データが空のとき", () => {
   it("広告を1件も選ばない（枠ごと出さない）", async () => {
     setupDom();
+    // 実際に登録済みの商品数に左右されないよう、空データで検証する
+    vi.doMock("./blog-ads-data.js", () => ({ AD_ITEMS: [], MAX_ADS_PER_SLOT: 2 }));
     const { pickItems } = await import("./blog-ads.js");
-    // blog-ads-data.js の AD_ITEMS は初期状態で空
     expect(pickItems()).toEqual([]);
+    vi.doUnmock("./blog-ads-data.js");
+  });
+});
+
+describe("登録済みの掲載データ", () => {
+  it("アフィリエイトリンクが https で始まる（// のままにしない）", async () => {
+    const { AD_ITEMS } = await import("./blog-ads-data.js");
+    for (const it of AD_ITEMS) {
+      expect(it.url, `${it.title} の url`).toMatch(/^https:\/\//);
+    }
+  });
+
+  it("もしものリンクが広告主トップではなく個別ページを指している", async () => {
+    const { AD_ITEMS } = await import("./blog-ads-data.js");
+    for (const it of AD_ITEMS) {
+      if (!it.url.includes("af.moshimo.com")) continue;
+      // どこでもリンクは url= に遷移先を持つ。生成ボタンを押し忘れると
+      // 広告主のトップページ（例: www.rakuten.co.jp/）のままになる。
+      const m = /[?&]url=([^&]+)/.exec(it.url);
+      expect(m, `${it.title} に url= が無い`).not.toBeNull();
+      const dest = decodeURIComponent(m[1]);
+      expect(dest, `${it.title} の遷移先がトップページ`).not.toMatch(
+        /^https?:\/\/(www\.)?(rakuten\.co\.jp|amazon\.co\.jp|shopping\.yahoo\.co\.jp)\/?$/,
+      );
+    }
+  });
+
+  it("画像URLを設定する場合はCSP許可済みドメインを使う", async () => {
+    const { AD_ITEMS } = await import("./blog-ads-data.js");
+    const ALLOWED = [
+      "i.moshimo.com",
+      "m.media-amazon.com",
+      "images-fe.ssl-images-amazon.com",
+      "thumbnail.image.rakuten.co.jp",
+      "r10s.jp",  // 楽天の店舗画像CDN（tshop/shop/r などサブドメイン多数）
+      "hbb.afl.rakuten.co.jp",
+      "item-shopping.c.yimg.jp",
+    ];
+    for (const it of AD_ITEMS) {
+      if (!it.image) continue;
+      expect(
+        ALLOWED.some((d) => it.image.includes(d)),
+        `${it.title} の画像がCSP未許可のドメイン: ${it.image}`,
+      ).toBe(true);
+    }
   });
 });

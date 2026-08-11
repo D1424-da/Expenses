@@ -34,14 +34,16 @@
 // 空配列のあいだは広告枠そのものが表示されません（現状は非表示）。
 
 export const AD_ITEMS = [
-  // 例（実際のリンクに差し替えて有効化してください）:
-  // {
-  //   title: "貝印 レシピ付き 計量スプーン",
-  //   url:   "https://example.com/af/xxxx",
-  //   image: "https://example.com/img/xxxx.jpg",
-  //   note:  "小さじ・大さじが1本で量れて、洗い物が減ります。",
-  //   tags:  ["レシピ"],
-  // },
+  {
+    title: "iwaki 耐熱ガラス 保存容器 セット",
+    // もしも「どこでもリンク」で生成（楽天市場の商品購入・a_id=5745892）
+    // url= の中身が item.rakuten.co.jp の商品ページを指していることを確認済み
+    url: "https://af.moshimo.com/af/c/click?a_id=5745892&p_id=54&pc_id=54&pl_id=616&url=https%3A%2F%2Fitem.rakuten.co.jp%2Frcmdki%2Fnf-pc-prn7%2F",
+    // 楽天の店舗画像CDN（*.r10s.jp）。?downsize=300:* で300px幅に縮小済み
+    image: "https://tshop.r10s.jp/rcmdki/cabinet/nf14/nf-pc-prn7.jpg?downsize=300:*",
+    note: "作り置きの保存に。中身がひと目で分かるので、冷蔵庫の食材を使い切りやすくなります。",
+    tags: ["レシピ", "献立", "節約"],
+  },
 ];
 
 /** 記事1ページあたりに表示する最大件数（多すぎると読みにくくなるため） */

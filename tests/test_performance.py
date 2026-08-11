@@ -117,13 +117,35 @@ class TestRateLimiterPerformance:
         assert avg < 1.0, f"RateLimiter.check mean={avg:.3f}ms > 1ms"
 
     def test_rate_limiter_concurrent_ips_no_degradation(self):
-        """1000 IP が並行してリクエストしてもパフォーマンスが劣化しない。"""
-        rl = security.RateLimiter(window_sec=60, per_ip=10000, global_limit=1_000_000)
-        t0 = time.perf_counter()
-        for i in range(1000):
-            rl.check(f"192.168.{i // 256}.{i % 256}")
-        elapsed_ms = (time.perf_counter() - t0) * 1000
-        assert elapsed_ms < 100, f"1000 IP check took {elapsed_ms:.1f}ms > 100ms"
+        """IP 数が増えても 1 回あたりのコストが悪化しない（O(1) であること）。
+
+        絶対時間で判定すると CI ランナーの速度差で落ちる（実際に 118ms > 100ms で
+        失敗した）。ここで防ぎたいのは「IP が増えると急激に遅くなる」実装、
+        つまり計算量の悪化なので、少数 IP と多数 IP の 1 回あたりの所要時間を
+        比べる。この比較ならマシンの絶対速度に影響されない。
+        """
+        def per_call_us(n_ips: int) -> float:
+            """IP を n_ips 種類使ったときの 1 回あたりの所要時間（マイクロ秒）。"""
+            best = float("inf")
+            for _ in range(3):  # 外れ値（GC・スケジューラ）の影響を避けて最小値を採る
+                rl = security.RateLimiter(
+                    window_sec=60, per_ip=10000, global_limit=1_000_000,
+                )
+                t0 = time.perf_counter()
+                for i in range(n_ips):
+                    rl.check(f"192.168.{i // 256}.{i % 256}")
+                best = min(best, (time.perf_counter() - t0) / n_ips * 1_000_000)
+            return best
+
+        small = per_call_us(200)
+        large = per_call_us(2000)  # IP 種類数を 10 倍にする
+
+        # O(1) なら比はほぼ 1。O(n) 以上に悪化していれば 10 倍前後まで伸びる。
+        # 計測ゆらぎを見込んで 4 倍を上限とする。
+        assert large < small * 4, (
+            f"IP数10倍で1回あたり {small:.2f}us → {large:.2f}us "
+            f"({large / small:.1f}倍) に悪化。計算量が O(1) でなくなっている可能性"
+        )
 
 
 # ---------------------------------------------------------------------------
