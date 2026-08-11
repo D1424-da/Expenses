@@ -39,7 +39,8 @@ export const AD_ITEMS = [
     // もしも「どこでもリンク」で生成（楽天市場の商品購入・a_id=5745892）
     // url= の中身が item.rakuten.co.jp の商品ページを指していることを確認済み
     url: "https://af.moshimo.com/af/c/click?a_id=5745892&p_id=54&pc_id=54&pl_id=616&url=https%3A%2F%2Fitem.rakuten.co.jp%2Frcmdki%2Fnf-pc-prn7%2F",
-    // image は未取得。設定すると商品画像付きのカードになる（省略時は文字のみ）
+    // 楽天の店舗画像CDN（*.r10s.jp）。?downsize=300:* で300px幅に縮小済み
+    image: "https://tshop.r10s.jp/rcmdki/cabinet/nf14/nf-pc-prn7.jpg?downsize=300:*",
     note: "作り置きの保存に。中身がひと目で分かるので、冷蔵庫の食材を使い切りやすくなります。",
     tags: ["レシピ", "献立", "節約"],
   },

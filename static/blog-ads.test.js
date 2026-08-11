@@ -112,6 +112,7 @@ describe("登録済みの掲載データ", () => {
       "m.media-amazon.com",
       "images-fe.ssl-images-amazon.com",
       "thumbnail.image.rakuten.co.jp",
+      "r10s.jp",  // 楽天の店舗画像CDN（tshop/shop/r などサブドメイン多数）
       "hbb.afl.rakuten.co.jp",
       "item-shopping.c.yimg.jp",
     ];
