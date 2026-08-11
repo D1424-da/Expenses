@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v25";
+const CACHE = "receipt-v26";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
@@ -88,6 +88,12 @@ self.addEventListener("fetch", (e) => {
     path === "/admin.html") {
       return; // ブラウザのデフォルト処理に委ねる
     }
+    // 拡張子を持つパスは実ファイル（/robots.txt, /sitemap.xml, /404.html,
+    // /ogp.png など）。SPAフォールバックの対象にすると login.html が返り、
+    // ブラウザで robots.txt を開くとLPが表示されてしまう（実際に起きた）。
+    // Googlebot は SW を実行しないためクロールには影響しないが、
+    // 内容の確認ができず、404ページも表示できなくなる。
+    if (/\.[a-z0-9]+$/i.test(path)) return;
     // /app 等のSPAフォールバック先はネットワーク優先（常に最新のlogin.htmlを取得）。
     // オフライン時のみキャッシュへフォールバックする。
     e.respondWith(
