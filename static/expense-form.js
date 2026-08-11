@@ -10,6 +10,7 @@ import { dbBase } from "./db-paths.js";
 import { log, logErr } from "./log.js";
 import { $, todayStr, escapeHtml, closeModal } from "./dom-utils.js";
 import { invalidateHistoryDict, TRUSTED_ENGINES } from "./history.js";
+import { validateExpense, clampRawText } from "./expense-limits.js";
 
 let _ctx;
 let _previewUrl = null;
@@ -222,13 +223,21 @@ async function _handleSubmit(e) {
         ? (TRUSTED_ENGINES.includes(engine) ? engine : "edited")
         : (engine || "manual"),
     };
+    // Firestore に送る前に上限を検証する。ここを通さないと Firestore 側で
+    // 拒否され、原因のわからない権限エラーとしてユーザーに表示されてしまう。
+    const limitError = validateExpense(payload);
+    if (limitError) {
+      alert(limitError);
+      return;
+    }
+
     log(id ? "更新:" : "新規保存:", payload);
     if (id) {
       await updateDoc(doc(_ctx.db, ...dbBase(), "expenses", id), payload);
     } else {
       await addDoc(_ctx.expensesCol(), {
         ...payload,
-        rawText: $("f-rawtext").value || "",
+        rawText: clampRawText($("f-rawtext").value),
         createdAt: serverTimestamp(),
       });
     }
@@ -240,7 +249,17 @@ async function _handleSubmit(e) {
     _ctx.onSaved(dateStr, wasEdit);
   } catch (err) {
     logErr("保存エラー:", err.code, err.message, err);
-    alert("保存に失敗しました: " + err.message);
+    // permission-denied は「トライアル/プラン期限切れ」か「データが上限超過」の
+    // どちらか。Firestore は理由を返さないため、両方の可能性を案内する。
+    if (err.code === "permission-denied") {
+      alert(
+        "保存できませんでした。\n\n"
+        + "・無料トライアルまたはプランの期限が切れていないかご確認ください\n"
+        + "・明細が多すぎる場合は件数を減らしてお試しください",
+      );
+    } else {
+      alert("保存に失敗しました: " + err.message);
+    }
   } finally {
     saveBtn.disabled = false;
     saveBtn.textContent = id && $("f-id").value ? "更新する" : "保存";
