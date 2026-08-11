@@ -48,6 +48,7 @@ class RateLimiter:
         self._lock = threading.Lock()
         self._by_ip: dict[str, deque[float]] = {}
         self._global: deque[float] = deque()
+        self._last_cleanup = 0.0  # _by_ip の空エントリを最後に掃除した時刻
 
     def check(self, ip: str) -> None:
         """上限超過なら 429 を投げる。通れば今回のリクエストを記録する。"""
@@ -63,9 +64,24 @@ class RateLimiter:
                 raise HTTPException(429, "リクエストが多すぎます。しばらく待って再試行してください。")
             dq.append(now)
             self._global.append(now)
-            # 空になったエントリを定期的に除去してメモリリークを防ぐ
-            if len(self._by_ip) > 1000:
-                self._by_ip = {k: v for k, v in self._by_ip.items() if v}
+            # 空になったエントリを除去してメモリリークを防ぐ。
+            #
+            # 以前は「IP が 1000 種類を超えたら毎回作り直す」という条件だったが、
+            # 直近アクセスのある IP は空にならないため辞書が 1000 未満に戻らず、
+            # 一度超えると全リクエストで O(n) のコピーが走り続けていた
+            # （＝全体が O(n^2)。IP が増えるほど遅くなる）。
+            # 掃除の間隔は window_sec で足りる。
+            #
+            # 判定条件も修正した。以前は「deque が空」なら除去していたが、
+            # 各 IP の deque が刈られるのはその IP が再訪したときだけなので、
+            # 二度と来ない IP には期限切れのタイムスタンプが残り続け、空にならない。
+            # 結果としてリーク対策として機能していなかった。
+            # 最終アクセスが window_sec より古いエントリを除去する。
+            if now - self._last_cleanup >= self.window_sec:
+                self._by_ip = {
+                    k: v for k, v in self._by_ip.items() if v and v[-1] >= cutoff
+                }
+                self._last_cleanup = now
 
 
 def verify_firebase_token(authorization: str | None, project_id: str) -> str | None:

@@ -147,3 +147,46 @@ def test_verify_firebase_token_returns_uid_on_success(monkeypatch):
     monkeypatch.setitem(__import__("sys").modules, "google.auth.transport.requests", fake_requests)
     uid = security.verify_firebase_token("Bearer goodtoken", project_id="my-project")
     assert uid == "uid-abc"
+
+
+class TestRateLimiterCleanup:
+    """_by_ip の掃除。性能テストが O(n^2) を検知したのを機に修正した箇所。"""
+
+    def test_期限切れIPのエントリが除去される(self):
+        """二度と来ない IP のエントリを残し続けるとメモリリークになる。
+
+        修正前は「deque が空なら除去」という条件だったが、各 IP の deque は
+        その IP が再訪したときしか刈られないため空にならず、実際には
+        1件も除去できていなかった。
+        """
+        rl = security.RateLimiter(window_sec=1, per_ip=100, global_limit=1_000_000)
+        for i in range(300):
+            rl.check(f"172.16.{i // 256}.{i % 256}")
+        assert len(rl._by_ip) == 300
+
+        time.sleep(1.05)          # window_sec を経過させる
+        rl.check("10.0.0.1")      # 次の呼び出しで掃除が走る
+        assert len(rl._by_ip) == 1, "期限切れの IP エントリが除去されていない"
+
+    def test_有効期限内のIPは除去されない(self):
+        rl = security.RateLimiter(window_sec=60, per_ip=100, global_limit=1_000_000)
+        for i in range(50):
+            rl.check(f"192.0.2.{i}")
+        rl.check("192.0.2.99")
+        assert len(rl._by_ip) == 51, "まだ有効な IP まで消してはいけない"
+
+    def test_IP数が増えても1回あたりのコストが一定(self):
+        """1000件超で毎回辞書を作り直す実装だと O(n^2) になっていた。"""
+        def per_call_us(n: int) -> float:
+            best = float("inf")
+            for _ in range(3):
+                rl = security.RateLimiter(
+                    window_sec=60, per_ip=10000, global_limit=10_000_000,
+                )
+                t0 = time.perf_counter()
+                for i in range(n):
+                    rl.check(f"10.{i // 65536}.{(i // 256) % 256}.{i % 256}")
+                best = min(best, (time.perf_counter() - t0) / n * 1_000_000)
+            return best
+
+        assert per_call_us(2000) < per_call_us(200) * 4
