@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v22";
+const CACHE = "receipt-v23";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
@@ -56,6 +56,16 @@ self.addEventListener("activate", (e) => {
   );
 });
 
+// respondWith() に「拒否されたPromise」や undefined を渡すと、ブラウザは
+// ページ全体をネットワークエラーにしてしまう（chrome-error:// 相当）。
+// 最終手段として必ず Response を返し、SWが原因で真っ白になるのを防ぐ。
+const OFFLINE_RESPONSE = () =>
+  new Response("オフラインのため読み込めませんでした。通信状況をご確認ください。", {
+    status: 503,
+    statusText: "Service Unavailable",
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
+
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
 
@@ -87,7 +97,8 @@ self.addEventListener("fetch", (e) => {
           }
           return resp;
         })
-        .catch(() => caches.match("/login.html").then((cached) => cached || fetch(e.request))),
+        .catch(() => caches.match("/login.html"))
+        .then((resp) => resp || OFFLINE_RESPONSE()),
     );
     return;
   }
@@ -107,7 +118,10 @@ self.addEventListener("fetch", (e) => {
           }
           return resp;
         })
-        .catch(() => caches.match(e.request)),
+        // オフラインでキャッシュにも無い場合、caches.match は undefined を返す。
+        // そのまま respondWith に渡すとネットワークエラーになるため必ず Response にする。
+        .catch(() => caches.match(e.request))
+        .then((resp) => resp || OFFLINE_RESPONSE()),
     );
     return;
   }
@@ -125,6 +139,7 @@ self.addEventListener("fetch", (e) => {
           return resp;
         });
       })
-      .catch(() => fetch(e.request)),
+      .catch(() => fetch(e.request))
+      .catch(() => OFFLINE_RESPONSE()),
   );
 });
