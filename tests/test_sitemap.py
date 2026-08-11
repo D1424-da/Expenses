@@ -1,0 +1,115 @@
+"""sitemap.xml / robots.txt が誤ったクロール指示を出していないかの検証。
+
+他プロジェクトで実際に起きた事故を、このリポジトリで再発させないためのテスト。
+
+  1. lastmod をファイルのタイムスタンプから取ると、CI/ホスティングのビルドは
+     毎回リポジトリを新規 clone するため全記事の更新日がビルド日に揃う。
+     「デプロイのたびに全記事が更新された」と通知することになり、
+     Google が lastmod 自体を信用しなくなる。
+  2. robots.txt で CSS/JS をブロックすると Googlebot がページを
+     レンダリングできない（Google が明示的に非推奨としている）。
+  3. noindex のページをサイトマップに載せると、
+     「インデックスして」と「するな」を同時に送る矛盾になる。
+"""
+from __future__ import annotations
+
+import datetime
+import re
+from pathlib import Path
+
+STATIC = Path(__file__).resolve().parent.parent / "static"
+SITEMAP = STATIC / "sitemap.xml"
+ROBOTS = STATIC / "robots.txt"
+
+BASE_URL = "https://get-tohon.online"
+
+
+def _locs() -> list[str]:
+    return re.findall(r"<loc>([^<]+)</loc>", SITEMAP.read_text(encoding="utf-8"))
+
+
+def _lastmods() -> list[str]:
+    return re.findall(r"<lastmod>([^<]+)</lastmod>", SITEMAP.read_text(encoding="utf-8"))
+
+
+def test_lastmod_is_not_all_build_date():
+    """lastmod がビルド日に固まっていない（＝記事のメタデータ由来である）。"""
+    mods = _lastmods()
+    assert mods, "sitemap.xml に lastmod が1件も無い"
+    today = datetime.date.today().isoformat()
+    same_as_today = [m for m in mods if m == today]
+    # 当日公開の記事はありうるので 0 件は求めない。
+    # 「大半が今日」ならタイムスタンプ由来を疑う。
+    assert len(same_as_today) < len(mods) * 0.5, (
+        f"lastmod の {len(same_as_today)}/{len(mods)} 件がビルド日({today})と同じ。"
+        "ファイルのタイムスタンプから算出していないか確認すること"
+    )
+    # 日付が十分に分散していること
+    assert len(set(mods)) > 10, f"lastmod の種類が {len(set(mods))} 種類しかない"
+
+
+def test_lastmod_matches_articles_json():
+    """lastmod が articles.json の date と一致する（別ソースから来ていない）。"""
+    import json
+
+    data = json.loads((STATIC / "blog" / "articles.json").read_text(encoding="utf-8"))
+    by_url = {a["url"]: a["date"] for a in data}
+    body = SITEMAP.read_text(encoding="utf-8")
+    pairs = re.findall(
+        r"<loc>([^<]+)</loc>\s*<lastmod>([^<]+)</lastmod>", body
+    )
+    assert pairs, "loc と lastmod の組が取れない"
+    for loc, mod in pairs:
+        path = loc.replace(BASE_URL, "")
+        if path in by_url:
+            assert mod == by_url[path], f"{path} の lastmod が articles.json と不一致"
+
+
+def test_robots_does_not_block_css_or_js():
+    """robots.txt が CSS/JS をブロックしていない。
+
+    Disallow は前方一致のため、"Disallow: /app" は /app.js や
+    /app-state.js までブロックする。実際にそうなっていた。
+    """
+    lines = [
+        ln.strip() for ln in ROBOTS.read_text(encoding="utf-8").splitlines()
+        if ln.strip() and not ln.strip().startswith("#")
+    ]
+    disallows = [
+        ln.split(":", 1)[1].strip()
+        for ln in lines if ln.lower().startswith("disallow:")
+    ]
+    disallows = [d for d in disallows if d]  # "Disallow:" 単体は「全許可」の意味
+
+    assets = [p.name for p in STATIC.glob("*.js")] + [p.name for p in STATIC.glob("*.css")]
+    assert assets, "検査対象の静的アセットが見つからない"
+    for rule in disallows:
+        blocked = [a for a in assets if ("/" + a).startswith(rule)]
+        assert not blocked, (
+            f'robots.txt の "Disallow: {rule}" が前方一致で '
+            f"CSS/JS をブロックしている: {blocked}"
+        )
+
+
+def test_sitemap_has_no_noindex_pages():
+    """noindex のページをサイトマップに載せていない。"""
+    offenders = []
+    for loc in _locs():
+        path = loc.replace(BASE_URL, "").lstrip("/") or "index.html"
+        f = STATIC / path
+        if not f.is_file():
+            continue
+        head = f.read_text(encoding="utf-8", errors="ignore")[:4000]
+        if re.search(r'name=["\']robots["\'][^>]*noindex', head, re.I):
+            offenders.append(loc)
+    assert not offenders, f"noindex なのにサイトマップに載っている: {offenders}"
+
+
+def test_sitemap_urls_resolve_to_existing_files():
+    """サイトマップの URL が実在するファイルを指している（404 の送信を防ぐ）。"""
+    missing = []
+    for loc in _locs():
+        path = loc.replace(BASE_URL, "").lstrip("/") or "index.html"
+        if not (STATIC / path).is_file():
+            missing.append(loc)
+    assert not missing, f"サイトマップ内の URL にファイルが無い: {missing}"

@@ -1,5 +1,17 @@
 User-agent: *
 Allow: /
-Disallow: /app
+
+# 以前は "Disallow: /app" と書いていたが、robots.txt のパスは前方一致のため
+# /app.js と /app-state.js までブロックしていた。
+# Google は CSS/JS のブロックを明示的に非推奨としている（ページを
+# レンダリングできず、モバイル対応やコンテンツの評価を誤る）。
+# そもそも /app というページは存在せず（未定義パスは firebase.json の
+# rewrites で login.html に流れる）、このルール自体が不要だった。
+#
+# インデックスさせたくないページは robots.txt ではなく noindex で制御している:
+#   login.html … <meta name="robots" content="noindex, nofollow">
+#   admin.html … firebase.json の X-Robots-Tag ヘッダー
+# robots.txt でブロックすると Google が noindex を読めなくなるため、
+# ここには書かない。
 
 Sitemap: https://get-tohon.online/sitemap.xml
