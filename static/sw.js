@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v23";
+const CACHE = "receipt-v24";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [

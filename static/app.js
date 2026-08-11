@@ -174,7 +174,11 @@ async function setupApp(user) {
     }
 
     initForm({
-      db: null, // firestore-data 経由のため不要だが型互換のため残す
+      // 新規追加は firestore-data の expensesCol() を使うが、更新・削除は
+      // expense-form 内で doc(db, ...) を組み立てるため db の実体が要る。
+      // ここを null にすると編集・更新・削除が
+      // 「Expected first argument to collection() to be ...」で失敗する。
+      db,
       getUser:      () => state.currentUser,
       expensesCol,
       onSaved:      _onFormSaved,
