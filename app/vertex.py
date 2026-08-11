@@ -74,8 +74,8 @@ def _get_access_token() -> str:
 # 有効化状況次第）ため、VERTEX_MODEL 未指定時は候補を順に試す。
 # 新しいモデルほど先に置く（将来の移行を自動で拾うため）。
 _VERTEX_MODEL_CANDIDATES = [
+    "gemini-3.5-flash",        # 第一希望。Model Garden で有効化され次第これが使われる
     "gemini-3.1-flash-lite",   # Gemini 2.5廃止の推奨移行先
-    "gemini-3.5-flash",
     "gemini-2.0-flash-001",
     "gemini-2.0-flash-002",
     "gemini-1.5-flash-001",
