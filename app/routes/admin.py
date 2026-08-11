@@ -10,13 +10,16 @@ DEBUG_RETAIN_RECEIPTS=true で debug-receipts/ に保存された画像を、
 """
 from __future__ import annotations
 
+import logging
 import os
 
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import Response
 
-from app import security
+from app import debug_storage, security
 from app.routes._shared import FIREBASE_PROJECT_ID
+
+logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter()
 
@@ -34,15 +37,37 @@ def _require_admin(authorization: str | None) -> str:
     return uid
 
 
+def _get_bucket():
+    """Storage バケットを取得する。
+
+    未処理例外のまま 500 を返すと CORSMiddleware を通らずヘッダーが欠落し、
+    ブラウザには本当の原因ではなく CORS エラーとして表示されてしまう。
+    そのため HTTPException に変換して原因が読めるようにする。
+    """
+    try:
+        from firebase_admin import storage as admin_storage
+        return admin_storage.bucket(debug_storage.bucket_name())
+    except HTTPException:
+        raise
+    # pyo3 の PanicException は BaseException 派生のため Exception では捕まらない。
+    except BaseException as exc:  # noqa: BLE001 — 原因をクライアントに伝える
+        logger.exception("Storage バケットの取得に失敗")
+        raise HTTPException(503, f"ストレージに接続できません: {exc}") from exc
+
+
 @router.get("/admin/receipts")
 def list_debug_receipts(authorization: str | None = Header(default=None)) -> dict:
     """debug-receipts/ 配下の一覧（uid・ファイル名・サイズ・作成日時）を返す。"""
     _require_admin(authorization)
-    from firebase_admin import storage as admin_storage
+    bucket = _get_bucket()
+    try:
+        blobs = list(bucket.list_blobs(prefix="debug-receipts/"))
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("一覧の取得に失敗")
+        raise HTTPException(503, f"一覧を取得できません: {exc}") from exc
 
-    bucket = admin_storage.bucket()
     items = []
-    for blob in bucket.list_blobs(prefix="debug-receipts/"):
+    for blob in blobs:
         if blob.name.endswith("/"):
             continue
         items.append({
@@ -64,9 +89,7 @@ def download_debug_receipt(
     _require_admin(authorization)
     if not name.startswith("debug-receipts/") or ".." in name:
         raise HTTPException(400, "不正なファイル名です。")
-    from firebase_admin import storage as admin_storage
-
-    bucket = admin_storage.bucket()
+    bucket = _get_bucket()
     blob = bucket.blob(name)
     if not blob.exists():
         raise HTTPException(404, "ファイルが見つかりません（3日経過で自動削除された可能性があります）。")
