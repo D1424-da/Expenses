@@ -72,6 +72,7 @@ def _get_access_token() -> str:
 
 # プロジェクトによって Vertex AI で使えるモデル名が異なる（Model Garden の
 # 有効化状況次第）ため、VERTEX_MODEL 未指定時は候補を順に試す。
+# 新しいモデルほど先に置く（将来の移行を自動で拾うため）。
 _VERTEX_MODEL_CANDIDATES = [
     "gemini-3.1-flash-lite",   # Gemini 2.5廃止の推奨移行先
     "gemini-3.5-flash",
@@ -83,6 +84,37 @@ _VERTEX_MODEL_CANDIDATES = [
     "gemini-2.5-flash",        # 2026-10-20 サポート終了予定
 ]
 
+# 一度成功したモデルを覚えておく。覚えないと、利用できないモデルへの 404 を
+# 毎リクエスト繰り返すことになる（実測で1回のOCRに7往復の無駄が発生していた）。
+# プロセス内キャッシュなので再起動でリセットされ、モデルの廃止・追加は
+# 次回の全候補走査で自動的に拾い直せる。
+_model_lock = threading.Lock()
+_working_model: str | None = None
+
+
+def _candidate_order(env_model: str | None, cached: str | None) -> list[str]:
+    """試行順を決める（純粋関数）。
+
+    - VERTEX_MODEL が明示されていればそれだけを使う（従来どおり）
+    - 前回成功したモデルがあれば先頭に持ってくる
+    """
+    if env_model:
+        return [env_model]
+    if cached:
+        return [cached] + [m for m in _VERTEX_MODEL_CANDIDATES if m != cached]
+    return list(_VERTEX_MODEL_CANDIDATES)
+
+
+def _get_working_model() -> str | None:
+    with _model_lock:
+        return _working_model
+
+
+def _set_working_model(model: str | None) -> None:
+    global _working_model
+    with _model_lock:
+        _working_model = model
+
 
 def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dict:
     """Vertex AI（Gemini）で画像から構造化レシートデータを抽出する。"""
@@ -91,12 +123,13 @@ def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dic
         raise RuntimeError("GOOGLE_CLOUD_PROJECT が設定されていません。")
     location = os.environ.get("VERTEX_LOCATION", "us-central1")
     env_model = os.environ.get("VERTEX_MODEL")
-    candidates = [env_model] if env_model else _VERTEX_MODEL_CANDIDATES
+    cached = _get_working_model()
+    candidates = _candidate_order(env_model, cached)
 
     logger.info(
         "Vertex AI 呼び出し: project=%s location=%s model=%s 画像=%.1fKB",
         project, location,
-        env_model or f"自動選択（候補{len(candidates)}件）",
+        env_model or (f"{cached}（前回成功）" if cached else f"自動選択（候補{len(candidates)}件）"),
         len(image_bytes) / 1024,
     )
 
@@ -129,6 +162,10 @@ def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dic
             )
             structured, text = gemini.parse_generate_content(result)
             normalized = gemini.normalize_receipt(structured, text, engine="vertex")
+            # 次回は先頭で試せるよう記憶する（404の繰り返しを避ける）
+            if not env_model and model != cached:
+                _set_working_model(model)
+                logger.info("Vertex AI: 以後 %s を優先して使用します", model)
             logger.info(
                 "Vertex AI 成功: model=%s %.1f秒 店名=%s 金額=%s 明細=%d件",
                 model, time.monotonic() - started,
@@ -142,4 +179,8 @@ def extract_receipt(image_bytes: bytes, content_type: str = "image/jpeg") -> dic
             # 「Vertexが全滅した理由」が最後まで分からず切り分けできない。
             logger.warning("Vertex AI: モデル %s 失敗: %s", model, str(exc)[:300])
             errors.append(f"{model}: {exc}")
+            # 覚えていたモデルが使えなくなった（廃止など）ら忘れて他を探す
+            if model == cached:
+                _set_working_model(None)
+                logger.warning("Vertex AI: 記憶していた %s が使えなくなったため候補を探し直します", model)
     raise RuntimeError("Vertex AI: 利用可能なモデルが見つかりませんでした / " + " / ".join(errors))
