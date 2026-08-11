@@ -23,6 +23,27 @@ logger = logging.getLogger("uvicorn.error")
 RETAIN_ENABLED = os.environ.get("DEBUG_RETAIN_RECEIPTS", "").strip().lower() == "true"
 RETAIN_DAYS    = int(os.environ.get("DEBUG_RETAIN_DAYS", "3"))
 
+
+def bucket_name() -> str:
+    """使用する Cloud Storage バケット名を返す。
+
+    firebase_admin.initialize_app() に storageBucket を渡していないため、
+    admin_storage.bucket() を引数なしで呼ぶと ValueError になる。
+    そのため呼び出し側で必ず名前を明示する。
+    """
+    explicit = os.environ.get("FIREBASE_STORAGE_BUCKET", "").strip()
+    if explicit:
+        return explicit
+    project = os.environ.get("FIREBASE_PROJECT_ID", "").strip()
+    if not project:
+        raise RuntimeError(
+            "FIREBASE_STORAGE_BUCKET も FIREBASE_PROJECT_ID も設定されていません。"
+        )
+    # 現在の Firebase の既定バケットは <project>.firebasestorage.app。
+    # 古いプロジェクトは <project>.appspot.com なので、その場合は
+    # FIREBASE_STORAGE_BUCKET で明示的に上書きする。
+    return f"{project}.firebasestorage.app"
+
 _EXT_BY_CONTENT_TYPE = {
     "image/jpeg": "jpg",
     "image/jpg":  "jpg",
@@ -43,9 +64,12 @@ def save_for_debug(image_bytes: bytes, content_type: str, uid: str | None) -> No
         who  = uid or "anonymous"
         name = f"debug-receipts/{who}/{int(time.time())}_{uuid.uuid4().hex}.{ext}"
 
-        bucket = admin_storage.bucket()
+        bucket = admin_storage.bucket(bucket_name())
         blob = bucket.blob(name)
         blob.upload_from_string(image_bytes, content_type=content_type)
         logger.info("デバッグ用にレシート画像を保存: %s（%d日後にライフサイクルルールで自動削除）", name, RETAIN_DAYS)
-    except Exception:  # noqa: BLE001 — 保存失敗はOCR本処理に影響させない
+    # pyo3 の PanicException は BaseException 派生なので Exception では捕まらない
+    # （stripe_billing.startup_firebase_admin と同じ理由）。ここで漏らすと
+    # 「保存失敗はOCRに影響させない」という前提が崩れ、読み取り自体が失敗する。
+    except BaseException:  # noqa: BLE001 — 保存失敗はOCR本処理に影響させない
         logger.exception("デバッグ用レシート画像の保存に失敗（OCR結果には影響なし）")

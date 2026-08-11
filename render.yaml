@@ -47,3 +47,5 @@ services:
         value: "3"   # 保存日数。実際の自動削除は storage-lifecycle.json のGCSライフサイクルルールで行う（値を変えたらそちらも合わせて更新）
       - key: ADMIN_UIDS
         sync: false   # /admin.html から一時保存レシートを閲覧できる Firebase UID（カンマ区切り・Firebase Console→Authenticationで確認）
+      - key: FIREBASE_STORAGE_BUCKET
+        sync: false   # 任意。未設定なら <FIREBASE_PROJECT_ID>.firebasestorage.app を使う（古いプロジェクトの .appspot.com 形式のときだけ明示する）
