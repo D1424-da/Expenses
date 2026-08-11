@@ -14,6 +14,7 @@
 """
 from __future__ import annotations
 
+import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -22,16 +23,35 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app import debug_storage
 from app.routes import admin, ocr, recipe, stripe_routes
 from app.stripe_billing import startup_firebase_admin
+
+logger = logging.getLogger("uvicorn.error")
 
 BASE_DIR   = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
 
+def _safe_bucket_name() -> str:
+    """起動ログ用。未設定でも例外で起動を止めない。"""
+    try:
+        return debug_storage.bucket_name()
+    except Exception as exc:  # noqa: BLE001 — ログ用途なので失敗しても続行
+        return f"未解決（{exc}）"
+
+
 @asynccontextmanager
 async def _lifespan(application: FastAPI):
     startup_firebase_admin()
+    # 一時保存の設定はログに出しておく。有効/無効やバケット名の取り違えは
+    # 画面上は「該当する画像はありません」としか出ず切り分けが難しいため。
+    logger.info(
+        "レシート一時保存: %s（バケット: %s / 保持 %d 日）",
+        "有効" if debug_storage.RETAIN_ENABLED else "無効",
+        _safe_bucket_name(),
+        debug_storage.RETAIN_DAYS,
+    )
     yield
 
 
