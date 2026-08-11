@@ -96,10 +96,16 @@ async function _ocrAndShow(file) {
       data = await normalizeWithHistory(data, fetchAllExpenses);
     }
     fillForm(data, URL.createObjectURL(file));
-    status.className = "status ok";
-    status.textContent =
-      `✅ ${_queuePrefix()}読み取りました。内容を確認して保存してください。` +
-      (ocrTotal > 1 ? "（保存すると次の画像へ進みます）" : "");
+    // AI(Gemini/Vertex)が使えず簡易OCRに切り替わった場合は精度が落ちるため、
+    // 黙って不正確な内容が保存されないよう明示的に注意を促す。
+    const lowAccuracy = data && !TRUSTED_ENGINES.includes(data.engine);
+    status.className = lowAccuracy ? "status warn" : "status ok";
+    status.textContent = lowAccuracy
+      ? `⚠️ ${_queuePrefix()}簡易読み取りのため精度が低い可能性があります。`
+        + `金額・店名・明細をご確認のうえ保存してください。`
+        + (ocrTotal > 1 ? "（保存すると次の画像へ進みます）" : "")
+      : `✅ ${_queuePrefix()}読み取りました。内容を確認して保存してください。`
+        + (ocrTotal > 1 ? "（保存すると次の画像へ進みます）" : "");
     $("form-card").scrollIntoView({ behavior: "smooth" });
   } catch (err) {
     logErr("OCRエラー:", err.message || err, err);

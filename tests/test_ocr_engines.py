@@ -54,6 +54,18 @@ import app.ocr as ocr  # noqa: E402
 FAKE_JPEG = b"\xff\xd8\xff\xe0" + b"\x00" * 64
 
 
+@pytest.fixture(autouse=True)
+def reset_engine_breaker():
+    """各テスト前にサーキットブレーカーをリセットする。
+
+    breaker はプロセス内グローバル（単一インスタンス運用前提）なので、
+    リセットしないと 429 を模したテストの失敗が後続テストに漏れる。
+    """
+    engines.breaker.reset()
+    yield
+    engines.breaker.reset()
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # _preprocess
 # ─────────────────────────────────────────────────────────────────────────────

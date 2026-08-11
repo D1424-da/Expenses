@@ -374,6 +374,8 @@ main {
 .status.loading { background: var(--status-loading-bg); color: var(--status-loading-ink); }
 .status.error { background: var(--status-error-bg); color: var(--danger); }
 .status.ok { background: var(--sage-light); color: var(--sage); }
+/* 簡易OCRへフォールバックしたときの注意喚起（成功だが要確認） */
+.status.warn { background: var(--status-error-bg); color: var(--warn); }
 
 /* ============================================================
    FORM
