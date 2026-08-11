@@ -799,3 +799,80 @@ body {
   color: var(--article-ink-sub, #3D5A3E);
   line-height: 1.5;
 }
+
+/* ── 記事本文の別名クラス ────────────────────────────────
+   記事ごとに独自のクラス名で書かれていた要素のうち、CSSがどこにも
+   定義されておらず素のHTMLとして表示されていたものを、既存の
+   デザインに合わせて補う。
+   （新規記事では .highlight-box / .stat-box など既存名を使うこと） */
+
+/* 強調ボックス（.highlight-box と同じ用途） */
+.hl {
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  background: var(--article-pale, #EDF6F0);
+  border-left: 4px solid var(--green-mid, #2D7D52);
+}
+
+/* 目次ボックス（.am-toc と同じ用途） */
+.hl2 {
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  background: var(--article-surface, #fff);
+  border: 1px solid var(--article-border, #D6E8DB);
+}
+.hl2 h4 { margin: 0 0 8px; font-size: .95rem; }
+.hl2 ol { margin: 0; padding-left: 1.3em; }
+.hl2 li { margin-bottom: 4px; font-size: .9rem; }
+
+/* 数値カードの並び（中の .stat-box は定義済み） */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+.stat-row .stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0;
+}
+.stat-row .num {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--green-mid, #2D7D52);
+  line-height: 1.2;
+}
+.stat-row .lbl {
+  font-size: .78rem;
+  color: var(--article-ink-sub, #3D5A3E);
+  line-height: 1.5;
+}
+
+/* フッターのリンク列（.footer-links と同じ用途） */
+.fl, .footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 16px;
+  margin-bottom: 10px;
+}
+.fl a, .footer-links a { font-size: .82rem; }
+
+/* CTA見出し（.am-cta-box 内の見出し） */
+.am-cta-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+/* 記事メタ情報（日付など） */
+.am-meta {
+  font-size: .82rem;
+  color: var(--article-ink-sub, #3D5A3E);
+  margin-bottom: 4px;
+}
