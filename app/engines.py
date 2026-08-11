@@ -13,6 +13,8 @@ from __future__ import annotations
 import logging
 import os
 
+from app.engine_breaker import breaker
+
 logger = logging.getLogger("uvicorn.error")
 
 # Gemini Developer API（APIキー / AI Studio 課金）。任意の依存。
@@ -56,10 +58,18 @@ def extract_with_ai(preferred: str, image_bytes: bytes, content_type: str = "ima
         module = modules.get(name)
         if module is None:
             continue  # 依存未導入などで利用不可ならスキップ
+        # クレジット枯渇などで確実に失敗すると分かっている間はスキップする
+        # （毎回無駄な往復を待つとレイテンシとログのノイズが増えるため）。
+        if breaker.is_open(name):
+            errors.append(f"{_AI_LABELS[name]}: 一時的にスキップ中")
+            continue
         try:
-            return module.extract_receipt(image_bytes, content_type)
+            result = module.extract_receipt(image_bytes, content_type)
+            breaker.record_success(name)
+            return result
         except Exception as exc:  # noqa: BLE001 — 次の手段へ
             logger.exception("%s OCR failed", _AI_LABELS[name])
+            breaker.record_failure(name, str(exc))
             errors.append(f"{_AI_LABELS[name]}: {exc}")
 
     # すべての AI が失敗 → VISION_API_KEY があれば Vision で再試行（OCR専用）。
