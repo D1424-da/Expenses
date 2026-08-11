@@ -166,7 +166,7 @@ Gemini で画像から直接「日付・店名・支店名・合計・カテゴ�
    ```bash
    export OCR_ENGINE=gemini
    export GEMINI_API_KEY="（発行したキー）"
-   export GEMINI_MODEL="gemini-2.5-flash"   # 任意
+   export GEMINI_MODEL="gemini-flash-latest"   # 任意（最新Flashを自動追従）
    export CORS_ORIGINS="https://<ユーザー名>.github.io"   # 公開元
    uvicorn main:app --host 0.0.0.0 --port 8000
    ```
@@ -189,8 +189,9 @@ Gemini で画像から直接「日付・店名・支店名・合計・カテゴ�
 ```bash
 export OCR_ENGINE=vertex
 export GOOGLE_CLOUD_PROJECT="（課金が紐づくGCPプロジェクトID）"
-export VERTEX_LOCATION=us-central1          # 任意（global も可）
-export VERTEX_MODEL=gemini-2.5-flash        # 任意（未設定なら GEMINI_MODEL）
+export VERTEX_LOCATION=global               # 任意（既定 global。特定リージョンに固定するなら us-central1 等）
+# VERTEX_MODEL は通常不要。設定すると候補リストを使わずそのモデルだけを試すため、
+# 未設定のままにして gemini-flash-latest を自動選択させるのが安全。
 # 認証（いずれか）:
 export GOOGLE_SERVICE_ACCOUNT_JSON='{...}'  # SA鍵のJSON文字列（Render向け）
 # もしくは GOOGLE_APPLICATION_CREDENTIALS=鍵ファイルパス / 実行環境のADC
