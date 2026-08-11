@@ -75,7 +75,10 @@ function insertAds() {
   const items = pickItems();
   if (items.length === 0) return; // 掲載データが無いあいだは枠ごと出さない
 
-  const article = document.querySelector("article.am");
+  // 記事テンプレートは1種類ではない。135記事中5記事（saving-recipe-*）は
+  // <article> 要素を持たず .article-wrap で本文を包んでいるため、
+  // article.am だけを見ていると広告がPC・スマホとも一切出なかった。
+  const article = document.querySelector("article.am, .article-wrap, .am-wrap");
   if (!article) return;
 
   // A) 「まとめ」見出しの直前
@@ -84,6 +87,9 @@ function insertAds() {
   if (matome) matome.parentNode.insertBefore(renderBlock(items), matome);
 
   // B) 関連記事の直前（無ければ記事の末尾）
+  //   saving-recipe-* は .am-related が本文より前に置かれているため、
+  //   本文の外にある関連記事を基準にすると広告が記事冒頭に出てしまう。
+  //   本文の中にある場合だけ「直前」に挿し、そうでなければ末尾に付ける。
   const related = article.querySelector(".am-related");
   const tail = renderBlock(items);
   if (related) related.parentNode.insertBefore(tail, related);
