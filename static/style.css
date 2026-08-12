@@ -2036,6 +2036,14 @@ a.pcnav-top {
   border-color: var(--sage);
   color: var(--sage);
 }
+.toast-error {
+  border-color: var(--danger, #c0392b);
+  color: var(--danger, #c0392b);
+  /* エラー文は成功時より長いので、1行に収めず折り返す */
+  white-space: normal;
+  line-height: 1.6;
+  max-width: min(420px, 90vw);
+}
 @keyframes toast-in {
   from { opacity: 0; transform: translateX(-50%) translateY(12px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -2099,4 +2107,33 @@ details[open] .recipe-advanced-toggle::before { content: "▼ "; }
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+/* 視覚的には隠すが、スクリーンリーダーには読ませるラベル。
+   ログインフォームのように placeholder しか手がかりが無かった入力に使う
+   （placeholder は入力を始めると消えるため、ラベルの代わりにならない）。 */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* オフライン通知バー。navigator.onLine の変化で app.js が出し入れする。
+   これが無いと、地下などで保存に失敗したとき原因が分からなかった。 */
+.offline-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 2500;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  background: var(--danger, #DC2626);
+  color: #fff;
 }

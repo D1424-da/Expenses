@@ -2,6 +2,7 @@
 import { $, monthKey } from "./dom-utils.js";
 import { fetchAllExpensesUnlimited } from "./firestore-data.js";
 import { log, logErr } from "./log.js";
+import { showError } from "./ui-feedback.js";
 
 export async function exportCsv() {
   const btn = $("export-btn");
@@ -35,7 +36,7 @@ export async function exportCsv() {
     log("CSVエクスポート:", all.length, "件");
   } catch (err) {
     logErr("CSVエクスポートエラー:", err.message, err);
-    alert("エクスポートに失敗しました: " + err.message);
+    showError(err, "CSVを書き出せませんでした。");
   } finally {
     btn.disabled = false;
     btn.textContent = "📥 CSV";

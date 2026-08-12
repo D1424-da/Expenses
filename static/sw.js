@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v26";
+const CACHE = "receipt-v27";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
@@ -13,6 +13,7 @@ const STATIC_ASSETS = [
   "/db-paths.js",
   "/app-state.js",
   "/dom-utils.js",
+  "/ui-feedback.js",
   "/log.js",
   "/auth.js",
   "/firestore-data.js",

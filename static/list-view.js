@@ -2,6 +2,7 @@
 // G-2: setFilter(text, cat) で絞り込みができる。
 import { $, yen, escapeHtml } from "./dom-utils.js";
 import { CATEGORIES } from "./firebase-config.js";
+import { showError } from "./ui-feedback.js";
 
 // イベントデリゲーション用: id → expense オブジェクトのマップ
 let _expenseById = new Map();
@@ -288,7 +289,7 @@ function _showInlineEdit(id, rowEl) {
       if (idx >= 0) _lastExpenses[idx] = updatedE;
       _render(_lastExpenses);
     } catch (err) {
-      alert("保存に失敗しました: " + (err.message || err));
+      showError(err, "保存できませんでした。");
       btn.disabled = false;
       btn.textContent = "更新";
       if (cancelBtn) cancelBtn.disabled = false;

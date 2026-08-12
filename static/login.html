@@ -59,7 +59,9 @@
       <!-- メール/パスワード認証 -->
       <div class="email-divider"><span>または</span></div>
       <form id="email-login-form" class="email-form">
+        <label class="visually-hidden" for="email-input">メールアドレス</label>
         <input id="email-input" type="email" placeholder="メールアドレス" autocomplete="email" required class="email-input" />
+        <label class="visually-hidden" for="password-input">パスワード（6文字以上）</label>
         <input id="password-input" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password" required class="email-input" />
         <button id="email-submit-btn" type="submit" class="email-submit-btn">ログイン</button>
         <p id="email-login-error" class="login-error" hidden></p>
@@ -229,8 +231,8 @@
           <h2>今月の買い物</h2>
         </div>
         <div class="list-filter-row">
-          <input id="list-search" type="search" placeholder="店名・商品名・メモで検索…" autocomplete="off" />
-          <select id="list-cat-filter">
+          <input id="list-search" type="search" placeholder="店名・商品名・メモで検索…" autocomplete="off" aria-label="店名・商品名・メモで検索" />
+          <select id="list-cat-filter" aria-label="カテゴリで絞り込み" >
             <option value="">すべてのカテゴリ</option>
           </select>
         </div>
@@ -253,7 +255,7 @@
           <button id="compare-close" aria-label="閉じる">✕</button>
         </div>
         <p class="hint">購入した商品を店舗間で比較して、一番お得なお店を確認できます。</p>
-        <input id="compare-search" type="search" placeholder="商品名で検索（空欄で全件）" />
+        <input id="compare-search" type="search" placeholder="商品名で検索（空欄で全件）" aria-label="商品名で検索" />
         <div id="compare-list" class="compare-list"></div>
       </div>
     </div>
@@ -413,7 +415,7 @@
           </div>
         </details>
 
-        <div id="recipe-status" class="status" hidden></div>
+        <div id="recipe-status" class="status" role="status" aria-live="polite" hidden></div>
         <div id="recipe-result" class="recipe-result" hidden></div>
         <div id="recipe-post-actions" class="recipe-post-actions" hidden>
           <button id="recipe-save-btn" type="button">📚 保存</button>
@@ -534,7 +536,7 @@
           <button id="shopping-close" aria-label="閉じる">✕</button>
         </div>
         <form id="shopping-add-form" class="shopping-add-form">
-          <input id="shopping-add-input" type="text" placeholder="食材・商品を追加…" autocomplete="off" />
+          <input id="shopping-add-input" type="text" placeholder="食材・商品を追加…" autocomplete="off" aria-label="買い物リストに追加する品名" />
           <button type="submit" class="primary">追加</button>
         </form>
         <div id="shopping-items" class="shopping-items"></div>
@@ -578,7 +580,7 @@
           <div class="beta-code-section">
             <p class="beta-code-label">招待コードをお持ちの方</p>
             <div class="beta-code-row">
-              <input type="text" id="beta-code-input" placeholder="招待コードを入力" maxlength="50" autocomplete="off" />
+              <input type="text" id="beta-code-input" placeholder="招待コードを入力" maxlength="50" autocomplete="off" aria-label="招待コード" />
               <button id="beta-code-btn" type="button">適用</button>
             </div>
             <p id="beta-code-msg" hidden></p>

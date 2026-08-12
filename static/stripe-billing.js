@@ -8,6 +8,7 @@ import {
 import { OCR_API_BASE } from "./firebase-config.js";
 import { openModal, closeModal, $ } from "./dom-utils.js";
 import { log, logErr } from "./log.js";
+import { showError } from "./ui-feedback.js";
 
 let _db, _getUser, _onSubChange;
 let _sub = null;         // キャッシュ済みサブスクリプション情報
@@ -202,7 +203,7 @@ export async function openPortal() {
     location.href = url;
   } catch (err) {
     logErr("ポータルエラー:", err.message);
-    alert("管理ページへの移動に失敗しました: " + err.message);
+    showError(err, "お支払い管理ページを開けませんでした。");
     if (btn) { btn.disabled = false; btn.textContent = originalText; }
   }
 }
@@ -232,7 +233,7 @@ async function _startCheckout() {
     location.href = url;
   } catch (err) {
     logErr("チェックアウトエラー:", err.message);
-    alert("決済ページへの移動に失敗しました: " + err.message);
+    showError(err, "お申し込みページを開けませんでした。");
     btn.disabled = false;
     btn.textContent = "今すぐアップグレード";
   }

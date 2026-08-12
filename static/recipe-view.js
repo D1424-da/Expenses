@@ -6,6 +6,7 @@ import { OCR_API_BASE } from "./firebase-config.js";
 import { saveRecipe } from "./saved-recipes.js";
 import { addItemsToList } from "./shopping-list.js";
 import { saveMealPlan, saveMeal } from "./meal-plan.js";
+import { showError, showToast } from "./ui-feedback.js";
 
 let _getToken;
 let _fetchAllExpenses;
@@ -182,7 +183,7 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget, db, getUser 
       setTimeout(() => { btn.textContent = "🛒 リストに追加"; }, 3000);
     } catch (err) {
       logErr("買い物リスト追加エラー:", err.message, err);
-      alert("買い物リストへの追加に失敗しました: " + err.message);
+      showError(err, "買い物リストに追加できませんでした。");
     } finally {
       btn.disabled = false;
     }
@@ -556,7 +557,7 @@ async function _saveDishSelection() {
     .filter((x) => x.checked && x.dish)
     .map((x) => x.dish);
   if (!selected.length) {
-    alert("保存する料理を選んでください。");
+    showToast("保存する料理を選んでください。", "error");
     return;
   }
   await _doSave(selected);
@@ -912,7 +913,7 @@ async function _selectConfirmCalendar() {
     setTimeout(() => { btn.textContent = "📅 カレンダーに追加"; btn.disabled = false; }, 2500);
   } catch (err) {
     logErr("選択献立カレンダー追加エラー:", err.message);
-    alert("カレンダーへの追加に失敗しました: " + err.message);
+    showError(err, "カレンダーに追加できませんでした。");
     btn.disabled = false;
     btn.textContent = "📅 カレンダーに追加";
   }
@@ -943,7 +944,7 @@ async function _selectConfirmSave() {
     setTimeout(() => { btn.textContent = "📚 レシピを保存"; btn.disabled = false; }, 2500);
   } catch (err) {
     logErr("選択レシピ保存エラー:", err.message);
-    alert("保存に失敗しました: " + err.message);
+    showError(err, "保存できませんでした。");
     btn.disabled = false;
     btn.textContent = "📚 レシピを保存";
   }
@@ -1004,7 +1005,7 @@ async function _exportToCalendar() {
     try {
       const meals = _extractWeeklyMeals(_lastMarkdown);
       if (!meals.length) {
-        alert("献立情報を解析できませんでした。週間献立を再生成してください。");
+        showToast("献立情報を読み取れませんでした。週間献立を作り直してください。", "error");
         return;
       }
       for (const { date, 朝食, お弁当, 夕食, 夕食レシピ } of meals) {
@@ -1014,7 +1015,7 @@ async function _exportToCalendar() {
       setTimeout(() => { btn.textContent = "📅 カレンダーに反映"; btn.disabled = false; }, 3000);
     } catch (err) {
       logErr("献立カレンダー反映エラー:", err.message);
-      alert("カレンダーへの反映に失敗しました: " + err.message);
+      showError(err, "カレンダーに反映できませんでした。");
       $("recipe-calendar-btn").disabled = false;
     }
   } else {
@@ -1026,7 +1027,7 @@ async function _exportToCalendar() {
 
 async function _saveMealSlot(slot) {
   if (!_selectedDay) {
-    alert("カレンダーの日付をタップしてからレシピを開いてください。");
+    showToast("カレンダーの日付をタップしてからレシピを開いてください。", "error");
     $("recipe-meal-slot-picker").hidden = true;
     $("recipe-post-actions").hidden = false;
     return;
@@ -1040,6 +1041,6 @@ async function _saveMealSlot(slot) {
     setTimeout(() => { $("recipe-calendar-btn").textContent = "📅 カレンダーに追加"; }, 3000);
   } catch (err) {
     logErr("カレンダー追加エラー:", err.message);
-    alert("カレンダーへの追加に失敗しました: " + err.message);
+    showError(err, "カレンダーに追加できませんでした。");
   }
 }

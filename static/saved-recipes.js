@@ -8,6 +8,7 @@ import { dbBase } from "./db-paths.js";
 import { log, logErr } from "./log.js";
 import { addItemsToList } from "./shopping-list.js";
 import { saveMeal } from "./meal-plan.js";
+import { showError, showSuccess, showToast } from "./ui-feedback.js";
 
 const DEFAULT_CATEGORIES = ["夕食", "お弁当", "節約", "おやつ"];
 
@@ -49,7 +50,7 @@ export async function saveRecipe({ title, markdown, items, period, rtype, servin
     log("レシピ保存:", title);
   } catch (err) {
     logErr("レシピ保存エラー:", err.message, err);
-    alert("レシピの保存に失敗しました: " + err.message);
+    showError(err, "レシピを保存できませんでした。");
   }
 }
 
@@ -199,17 +200,17 @@ function _closePlanPicker() {
 async function _confirmMealPlan(slot) {
   if (!_currentRecipe) return;
   const date = $("saved-recipe-plan-date").value;
-  if (!date) { alert("日付を選択してください。"); return; }
+  if (!date) { showToast("日付を選択してください。", "error"); return; }
   const btn = $("saved-recipe-plan-picker").querySelector(`[data-slot="${slot}"]`);
   if (btn) btn.disabled = true;
   try {
     await saveMeal(date, slot, _currentRecipe.title, _currentRecipe.markdown);
     _closePlanPicker();
     const slots = { 朝食: "🌅", お弁当: "🍱", 夕食: "🌙" };
-    alert(`${slots[slot] || ""}${date} の${slot}に「${_currentRecipe.title}」を設定しました。`);
+    showSuccess(`${date} の${slot}に「${_currentRecipe.title}」を設定しました。`);
   } catch (err) {
     logErr("献立設定エラー:", err.message, err);
-    alert("献立の設定に失敗しました: " + err.message);
+    showError(err, "献立を設定できませんでした。");
   } finally {
     if (btn) btn.disabled = false;
   }
@@ -233,6 +234,6 @@ async function _delete(id, card) {
     if (!$("saved-recipes-list").children.length) $("saved-recipes-empty").hidden = false;
   } catch (err) {
     logErr("レシピ削除エラー:", err.message, err);
-    alert("削除に失敗しました: " + err.message);
+    showError(err, "削除できませんでした。");
   }
 }

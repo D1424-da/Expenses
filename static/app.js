@@ -323,6 +323,30 @@ function teardownApp() {
 }
 
 // ---- タブ非表示時にFirestore購読を停止してコスト削減 -----------------------
+// ---- オフライン通知 --------------------------------------------------------
+// Service Worker でオフラインキャッシュを持っているのに、通信断を利用者に
+// 伝える手段が無かった。地下やエレベーターでレシートを撮ると
+// 「保存に失敗しました: Failed to fetch」とだけ出て原因が分からなかった。
+const _offlineBar = (() => {
+  let bar = null;
+  const show = () => {
+    if (bar) return;
+    bar = document.createElement("div");
+    bar.className = "offline-bar";
+    bar.setAttribute("role", "status");
+    bar.setAttribute("aria-live", "polite");
+    bar.textContent = "オフラインです。通信が戻ると自動で同期されます。";
+    document.body.appendChild(bar);
+  };
+  const hide = () => { if (bar) { bar.remove(); bar = null; } };
+  return { show, hide };
+})();
+
+window.addEventListener("offline", () => _offlineBar.show());
+window.addEventListener("online", () => _offlineBar.hide());
+// 起動時点で既にオフラインの場合もある
+if (navigator.onLine === false) _offlineBar.show();
+
 document.addEventListener("visibilitychange", () => {
   if (!appInitialized) return;
   if (document.hidden) {
