@@ -113,3 +113,84 @@ def test_sitemap_urls_resolve_to_existing_files():
         if not (STATIC / path).is_file():
             missing.append(loc)
     assert not missing, f"サイトマップ内の URL にファイルが無い: {missing}"
+
+
+# ---------------------------------------------------------------------------
+# 統合（301）とクロール予算
+# ---------------------------------------------------------------------------
+
+def _redirects() -> list[dict]:
+    import json
+    cfg = json.loads((STATIC.parent / "firebase.json").read_text(encoding="utf-8"))
+    return cfg["hosting"]["redirects"]
+
+
+def _consolidated() -> dict[str, str]:
+    """articles.json で noindex 指定された記事 → canonical 先 の対応。"""
+    import json
+    data = json.loads((STATIC / "blog" / "articles.json").read_text(encoding="utf-8"))
+    out = {}
+    for a in data:
+        if not a.get("noindex"):
+            continue
+        html = (STATIC / a["url"].lstrip("/")).read_text(encoding="utf-8")
+        m = re.search(r"<link[^>]*canonical[^>]*>", html)
+        assert m, f"{a['url']} に canonical が無い"
+        dest = re.search(r"https://[^\"']+", m.group(0))
+        out[a["url"]] = dest.group(0).replace(BASE_URL, "")
+    return out
+
+
+def test_consolidated_articles_have_301():
+    """統合した記事は canonical だけでなく 301 も張る。
+
+    canonical は「たぶんこちら」というヒントに過ぎず、統合元がクロール
+    対象として残り続ける。123本中77本が3か月間1度も表示されていない
+    状況ではクロール予算の節約が効くため、301 で明示的に移転させる。
+    """
+    sources = {r["source"] for r in _redirects()}
+    missing = [u for u in _consolidated() if u not in sources]
+    assert not missing, f"統合済みなのに 301 が無い: {missing}"
+
+
+def test_redirect_destination_matches_canonical():
+    """301 の宛先が canonical と一致する（二重の指示で食い違わせない）。"""
+    by_source = {r["source"]: r["destination"] for r in _redirects()}
+    for src, canonical_dest in _consolidated().items():
+        assert by_source.get(src) == canonical_dest, (
+            f"{src}: 301 は {by_source.get(src)} だが canonical は {canonical_dest}"
+        )
+
+
+def test_redirects_are_permanent():
+    """統合は恒久的な移転なので 301 を使う（302 は評価が移らない）。"""
+    for r in _redirects():
+        assert r["type"] == 301, f"{r['source']} が {r['type']}"
+
+
+def test_no_redirect_chain():
+    """301 の宛先がさらに 301 されていない（1回で着地させる）。"""
+    by_source = {r["source"]: r["destination"] for r in _redirects()}
+    chained = [(s, d) for s, d in by_source.items() if d in by_source]
+    assert not chained, f"リダイレクトが連鎖している: {chained}"
+
+
+def test_sitemap_excludes_redirected_urls():
+    """301 する URL をサイトマップに載せない。"""
+    sources = {r["source"] for r in _redirects()}
+    listed = [u for u in _locs() if u.replace(BASE_URL, "") in sources]
+    assert not listed, f"301 する URL がサイトマップにある: {listed}"
+
+
+def test_priority_has_more_than_one_tier_for_articles():
+    """記事の priority が全部同じでない（重点記事を区別する）。
+
+    以前は123本すべて 0.6 で、クローラーに「どれも同じ重要度」としか
+    伝えていなかった。
+    """
+    body = SITEMAP.read_text(encoding="utf-8")
+    pairs = re.findall(r"<loc>([^<]+)</loc>.*?<priority>([^<]+)</priority>", body, re.S)
+    article_priorities = {p for loc, p in pairs if "/blog/" in loc and "/cat/" not in loc}
+    assert len(article_priorities) >= 2, (
+        f"記事の priority が {article_priorities} の1種類しかない"
+    )

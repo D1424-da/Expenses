@@ -134,3 +134,30 @@ describe("キーボード操作", () => {
     }
   });
 });
+
+describe("CTAクリックの計測", () => {
+  const src = read("blog-cta.js");
+
+  it("位置別のイベントを送っている", () => {
+    // どの位置のCTAが効いているか分からないと改善できない。
+    // 以前は blog-cta.js から trackEvent を1度も呼んでいなかった。
+    expect(src).toContain("trackEvent");
+    for (const pos of ["blog_header", "blog_post_end", "blog_sidebar"]) {
+      expect(src, `${pos} を送っていない`).toContain(pos);
+    }
+  });
+
+  it("スマホでも計測する（PC差し替えより前に仕掛ける）", () => {
+    // isMobile の early return より前に計測を登録していないと、
+    // モバイルからのクリックが1件も取れない。
+    const trackAt = src.indexOf("addEventListener(\"click\"");
+    const returnAt = src.indexOf("if (isMobile) return;");
+    expect(trackAt).toBeGreaterThan(-1);
+    expect(returnAt).toBeGreaterThan(-1);
+    expect(trackAt, "計測が early return より後ろにある").toBeLessThan(returnAt);
+  });
+
+  it("PC/スマホを区別して送る", () => {
+    expect(src).toContain("device");
+  });
+});
