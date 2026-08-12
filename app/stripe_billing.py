@@ -12,9 +12,11 @@ Firestore への書き込みは Firebase Admin SDK 経由（バックエンド�
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
+import threading
 import time
 
 from fastapi import HTTPException
@@ -88,7 +90,7 @@ def _stripe():
         raise HTTPException(503, "Stripe ライブラリが未インストールです。") from exc
 
 
-async def create_checkout_session(uid: str, email: str) -> str:
+def _create_checkout_session_sync(uid: str, email: str) -> str:
     """Stripe Checkout セッションを作成して URL を返す。
     14日間の無料トライアルはカード登録不要の ensure_trial() 側で提供するため、
     ここでは付与しない（Checkoutに進む＝トライアル終了後の本契約）。
@@ -111,7 +113,7 @@ async def create_checkout_session(uid: str, email: str) -> str:
     return session.url
 
 
-async def sync_subscription(uid: str, email: str) -> dict:
+def _sync_subscription_sync(uid: str, email: str) -> dict:
     """チェックアウト後にサブスクリプション状態を Stripe から取得して Firestore に同期する。"""
     stripe = _stripe()
     customers = stripe.Customer.list(email=email, limit=5)
@@ -124,7 +126,7 @@ async def sync_subscription(uid: str, email: str) -> dict:
     return {"status": "not_found", "synced": False}
 
 
-async def create_portal_session(uid: str) -> str:
+def _create_portal_session_sync(uid: str) -> str:
     """Stripe カスタマーポータルセッションを作成して URL を返す（解約・領収書確認用）。"""
     stripe = _stripe()
     db = _get_firestore()
@@ -142,7 +144,7 @@ async def create_portal_session(uid: str) -> str:
     return session.url
 
 
-async def handle_webhook(payload: bytes, sig_header: str) -> dict:
+def _handle_webhook_sync(payload: bytes, sig_header: str) -> dict:
     """Stripe Webhook を検証し、サブスクリプション状態を Firestore に反映する。"""
     if not STRIPE_WEBHOOK_SECRET:
         raise HTTPException(503, "Webhook シークレットが未設定です（STRIPE_WEBHOOK_SECRET）。")
@@ -192,10 +194,40 @@ async def handle_webhook(payload: bytes, sig_header: str) -> dict:
     return {"received": True}
 
 
-async def redeem_beta_code(uid: str, code: str) -> bool:
+# 招待コードの試行回数制限。
+#
+# レート制限は IP あたり10回/分しかなく、1つのIPから1日14,400回試せる。
+# 成功すると currentPeriodEnd=9999999999（実質無期限）のプレミアムが付くため、
+# コードの桁数によっては総当たりが成立してしまう。
+# アカウント単位でも上限を設け、IP を変えても回数を稼げないようにする。
+BETA_MAX_ATTEMPTS = 5
+BETA_ATTEMPT_WINDOW_SEC = 3600
+
+_beta_attempts: dict[str, list[float]] = {}
+_beta_attempts_lock = threading.Lock()
+
+
+def _check_beta_attempts(uid: str) -> None:
+    """uid ごとの試行回数を数え、上限を超えていれば 429 を投げる。"""
+    now = time.time()
+    cutoff = now - BETA_ATTEMPT_WINDOW_SEC
+    with _beta_attempts_lock:
+        # 期限切れの uid ごと捨てる（放置するとメモリが増え続ける）
+        for key in [k for k, v in _beta_attempts.items() if not v or v[-1] < cutoff]:
+            del _beta_attempts[key]
+        attempts = [t for t in _beta_attempts.get(uid, []) if t >= cutoff]
+        if len(attempts) >= BETA_MAX_ATTEMPTS:
+            logger.warning("招待コードの試行回数超過: uid=%s", uid)
+            raise HTTPException(429, "試行回数の上限に達しました。しばらく待ってからお試しください。")
+        attempts.append(now)
+        _beta_attempts[uid] = attempts
+
+
+def _redeem_beta_code_sync(uid: str, code: str) -> bool:
     """ベータ招待コードを検証し、有効なら無料プレミアムを付与する。"""
     if not BETA_CODES:
         raise HTTPException(503, "招待コード機能が設定されていません（BETA_CODES）。")
+    _check_beta_attempts(uid)
     if code.strip().upper() not in BETA_CODES:
         return False
     from firebase_admin import firestore as admin_fs
@@ -219,7 +251,7 @@ async def redeem_beta_code(uid: str, code: str) -> bool:
 TRIAL_PERIOD_DAYS = 14
 
 
-async def ensure_trial(uid: str) -> dict:
+def _ensure_trial_sync(uid: str) -> dict:
     """初回ログイン時に14日間の無料トライアルを開始する。
     既にサブスクリプション情報がある場合は何もしない（トライアルは1ユーザー1回のみ）。
     トライアル終了後は currentPeriodEnd が過ぎるため、isPremium() 判定により自動的に無料プランへ戻る。
@@ -286,3 +318,42 @@ def _persist_subscription(uid: str, subscription: dict, customer_id: str | None)
         "📝 課金状態を保存: uid=%s status=%s 有効期限=%s 解約予約=%s",
         uid, status, period_end_str, "あり" if cancel_at_period_end else "なし",
     )
+
+
+# ── 非同期ラッパ ──────────────────────────────────────────────────────
+#
+# Stripe SDK も Firebase Admin SDK も同期（ブロッキング）API しか無い。
+# それを async def の中で直接呼ぶと、待っているあいだイベントループ全体が
+# 止まり、単一ワーカーの Render では /api/health や /api/ocr を含む
+# すべてのリクエストが待たされる。
+# app/routes/ocr.py・recipe.py と同じく asyncio.to_thread に逃がす。
+
+
+async def create_checkout_session(uid: str, email: str) -> str:
+    """Stripe Checkout セッションを作成して URL を返す。"""
+    return await asyncio.to_thread(_create_checkout_session_sync, uid, email)
+
+
+async def sync_subscription(uid: str, email: str) -> dict:
+    """チェックアウト後に Stripe の状態を Firestore へ同期する。"""
+    return await asyncio.to_thread(_sync_subscription_sync, uid, email)
+
+
+async def create_portal_session(uid: str) -> str:
+    """Stripe カスタマーポータルの URL を返す（解約・領収書確認用）。"""
+    return await asyncio.to_thread(_create_portal_session_sync, uid)
+
+
+async def handle_webhook(payload: bytes, sig_header: str) -> dict:
+    """Stripe Webhook を検証し、サブスクリプション状態を反映する。"""
+    return await asyncio.to_thread(_handle_webhook_sync, payload, sig_header)
+
+
+async def redeem_beta_code(uid: str, code: str) -> bool:
+    """招待コードを検証し、有効なら無料プレミアムを付与する。"""
+    return await asyncio.to_thread(_redeem_beta_code_sync, uid, code)
+
+
+async def ensure_trial(uid: str) -> dict:
+    """初回ログイン時に14日間の無料トライアルを開始する。"""
+    return await asyncio.to_thread(_ensure_trial_sync, uid)

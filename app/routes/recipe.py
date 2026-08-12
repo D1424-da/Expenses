@@ -42,15 +42,19 @@ async def suggest_recipe(
         )
         return JSONResponse({"recipe": text})
     except RuntimeError as exc:
+        # 例外文にはプロバイダのエラー本文（app/net.py が先頭300字を埋め込む）が
+        # 入っている。プロジェクトIDやAPIの内部エラーが含まれうるため、
+        # そのままクライアントへ返さない。詳細はサーバーログにだけ残す。
+        # （app/routes/ocr.py も汎用文言に統一している）
         msg = str(exc)
         logger.error("Recipe suggest RuntimeError: %s", msg)
         if "GEMINI_API_KEY が設定されていません" in msg or "設定されていません" in msg:
             raise HTTPException(503, "レシピ提案サービスが設定されていません。") from exc
         if "429" in msg or "RESOURCE_EXHAUSTED" in msg or "credits" in msg.lower():
             raise HTTPException(503, "AIサービスの利用上限に達しました。しばらく待ってから再試行してください。") from exc
-        if "404" in msg:
-            raise HTTPException(503, f"AIモデルが見つかりません: {msg[:200]}") from exc
-        raise HTTPException(503, f"レシピ生成エラー: {msg[:300]}") from exc
+        raise HTTPException(
+            503, "レシピを生成できませんでした。時間をおいて再試行してください。",
+        ) from exc
     except Exception as exc:  # noqa: BLE001
         logger.exception("Recipe suggestion failed")
         raise HTTPException(500, "レシピの提案に失敗しました。時間をおいて再試行してください。") from exc
