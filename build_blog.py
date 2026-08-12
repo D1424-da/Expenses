@@ -352,12 +352,46 @@ for cat_name, slug in CATEGORY_SLUGS.items():
   </url>""")
 
 # Article pages
+#
+# 重点記事は priority を上げる。以前は123本すべて 0.6 で、
+# クローラーに「どれも同じ重要度」としか伝えていなかった。
+# 選定基準は2つ:
+#   1. Search Console で実際にクリックを取れている記事（10位以内）
+#   2. サイト内から多くリンクされているハブ記事
+# 順位や内部リンク構造が変わったら見直すこと。
+HIGH_PRIORITY_SLUGS = {
+    # 検索で10位以内に入りクリックを獲得している記事
+    "recipe-app-compare",
+    "family-recipe-share",
+    "food-budget-app",
+    "receipt-kakeibo-basics",
+    "savings-life",
+    "kakeibo-app-compare",
+    # サイト内から多くリンクされているハブ記事（被リンク20本以上）
+    "hambag-kondate",
+    "kondate-nayamu-idea",
+    "gyoumu-super-setsuyaku",
+    "futari-gurashi-kyoudoukirabi",
+    "60dai-fuufu-shokuhi",
+    "meal-plan-today",
+    "cookpad-vs-kakeishipi",
+    "fridge-recipe-app",
+    # 統合の集約先（統合元の評価が集まる）
+    "savings-recipe",
+    "food-cost-savings-tips",
+    "supermarket-savings-guide",
+    "jitan-recipe",
+    "weekly-meal-plan",
+    "solo-savings-recipe",
+}
+
 for a in articles:
+    priority = "0.8" if a["slug"] in HIGH_PRIORITY_SLUGS else "0.6"
     sitemap_urls.append(f"""  <url>
     <loc>{BASE_URL}{a["url"]}</loc>
     <lastmod>{a["date"]}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>{priority}</priority>
   </url>""")
 
 sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'

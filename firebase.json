@@ -123,6 +123,66 @@
         "source": "/index.html",
         "destination": "/",
         "type": 301
+      },
+      {
+        "source": "/blog/solo-cheap-recipe.html",
+        "destination": "/blog/solo-savings-recipe.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/kondate-week-simple.html",
+        "destination": "/blog/weekly-meal-plan.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/quick-recipe.html",
+        "destination": "/blog/jitan-recipe.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/shopping-savings-tips.html",
+        "destination": "/blog/supermarket-savings-guide.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/todays-dinner-recipe.html",
+        "destination": "/blog/meal-plan-today.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/ai-cooking.html",
+        "destination": "/blog/meal-plan-today.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/cooking-trouble-app.html",
+        "destination": "/blog/meal-plan-today.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/easy-kondate.html",
+        "destination": "/blog/meal-plan-today.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/food-cost-reduce.html",
+        "destination": "/blog/food-cost-savings-tips.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/food-cost-saving-tips2.html",
+        "destination": "/blog/food-cost-savings-tips.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/saving-recipe-main.html",
+        "destination": "/blog/savings-recipe.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/saving-recipe-tips-pro.html",
+        "destination": "/blog/savings-recipe.html",
+        "type": 301
       }
     ],
     "rewrites": [
