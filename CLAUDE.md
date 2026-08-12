@@ -65,6 +65,28 @@ Firebase Hosting (static/)          Render (FastAPI)           Firebase
 一時エラーは60秒そのエンジンを閉じる。クレジット枯渇時に毎回全エンジンを
 叩いて遅くなるのを防いでいる。
 
+### バックエンドで同期SDKを呼ぶときは to_thread
+
+Stripe SDK も Firebase Admin SDK も**同期APIしか無い**。`async def` の
+中で直接呼ぶとイベントループ全体が止まり、Render は単一ワーカーなので
+`/api/health`（ヘルスチェック先）を含む全リクエストが待たされる。
+
+`app/stripe_billing.py` は「同期本体 `_xxx_sync` ＋ `to_thread` の
+ラッパ」に分けてある。この構造は `tests/test_backend_hardening.py` が
+静的解析と実測の両方で守っている。**`async def` の中に `stripe.` /
+`ref.set(` / `ref.get(` を書かないこと。**
+
+なお `app/routes/admin.py` のように `def`（非 async）で定義すれば
+FastAPI が自動でスレッドプールに逃がすので、そちらでもよい。
+
+### エラーの詳細をクライアントに返さない
+
+`app/net.py` は HTTP エラー時にプロバイダのレスポンス本文を
+先頭300字まで例外に含める。原因追跡には有用だが、**それを
+`HTTPException` の detail に載せない**（プロジェクトIDや内部エラーが
+露出する）。`app/routes/ocr.py`・`recipe.py` のように汎用文言にし、
+詳細は `logger` にだけ残す。
+
 ### フロントの司令塔は app.js
 
 `static/app.js` が各モジュールに依存を注入する。**`db` を渡し忘れる／`null` を
@@ -73,6 +95,18 @@ Firebase Hosting (static/)          Render (FastAPI)           Firebase
 `static/app-wiring.test.js` がソースを静的解析してこれを検出する。
 init 関数に依存を足すときは `NEEDS_DB` も更新する。
 
+### 利用者へのエラー表示は ui-feedback.js に集約する
+
+`alert()` は使わない（`static/ui-feedback.test.js` が再混入を検出する）。
+`showError(err, "保存できませんでした。")` を使うと、技術的な詳細は
+`console.error` に残しつつ、画面には行動可能な文言をトーストで出す。
+
+`toUserMessage()` が `permission-denied` や `Failed to fetch` を日本語に
+翻訳する。**`err.message` をそのまま画面に出さないこと** —
+`FirebaseError: Missing or insufficient permissions` と見せても
+利用者は対処できない。オフライン判定を最初に行うのは、
+実際にはオフラインなのに「通信に失敗」と出るのを避けるため。
+
 ### Firestore の制限はクライアントにも複製されている
 
 `firestore.rules` の `validExpense`（store 100字・memo 500字・items 80件・
@@ -80,7 +114,7 @@ rawText 20000字・amount 1億未満）は `static/expense-limits.js` に写し�
 **両方を必ず同時に更新する。** 片方だけだと、保存時に
 「Missing or insufficient permissions」という原因の分からないエラーになる。
 
-### ブログは事前生成された静的 HTML（135記事）
+### ブログは事前生成された静的 HTML
 
 - **`build_blog.py` は記事HTMLを生成しない。** 生成するのは一覧ページ
   （`blog.html`, `blog-p2〜6.html`）・カテゴリページ・`sitemap.xml` だけ。
@@ -92,9 +126,34 @@ rawText 20000字・amount 1億未満）は `static/expense-limits.js` に写し�
 - 記事テンプレートは1種類ではない。`<article class="am">` の記事と、
   `<article>` を持たず `.article-wrap` で包む記事（`saving-recipe-*`）がある。
   DOM を触るスクリプトは両方を見ること。
+- **記事の統合は canonical と 301 の両方**。`articles.json` で
+  `noindex: true` にし、統合先への canonical を記事HTMLに置き、
+  さらに `firebase.json` の `redirects` に 301 を足す。
+  canonical だけだと統合元がクロール対象に残り続ける。
+  HTMLは消さない（Hosting は redirects を静的ファイルより先に評価するので、
+  設定を消すだけで統合を戻せる）。
+- サイトマップの `priority` は `build_blog.py` の `HIGH_PRIORITY_SLUGS`
+  で出し分ける。全記事を同じ値にするとクローラーに優先順位が伝わらない。
+  選定基準は「10位以内でクリックがある」「内部リンクが集まるハブ」
+  「統合の集約先」の3つ。
 - SEO の不変条件はテストで固定してある。壊すと CI が止まる:
   `tests/test_sitemap.py` / `tests/test_article_schema.py` /
   `tests/test_article_titles.py` / `static/blog-ads.test.js`
+
+### ブログのCTAは PC とスマホで別物
+
+`static/blog-cta.js` は **PC のときだけ** 記事内CTA（`.am-cta-box`）と
+サイドCTA（`.sb-cta`）の `innerHTML` を丸ごと差し替える。
+そのため記事HTML側のCTA文言はスマホでしか出ない。
+
+`.am-sidebar` は `@media (max-width: 1024px)` で `display: none` になる。
+モバイルの受け皿は本文下の `.am-cta-box` なので、**両方を必ず置く**
+（片方しか無い記事があり、モバイルでCTAが消えた事故がある）。
+
+CTAクリックは位置別に `cta_click` イベントを送る。計測は
+`if (isMobile) return;` より**前**に登録すること（後ろだとモバイルの
+クリックが1件も取れない）。差し替えで要素ごと入れ替わるため、
+個別要素ではなくイベント委譲で拾う。
 
 ### 外部ドメインを増やすときは firebase.json の CSP
 
@@ -133,6 +192,9 @@ login.html を返す**。存在しない URL が LP として表示されるた�
 - `tests/test_performance.py` は絶対時間ではなく**計算量の悪化**を見る
   （少数IPと多数IPの1回あたりの所要時間を比較する）。CI ランナーの
   速度差で落ちないようにするためで、絶対値の閾値に戻さないこと。
+- `tests/test_parser.py` の停止性テストは、`pytest-timeout` を導入して
+  いないため別スレッドで実行して時間を測る。パーサに「進まないループ」を
+  作り込むと、1行の入力でワーカーが永久に固まる事故が実際に起きた。
 - pyo3 由来の `PanicException` は `Exception` を継承しないため、
   ベストエフォートで握りつぶす箇所は `except BaseException` を使う
   （`app/stripe_billing.py`・`app/debug_storage.py` に前例あり）。
@@ -145,3 +207,39 @@ login.html を返す**。存在しない URL が LP として表示されるた�
   `storage-lifecycle.json` も合わせて更新すること。
 - `/admin.html` は `ADMIN_UIDS`（Firebase UID のカンマ区切り）でのみ閲覧できる。
 - 改修の経緯は `docs/作業備忘録-*.md` に残している。
+
+## このファイルの更新
+
+**最終更新: 2026-08-12**
+
+このファイルは「README を読んでも分からない、事故につながる決まりごと」を
+集めたもの。放っておくと実態とずれて、かえって誤った判断を招く。
+
+### 更新するタイミング
+
+次のどれかに当てはまる変更を入れたら、同じ PR で CLAUDE.md も直す。
+
+- **同時に直さないと壊れる場所を増やした／減らした**
+  （例: `firestore.rules` と `static/expense-limits.js` の二重管理）
+- **一度踏んだ事故の再発防止を入れた**
+  （何が起きたか・なぜその形にしたかを1〜2行で残す）
+- **既存のパターンから外れる書き方を許容した／禁止した**
+  （例: `async def` の中で同期SDKを呼ばない）
+- **コマンド・デプロイ経路・環境変数の扱いが変わった**
+
+逆に、**ファイルを1つ増やした・関数を1つ足した程度では書かない。**
+README のディレクトリ構成と重複する内容も書かない。
+
+### 定期的な棚卸し
+
+月に一度、次を確認して古くなった記述を直す。
+
+```bash
+git log --oneline --since="1 month ago"     # 何が変わったか
+python3 -m pytest tests/ -q && npm test     # 記述どおりに動くか
+grep -c "" CLAUDE.md                        # 肥大化していないか（目安200行）
+```
+
+見るべきは「書いてあることが今も正しいか」で、網羅性ではない。
+**古い記述を消すことも更新のうち。** 記事数やバージョン番号のような
+すぐ古くなる具体値は、必要なとき以外は書かない。
