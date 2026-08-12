@@ -5,6 +5,7 @@ import {
 import { $, escapeHtml, openModal, closeModal } from "./dom-utils.js";
 import { dbBase } from "./db-paths.js";
 import { log, logErr } from "./log.js";
+import { showError } from "./ui-feedback.js";
 
 let _db, _getUser;
 let _items = [];   // [{ id, name, done }]
@@ -137,7 +138,7 @@ async function _persist(items) {
     // onSnapshot が _items と _updateBadge を自動更新するので手動更新不要
   } catch (err) {
     logErr("買い物リスト保存エラー:", err.message, err);
-    alert("保存に失敗しました: " + err.message);
+    showError(err, "保存できませんでした。");
   }
 }
 

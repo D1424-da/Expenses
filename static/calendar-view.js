@@ -8,6 +8,7 @@ import { categoryBreakdown } from "./stats.js";
 import { CATEGORIES } from "./firebase-config.js";
 import { saveMeal, deleteMeal } from "./meal-plan.js";
 import { addItemsToList } from "./shopping-list.js";
+import { showError } from "./ui-feedback.js";
 
 let _onAddExpense, _onEdit, _onDelete, _onInlineSave;
 let _currentWeekIdx = -1;
@@ -533,7 +534,7 @@ function _showDayInlineEdit(id, rowEl) {
       $("day-total").textContent = yen(total);
     } catch (err) {
       logErr("インライン保存エラー:", err.message);
-      alert("保存に失敗しました: " + (err.message || err));
+      showError(err, "保存できませんでした。");
       btn.disabled = false;
       btn.textContent = "更新";
     }
@@ -638,11 +639,16 @@ function _buildMealEditor(plan) {
         _savedVal = newVal;
         delBtn.hidden = !newVal;
       } catch (err) {
-        logErr("献立保存エラー:", err.message);
+        // 失敗を黙って握りつぶすと、保存されたと誤解したまま画面を閉じてしまう。
+        // 入力値は消さずに残し、失敗したことを伝える。
+        showError(err, "献立を保存できませんでした。");
       }
     });
 
     delBtn.onclick = async () => {
+      // 楽観的に画面を消してから削除する。失敗したら元に戻す
+      // （消えたように見えたまま実は残っている、という状態を避ける）。
+      const prev = input.value;
       input.value = "";
       _savedVal = "";
       delBtn.hidden = true;
@@ -650,7 +656,11 @@ function _buildMealEditor(plan) {
       try {
         await deleteMeal(_selectedDay, slot);
       } catch (err) {
-        logErr("献立削除エラー:", err.message);
+        input.value = prev;
+        _savedVal = prev;
+        delBtn.hidden = !prev;
+        if (detailEl) detailEl.hidden = false;
+        showError(err, "献立を削除できませんでした。");
       }
     };
   }
@@ -677,7 +687,7 @@ async function _handleDayAdd(e) {
     $("day-store").value  = "";
   } catch (err) {
     logErr("カレンダー追加エラー:", err.code, err.message, err);
-    alert("追加に失敗しました: " + err.message);
+    showError(err, "追加できませんでした。");
   } finally {
     btn.disabled = false;
   }

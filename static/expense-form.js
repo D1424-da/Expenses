@@ -11,6 +11,7 @@ import { log, logErr } from "./log.js";
 import { $, todayStr, escapeHtml, closeModal } from "./dom-utils.js";
 import { invalidateHistoryDict, TRUSTED_ENGINES } from "./history.js";
 import { validateExpense, clampRawText } from "./expense-limits.js";
+import { showError, showToast } from "./ui-feedback.js";
 
 let _ctx;
 let _previewUrl = null;
@@ -91,7 +92,7 @@ export async function deleteExpense(id) {
   try {
     await deleteDoc(doc(_ctx.db, ...dbBase(), "expenses", id));
   } catch (err) {
-    alert("削除に失敗しました: " + err.message);
+    showError(err, "削除できませんでした。");
   }
 }
 
@@ -227,7 +228,7 @@ async function _handleSubmit(e) {
     // 拒否され、原因のわからない権限エラーとしてユーザーに表示されてしまう。
     const limitError = validateExpense(payload);
     if (limitError) {
-      alert(limitError);
+      showToast(limitError, "error");
       return;
     }
 
@@ -252,13 +253,12 @@ async function _handleSubmit(e) {
     // permission-denied は「トライアル/プラン期限切れ」か「データが上限超過」の
     // どちらか。Firestore は理由を返さないため、両方の可能性を案内する。
     if (err.code === "permission-denied") {
-      alert(
-        "保存できませんでした。\n\n"
-        + "・無料トライアルまたはプランの期限が切れていないかご確認ください\n"
-        + "・明細が多すぎる場合は件数を減らしてお試しください",
+      showToast(
+        "保存できませんでした。プランの期限切れか、明細が多すぎる可能性があります。",
+        "error",
       );
     } else {
-      alert("保存に失敗しました: " + err.message);
+      showError(err, "保存できませんでした。");
     }
   } finally {
     saveBtn.disabled = false;

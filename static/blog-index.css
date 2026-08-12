@@ -358,3 +358,12 @@ body {
   .cat-nav { justify-content: flex-start; }
   .featured-body { padding: 20px 16px; }
 }
+
+/* キーボード操作時の現在位置。 */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--sage, #4B7A5E);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

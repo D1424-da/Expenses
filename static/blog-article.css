@@ -115,6 +115,14 @@ body {
   opacity: .75;
   margin: 0;
 }
+/* PC版サイドCTA（blog-cta.js が差し替える）内のブログ一覧リンク */
+.sb-cta-blog-link {
+  display: inline-block;
+  font-size: .75rem;
+  color: inherit;
+  opacity: .85;
+  text-decoration: underline;
+}
 
 /* ── ARTICLE ── */
 .am-eyebrow { margin-bottom: 12px; }
@@ -674,6 +682,21 @@ body {
 .am-cta-pc-text { flex: 1; min-width: 200px; text-align: left; }
 .am-cta-pc-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; opacity: 1; }
 .am-cta-pc-sub { font-size: .9rem; line-height: 1.7; opacity: .85; margin-bottom: 12px; }
+/* PC の読者が「このまま使う」ための主導線。QRしか無かった頃は
+   PCからの登録手段が存在しなかったため、必ず目立たせる。 */
+.am-cta-pc-btn {
+  display: inline-block;
+  background: #fff;
+  color: var(--green-dark, #1f4d2e);
+  border-radius: 100px;
+  padding: 12px 28px;
+  font-size: .95rem;
+  font-weight: 700;
+  text-decoration: none;
+  margin-bottom: 10px;
+  transition: opacity .15s;
+}
+.am-cta-pc-btn:hover { opacity: .88; }
 .am-cta-pc-free { font-size: .78rem; opacity: .65; }
 .am-cta-pc-qr { flex-shrink: 0; text-align: center; }
 .am-cta-pc-qr svg { width: 140px; height: 140px; border-radius: 8px; background: white; padding: 6px; display: block; }
@@ -875,4 +898,22 @@ body {
   font-size: .82rem;
   color: var(--article-ink-sub, #3D5A3E);
   margin-bottom: 4px;
+}
+
+/* キーボード操作時の現在位置。記事内のリンクが多いため特に必要。 */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--article-accent, #2E6B44);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 動きを減らす設定の利用者には transition を無効化する。 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

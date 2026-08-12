@@ -7,6 +7,7 @@ import {
 import { $, yen, escapeHtml, openModal, closeModal, monthKey } from "./dom-utils.js";
 import { dbBase } from "./db-paths.js";
 import { log, logErr } from "./log.js";
+import { showError } from "./ui-feedback.js";
 
 let _db, _getUser, _categories, _getCurrentMonth;
 let _budget = {}; // { 食費: 30000, ... }
@@ -136,7 +137,7 @@ async function _save(e) {
     _onUpdated?.();
   } catch (err) {
     logErr("予算保存エラー:", err.message, err);
-    alert("予算の保存に失敗しました: " + err.message);
+    showError(err, "予算を保存できませんでした。");
   } finally {
     btn.disabled = false;
   }
