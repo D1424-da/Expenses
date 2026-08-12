@@ -19,11 +19,25 @@ router = APIRouter()
 
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/jpg"}
 MAX_BYTES     = 8 * 1024 * 1024  # 8MB
+# multipart のヘッダ・境界文字列の分。Content-Length は本体より少し大きい。
+_MULTIPART_OVERHEAD = 8 * 1024
+
+# OCR_ENGINE 未設定時の既定。
+#
+# 以前は "tesseract" だったが、本番の依存（requirements-gemini.txt）には
+# OpenCV も Tesseract も入っていない。ダッシュボードで OCR_ENGINE が
+# 消えると、フォールバックが働かず全リクエストが 500 になっていた。
+# 実際に env が巻き戻る事故が起きているため、動く方を既定にする。
+DEFAULT_ENGINE = "gemini"
+
+
+def _engine() -> str:
+    return os.environ.get("OCR_ENGINE", DEFAULT_ENGINE).strip().lower() or DEFAULT_ENGINE
 
 
 @router.get("/health")
 def health() -> dict:
-    return {"status": "ok", "engine": os.environ.get("OCR_ENGINE", "tesseract")}
+    return {"status": "ok", "engine": _engine()}
 
 
 @router.post("/ocr")
@@ -40,6 +54,13 @@ async def ocr_receipt(
     rate_limiter.check(security.client_ip(request))
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(400, f"対応していない画像形式です: {file.content_type}")
+    # Content-Length で先に弾く。
+    # 読み切ってから len() を見ると、Starlette が 1MB 超のアップロードを
+    # ディスクへスプールするため、巨大なリクエストでディスクを消費できる。
+    # 申告値なので信用はしないが、素直なクライアントの無駄な転送は防げる。
+    declared = request.headers.get("content-length")
+    if declared and declared.isdigit() and int(declared) > MAX_BYTES + _MULTIPART_OVERHEAD:
+        raise HTTPException(400, "画像サイズが大きすぎます（最大8MB）。")
     image_bytes = await file.read()
     if len(image_bytes) > MAX_BYTES:
         raise HTTPException(400, "画像サイズが大きすぎます（最大8MB）。")
@@ -57,7 +78,7 @@ async def ocr_receipt(
             debug_storage.save_for_debug, image_bytes, file.content_type, uid,
         )
 
-    engine = os.environ.get("OCR_ENGINE", "tesseract").lower()
+    engine = _engine()
     if engine in engines.AI_ENGINES:
         try:
             result = await asyncio.to_thread(engines.extract_with_ai, engine, image_bytes, file.content_type)

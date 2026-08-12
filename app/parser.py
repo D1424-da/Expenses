@@ -266,6 +266,11 @@ def _is_price_only_line(line: str) -> bool:
     )
 
 
+# 明細行として扱う最大の長さ。レシートの1行は普通20〜40字で、
+# これを超える行は OCR が段落を1行にまとめてしまった等の異常値。
+_MAX_ITEM_LINE_LEN = 200
+
+
 def parse_items(text: str) -> list[dict[str, Any]]:
     """品目と価格の組を推定する。
 
@@ -303,6 +308,13 @@ def parse_items(text: str) -> list[dict[str, Any]]:
     # パターンA: 「品名 ... 価格」が同じ行
     for i, line in enumerate(lines):
         if is_stop(line):
+            consumed[i] = True
+            continue
+        # 極端に長い行は明細ではない（レシートの1行は普通20〜40字）。
+        # 下の正規表現は先頭が .*? のため、1行が長いほど後戻りが増えて
+        # 所要時間が行長の2乗で伸びる。実測で16000字の1行に7.5秒かかった。
+        # 明細として意味のない長さで足切りしておく。
+        if len(line) > _MAX_ITEM_LINE_LEN:
             consumed[i] = True
             continue
         # 非貪欲（.*?）にして、「¥ 1, 248」のように空白を挟む3桁区切りの金額でも
@@ -355,7 +367,15 @@ def parse_items(text: str) -> list[dict[str, Any]]:
             for idx, (name, price) in enumerate(zip(names, prices)):
                 if price and 0 < price < 1_000_000:
                     items.append({"name": name, "price": price, "_idx": i - len(names) + idx})
-        i = j
+        # 必ず1行以上進める。
+        #
+        # 内側の while は _amount_in_line() が None を返すと即 break するため、
+        # その行が「価格だけの行」に見えて金額として解釈できない場合
+        # （例: "1,000,000,000" は3桁区切りの形をしているが桁が大きすぎて
+        # None が返る）、j == i のまま抜けてくる。
+        # 以前は無条件に i = j としていたので i が進まず無限ループになり、
+        # そのような行が1行あるだけでワーカーが永久に固まった。
+        i = j if j > i else i + 1
 
     # 元のレシート上の出現順に整えて内部キーを除去
     items.sort(key=lambda it: it["_idx"])
