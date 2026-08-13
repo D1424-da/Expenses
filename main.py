@@ -79,6 +79,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def _noindex(request, call_next):
+    """このホストの応答をすべて検索対象外にする。
+
+    下の StaticFiles マウントにより、Render 側でも static/ 全体
+    （LP・ブログ135記事）が配信される。ローカル開発の利便のための
+    設定だが、本番の Render URL でも同じ内容が見えてしまう。
+
+    各記事の canonical は get-tohon.online を指しているので致命的では
+    ないが、Google がこのコピーを見つけると重複判定にクロール予算を
+    使う。ヘッダーで明示的に除外しておく。
+
+    robots.txt で Disallow にはしない。クロールを止めると
+    X-Robots-Tag 自体を読めなくなり、かえってインデックスから
+    消えなくなるため（Google のドキュメントにある典型的な失敗）。
+    """
+    response = await call_next(request)
+    response.headers["X-Robots-Tag"] = "noindex, nofollow"
+    return response
+
 app.include_router(ocr.router,           prefix="/api")
 app.include_router(recipe.router,        prefix="/api")
 app.include_router(stripe_routes.router, prefix="/api")
