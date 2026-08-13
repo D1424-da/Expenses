@@ -194,3 +194,74 @@ def test_priority_has_more_than_one_tier_for_articles():
     assert len(article_priorities) >= 2, (
         f"記事の priority が {article_priorities} の1種類しかない"
     )
+
+
+# ---------------------------------------------------------------------------
+# 検索結果での見え方
+# ---------------------------------------------------------------------------
+
+def _width(s: str) -> int:
+    """全角を2、半角を1として数える（Google の打ち切りに近い目安）。"""
+    import unicodedata
+    return sum(2 if unicodedata.east_asian_width(c) in "WFA" else 1 for c in s)
+
+
+TITLE_MAX_WIDTH = 70  # 全角35字相当。これを超えると検索結果で切れる
+
+
+def test_site_has_organization_and_website_schema():
+    """LP に Organization と WebSite がある。
+
+    記事側は BlogPosting の publisher に組織情報を持っているが、
+    サイトの入口である LP に無いと Google が運営者とサイト名を確定できない。
+    """
+    import json as _json
+
+    html = (STATIC / "index.html").read_text(encoding="utf-8")
+    types = set()
+    for block in re.findall(r'<script type="application/ld\+json">(.*?)</script>', html, re.S):
+        data = _json.loads(block)
+        for o in data if isinstance(data, list) else [data]:
+            types.add(o.get("@type"))
+    for required in ("Organization", "WebSite"):
+        assert required in types, f"LP に {required} の構造化データが無い（現在: {sorted(types)}）"
+
+
+def test_pagination_descriptions_are_distinct():
+    """ページネーションの description が全ページ同一になっていない。"""
+    descs = []
+    for name in ["blog.html"] + [f"blog-p{i}.html" for i in range(2, 7)]:
+        f = STATIC / name
+        if not f.is_file():
+            continue
+        head = f.read_text(encoding="utf-8").split("</head>")[0]
+        m = re.search(r'name="description" content="([^"]*)"', head)
+        assert m, f"{name} に description が無い"
+        descs.append(m.group(1))
+    assert len(descs) >= 3
+    assert len(set(descs)) == len(descs), "ページネーションの description が重複している"
+
+
+def test_most_article_titles_fit_in_search_results():
+    """タイトルが検索結果で切れる記事が過半数を超えない。
+
+    Google は日本語タイトルを全角35字前後で打ち切る。
+    サイト名の接尾辞（「- カケイシピ」）は7字を消費するわりに
+    日本語圏では切り捨てられやすいため、長いタイトルには付けない。
+    """
+    import json as _json
+
+    data = _json.loads((STATIC / "blog" / "articles.json").read_text(encoding="utf-8"))
+    over = []
+    total = 0
+    for a in data:
+        if a.get("noindex"):
+            continue
+        total += 1
+        html = (STATIC / a["url"].lstrip("/")).read_text(encoding="utf-8")
+        title = re.search(r"<title>(.*?)</title>", html, re.S).group(1).strip()
+        if _width(title) > TITLE_MAX_WIDTH:
+            over.append(a["slug"])
+    assert len(over) < total * 0.5, (
+        f"{len(over)}/{total} 本のタイトルが検索結果で切れる（上限 {TITLE_MAX_WIDTH} 幅）"
+    )

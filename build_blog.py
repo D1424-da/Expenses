@@ -186,7 +186,25 @@ for page in range(1, total_pages + 1):
     title = "食費節約・家計管理・レシピの情報ブログ｜カケイシピ公式"
     if page > 1:
         title = f"ブログ記事一覧（{page}ページ目）｜カケイシピ"
-    description = f"カケイシピ公式ブログ。食費節約・家計管理・レシピの実践記事{total}本。ページ{page}/{total_pages}。"
+    # description はページごとに変える。
+    # 以前は末尾の「ページN/6」以外が全ページ同一で、実質的な重複だった。
+    # そのページに実際に載っている記事のカテゴリと代表タイトルを入れて、
+    # 検索結果でどのページを開けばよいかが分かるようにする。
+    if page == 1:
+        description = (
+            f"カケイシピ公式ブログ。レシート撮影で食費を自動記録し、AIが献立を提案。"
+            f"食費節約・家計管理・献立レシピの実践記事{total}本を公開中。"
+        )
+    else:
+        page_cats = []
+        for a in page_articles:
+            if a["category"] not in page_cats:
+                page_cats.append(a["category"])
+        lead = page_articles[0]["title"].split("｜")[0].split("<br")[0]
+        description = (
+            f"{'・'.join(page_cats[:3])}の記事一覧（{page}/{total_pages}ページ）。"
+            f"「{lead}」など{len(page_articles)}本を掲載。"
+        )
 
     cards = "\n".join(card_html(a) for a in page_articles)
     pager = pagination_html(page, total_pages, page_url)
