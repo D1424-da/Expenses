@@ -237,3 +237,43 @@ class TestBetaCodeThrottle:
         stripe_billing._beta_attempts["old-uid"] = [0.0]
         stripe_billing._redeem_beta_code_sync("uid-1", "WRONG")
         assert "old-uid" not in stripe_billing._beta_attempts
+
+
+# ---------------------------------------------------------------------------
+# 6. Render 側の重複サイトを検索対象から外す
+# ---------------------------------------------------------------------------
+
+class TestNoIndexHeader:
+    """main.py の StaticFiles マウントにより、Render 側でも static/ 全体
+    （LP・ブログ135記事）が配信される。ローカル開発のための設定だが、
+    本番の Render URL でも同じ内容が見えてしまう。
+
+    canonical は get-tohon.online を指しているので致命的ではないが、
+    Google がこのコピーを見つけると重複判定にクロール予算を使う。
+    """
+
+    def test_static_pages_are_noindex(self, client):
+        for path in ("/index.html", "/blog.html", "/robots.txt"):
+            res = client.get(path)
+            assert res.headers.get("x-robots-tag") == "noindex, nofollow", (
+                f"{path} に X-Robots-Tag が付いていない"
+            )
+
+    def test_api_responses_also_carry_the_header(self, client):
+        """API も同じホストなので同様に除外する。"""
+        res = client.get("/api/health")
+        assert res.status_code == 200
+        assert "noindex" in res.headers.get("x-robots-tag", "")
+
+    def test_robots_txt_does_not_disallow_everything(self):
+        """robots.txt でクロールごと止めない。
+
+        Disallow にすると Googlebot が X-Robots-Tag を読めなくなり、
+        既にインデックスされたページを消せなくなる。
+        """
+        robots = (ROOT / "static" / "robots.txt").read_text(encoding="utf-8")
+        lines = [
+            ln.strip() for ln in robots.splitlines()
+            if ln.strip() and not ln.strip().startswith("#")
+        ]
+        assert "Disallow: /" not in lines, "robots.txt で全体をブロックしている"
