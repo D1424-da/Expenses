@@ -46,6 +46,20 @@ articles.sort(key=lambda a: a["date"], reverse=True)
 
 print(f"Total indexable articles: {len(articles)}")
 
+# カテゴリごとの記事を先に集計する。
+# cat_nav_html() が「記事0本のカテゴリはリンクしない」判定に使うため、
+# 一覧ページ（A節）の生成より前に用意しておく必要がある。
+from collections import defaultdict
+cat_articles = defaultdict(list)
+for a in articles:
+    cat = a["category"]
+    for std_cat in CATEGORY_SLUGS:
+        if cat == std_cat:
+            cat_articles[std_cat].append(a)
+            break
+    else:
+        cat_articles["その他"].append(a)
+
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 def format_date_jp(date_str):
@@ -130,9 +144,19 @@ def footer_html():
 
 
 def cat_nav_html(active_slug=None):
+    """カテゴリナビ。記事が1本も無いカテゴリはリンクしない。
+
+    カテゴリページは記事があるカテゴリだけ生成される（下の B 節）。
+    NAV_CATEGORIES をそのまま並べると、記事0本のカテゴリ
+    （"ライフスタイル"）へのリンクだけが実在しないページを指し、
+    firebase.json の "**" → login.html に落ちて noindex ページが返る。
+    実際に13ページからこのリンクが張られていた。
+    """
     items = ['<a href="/blog.html" class="cat-btn{}">すべて</a>'.format(
         ' active' if active_slug is None else '')]
     for name, slug in NAV_CATEGORIES:
+        if not cat_articles.get(name):
+            continue
         cls = ' active' if slug == active_slug else ''
         items.append(f'<a href="/blog/cat/{slug}.html" class="cat-btn{cls}">{name}</a>')
     return '<nav class="cat-nav">\n      ' + '\n      '.join(items) + '\n    </nav>'
@@ -273,18 +297,6 @@ print(f"Generated {total_pages} index pages")
 # ── B. Category Pages ──────────────────────────────────────────────────────
 cat_dir = STATIC / "blog" / "cat"
 cat_dir.mkdir(exist_ok=True)
-
-from collections import defaultdict
-cat_articles = defaultdict(list)
-for a in articles:
-    cat = a["category"]
-    # Map to normalized category name if needed
-    for std_cat in CATEGORY_SLUGS:
-        if cat == std_cat:
-            cat_articles[std_cat].append(a)
-            break
-    else:
-        cat_articles["その他"].append(a)
 
 for cat_name, slug in CATEGORY_SLUGS.items():
     cat_arts = cat_articles.get(cat_name, [])
