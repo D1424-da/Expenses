@@ -201,37 +201,71 @@ class TestParserPerformance:
 # スループット
 # ---------------------------------------------------------------------------
 
-class TestThroughput:
-    """スループットは計測前にウォームアップする。
+def _throughput(client_call, n: int = 200, warmup: int = 20) -> float:
+    """1秒あたりの処理数を返す。計測前にウォームアップする。"""
+    for _ in range(warmup):
+        client_call()
+    t0 = time.perf_counter()
+    for _ in range(n):
+        client_call()
+    return n / (time.perf_counter() - t0)
 
-    1回目のリクエストには遅延 import や httpx の初期化が乗るため、
-    それを含めたまま平均を取ると、実装ではなく起動コストを測ることになる。
+
+@pytest.fixture(scope="module")
+def baseline_rps() -> float:
+    """「何もしないエンドポイント」のスループット。
+
+    絶対値の rps はマシンの速度そのもので、共有CIランナーでは2倍以上
+    ぶれる。実際に閾値200rpsに対して実測190〜311rps とまたいでしまい、
+    実装と無関係に落ちていた。
+    そこで、同じプロセス上の最小構成アプリを基準にして比を見る。
+    この比ならマシンの絶対速度に影響されない。
+    """
+    from fastapi import FastAPI
+
+    app = FastAPI()
+
+    @app.get("/noop")
+    def _noop():
+        return {"ok": True}
+
+    c = TestClient(app)
+    return _throughput(lambda: c.get("/noop"))
+
+
+class TestThroughput:
+    """スループットは「最小構成のエンドポイントと比べて極端に遅くないか」で見る。
+
+    ここで防ぎたいのは「ヘルスチェックが I/O を始めた」「バリデーション拒否に
+    重い処理が入った」といった退行であって、マシンの速度ではない。
     """
 
-    def test_health_throughput_over_200_rps(self, client):
-        """ヘルスチェックは 200 req/s 以上のスループット。"""
-        for _ in range(20):
-            client.get("/api/health")
-        n = 200
-        t0 = time.perf_counter()
-        for _ in range(n):
-            r = client.get("/api/health")
-            assert r.status_code == 200
-        elapsed = time.perf_counter() - t0
-        rps = n / elapsed
-        assert rps > 200, f"health throughput={rps:.0f} rps < 200"
+    # 最小構成の何分の1まで許容するか。ミドルウェア・ルーティング・
+    # レスポンス整形のぶんで数割は落ちるため、余裕を持たせる。
+    MIN_RATIO = 0.3
 
-    def test_validation_rejection_throughput_over_100_rps(self, client):
-        """バリデーション拒否は 100 req/s 以上（セキュリティ DDoS 耐性の最低基準）。"""
-        for _ in range(20):
+    def test_health_is_not_much_slower_than_a_noop(self, client, baseline_rps):
+        """ヘルスチェックが最小構成と同程度に軽い（I/O をしていない）。"""
+        assert client.get("/api/health").status_code == 200
+        rps = _throughput(lambda: client.get("/api/health"))
+        assert rps > baseline_rps * self.MIN_RATIO, (
+            f"health={rps:.0f} rps は最小構成({baseline_rps:.0f} rps)の "
+            f"{rps / baseline_rps:.2f}倍。I/O が入っていないか確認すること"
+        )
+
+    def test_validation_rejection_is_not_much_slower_than_a_noop(self, client, baseline_rps):
+        """バリデーション拒否が軽い（DDoS 耐性の最低基準）。
+
+        Pydantic の検証ぶんヘルスチェックより重くなるので、許容比は緩める。
+        """
+        def call():
             client.post("/api/recipe", json={"items": [], "servings": 0})
-        n = 100
-        t0 = time.perf_counter()
-        for _ in range(n):
-            client.post("/api/recipe", json={"items": [], "servings": 0})
-        elapsed = time.perf_counter() - t0
-        rps = n / elapsed
-        assert rps > 100, f"rejection throughput={rps:.0f} rps < 100"
+
+        rps = _throughput(call, n=100)
+        assert rps > baseline_rps * 0.15, (
+            f"rejection={rps:.0f} rps は最小構成({baseline_rps:.0f} rps)の "
+            f"{rps / baseline_rps:.2f}倍"
+        )
 
 
 # ---------------------------------------------------------------------------
