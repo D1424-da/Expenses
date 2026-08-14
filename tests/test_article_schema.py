@@ -105,3 +105,50 @@ def test_urls_are_absolute_https():
                 if v and not str(v).startswith("https://"):
                     bad.append(f"{p.name}: {key}={v}")
     assert not bad, "絶対URL(https)でない: " + ", ".join(bad[:10])
+
+
+def test_breadcrumb_urls_resolve():
+    """パンくずのリンク先が実在し、noindex ページに落ちない。
+
+    firebase.json の rewrite は "/blog"（末尾スラッシュなし）だけを
+    blog.html に振り分ける。"/blog/" は定義が無いため "**" にマッチし、
+    noindex の login.html が返る。実際に30記事がこの URL を指していた。
+    """
+    import json as _json
+
+    STATIC = BLOG.parent
+    cfg = _json.loads((STATIC.parent / "firebase.json").read_text(encoding="utf-8"))
+    rewrites = {r["source"] for r in cfg["hosting"]["rewrites"]}
+    redirected = {r["source"] for r in cfg["hosting"]["redirects"]}
+    base = "https://get-tohon.online"
+
+    # 統合済み（noindex）の記事は丸ごと 301 されるので検査しない。
+    # 自分自身を指す最後の項目が 301 対象になるのは当然で、
+    # そのページ自体が表示されない以上パンくずも描画されない。
+    noindex = {
+        (STATIC / a["url"].lstrip("/")).name
+        for a in _json.loads((BLOG / "articles.json").read_text(encoding="utf-8"))
+        if a.get("noindex")
+    }
+
+    problems = []
+    for p in _articles():
+        if p.name in noindex:
+            continue
+        for o in _ld_objects(p):
+            if o.get("@type") != "BreadcrumbList":
+                continue
+            for item in o.get("itemListElement", []):
+                url = item.get("item")
+                if not url:
+                    continue
+                path = url.replace(base, "")
+                if path in ("", "/"):
+                    continue                      # トップページ
+                if path in rewrites:
+                    continue                      # rewrite で解決される
+                if path in redirected:
+                    problems.append(f"{p.name}: {path} は301される")
+                elif not (STATIC / path.lstrip("/")).is_file():
+                    problems.append(f"{p.name}: {path} に実ファイルが無い")
+    assert not problems, "パンくずのリンク先: " + "; ".join(sorted(set(problems))[:10])
