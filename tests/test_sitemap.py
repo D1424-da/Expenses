@@ -265,3 +265,34 @@ def test_most_article_titles_fit_in_search_results():
     assert len(over) < total * 0.5, (
         f"{len(over)}/{total} 本のタイトルが検索結果で切れる（上限 {TITLE_MAX_WIDTH} 幅）"
     )
+
+
+def test_assets_are_cacheable():
+    """JS/CSS がキャッシュ可能である（クロール予算の節約）。
+
+    以前は "no-cache, max-age=0" で、Googlebot が記事を1本クロールする
+    たびに JS/CSS の再確認リクエストを出していた。
+    クロール統計では JavaScript 20% + CSS 9% と、少ない予算の29%を
+    アセットが占めていた（記事HTMLは62%）。
+
+    304 で返っていても1リクエストは消費する。制約されているのは
+    リクエスト数なので、キャッシュさせて確認自体を減らす。
+    """
+    import json as _json
+
+    cfg = _json.loads((STATIC.parent / "firebase.json").read_text(encoding="utf-8"))
+    for rule in cfg["hosting"]["headers"]:
+        if rule["source"] != "**/*.@(js|css)":
+            continue
+        cache = next(
+            (h["value"] for h in rule["headers"] if h["key"] == "Cache-Control"), ""
+        )
+        m = re.search(r"max-age=(\d+)", cache)
+        assert m, f"JS/CSS に max-age が無い: {cache!r}"
+        assert int(m.group(1)) >= 600, (
+            f"JS/CSS の max-age={m.group(1)} は短すぎる。"
+            "Googlebot が毎回再確認してクロール予算を消費する"
+        )
+        assert "no-cache" not in cache, f"JS/CSS が no-cache: {cache!r}"
+        return
+    raise AssertionError("firebase.json に JS/CSS のキャッシュ設定が無い")
