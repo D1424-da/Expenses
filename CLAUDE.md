@@ -155,6 +155,18 @@ CTAクリックは位置別に `cta_click` イベントを送る。計測は
 クリックが1件も取れない）。差し替えで要素ごと入れ替わるため、
 個別要素ではなくイベント委譲で拾う。
 
+### JS/CSS のデプロイ反映は最大1時間かかる
+
+`firebase.json` の `**/*.@(js|css)` は `public, max-age=3600`。
+以前は `no-cache, max-age=0` だったが、Googlebot が記事1本の
+クロールごとに JS/CSS の再確認を出し、少ないクロール予算の29%を
+アセットが消費していた（クロール統計で JS 20% + CSS 9%）。
+
+**JS を直しても利用者に届くまで最大1時間かかる。** 急ぐときは
+記事HTML側の `?v=YYYYMMDD` を上げる（ブログのCSSは既にこの形式）。
+アプリ本体は `sw.js` が JS/CSS をネットワーク優先で取得するため、
+この遅延の影響を受けない。
+
 ### 外部ドメインを増やすときは firebase.json の CSP
 
 `firebase.json` の `Content-Security-Policy` は `default-src 'none'` から
