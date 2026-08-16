@@ -126,12 +126,24 @@ rawText 20000字・amount 1億未満）は `static/expense-limits.js` に写し�
 - 記事テンプレートは1種類ではない。`<article class="am">` の記事と、
   `<article>` を持たず `.article-wrap` で包む記事（`saving-recipe-*`）がある。
   DOM を触るスクリプトは両方を見ること。
-- **記事の統合は canonical と 301 の両方**。`articles.json` で
-  `noindex: true` にし、統合先への canonical を記事HTMLに置き、
-  さらに `firebase.json` の `redirects` に 301 を足す。
+- **記事の統合は `scripts/merge_articles.py` を使う。手作業でやらない。**
+  1件の統合で6か所を同時に直す必要があり、手でやると必ずどれかを忘れる:
+  統合先への本文追記／統合元の canonical／`articles.json` の `noindex` と
+  `canonical`／`firebase.json` の 301／内部リンクの張り替え
+  （`--fix-links`）／`HIGH_PRIORITY_SLUGS`。最後に `build_blog.py`。
   canonical だけだと統合元がクロール対象に残り続ける。
   HTMLは消さない（Hosting は redirects を静的ファイルより先に評価するので、
   設定を消すだけで統合を戻せる）。
+- **統合の目的は「数を減らす」ではなく「薄い記事を厚くする」**。
+  Search Console で74ページが「クロール済み - インデックス未登録」に
+  なったとき、記事64本の本文が全部 3,900〜5,200字に収まっていた。
+  テンプレート量産の均質な記事は Google に読まれた上で却下される。
+  だから統合元の本文は捨てず、固有セクションだけ統合先へ移す。
+- サイトマップの `lastmod` は `date`（公開日）ではなく `updated` を優先する。
+  統合で本文が3倍になっても公開日のままだと「変わっていない」と伝わる。
+- `HIGH_PRIORITY_SLUGS` に noindex の記事を残さない。サイトマップに
+  載らないので優先度が誰にも効かない（統合後に20件中5件がこうなった）。
+  `tests/test_sitemap.py` が検出する。
 - サイトマップの `priority` は `build_blog.py` の `HIGH_PRIORITY_SLUGS`
   で出し分ける。全記事を同じ値にするとクローラーに優先順位が伝わらない。
   選定基準は「10位以内でクリックがある」「内部リンクが集まるハブ」
@@ -232,7 +244,7 @@ login.html を返す**。存在しない URL が LP として表示されるた�
 
 ## このファイルの更新
 
-**最終更新: 2026-08-12**
+**最終更新: 2026-08-16**
 
 このファイルは「README を読んでも分からない、事故につながる決まりごと」を
 集めたもの。放っておくと実態とずれて、かえって誤った判断を招く。

@@ -49,11 +49,17 @@ def test_lastmod_is_not_all_build_date():
 
 
 def test_lastmod_matches_articles_json():
-    """lastmod が articles.json の date と一致する（別ソースから来ていない）。"""
+    """lastmod が articles.json 由来である（別ソースから来ていない）。
+
+    記事を統合すると統合先の本文が大きく増える。公開日のままだと Google に
+    「変わっていない」と伝わって再クロールが後回しになるので、
+    scripts/merge_articles.py が updated を入れ、build_blog.py は
+    updated があればそちらを lastmod に使う。
+    """
     import json
 
     data = json.loads((STATIC / "blog" / "articles.json").read_text(encoding="utf-8"))
-    by_url = {a["url"]: a["date"] for a in data}
+    by_url = {a["url"]: (a.get("updated") or a["date"]) for a in data}
     body = SITEMAP.read_text(encoding="utf-8")
     pairs = re.findall(
         r"<loc>([^<]+)</loc>\s*<lastmod>([^<]+)</lastmod>", body
@@ -296,3 +302,36 @@ def test_assets_are_cacheable():
         assert "no-cache" not in cache, f"JS/CSS が no-cache: {cache!r}"
         return
     raise AssertionError("firebase.json に JS/CSS のキャッシュ設定が無い")
+
+
+def _high_priority_slugs() -> set[str]:
+    """build_blog.py の HIGH_PRIORITY_SLUGS を、実行せずに取り出す。"""
+    src = (STATIC.parent / "build_blog.py").read_text(encoding="utf-8")
+    body = re.search(r"HIGH_PRIORITY_SLUGS = \{(.*?)\n\}", src, re.S)
+    assert body, "HIGH_PRIORITY_SLUGS が見つからない"
+    return set(re.findall(r'"([^"]+)"', body.group(1)))
+
+
+def test_high_priority_slugs_are_indexable():
+    """優先度を上げた記事が、実在しかつ noindex でない。
+
+    記事を統合すると、それまで優先度を上げていたスラッグが noindex 側へ
+    回ることがある。noindex の記事はサイトマップに載らないため、
+    書いたつもりの優先度が誰にも効いていない状態になる。
+    実際に統合後、20件中5件がこの状態になっていた。
+    """
+    import json as _json
+
+    data = _json.loads(
+        (STATIC / "blog" / "articles.json").read_text(encoding="utf-8")
+    )
+    by_slug = {a["url"].split("/")[-1].removesuffix(".html"): a for a in data}
+
+    problems = []
+    for slug in sorted(_high_priority_slugs()):
+        a = by_slug.get(slug)
+        if a is None:
+            problems.append(f"{slug}: articles.json に無い")
+        elif a.get("noindex"):
+            problems.append(f"{slug}: noindex なのでサイトマップに載らない")
+    assert not problems, "HIGH_PRIORITY_SLUGS の不整合: " + "; ".join(problems)

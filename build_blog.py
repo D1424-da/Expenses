@@ -233,12 +233,14 @@ for page in range(1, total_pages + 1):
     cards = "\n".join(card_html(a) for a in page_articles)
     pager = pagination_html(page, total_pages, page_url)
 
-    # Featured article block on page 1
+    # 注目記事ブロック（1ページ目のみ）。
+    # リンク先は統合で変わることがある。統合済み記事を指したままにすると
+    # 301 を1回はさむので、tests/test_internal_links.py が検出する。
     featured_block = ""
     if page == 1:
         featured_block = """
     <!-- Featured Article -->
-    <a href="/blog/shopping-to-recipe.html" class="featured-card">
+    <a href="/blog/fridge-ai-recipe.html" class="featured-card">
       <div class="featured-visual">
         <div class="feat-flow">
           <div class="feat-step">🛒 今日の買い物を記録</div>
@@ -251,11 +253,11 @@ for page in range(1, total_pages + 1):
       <div class="featured-body">
         <div class="featured-label">⭐ 注目機能</div>
         <span class="featured-tag">カケイシピの最強機能</span>
-        <h2 class="featured-title">買い物した食材からレシピを自動作成<br>食材ロスゼロ・献立悩みゼロを実現</h2>
-        <p class="featured-excerpt">スーパーで買った食材を記録するだけで、その食材を使ったレシピが自動提案されます。献立に悩む時間をなくし、食材を使い切ることで月1〜2万円の食費節約を実現するカケイシピの核心機能を徹底解説。</p>
+        <h2 class="featured-title">冷蔵庫の中身と買い物履歴から<br>AIがレシピを自動提案</h2>
+        <p class="featured-excerpt">レシートを撮るだけで食材が記録され、冷蔵庫に残っている材料からレシピが自動提案されます。献立に悩む時間をなくし、食材を使い切ることで月1〜2万円の食費節約を実現するカケイシピの核心機能を徹底解説。</p>
         <div class="featured-meta">
           <span>2026年07月09日</span>
-          <span class="featured-cat-badge">レシピ</span>
+          <span class="featured-cat-badge">アプリ活用</span>
         </div>
       </div>
     </a>
@@ -399,27 +401,37 @@ HIGH_PRIORITY_SLUGS = {
     "kakeibo-app-compare",
     # サイト内から多くリンクされているハブ記事（被リンク20本以上）
     "hambag-kondate",
-    "kondate-nayamu-idea",
     "gyoumu-super-setsuyaku",
-    "futari-gurashi-kyoudoukirabi",
-    "60dai-fuufu-shokuhi",
-    "meal-plan-today",
     "cookpad-vs-kakeishipi",
-    "fridge-recipe-app",
     # 統合の集約先（統合元の評価が集まる）
+    #
+    # 統合するとここに書いたスラッグが noindex 側に回ることがある。
+    # noindex の記事はそもそもサイトマップに載らないので、書いたつもりで
+    # 優先度が誰にも効いていない状態になる。統合したら必ず集約先へ
+    # 書き換えること（tests/test_sitemap.py が noindex 混入を検出する）。
+    "meal-plan-today",
+    "family4-food-cost",
+    "fridge-ai-recipe",
+    "solo-food-cost",
     "savings-recipe",
     "food-cost-savings-tips",
     "supermarket-savings-guide",
     "jitan-recipe",
     "weekly-meal-plan",
-    "solo-savings-recipe",
+    "shopping-list-auto",
+    "bento-okazu-simple",
+    "excel-kakeibo-auto",
+    "simple-kakeibo-continue",
 }
 
+# lastmod は公開日ではなく更新日を優先する。記事を統合すると統合先の本文が
+# 大きく増えるため、公開日のままだと Google に「変わっていない」と伝わり、
+# 再クロールが後回しになる。updated は scripts/merge_articles.py が入れる。
 for a in articles:
     priority = "0.8" if a["slug"] in HIGH_PRIORITY_SLUGS else "0.6"
     sitemap_urls.append(f"""  <url>
     <loc>{BASE_URL}{a["url"]}</loc>
-    <lastmod>{a["date"]}</lastmod>
+    <lastmod>{a.get("updated") or a["date"]}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>{priority}</priority>
   </url>""")

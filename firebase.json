@@ -126,7 +126,7 @@
       },
       {
         "source": "/blog/solo-cheap-recipe.html",
-        "destination": "/blog/solo-savings-recipe.html",
+        "destination": "/blog/solo-food-cost.html",
         "type": 301
       },
       {
@@ -182,6 +182,181 @@
       {
         "source": "/blog/saving-recipe-tips-pro.html",
         "destination": "/blog/savings-recipe.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/solo-kondate.html",
+        "destination": "/blog/solo-food-cost.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/solo-savings-recipe.html",
+        "destination": "/blog/solo-food-cost.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/solo-food-cost-gender.html",
+        "destination": "/blog/solo-food-cost.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/family4-kondate-shopping.html",
+        "destination": "/blog/family4-food-cost.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/60dai-fuufu-shokuhi.html",
+        "destination": "/blog/family4-food-cost.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/futari-gurashi-kyoudoukirabi.html",
+        "destination": "/blog/family4-food-cost.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/couple-food-cost.html",
+        "destination": "/blog/family4-food-cost.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/kondatehyo-template.html",
+        "destination": "/blog/weekly-meal-plan.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/savings-weekly-menu.html",
+        "destination": "/blog/weekly-meal-plan.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/ai-recipe-weekly-plan.html",
+        "destination": "/blog/weekly-meal-plan.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/tsukurioki-okazu.html",
+        "destination": "/blog/tsukurioki-weekly-plan.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/kondate-nayamu-idea.html",
+        "destination": "/blog/meal-plan-today.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/tonights-recipe.html",
+        "destination": "/blog/meal-plan-today.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/bento-recipe.html",
+        "destination": "/blog/bento-okazu-simple.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/savings-bento.html",
+        "destination": "/blog/bento-okazu-simple.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/food-cost-cut-20000.html",
+        "destination": "/blog/food-cost-savings-tips.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/jisui-savings.html",
+        "destination": "/blog/food-cost-savings-tips.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/savings-improvement.html",
+        "destination": "/blog/savings-life.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/money-management.html",
+        "destination": "/blog/savings-life.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/matomegai-weekly-list.html",
+        "destination": "/blog/shopping-list-auto.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/price-compare-supermarket.html",
+        "destination": "/blog/shopping-list-auto.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/price-tracker-app.html",
+        "destination": "/blog/shopping-list-auto.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/fridge-organize-savings.html",
+        "destination": "/blog/shopping-list-auto.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/fridge-recipe-app.html",
+        "destination": "/blog/fridge-ai-recipe.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/receipt-to-recipe.html",
+        "destination": "/blog/fridge-ai-recipe.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/shopping-to-recipe.html",
+        "destination": "/blog/fridge-ai-recipe.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/pc-kakeibo-browser.html",
+        "destination": "/blog/kakeibo-app-compare.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/windows-mac-kakeibo.html",
+        "destination": "/blog/kakeibo-app-compare.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/kakeibo-template-data.html",
+        "destination": "/blog/excel-kakeibo-auto.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/kakeibo-csv-graph.html",
+        "destination": "/blog/excel-kakeibo-auto.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/kakeibo-food-tracking.html",
+        "destination": "/blog/food-cost-only-app.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/budget-category-tips.html",
+        "destination": "/blog/food-cost-only-app.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/beginner-3min-kakeibo.html",
+        "destination": "/blog/simple-kakeibo-continue.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/household-review-monthly.html",
+        "destination": "/blog/simple-kakeibo-continue.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/recipe-memo-app.html",
+        "destination": "/blog/recipe-record-app.html",
         "type": 301
       }
     ],
