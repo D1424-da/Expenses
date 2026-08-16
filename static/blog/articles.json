@@ -7,8 +7,8 @@
     "excerpt": "定年退職を迎えると、収入が年金中心になり食費の管理が改めて重要になります。しかし60代は健康維持のためにしっかり食べることも大切で、「節約のために食事を粗末にする」は逆効果です。この記事では、60代夫婦2人が栄養バランスを保ちながら月3〜4",
     "category": "節約術",
     "emoji": "🧓",
-    "canonical": "https://get-tohon.online/blog/60dai-fuufu-shokuhi.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
+    "noindex": true
   },
   {
     "slug": "futari-gurashi-kyoudoukirabi",
@@ -18,8 +18,8 @@
     "excerpt": "二人暮らしで「食費がどこに消えているかわからない」「パートナーと食費の認識がズレている」という悩みは、食費を見える化・共有管理するアプリで解決できます。この記事では、カップル・同棲中のふたりが食費を仕組みで管理するためのアプリ活用法と月次振",
     "category": "節約術",
     "emoji": "📱",
-    "canonical": "https://get-tohon.online/blog/futari-gurashi-kyoudoukirabi.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
+    "noindex": true
   },
   {
     "slug": "hitori-gurashi-setsuyaku-recipe-1week",
@@ -183,8 +183,8 @@
     "excerpt": "「今日の献立、何にしよう」という悩みは、毎日ゼロから考えているために起きます。考え方を10通り持っておくだけで、迷う時間はほぼなくなります。この記事では、今日から使える具体的な解決策を紹介します。",
     "category": "献立・レシピ",
     "emoji": "💡",
-    "canonical": "https://get-tohon.online/blog/kondate-nayamu-idea.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/meal-plan-today.html",
+    "noindex": true
   },
   {
     "slug": "solo-savings-recipe",
@@ -194,8 +194,8 @@
     "excerpt": "一人暮らしで外食が多くなると食費は月4〜5万円に膨らみがちです。自炊の節約レシピを20〜30品マスターするだけで、食費を月2万円以内に安定させることができます。この記事では「安い・早い・飽きない」を同時に叶える一人暮らし向け節約レシピ10選",
     "category": "節約術",
     "emoji": "🏠",
-    "canonical": "https://get-tohon.online/blog/solo-savings-recipe.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/solo-food-cost.html",
+    "noindex": true
   },
   {
     "slug": "bento-recipe",
@@ -205,8 +205,8 @@
     "excerpt": "「弁当を作りたいけどレシピが思いつかない」「朝は時間がない」という悩みを持つ人は多いです。実は弁当レシピは朝15分あれば十分作れます。コツは「すぐ作れる主菜1品＋常備食材を使う副菜」の組み合わせを知っておくこと。この記事では1食200円以内",
     "category": "献立・レシピ",
     "emoji": "🥢",
-    "canonical": "https://get-tohon.online/blog/bento-recipe.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/bento-okazu-simple.html",
+    "noindex": true
   },
   {
     "slug": "family-recipe-share",
@@ -239,7 +239,8 @@
     "category": "アプリ活用",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/meal-plan-today.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "curry-kondate",
@@ -260,8 +261,8 @@
     "excerpt": "冷蔵庫の食材を無駄なく使い切りたい、レシピは無料で十分使いたい、1週間の献立をカレンダー管理したい——そんな方向けに、冷蔵庫管理アプリ・無料レシピアプリ・献立カレンダーアプリを比較します。クックパッドとの違いや選び方のポイントも解説します。",
     "category": "アプリ活用",
     "emoji": "❄️",
-    "canonical": "https://get-tohon.online/blog/fridge-recipe-app.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/fridge-ai-recipe.html",
+    "noindex": true
   },
   {
     "slug": "recipe-record-app",
@@ -272,7 +273,8 @@
     "category": "アプリ活用",
     "emoji": "📝",
     "canonical": "https://get-tohon.online/blog/recipe-record-app.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "cheap-recipe-ideas",
@@ -315,8 +317,8 @@
     "excerpt": "「気に入ったレシピをどこに保存すればいいかわからない」「スクショが増えすぎて探せない」という悩みは多くの人が抱えています。レシピをメモできるアプリを使えば、自分だけのレシピ集を整理・管理できます。この記事では目的別におすすめのレシピメモアプ",
     "category": "アプリ活用",
     "emoji": "📓",
-    "canonical": "https://get-tohon.online/blog/recipe-memo-app.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/recipe-record-app.html",
+    "noindex": true
   },
   {
     "slug": "oben-simple-hayai",
@@ -392,8 +394,8 @@
     "excerpt": "「このもやし、前はもっと安かった気がする」——記憶だけに頼る底値管理には限界があります。カケイシピは、レシートを撮影するたびに商品名・金額・購入店舗を自動記録し、同じ商品の価格推移を蓄積することで、意識せずに底値管理ができる仕組みを提供して",
     "category": "アプリ活用",
     "emoji": "📉",
-    "canonical": "https://get-tohon.online/blog/price-tracker-app.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/shopping-list-auto.html",
+    "noindex": true
   },
   {
     "slug": "reito-yasai-recipe",
@@ -414,8 +416,8 @@
     "excerpt": "「献立表を作ればラクになる」と分かっていても、作るのが面倒で続かない——それは献立表の作り方が細かすぎるからかもしれません。この記事では、曜日ごとにジャンルだけ固定して365日使い回せる「曜日ルール型」の献立表の作り方と、テンプレート不要で",
     "category": "献立・レシピ",
     "emoji": "🗓️",
-    "canonical": "https://get-tohon.online/blog/kondatehyo-template.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/weekly-meal-plan.html",
+    "noindex": true
   },
   {
     "slug": "yuhan-kondate-simple",
@@ -437,7 +439,8 @@
     "category": "献立・レシピ",
     "emoji": "🍱",
     "canonical": "https://get-tohon.online/blog/bento-okazu-simple.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "shopping-list-auto",
@@ -448,7 +451,8 @@
     "category": "節約術",
     "emoji": "📋",
     "canonical": "https://get-tohon.online/blog/shopping-list-auto.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "jisui-savings",
@@ -458,8 +462,8 @@
     "excerpt": "外食やコンビニ中心の生活を自炊に切り替えるだけで、月1万〜2万円の食費削減が見込めます。この記事では、自炊と外食のコスト比較から、自炊を無理なく続けるための具体的なテクニックまでを解説します。",
     "category": "節約術",
     "emoji": "🍳",
-    "canonical": "https://get-tohon.online/blog/jisui-savings.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/food-cost-savings-tips.html",
+    "noindex": true
   },
   {
     "slug": "jitan-recipe",
@@ -481,7 +485,8 @@
     "category": "節約術",
     "emoji": "🧊",
     "canonical": "https://get-tohon.online/blog/fridge-ai-recipe.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "kyou-no-kondate",
@@ -513,8 +518,8 @@
     "excerpt": "毎日の昼食を外食やコンビニで済ませていると、それだけで月15,000〜20,000円かかります。お弁当に切り替えるだけで、この金額を月3,000〜5,000円まで圧縮できます。この記事では、1食200円以内で作れる節約弁当の具体的な方法を解",
     "category": "節約術",
     "emoji": "🍱",
-    "canonical": "https://get-tohon.online/blog/savings-bento.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/bento-okazu-simple.html",
+    "noindex": true
   },
   {
     "slug": "web-kakeibo-free",
@@ -536,7 +541,8 @@
     "category": "家計管理",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/food-cost-only-app.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "kondate-yasai-ittai",
@@ -557,8 +563,8 @@
     "excerpt": "「買った野菜が余った」「今夜何を作ればいいかわからない」「外食が増えて食費がオーバー」——これらの悩みをまとめて解決するのが、カケイシピの買い物した食材からレシピを自動作成する機能です。家計管理アプリとしては異例のこの機能が、どのように食生",
     "category": "その他",
     "emoji": "🛒",
-    "canonical": "https://get-tohon.online/blog/shopping-to-recipe.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/fridge-ai-recipe.html",
+    "noindex": true
   },
   {
     "slug": "matomegai-recipe-plan",
@@ -579,8 +585,8 @@
     "excerpt": "パソコンで家計管理をしたい方が増えています。スマホの小さな画面より大きなモニターで数字を確認したい、キーボードで素早く入力したい、Excelとの連携がしたい…そんなニーズに応えるPC向け家計簿アプリを徹底比較します。特に「広告なし」「ログイ",
     "category": "アプリ活用",
     "emoji": "💻",
-    "canonical": "https://get-tohon.online/blog/pc-kakeibo-browser.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/kakeibo-app-compare.html",
+    "noindex": true
   },
   {
     "slug": "quick-recipe",
@@ -612,8 +618,8 @@
     "excerpt": "「レシートからレシピを作るアプリ」を探している人が増えています。買い物のレシートには、実は献立のヒントがすべて詰まっています。カケイシピは、レシートを撮影するだけで購入履歴を記録し、その食材からAIがレシピを自動提案する、家計簿とレシピが一",
     "category": "アプリ活用",
     "emoji": "📸",
-    "canonical": "https://get-tohon.online/blog/receipt-to-recipe.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/fridge-ai-recipe.html",
+    "noindex": true
   },
   {
     "slug": "excel-kakeibo-auto",
@@ -624,7 +630,8 @@
     "category": "アプリ活用",
     "emoji": "📊",
     "canonical": "https://get-tohon.online/blog/excel-kakeibo-auto.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "saving-recipe-kosodates",
@@ -646,7 +653,8 @@
     "category": "節約術",
     "emoji": "💡",
     "canonical": "https://get-tohon.online/blog/savings-life.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "chukka-kondate",
@@ -667,8 +675,8 @@
     "excerpt": "夫婦2人でも食費は月5万円を超えることが珍しくありません。特に共働き世帯では外食・テイクアウトへの依存が高くなりがちです。この記事では、夫婦2人の食費平均データと、忙しくても月3万円台に抑えるための具体的な方法を解説します。",
     "category": "節約術",
     "emoji": "👫",
-    "canonical": "https://get-tohon.online/blog/couple-food-cost.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
+    "noindex": true
   },
   {
     "slug": "food-cost-savings-tips",
@@ -679,7 +687,8 @@
     "category": "節約術",
     "emoji": "📉",
     "canonical": "https://get-tohon.online/blog/food-cost-savings-tips.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "kondate-1week-family4",
@@ -701,7 +710,8 @@
     "category": "家計管理",
     "emoji": "✨",
     "canonical": "https://get-tohon.online/blog/simple-kakeibo-continue.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "beginner-3min-kakeibo",
@@ -711,8 +721,8 @@
     "excerpt": "「家計簿を始めたいけど何から手をつければ？」「以前やろうとしたけど3日で挫折した」という方へ。家計簿は最初から完璧にやろうとするから続かないのです。1日3分・週1回の入力で十分な家計簿の始め方を、初心者向けにわかりやすく解説します。",
     "category": "家計管理",
     "emoji": "📖",
-    "canonical": "https://get-tohon.online/blog/beginner-3min-kakeibo.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/simple-kakeibo-continue.html",
+    "noindex": true
   },
   {
     "slug": "reizoko-seiri-recipe",
@@ -733,8 +743,8 @@
     "excerpt": "「節約しながら毎日違う料理を作りたい」という方に向けて、1日の食材費300円以内で実現できる一週間の夕食献立の具体例を公開します。食材の使い回し設計と買い物リストもあわせて解説します。",
     "category": "献立・レシピ",
     "emoji": "🍽️",
-    "canonical": "https://get-tohon.online/blog/savings-weekly-menu.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/weekly-meal-plan.html",
+    "noindex": true
   },
   {
     "slug": "solo-food-cost-gender",
@@ -744,8 +754,8 @@
     "excerpt": "「一人暮らしの食費は男性と女性で違うの？」という疑問に、統計データをもとに答えます。この記事では性別・年代別の食費データを比較し、それぞれの節約に効果的なポイントを解説します。",
     "category": "節約術",
     "emoji": "👤",
-    "canonical": "https://get-tohon.online/blog/solo-food-cost-gender.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/solo-food-cost.html",
+    "noindex": true
   },
   {
     "slug": "tsukurioki-bento",
@@ -799,8 +809,8 @@
     "excerpt": "日本の家庭で発生する食品ロスは年間1人あたり約24kg。毎月2,000〜5,000円分の食材が捨てられている計算です。冷蔵庫の整理方法を少し変えるだけで、この無駄を大幅に減らせます。具体的な方法を解説します。",
     "category": "節約術",
     "emoji": "🧊",
-    "canonical": "https://get-tohon.online/blog/fridge-organize-savings.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/shopping-list-auto.html",
+    "noindex": true
   },
   {
     "slug": "kakeibo-app-compare",
@@ -811,7 +821,8 @@
     "category": "アプリ活用",
     "emoji": "⚖️",
     "canonical": "https://get-tohon.online/blog/kakeibo-app-compare.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "saving-recipe-week5000",
@@ -832,8 +843,8 @@
     "excerpt": "「Windows用の家計簿ソフト」「Mac対応の家計簿アプリ」を探している方に朗報です。2026年現在、OS専用ソフトをインストールする必要はありません。ブラウザさえあれば、WindowsでもMacでもLinuxでも同じように使える家計簿W",
     "category": "アプリ活用",
     "emoji": "🖥️",
-    "canonical": "https://get-tohon.online/blog/windows-mac-kakeibo.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/kakeibo-app-compare.html",
+    "noindex": true
   },
   {
     "slug": "sasami-bento",
@@ -865,8 +876,8 @@
     "excerpt": "家計簿をつけ始めても「食費をどう分類すればいいか分からない」「続かない」という声をよく聞きます。この記事では、食費のカテゴリ分けの基本から、手間なく続けられる記録方法まで解説します。",
     "category": "家計管理",
     "emoji": "📒",
-    "canonical": "https://get-tohon.online/blog/kakeibo-food-tracking.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/food-cost-only-app.html",
+    "noindex": true
   },
   {
     "slug": "saving-recipe-couple",
@@ -909,8 +920,8 @@
     "excerpt": "「食費を削りたいけどどこから手をつければ？」という方に朗報です。食費削減の鍵は、買い物に行く「前」にあります。計画的な買い物リストと食材管理を組み合わせることで、無駄買いと食材ロスを同時になくすことができます。3人家族のBさんが実践して月2",
     "category": "節約術",
     "emoji": "🛒",
-    "canonical": "https://get-tohon.online/blog/food-cost-cut-20000.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/food-cost-savings-tips.html",
+    "noindex": true
   },
   {
     "slug": "niku-jaga-kondate",
@@ -931,8 +942,8 @@
     "excerpt": "「毎月なぜかお金が足りない」「どのカテゴリに使いすぎているかわからない」という方へ。カテゴリ別に予算を設定することで、家計の全体像が見えて無駄遣いを自然に防げます。この記事では予算設定の考え方からカケイシピでの実践的な活用法まで解説します。",
     "category": "家計管理",
     "emoji": "📂",
-    "canonical": "https://get-tohon.online/blog/budget-category-tips.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/food-cost-only-app.html",
+    "noindex": true
   },
   {
     "slug": "food-budget-app",
@@ -975,8 +986,8 @@
     "excerpt": "「今日の晩ご飯どうしよう…」と毎日悩んでいる方に朗報です。AIが冷蔵庫の食材や家族の人数・嗜好を考慮して、1週間分の献立を丸ごと提案してくれます。献立悩みがなくなるだけでなく、食材の使い切りで食費も大幅節約。カケイシピのAIレシピ機能の活用",
     "category": "レシピ",
     "emoji": "🍳",
-    "canonical": "https://get-tohon.online/blog/ai-recipe-weekly-plan.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/weekly-meal-plan.html",
+    "noindex": true
   },
   {
     "slug": "receipt-ocr-how-it-works",
@@ -997,8 +1008,8 @@
     "excerpt": "家計管理で挫折する多くの人が「記録はするけど振り返らない」状態に陥っています。月次レビューは、記録した数字を「改善」につなげる最重要ステップ。月末のたった30分が、家計を継続的に改善し貯金を増やし続ける習慣を作ります。",
     "category": "家計管理",
     "emoji": "📅",
-    "canonical": "https://get-tohon.online/blog/household-review-monthly.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/simple-kakeibo-continue.html",
+    "noindex": true
   },
   {
     "slug": "rinyushoku-kondate",
@@ -1030,8 +1041,8 @@
     "excerpt": "「どのスーパーが安いか知りたい」「特売を上手に活用したい」という方へ。スーパーごとの価格差を把握し、賢く使い分けることで食費を大幅削減できます。カケイシピの購入履歴・価格記録機能を活用すれば、自分だけの価格比較データが蓄積され、さらに買い物",
     "category": "節約術",
     "emoji": "🏷️",
-    "canonical": "https://get-tohon.online/blog/price-compare-supermarket.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/shopping-list-auto.html",
+    "noindex": true
   },
   {
     "slug": "tsukurioki-weekly-plan",
@@ -1042,7 +1053,8 @@
     "category": "献立・レシピ",
     "emoji": "🥡",
     "canonical": "https://get-tohon.online/blog/tsukurioki-weekly-plan.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "money-management",
@@ -1052,8 +1064,8 @@
     "excerpt": "「節約したいとは思っているが、何から手をつければいいかわからない」「貯金が全然増えない」——お金の悩みを持つ多くの方に共通しているのが「お金の流れが見えていない」ことです。支出を記録して見える化するだけで、無意識の無駄遣いに気づき、自然と節",
     "category": "節約術",
     "emoji": "💹",
-    "canonical": "https://get-tohon.online/blog/money-management.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/savings-life.html",
+    "noindex": true
   },
   {
     "slug": "tonights-recipe",
@@ -1063,8 +1075,8 @@
     "excerpt": "「今夜の夕飯どうしよう」と悩む方のために節約夕食レシピを20選紹介。1食200円以内・調理15分以内のレシピと、5分で献立を決める方法を解説します。",
     "category": "節約術",
     "emoji": "🌙",
-    "canonical": "https://get-tohon.online/blog/tonights-recipe.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/meal-plan-today.html",
+    "noindex": true
   },
   {
     "slug": "savings-improvement",
@@ -1074,8 +1086,8 @@
     "excerpt": "「節約したいけど何から始めればいい？」「貯金が全然増えない」という悩みを持つ方へ。節約アプリを上手に活用することで、家計を見える化し、無理のない節約・貯金を実現する方法を解説します。カケイシピのレシピ自動作成機能が食費節約にどれほど効果的か",
     "category": "節約術",
     "emoji": "💰",
-    "canonical": "https://get-tohon.online/blog/savings-improvement.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/savings-life.html",
+    "noindex": true
   },
   {
     "slug": "matomegai-weekly-list",
@@ -1085,8 +1097,8 @@
     "excerpt": "食費節約の一番の近道は「買い物の回数を減らすこと」です。この記事では、一週間分の食材をまとめ買いするための具体的な食材リストを一人暮らし・2人暮らし・4人家族別に公開し、買った食材を腐らせず使い切るコツを解説します。",
     "category": "節約術",
     "emoji": "🛒",
-    "canonical": "https://get-tohon.online/blog/matomegai-weekly-list.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/shopping-list-auto.html",
+    "noindex": true
   },
   {
     "slug": "family-recipe",
@@ -1107,8 +1119,8 @@
     "excerpt": "「家計簿テンプレートを無料ダウンロードしたけど、毎月コピーするのが面倒」「Excelにデータを手入力するのが続かない」——そんな悩みは、Webアプリ型の家計簿に切り替えることで解決できます。自動でデータ管理・集計・分析してくれる仕組みを紹介",
     "category": "家計管理",
     "emoji": "📁",
-    "canonical": "https://get-tohon.online/blog/kakeibo-template-data.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/excel-kakeibo-auto.html",
+    "noindex": true
   },
   {
     "slug": "savings-recipe",
@@ -1141,7 +1153,8 @@
     "category": "節約術",
     "emoji": "👨‍👩‍👦‍👦",
     "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "family-kakeibo",
@@ -1163,7 +1176,8 @@
     "category": "節約術",
     "emoji": "🏠",
     "canonical": "https://get-tohon.online/blog/solo-food-cost.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "weekly-meal-plan",
@@ -1174,7 +1188,8 @@
     "category": "献立・レシピ",
     "emoji": "📅",
     "canonical": "https://get-tohon.online/blog/weekly-meal-plan.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-16"
   },
   {
     "slug": "login-free-kakeibo",
@@ -1195,8 +1210,8 @@
     "excerpt": "「毎月の支出を記録しているのに、お金がどこに消えたかわからない」——そんな方に必要なのが家計の見える化です。グラフとCSV出力を活用すれば、ただ記録するだけでなく、節約すべきポイントを自動的に発見できます。この記事では家計簿のCSVエクスポ",
     "category": "アプリ活用",
     "emoji": "📈",
-    "canonical": "https://get-tohon.online/blog/kakeibo-csv-graph.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/excel-kakeibo-auto.html",
+    "noindex": true
   },
   {
     "slug": "no-ads-kakeibo",
@@ -1294,8 +1309,8 @@
     "excerpt": "4人家族（夫婦＋子ども2人）の食費平均は月7〜9万円前後と言われています。週間献立を事前に決めてまとめ買いするだけで、この金額を1〜2万円削減できます。本記事では4人家族向けの具体的な実践方法を解説します。",
     "category": "節約術",
     "emoji": "💰",
-    "canonical": "https://get-tohon.online/blog/family4-kondate-shopping.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
+    "noindex": true
   },
   {
     "slug": "food-cost-reduce",
@@ -1437,8 +1452,8 @@
     "excerpt": "一人暮らしで献立に困る人は多いです。「何を作ればいいかわからない」「食材が余って腐らせてしまう」「毎日同じものを食べている」…そんな悩みをAIと食費管理アプリで一気に解決します。",
     "category": "節約術",
     "emoji": "💰",
-    "canonical": "https://get-tohon.online/blog/solo-kondate.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/solo-food-cost.html",
+    "noindex": true
   },
   {
     "slug": "supermarket-receipt-recipe",
@@ -1459,8 +1474,8 @@
     "excerpt": "作り置きおかずは「平日を楽にする」最強の時短術ですが、何を作るか計画するのが意外と大変。カケイシピのAIレシピ提案と献立カレンダーを組み合わせると、計画から買い物・作り置き・平日の夕飯まで一本のフローで管理できます。",
     "category": "献立・レシピ",
     "emoji": "🍽️",
-    "canonical": "https://get-tohon.online/blog/tsukurioki-okazu.html",
-    "noindex": false
+    "canonical": "https://get-tohon.online/blog/tsukurioki-weekly-plan.html",
+    "noindex": true
   },
   {
     "slug": "weekly-kondate-shopping",
