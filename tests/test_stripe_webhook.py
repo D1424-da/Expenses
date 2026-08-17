@@ -27,6 +27,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 import main
+from app import stripe_billing
+from app.routes import stripe_routes
 import app.stripe_billing as billing
 
 # ---------------------------------------------------------------------------
@@ -408,29 +410,46 @@ class TestPersistSubscription:
         args = self._call(mock_firestore_ref, sub)
         assert args[1].get("merge") is True
 
-    def test_firestore_not_configured_raises_503(self, client, monkeypatch):
-        """Firestore 未設定時は HTTP 503 になること（_get_firestore が HTTPException を送出）。"""
+    def test_firestore_not_configured_raises_503(self):
+        """Firestore 未設定時は _get_firestore が HTTPException(503) を送出すること。
+
+        以前はこれが Webhook のレスポンスにそのまま出ていたが、反映を
+        BackgroundTasks に移したため、応答は先に 200 で返る。
+        設定漏れの検出は「処理側が送出すること」で担保する。
+        """
+        from fastapi import HTTPException
+
         sub = _sub_obj()
-        payload = make_payload("customer.subscription.updated", sub)
         # firebase_admin のインポート自体が pyo3 パニックを起こすため sys.modules でスタブする
         admin_stub = MagicMock()
         admin_stub.firestore.SERVER_TIMESTAMP = "ts"
-        with patch("app.stripe_billing._stripe") as ms, \
+        with patch("app.stripe_billing._stripe"), \
              patch("app.stripe_billing._firestore_client", None), \
              patch.dict(sys.modules, {"firebase_admin": admin_stub,
                                        "firebase_admin.firestore": admin_stub.firestore}):
-            ms.return_value.error.SignatureVerificationError = Exception
-            ms.return_value.Webhook.construct_event.return_value = {
-                "type": "customer.subscription.updated",
-                "data": {"object": sub},
-            }
-            sig = make_stripe_sig(payload, WEBHOOK_SECRET)
-            r = client.post(
-                "/api/stripe/webhook",
-                content=payload,
-                headers={"stripe-signature": sig},
-            )
-        assert r.status_code == 503
+            with pytest.raises(HTTPException) as exc:
+                stripe_billing._process_event_sync({
+                    "type": "customer.subscription.updated",
+                    "data": {"object": sub},
+                })
+        assert exc.value.status_code == 503
+
+    def test_webhook_responds_before_persisting(self):
+        """反映が終わる前に 200 を返すこと。
+
+        Render の無料プランはスリープからの復帰に30〜60秒かかる。
+        反映まで待って応答すると Stripe の10秒タイムアウトを超え、
+        決済は成立したのにプレミアムにならない状態が生まれる。
+        """
+        import inspect
+
+        src = inspect.getsource(stripe_routes.stripe_webhook)
+        assert "background_tasks.add_task" in src, (
+            "Webhook が反映を背景に逃がしていない"
+        )
+        assert "handle_webhook" not in src, (
+            "handle_webhook は検証と反映を両方行うので応答が遅れる"
+        )
 
 
 class TestMaskEmail:

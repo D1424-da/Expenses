@@ -1,7 +1,7 @@
 """Stripe サブスクリプション関連エンドポイント。"""
 from __future__ import annotations
 
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from app import security, stripe_billing
@@ -86,13 +86,24 @@ async def stripe_portal(
 @router.post("/stripe/webhook")
 async def stripe_webhook(
     request: Request,
+    background_tasks: BackgroundTasks,
     stripe_signature: str | None = Header(default=None, alias="stripe-signature"),
 ) -> JSONResponse:
     """Stripe からの Webhook を受け取り、Firestore のサブスクリプション状態を更新する。
     署名検証のため生ボディが必要（JSONパースしないこと）。
+
+    署名を検証したら**すぐに 200 を返し**、反映は背景で行う。
+    Stripe は応答を10秒待ってタイムアウト扱いにするが、Render の無料プランは
+    15分アクセスが無いとスリープし復帰に30〜60秒かかる。反映まで終えてから
+    応答する作りだと、深夜の決済が「成立したのにプレミアムにならない」形で
+    こぼれる。Stripe 自身も受領を先に返すよう案内している。
+
+    背景処理が落ちても Stripe には成功が返っている点に注意。
+    process_webhook_event が例外をログに残すので、反映漏れはそこで追う。
     """
     payload = await request.body()
     if not stripe_signature:
         raise HTTPException(400, "Stripe-Signature ヘッダーがありません。")
-    result = await stripe_billing.handle_webhook(payload, stripe_signature)
-    return JSONResponse(result)
+    event = await stripe_billing.verify_webhook(payload, stripe_signature)
+    background_tasks.add_task(stripe_billing.process_webhook_event, event)
+    return JSONResponse({"received": True})
