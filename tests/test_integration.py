@@ -314,7 +314,10 @@ class TestWebhookIntegration:
 
     def test_webhook_valid_payload_returns_received(self, client, monkeypatch):
         monkeypatch.setenv("STRIPE_WEBHOOK_SECRET", "whsec_test")
-        with patch("app.stripe_billing.handle_webhook", new_callable=AsyncMock,
+        # ルーターは検証と反映を分けて呼ぶ（反映は BackgroundTasks 側）。
+        with patch("app.stripe_billing.verify_webhook", new_callable=AsyncMock,
+                   return_value={"type": "ping"}), \
+             patch("app.stripe_billing.process_webhook_event", new_callable=AsyncMock,
                    return_value={"received": True}):
             r = client.post("/api/stripe/webhook",
                             content=b'{"type":"ping"}',

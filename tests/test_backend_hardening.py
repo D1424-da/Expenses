@@ -56,12 +56,18 @@ class TestNoBlockingOnEventLoop:
 
     PUBLIC = [
         "create_checkout_session", "sync_subscription", "create_portal_session",
-        "handle_webhook", "redeem_beta_code", "ensure_trial",
+        "verify_webhook", "process_webhook_event", "redeem_beta_code",
+        "ensure_trial",
     ]
+
+    # 自分では to_thread を呼ばず、上の公開関数を await するだけのもの。
+    # handle_webhook は verify_webhook → process_webhook_event の順に呼ぶ
+    # 入口で、同期処理には触れない。
+    COMPOSITE = ["handle_webhook"]
 
     def test_public_api_is_still_awaitable(self):
         """ルーター側が await しているので、公開関数はコルーチンのままであること。"""
-        for name in self.PUBLIC:
+        for name in self.PUBLIC + self.COMPOSITE:
             fn = getattr(stripe_billing, name)
             assert inspect.iscoroutinefunction(fn), f"{name} がコルーチンでない"
 
@@ -70,6 +76,15 @@ class TestNoBlockingOnEventLoop:
         for name in self.PUBLIC:
             src = inspect.getsource(getattr(stripe_billing, name))
             assert "to_thread" in src, f"{name} が同期処理を直接呼んでいる"
+
+    def test_composite_api_only_awaits_public_functions(self):
+        """合成関数が同期SDKに直接触れていないこと。"""
+        for name in self.COMPOSITE:
+            src = inspect.getsource(getattr(stripe_billing, name))
+            assert "stripe." not in src, f"{name} が Stripe SDK を直接呼んでいる"
+            assert any(p in src for p in self.PUBLIC), (
+                f"{name} が公開関数を経由していない"
+            )
 
     def test_no_blocking_sdk_call_inside_async_def(self):
         """async def の本体に Stripe / Firestore の同期呼び出しが残っていない。"""

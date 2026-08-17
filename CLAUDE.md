@@ -79,6 +79,20 @@ Stripe SDK も Firebase Admin SDK も**同期APIしか無い**。`async def` の
 なお `app/routes/admin.py` のように `def`（非 async）で定義すれば
 FastAPI が自動でスレッドプールに逃がすので、そちらでもよい。
 
+### Stripe Webhook は検証だけして 200 を返す
+
+`to_thread` でイベントループは空くが、**Stripe から見た応答時間**は
+処理時間そのもの。Stripe は10秒で打ち切って再送し、5日失敗が続くと
+エンドポイントを無効化する。Render の無料プランは15分無アクセスで
+スリープし復帰に30〜60秒かかるため、反映まで待つ作りだと
+「決済は成立したのにプレミアムにならない」が起きる。
+
+`app/routes/stripe_routes.py` は `verify_webhook`（署名検証のみ）→
+即 200 → `BackgroundTasks` で `process_webhook_event`、の順にする。
+実測で応答6ms（反映1500msの設定）。**背景処理の例外は誰も受け取らない**ので、
+`process_webhook_event` が `BaseException` で捕まえて logger に残す。
+`tests/test_stripe_webhook.py` がこの順序を静的に固定している。
+
 ### エラーの詳細をクライアントに返さない
 
 `app/net.py` は HTTP エラー時にプロバイダのレスポンス本文を

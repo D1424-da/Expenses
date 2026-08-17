@@ -87,7 +87,9 @@ class TestWebhookSecurity:
     def test_webhook_body_must_be_raw(self, client, monkeypatch):
         """Webhook は raw body を検証する（JSON パース不可でも処理する）。"""
         monkeypatch.setenv("STRIPE_WEBHOOK_SECRET", "whsec_test")
-        with patch("app.stripe_billing.handle_webhook", new_callable=AsyncMock,
+        with patch("app.stripe_billing.verify_webhook", new_callable=AsyncMock,
+                   return_value={"type": "ping"}), \
+             patch("app.stripe_billing.process_webhook_event", new_callable=AsyncMock,
                    return_value={"received": True}):
             r = client.post("/api/stripe/webhook",
                             content=b"raw-binary-data",

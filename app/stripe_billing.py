@@ -144,16 +144,33 @@ def _create_portal_session_sync(uid: str) -> str:
     return session.url
 
 
-def _handle_webhook_sync(payload: bytes, sig_header: str) -> dict:
-    """Stripe Webhook を検証し、サブスクリプション状態を Firestore に反映する。"""
+def _verify_webhook_sync(payload: bytes, sig_header: str) -> dict:
+    """署名を検証してイベントを返す。ここでは外部通信も書き込みもしない。
+
+    Stripe は Webhook の応答を待ち、10秒を超えるとタイムアウト扱いにして
+    再送する。Render の無料プランは15分アクセスが無いとスリープし、
+    復帰に30〜60秒かかるため、反映まで終えてから 200 を返す作りだと
+    「決済は成立したのに Firestore が更新されない」が起きる。
+
+    そこで検証だけを応答前に行い、反映は _process_event_sync に分けた。
+    Stripe 自身も「まず受領を返し、処理は後回しにせよ」と案内している。
+    """
     if not STRIPE_WEBHOOK_SECRET:
         raise HTTPException(503, "Webhook シークレットが未設定です（STRIPE_WEBHOOK_SECRET）。")
     stripe = _stripe()
     try:
-        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
+        return stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
     except stripe.error.SignatureVerificationError as exc:
         raise HTTPException(400, "Webhook 署名の検証に失敗しました。") from exc
 
+
+def _process_event_sync(event: dict) -> dict:
+    """検証済みイベントを Firestore に反映する。応答を返したあとに走る。
+
+    ここで送出した例外は誰も受け取らない（レスポンスは既に返っている）。
+    握りつぶすと反映漏れに気づけないので、必ず logger に残すこと。
+    """
+    stripe = _stripe()
     evt_type = event["type"]
     logger.info("Stripe webhook: %s", evt_type)
 
@@ -344,9 +361,33 @@ async def create_portal_session(uid: str) -> str:
     return await asyncio.to_thread(_create_portal_session_sync, uid)
 
 
+async def verify_webhook(payload: bytes, sig_header: str) -> dict:
+    """Stripe Webhook の署名を検証し、イベントを返す（応答前に行う）。"""
+    return await asyncio.to_thread(_verify_webhook_sync, payload, sig_header)
+
+
+async def process_webhook_event(event: dict) -> dict:
+    """検証済みイベントをサブスクリプション状態に反映する（応答後に走る）。
+
+    BackgroundTasks から呼ばれるため、例外は誰も受け取らない。
+    反映漏れに気づけるよう、ここで捕まえてログに残す。
+    pyo3 由来の PanicException は Exception を継承しないので
+    BaseException で受ける（debug_storage.py に前例あり）。
+    """
+    try:
+        return await asyncio.to_thread(_process_event_sync, event)
+    except BaseException:
+        logger.exception("Stripe webhook の反映に失敗: type=%s", event.get("type"))
+        return {"received": True, "processed": False}
+
+
 async def handle_webhook(payload: bytes, sig_header: str) -> dict:
-    """Stripe Webhook を検証し、サブスクリプション状態を反映する。"""
-    return await asyncio.to_thread(_handle_webhook_sync, payload, sig_header)
+    """検証と反映をまとめて行う（応答を待たせるため、通常は使わない）。
+
+    分割前からある入口。テストと、背景実行を使えない呼び出し元のために残す。
+    """
+    event = await verify_webhook(payload, sig_header)
+    return await process_webhook_event(event)
 
 
 async def redeem_beta_code(uid: str, code: str) -> bool:
