@@ -141,3 +141,64 @@ def test_links_point_to_live_articles():
             elif url not in live:
                 problems.append(f"{p.name}: {url} は公開記事に無い")
     assert not problems, "リンク先の問題: " + "; ".join(problems[:10])
+
+
+# ---------------------------------------------------------------------------
+# 投稿済み（posted/）の追随
+# ---------------------------------------------------------------------------
+#
+# posted/ は「note に投稿し終えた下書き」の記録で、再生成時に上書きしない。
+# そのぶん記事を統合しても中身が更新されないため、統合前に投稿したものは
+# 古い URL を指したまま残る。実際、投稿済み7本のうち5本がこの状態だった
+# （60dai-fuufu-shokuhi / ai-cooking / ai-recipe-weekly-plan /
+#   beginner-3min-kakeibo / bento-recipe）。
+#
+# 301 で評価は引き継がれるので SEO 上の損失はほぼ無いが、note 本文で
+# 予告した記事名と着地先の見出しが食い違う。統合したら note 側の URL も
+# 直す必要がある、と気づけるようにする。
+
+POSTED_DIR = NOTE_DIR / "posted"
+
+
+def _redirect_map() -> dict[str, str]:
+    cfg = json.loads((ROOT / "firebase.json").read_text(encoding="utf-8"))
+    return {r["source"]: r["destination"] for r in cfg["hosting"]["redirects"]}
+
+
+def _article_links(path: Path) -> list[str]:
+    """本文中の記事URLをパスで返す（/login.html などの導線は除く）。"""
+    text = path.read_text(encoding="utf-8")
+    out = []
+    for url in re.findall(r"https://get-tohon\.online(/[^\s　\"')）]*)", text):
+        if url.startswith("/blog/"):
+            out.append(url)
+    return out
+
+
+@pytest.mark.skipif(not POSTED_DIR.exists(), reason="posted/ が無い")
+def test_posted_drafts_do_not_link_to_redirected_urls():
+    """投稿済みの下書きが 301 される URL を指していない。
+
+    落ちたときの直し方は2段階:
+      1. note 側で該当記事の URL とタイトル表記を最終地点に差し替える
+      2. posted/ のテキストも同じ内容に直す（記録を実態に合わせる）
+    """
+    redirects = _redirect_map()
+    problems = []
+    for path in sorted(POSTED_DIR.glob("*.txt")):
+        for link in _article_links(path):
+            if link in redirects:
+                problems.append(f"{path.name}: {link} → {redirects[link]}")
+    assert not problems, (
+        "投稿済み note が 301 される URL を指している（note 側の修正が必要）: "
+        + "; ".join(problems)
+    )
+
+
+@pytest.mark.skipif(not POSTED_DIR.exists(), reason="posted/ が無い")
+def test_posted_and_pending_do_not_overlap():
+    """投稿済みと未投稿で同じ記事を二重に持たない（重複投稿の元になる）。"""
+    posted = {p.stem for p in POSTED_DIR.glob("*.txt")}
+    pending = {p.stem for p in _drafts()}
+    overlap = sorted(posted & pending)
+    assert not overlap, f"posted/ と未投稿の両方にある: {overlap}"
