@@ -335,3 +335,53 @@ def test_high_priority_slugs_are_indexable():
         elif a.get("noindex"):
             problems.append(f"{slug}: noindex なのでサイトマップに載らない")
     assert not problems, "HIGH_PRIORITY_SLUGS の不整合: " + "; ".join(problems)
+
+
+# ---------------------------------------------------------------------------
+# URL の正規化
+# ---------------------------------------------------------------------------
+
+def test_blog_index_has_single_canonical_url():
+    """ブログ一覧に到達する URL が 1 つに収束する。
+
+    rewrite は "/blog"（末尾スラッシュなし）だけを blog.html に振り分けて
+    いたため、"/blog/" は "**" にマッチして noindex の login.html を返して
+    いた。内部リンクからは排除したが、外部リンクと Google が既に持って
+    いる URL には効かない（実際に GA4 で "/blog/" に表示2回・1.0位が
+    記録されていた）。
+
+    "/blog" 側も rewrite だと同じ内容が2つの URL で見えるので、
+    どちらも blog.html へ 301 して 1 本にまとめる。
+    """
+    import json as _json
+
+    cfg = _json.loads((STATIC.parent / "firebase.json").read_text(encoding="utf-8"))
+    by_source = {r["source"]: r["destination"] for r in cfg["hosting"]["redirects"]}
+    for src in ("/blog", "/blog/"):
+        assert by_source.get(src) == "/blog.html", (
+            f"{src} が /blog.html へ 301 されていない"
+        )
+
+    # redirects は rewrites より先に評価される。両方に同じ source を
+    # 書くと rewrite が到達しない死に設定になるので持たせない。
+    rewrite_sources = {r["source"] for r in cfg["hosting"]["rewrites"]}
+    assert not (rewrite_sources & set(by_source)), (
+        f"redirects と rewrites が重複: {sorted(rewrite_sources & set(by_source))}"
+    )
+
+
+def test_canonical_urls_are_normalized():
+    """canonical が https・www 無し・絶対URL で統一されている。"""
+    bad = []
+    for page in sorted(STATIC.rglob("*.html")):
+        for tag in re.findall(r"<link[^>]*canonical[^>]*>", page.read_text(encoding="utf-8")):
+            m = re.search(r'href=["\']([^"\']+)["\']', tag)
+            if not m:
+                bad.append(f"{page.name}: href が無い")
+                continue
+            url = m.group(1)
+            if not url.startswith(BASE_URL):
+                bad.append(f"{page.name}: {url}")
+            elif url.endswith("/blog/") or "//blog" in url.replace(BASE_URL, ""):
+                bad.append(f"{page.name}: 正規化されていない {url}")
+    assert not bad, "canonical の不整合: " + "; ".join(bad[:10])

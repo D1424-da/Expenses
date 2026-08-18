@@ -125,6 +125,16 @@
         "type": 301
       },
       {
+        "source": "/blog/",
+        "destination": "/blog.html",
+        "type": 301
+      },
+      {
+        "source": "/blog",
+        "destination": "/blog.html",
+        "type": 301
+      },
+      {
         "source": "/blog/solo-cheap-recipe.html",
         "destination": "/blog/solo-food-cost.html",
         "type": 301
@@ -361,10 +371,6 @@
       }
     ],
     "rewrites": [
-      {
-        "source": "/blog",
-        "destination": "/blog.html"
-      },
       {
         "source": "**",
         "destination": "/login.html"

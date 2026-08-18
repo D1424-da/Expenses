@@ -24,6 +24,8 @@ npx playwright test                        # E2E（e2e/。通常はCIで動か�
 
 python3 build_blog.py                      # ブログ一覧・カテゴリ・sitemap.xml を再生成
 python3 scripts/fix_article_schema.py --check   # 記事の構造化データの欠落を検査
+python3 scripts/merge_articles.py <統合先> <統合元>...  # 記事の統合
+python3 scripts/note_plan.py               # note の投稿順を再計算
 ```
 
 CI（`.github/workflows/test.yml`）は **PR 時のみ** pytest と vitest を実行する
@@ -162,6 +164,18 @@ rawText 20000字・amount 1億未満）は `static/expense-limits.js` に写し�
   で出し分ける。全記事を同じ値にするとクローラーに優先順位が伝わらない。
   選定基準は「10位以内でクリックがある」「内部リンクが集まるハブ」
   「統合の集約先」の3つ。
+- **URL は `.html` 付きを正規形とする。** `/blog` と `/blog/` はどちらも
+  `/blog.html` へ 301。以前 `/blog` は rewrite だったが、同じ内容が2つの
+  URL で見える状態だった（`/blog/` に至っては `"**"` に落ちて noindex の
+  login.html を返し、GA4 に表示2回・1.0位が記録されていた）。
+  redirects は rewrites より先に評価されるので、両方に同じ source を
+  書くと rewrite が死に設定になる。
+- **記事を統合したら note 側も直す。** `note_posts/posted/` は再生成で
+  上書きしないので、統合前に投稿したものは古い URL を指したまま残る
+  （7本中5本がこうなった）。301 で評価は引き継がれるが、note 本文の
+  記事名と着地先の見出しが食い違う。`tests/test_note_posts.py` が検出する。
+- note の投稿順は `python3 scripts/note_plan.py` で決める。統合の集約先を
+  先に出す。被リンクは本数より**どこに集めるか**で効きが変わる。
 - SEO の不変条件はテストで固定してある。壊すと CI が止まる:
   `tests/test_sitemap.py` / `tests/test_article_schema.py` /
   `tests/test_article_titles.py` / `static/blog-ads.test.js`
