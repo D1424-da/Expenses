@@ -111,6 +111,27 @@ FastAPI が自動でスレッドプールに逃がすので、そちらでもよ
 `static/app-wiring.test.js` がソースを静的解析してこれを検出する。
 init 関数に依存を足すときは `NEEDS_DB` も更新する。
 
+### GA4 の主要イベントは analytics.js の trackEvent 経由
+
+導入当初はページビューと sign_up しか計測しておらず、アプリ本体の
+操作（購入完了など）が一切計測されていなかった。特に `purchase` は
+収益に直結するため、機能自体は正常でも GA4 上は売上ゼロに見えて
+気付きにくい。
+
+`purchase` は `static/app.js` の `_syncStripeSubscription` が
+`/api/stripe/sync` で **サーバーに確認が取れてから** 送る。
+`?checkout=success` という URL パラメータだけを根拠にすると、
+URL を直接叩かれただけで発火してしまう。
+
+金額は `PREMIUM_PLAN_JPY` にハードコードしてある。プラン価格を変えたら
+`static/index.html` の表示価格（`¥500<sub>/月</sub>`）と**必ず同時に
+直す**こと。`static/ga4-events.test.js` が数値の一致を検査する。
+
+`login` と `sign_up` は Firebase の `isNewUser` で出し分ける。
+`onAuthStateChanged` はページ再読み込みのたびにも発火するため、
+そちらに `login` を置くと毎回カウントされて水増しになる
+（`signInWithPopup` などの明示的なログイン操作の結果だけを見ること）。
+
 ### 利用者へのエラー表示は ui-feedback.js に集約する
 
 `alert()` は使わない（`static/ui-feedback.test.js` が再混入を検出する）。

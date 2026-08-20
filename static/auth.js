@@ -40,8 +40,9 @@ $("copy-url-btn") && ($("copy-url-btn").onclick = async () => {
 getRedirectResult(auth).then((result) => {
   if (result?.user) {
     log("リダイレクトログイン成功:", result.user.email);
-    if (getAdditionalUserInfo(result)?.isNewUser && typeof window.trackEvent === "function") {
-      window.trackEvent("sign_up", { method: "google" });
+    if (typeof window.trackEvent === "function") {
+      const isNewUser = getAdditionalUserInfo(result)?.isNewUser;
+      window.trackEvent(isNewUser ? "sign_up" : "login", { method: "google" });
     }
   }
 }).catch((err) => {
@@ -68,8 +69,9 @@ $("google-login").onclick = async () => {
     } else {
       const result = await signInWithPopup(auth, provider);
       log("ポップアップログイン成功:", result.user.email);
-      if (getAdditionalUserInfo(result)?.isNewUser && typeof window.trackEvent === "function") {
-        window.trackEvent("sign_up", { method: "google" });
+      if (typeof window.trackEvent === "function") {
+        const isNewUser = getAdditionalUserInfo(result)?.isNewUser;
+        window.trackEvent(isNewUser ? "sign_up" : "login", { method: "google" });
       }
     }
   } catch (err) {
@@ -117,6 +119,7 @@ if (_emailForm) {
         if (typeof window.trackEvent === "function") window.trackEvent("sign_up", { method: "email" });
       } else {
         await signInWithEmailAndPassword(auth, email, pass);
+        if (typeof window.trackEvent === "function") window.trackEvent("login", { method: "email" });
       }
     } catch (err) {
       logErr("メールログインエラー:", err.code);

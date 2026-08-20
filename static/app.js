@@ -75,6 +75,10 @@ const _checkoutResult = (() => {
   return result;
 })();
 
+// GA4 の収益レポートに使う金額。static/index.html の表示価格（¥500/月）と
+// 必ず一致させること。プラン変更時はそちらも合わせて直す。
+const PREMIUM_PLAN_JPY = 500;
+
 async function _syncStripeSubscription(user) {
   if (_checkoutResult !== "success") return;
   try {
@@ -87,6 +91,19 @@ async function _syncStripeSubscription(user) {
     if (res.ok) {
       const data = await res.json();
       log("Stripe 同期:", data.status);
+      // Checkout の URL パラメータは _checkoutResult 生成時に history.replaceState で
+      // 消しているため、リロードでは再発火しない。webhook 側の反映と二重にならない
+      // よう、購入の確定計測はここ（フロント）だけに置く。
+      if (
+        (data.status === "active" || data.status === "trialing") &&
+        typeof window.trackEvent === "function"
+      ) {
+        window.trackEvent("purchase", {
+          currency: "JPY",
+          value: PREMIUM_PLAN_JPY,
+          items: [{ item_name: "プレミアムプラン", price: PREMIUM_PLAN_JPY, quantity: 1 }],
+        });
+      }
     }
   } catch (e) {
     logErr("Stripe 同期エラー:", e.message);
