@@ -127,6 +127,12 @@ URL を直接叩かれただけで発火してしまう。
 `static/index.html` の表示価格（`¥500<sub>/月</sub>`）と**必ず同時に
 直す**こと。`static/ga4-events.test.js` が数値の一致を検査する。
 
+`trial_start`（14日間無料トライアルの開始）は `/api/trial/ensure` の
+レスポンス `{started: true/false}` を見てから送る。このエンドポイントは
+2回目以降のログインでも毎回呼ばれ、既存ユーザーには `{started: false}`
+を返すだけの正常系がある。レスポンスを見ずに送ると、ログインのたびに
+水増しされる。
+
 `login` と `sign_up` は Firebase の `isNewUser` で出し分ける。
 `onAuthStateChanged` はページ再読み込みのたびにも発火するため、
 そちらに `login` を置くと毎回カウントされて水増しになる

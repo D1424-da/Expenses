@@ -53,15 +53,23 @@ export function startBillingSync() {
 }
 
 // 初回ログイン時に呼ぶ。サブスクリプション情報が未作成なら14日間の無料トライアルを開始する。
+// 2回目以降のログインでも毎回呼ぶが、サーバー側が既存判定して {started:false} を返す
+// だけなので、trial_start はレスポンスを見て「今回実際に開始した」ときだけ送る。
 export async function ensureTrial() {
   const user = _getUser();
   if (!user) return;
   try {
     const token = await user.getIdToken();
-    await fetch(`${OCR_API_BASE}/api/trial/ensure`, {
+    const res = await fetch(`${OCR_API_BASE}/api/trial/ensure`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${token}` },
     });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.started && typeof window.trackEvent === "function") {
+        window.trackEvent("trial_start", { plan: "premium_trial" });
+      }
+    }
   } catch (err) {
     logErr("トライアル開始エラー:", err.message);
   }

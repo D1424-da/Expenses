@@ -67,6 +67,21 @@ describe("purchase イベント", () => {
   });
 });
 
+describe("trial_start イベント", () => {
+  it("サーバーが started:true を返したときだけ送る", () => {
+    // /api/trial/ensure は2回目以降のログインでも毎回呼ばれ、既存ユーザーには
+    // {started:false} を返すだけ（正常系）。レスポンスを見ずに送ると、
+    // ログインのたびに trial_start が水増しされる。
+    const billing = read("stripe-billing.js");
+    const fn = billing.slice(
+      billing.indexOf("export async function ensureTrial"),
+      billing.indexOf("export async function ensureTrial") + 800
+    );
+    expect(fn).toMatch(/data\.started/);
+    expect(fn).toMatch(/trackEvent\("trial_start"/);
+  });
+});
+
 describe("cta_click イベント", () => {
   it("blog-cta.js が計測を保持している（回帰）", () => {
     const cta = read("blog-cta.js");
