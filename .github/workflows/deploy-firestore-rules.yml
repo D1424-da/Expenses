@@ -21,8 +21,24 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+      # ルールテストは Firestore / Auth エミュレータ（Java 製）を使う
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
+      - name: Install deps
+        run: npm ci --no-audit --no-fund
+      # firestore.rules は利用者同士がお互いの家計簿を読めないようにしている
+      # 唯一の防壁で、ここは本番へ直行する経路。1行間違えると誰にも
+      # 気づかれずにデータが露出しうるので、デプロイ前に必ず通す。
+      # auth も起動するのは tests-rules/auth-integration.test.js が
+      # Auth エミュレータ（9099）を使うため。
+      - name: Test Firestore rules
+        run: |
+          firebase emulators:exec --only firestore,auth \
+            --project expenses-9af61 "npm run test:rules"
       - name: Deploy Firestore rules
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
