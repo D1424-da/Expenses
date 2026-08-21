@@ -132,6 +132,84 @@ async function loadList(token) {
   }
 }
 
+// ---- 登録ユーザー一覧 -------------------------------------------------------
+
+const PLAN_LABEL = { premium: "プレミアム", trial: "トライアル中", beta: "ベータ招待", free: "無料" };
+
+function fmtDateMs(ms) {
+  return ms ? new Date(ms).toLocaleString("ja-JP") : "-";
+}
+
+/** users-tbody に1ページぶんの行を追加する（さらに読み込む、で継ぎ足すため置き換えない）。 */
+function appendUserRows(items) {
+  const tbody = $("users-tbody");
+  for (const u of items) {
+    const tr = document.createElement("tr");
+
+    const tdEmail = document.createElement("td");
+    tdEmail.textContent = u.email ?? "(メール未設定)";
+    const tdUid = document.createElement("td");
+    tdUid.textContent = u.uid;
+    const tdCreated = document.createElement("td");
+    tdCreated.textContent = fmtDateMs(u.createdAt);
+    const tdLast = document.createElement("td");
+    tdLast.textContent = fmtDateMs(u.lastSignInAt);
+
+    const tdPlan = document.createElement("td");
+    const badge = document.createElement("span");
+    // トライアルはプレミアムと同じ扱い（アプリ側のバッジ文言に合わせる）だが、
+    // 管理画面ではトライアル中かどうか自体が知りたい情報なので plan で出し分ける。
+    const kind = u.isPremium ? (u.plan === "trial" ? "trial" : "premium") : "free";
+    badge.className = `plan-badge ${kind}`;
+    badge.textContent = PLAN_LABEL[u.plan] ?? u.plan ?? "無料";
+    tdPlan.appendChild(badge);
+
+    const tdStatus = document.createElement("td");
+    tdStatus.textContent = u.status ?? "-";
+
+    tr.append(tdEmail, tdUid, tdCreated, tdLast, tdPlan, tdStatus);
+    tbody.appendChild(tr);
+  }
+}
+
+let _usersNextPageToken = null;
+
+async function loadUsers(token, { append = false } = {}) {
+  $("users-status").textContent = "";
+  const url = new URL(`${OCR_API_BASE}/api/admin/users`);
+  if (append && _usersNextPageToken) url.searchParams.set("page_token", _usersNextPageToken);
+
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    $("users-status").textContent = `エラー: ${res.status} ${body.detail ?? ""}`;
+    return;
+  }
+  const { items, nextPageToken } = await res.json();
+  _usersNextPageToken = nextPageToken || null;
+  $("users-more-btn").hidden = !_usersNextPageToken;
+
+  if (!append) {
+    $("users-tbody").innerHTML = "";
+    if (items.length === 0) {
+      $("users-table").hidden = true;
+      $("users-empty").hidden = false;
+      $("users-summary").textContent = "";
+      return;
+    }
+    $("users-table").hidden = false;
+    $("users-empty").hidden = true;
+  }
+  appendUserRows(items);
+
+  // 集計は「これまでに読み込んだぶん」の実数。全ユーザー数がページングで
+  // 分割されている場合はその旨を注記し、全体の数値だと誤解されないようにする。
+  const rows = $("users-tbody").rows.length;
+  const premiumCount = [...$("users-tbody").querySelectorAll(".plan-badge.premium, .plan-badge.trial")].length;
+  const partial = _usersNextPageToken ? "（さらに読み込むと増えます）" : "";
+  $("users-summary").textContent = `読み込み済み ${rows}人中 ${premiumCount}人が有料/トライアル中${partial}`;
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     $("login-box").style.display = "block";
@@ -142,7 +220,17 @@ onAuthStateChanged(auth, async (user) => {
   $("main-box").style.display = "block";
   $("who").textContent = `ログイン中: ${user.email}`;
   const token = await user.getIdToken();
+  await loadUsers(token);
   await loadList(token);
+  $("users-reload-btn").onclick = async () => {
+    const t = await user.getIdToken(true);
+    _usersNextPageToken = null;
+    await loadUsers(t);
+  };
+  $("users-more-btn").onclick = async () => {
+    const t = await user.getIdToken();
+    await loadUsers(t, { append: true });
+  };
   $("reload-btn").onclick = async () => {
     const t = await user.getIdToken(true);
     await loadList(t);

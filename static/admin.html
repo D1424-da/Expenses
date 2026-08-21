@@ -8,6 +8,11 @@
   <style>
     body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; color: #1a1a1a; }
     h1 { font-size: 1.3rem; }
+    h2 { font-size: 1.05rem; margin-top: 32px; }
+    .plan-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .78rem; }
+    .plan-badge.premium { background: #e6f4ea; color: #1a7a3c; }
+    .plan-badge.trial { background: #fff4e0; color: #a5680c; }
+    .plan-badge.free { background: #f1f1f1; color: #777; }
     .hint { color: #666; font-size: .85rem; line-height: 1.6; }
     #login-box, #main-box { display: none; }
     button { background: #2D7D52; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-size: .95rem; }
@@ -45,8 +50,27 @@
   </div>
 
   <div id="main-box">
-    <button id="reload-btn">再読み込み</button>
     <span id="who" class="hint"></span>
+
+    <h2>登録ユーザー</h2>
+    <p id="users-summary" class="hint"></p>
+    <button id="users-reload-btn">再読み込み</button>
+    <table id="users-table" hidden>
+      <thead>
+        <tr><th>メール</th><th>uid</th><th>登録日</th><th>最終ログイン</th><th>プラン</th><th>状態</th></tr>
+      </thead>
+      <tbody id="users-tbody"></tbody>
+    </table>
+    <p id="users-empty" class="empty" hidden>登録ユーザーはいません。</p>
+    <button id="users-more-btn" hidden>さらに読み込む</button>
+    <p id="users-status" class="hint"></p>
+
+    <h2>一時保存レシート確認</h2>
+    <p class="hint">
+      DEBUG_RETAIN_RECEIPTS=true のときに保存された画像（最長3日間・自動削除）の一覧です。
+      通常は無効になっているため、空でも異常ではありません。
+    </p>
+    <button id="reload-btn">再読み込み</button>
     <table id="table" hidden>
       <thead><tr><th>プレビュー</th><th>uid</th><th>ファイル</th><th>サイズ</th><th>保存日時</th><th></th></tr></thead>
       <tbody id="tbody"></tbody>
