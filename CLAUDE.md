@@ -295,6 +295,12 @@ login.html を返す**。存在しない URL が LP として表示されるた�
   で3日後に自動削除する。`DEBUG_RETAIN_DAYS` を変えたら
   `storage-lifecycle.json` も合わせて更新すること。
 - `/admin.html` は `ADMIN_UIDS`（Firebase UID のカンマ区切り）でのみ閲覧できる。
+- `/admin.html` の登録ユーザー一覧は、Firestore にユーザー台帳が無いため
+  Firebase Authentication（`auth.list_users()`）を名簿の正とし、
+  `users/{uid}/settings/subscription` を突き合わせてプラン状態を出している。
+  プレミアム判定（`app/routes/admin.py` の `_is_premium`）は
+  `static/stripe-billing.js` の `isPremium()` と**同じ判定式を維持すること**。
+  ずれると管理画面とアプリ本体でプレミアム表示が食い違う。
 - 改修の経緯は `docs/作業備忘録-*.md` に残している。
 
 ## このファイルの更新

@@ -12,12 +12,14 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import Response
 
 from app import debug_storage, security
 from app.routes._shared import FIREBASE_PROJECT_ID
+from app.stripe_billing import _get_firestore
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -135,3 +137,77 @@ def download_debug_receipt(
         media_type=media_type,
         headers={"Cache-Control": "private, max-age=600"},
     )
+
+
+def _is_premium(sub: dict | None) -> bool:
+    """プレミアム判定。static/stripe-billing.js の isPremium() と必ず同じ結果になるよう
+    そちらの判定式をそのまま移植している。ロジックがずれると、管理画面が「無料」と
+    出しているユーザーがアプリ側では課金中（またはその逆）という食い違いが起きる。
+    """
+    if not sub:
+        return False
+    if sub.get("plan") == "beta" and sub.get("status") == "active":
+        return True
+    if sub.get("status") != "active":
+        return False
+    end = sub.get("currentPeriodEnd")
+    if isinstance(end, (int, float)) and end > 0 and end < time.time():
+        return False
+    return True
+
+
+@router.get("/admin/users")
+def list_registered_users(
+    page_token: str | None = Query(default=None),
+    authorization: str | None = Header(default=None),
+) -> dict:
+    """登録ユーザーの一覧を返す。
+
+    登録日時・メールは Firebase Authentication 側にしかない（Firestore には
+    ユーザー台帳が存在しない）ため、まず auth.list_users() で名簿を取り、
+    そのuid群でプラン状態（users/{uid}/settings/subscription）をまとめて引く。
+    1ページ最大1000件（Firebase Admin SDK の上限）。それを超える規模になったら
+    nextPageToken でクライアント側がページングする。
+    """
+    _require_admin(authorization)
+    from firebase_admin import auth as admin_auth
+
+    try:
+        page = admin_auth.list_users(page_token=page_token, max_results=1000)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("ユーザー一覧の取得に失敗")
+        raise HTTPException(503, f"ユーザー一覧を取得できません: {exc}") from exc
+
+    db = _get_firestore()
+    refs = [
+        db.collection("users").document(u.uid).collection("settings").document("subscription")
+        for u in page.users
+    ]
+    subs: dict[str, dict] = {}
+    if refs:
+        try:
+            for snap in db.get_all(refs):
+                if snap.exists:
+                    # ref.parent は settings コレクション、その parent がユーザーの文書。
+                    uid = snap.reference.parent.parent.id
+                    subs[uid] = snap.to_dict()
+        except Exception:  # noqa: BLE001 — 課金状態が引けなくても名簿自体は返す
+            logger.warning("サブスクリプション情報の一括取得に失敗", exc_info=True)
+
+    items = []
+    for u in page.users:
+        sub = subs.get(u.uid)
+        meta = u.user_metadata
+        items.append({
+            "uid": u.uid,
+            "email": u.email,
+            "displayName": u.display_name,
+            "createdAt": meta.creation_timestamp if meta else None,
+            "lastSignInAt": meta.last_sign_in_timestamp if meta else None,
+            "plan": (sub or {}).get("plan", "free"),
+            "status": (sub or {}).get("status"),
+            "currentPeriodEnd": (sub or {}).get("currentPeriodEnd"),
+            "isPremium": _is_premium(sub),
+        })
+    items.sort(key=lambda x: x["createdAt"] or 0, reverse=True)  # 新しい登録者を先に
+    return {"items": items, "nextPageToken": page.next_page_token}
