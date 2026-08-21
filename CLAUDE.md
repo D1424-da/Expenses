@@ -138,6 +138,28 @@ URL を直接叩かれただけで発火してしまう。
 そちらに `login` を置くと毎回カウントされて水増しになる
 （`signInWithPopup` などの明示的なログイン操作の結果だけを見ること）。
 
+### AI 出力のパーサは recipe-parse.js に置く
+
+Gemini / Vertex が返す Markdown を正規表現で解釈するコードは、
+**プロンプトやモデルを変えると出力書式が変わって静かに壊れる**。
+壊れたことに気づくのが「レシピが白紙」「献立が反映されない」という
+利用者の画面になりやすい。
+
+`static/recipe-parse.js` は DOM に触れない純粋関数だけを置く場所で、
+`static/recipe-parse.test.js` が書式を固定している。パーサを足すときは
+**必ずここに書く**（`recipe-view.js` の private 関数にするとテストできない）。
+日付や期間などの外部状態は引数で受け取ること。
+
+`markdownToHtml()` は**行を escapeHtml してから**書式を解釈する。
+順序を逆にすると AI の出力に含まれる `<img onerror=...>` がそのまま
+DOM に入る。
+
+なお `window.__recipeHelpers__` は `_attachStores`（`initRecipe()` で
+注入された db / getUser に依存するため import では解決できない）専用。
+**純粋なパーサをここに載せないこと** — 以前は載せており、`initRecipe()`
+前に呼ばれると undefined になって整形されない生の Markdown が出る、
+という沈黙する劣化が起きていた。
+
 ### 利用者へのエラー表示は ui-feedback.js に集約する
 
 `alert()` は使わない（`static/ui-feedback.test.js` が再混入を検出する）。
