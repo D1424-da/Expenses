@@ -6,6 +6,7 @@ import {
 import { $, escapeHtml, openModal, closeModal, dayKey } from "./dom-utils.js";
 import { dbBase } from "./db-paths.js";
 import { log, logErr } from "./log.js";
+import { markdownToHtml, extractIngredients } from "./recipe-parse.js";
 import { addItemsToList } from "./shopping-list.js";
 import { saveMeal } from "./meal-plan.js";
 import { showError, showSuccess, showToast } from "./ui-feedback.js";
@@ -148,10 +149,7 @@ function _renderList() {
 
 function _showDetail(r) {
   _currentRecipe = r;
-  const { _markdownToHtml } = window.__recipeHelpers__ || {};
-  $("saved-recipe-content").innerHTML = _markdownToHtml
-    ? _markdownToHtml(r.markdown || "")
-    : `<pre>${escapeHtml(r.markdown || "")}</pre>`;
+  $("saved-recipe-content").innerHTML = markdownToHtml(r.markdown || "");
   $("saved-recipe-title-detail").textContent = r.title || "無題";
   $("saved-recipe-shopping-btn").textContent = "🛒 買い物リストに追加";
   $("saved-recipes-list-wrap").hidden  = true;
@@ -168,8 +166,8 @@ async function _addCurrentToShoppingList() {
   const btn = $("saved-recipe-shopping-btn");
   btn.disabled = true;
   try {
-    const { _extractIngredients, _attachStores } = window.__recipeHelpers__ || {};
-    let names = _extractIngredients ? _extractIngredients(_currentRecipe.markdown || "") : [];
+    const { _attachStores } = window.__recipeHelpers__ || {};
+    let names = extractIngredients(_currentRecipe.markdown || "");
     if (!names.length) names = _currentRecipe.items || [];
     if (!names.length) {
       btn.textContent = "⚠️ 食材が見つかりません";

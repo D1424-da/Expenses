@@ -7,6 +7,7 @@ import { log, logErr } from "./log.js";
 import { categoryBreakdown } from "./stats.js";
 import { CATEGORIES } from "./firebase-config.js";
 import { saveMeal, deleteMeal } from "./meal-plan.js";
+import { markdownToHtml, extractIngredients } from "./recipe-parse.js";
 import { addItemsToList } from "./shopping-list.js";
 import { showError } from "./ui-feedback.js";
 
@@ -274,7 +275,7 @@ async function _buildWeekShoppingList() {
   btn.disabled = true;
   btn.textContent = "⏳ 食材を収集中…";
   try {
-    const { _extractIngredients } = window.__recipeHelpers__ || {};
+
     const allNames = [];
     const cur = new Date(wk.start);
     while (cur <= wk.end) {
@@ -283,9 +284,7 @@ async function _buildWeekShoppingList() {
       if (mp) {
         for (const slot of ["朝食", "お弁当", "夕食"]) {
           const md = mp[slot + "レシピ"] || "";
-          if (md && _extractIngredients) {
-            allNames.push(..._extractIngredients(md));
-          }
+          if (md) allNames.push(...extractIngredients(md));
         }
       }
       cur.setDate(cur.getDate() + 1);
@@ -602,10 +601,7 @@ function _buildMealEditor(plan) {
 
       recipeBtn.onclick = () => {
         if (detailEl.hidden) {
-          const render = window.__recipeHelpers__?._markdownToHtml;
-          detailEl.innerHTML = render
-            ? render(recipe)
-            : `<pre style="white-space:pre-wrap;font-size:.85rem">${escapeHtml(recipe)}</pre>`;
+          detailEl.innerHTML = markdownToHtml(recipe);
         }
         detailEl.hidden = !detailEl.hidden;
         recipeBtn.textContent = detailEl.hidden ? "📖" : "📖▼";

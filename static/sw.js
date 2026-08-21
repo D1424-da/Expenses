@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v27";
+const CACHE = "receipt-v28";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
@@ -25,6 +25,7 @@ const STATIC_ASSETS = [
   "/compare-view.js",
   "/ocr-client.js",
   "/ocr-queue.js",
+  "/recipe-parse.js",
   "/recipe-view.js",
   "/saved-recipes.js",
   "/shopping-list.js",

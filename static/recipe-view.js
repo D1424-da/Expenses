@@ -3,6 +3,11 @@ import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/
 import { $, escapeHtml, yen, dayKey, openModal, closeModal } from "./dom-utils.js";
 import { log, logErr } from "./log.js";
 import { OCR_API_BASE } from "./firebase-config.js";
+import {
+  MEAL_SLOTS, DAY_ORDER,
+  markdownToHtml, extractTitle, extractIngredients,
+  extractDishes, parseSelectResult, extractWeeklyMeals, maxOffsetFromRange,
+} from "./recipe-parse.js";
 import { saveRecipe } from "./saved-recipes.js";
 import { addItemsToList } from "./shopping-list.js";
 import { saveMealPlan, saveMeal } from "./meal-plan.js";
@@ -175,7 +180,7 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget, db, getUser 
     const btn = $("recipe-shopping-btn");
     btn.disabled = true;
     try {
-      const ingredients = _extractIngredients(_lastMarkdown);
+      const ingredients = extractIngredients(_lastMarkdown);
       const names = ingredients.length ? ingredients : _lastItems;
       const itemsWithStore = await _attachStores(names);
       const added = await addItemsToList(itemsWithStore);
@@ -209,8 +214,13 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget, db, getUser 
     btn.onclick = () => _saveMealSlot(btn.dataset.slot);
   });
 
-  // saved-recipes.js からレシピのヘルパー関数を参照できるようにする
-  window.__recipeHelpers__ = { _markdownToHtml, _extractIngredients, _attachStores };
+  // _attachStores だけは initRecipe() で注入された db / getUser に依存するため
+  // import で解決できず、グローバル経由で渡している。
+  // 純粋なパーサ（markdownToHtml / extractIngredients）は recipe-parse.js から
+  // 直接 import すること——以前はそれらもここに載せており、initRecipe() 前に
+  // 呼ばれると undefined になって「レシピが整形されず生の Markdown が出る」
+  // という沈黙する劣化が起きていた。
+  window.__recipeHelpers__ = { _attachStores };
 }
 
 /**
@@ -483,13 +493,13 @@ async function _suggest() {
     $("recipe-status").hidden = true;
 
     if (_activeType === "select") {
-      _selectResult = _parseSelectResult(recipe);
+      _selectResult = parseSelectResult(recipe);
       _selectChosen = { 朝食: 0, 昼食: 0, 夕食: 0 };
       _renderSelectPicker();
       $("recipe-select-picker").hidden = false;
     } else {
       const result = $("recipe-result");
-      result.innerHTML = _markdownToHtml(recipe);
+      result.innerHTML = markdownToHtml(recipe);
       result.hidden = false;
       $("recipe-post-actions").hidden = false;
       $("recipe-calendar-btn").hidden = false;
@@ -511,25 +521,10 @@ async function _suggest() {
 
 // markdownから個別料理を抽出する。
 // meal型: ## 見出し, weekly型: ### 見出し をそれぞれ1料理として扱う
-function _extractDishes(md, rtype) {
-  const headingRe = rtype === "weekly" ? /^### (.+)$/gm : /^## (.+)$/gm;
-  const dishes = [];
-  let match;
-  while ((match = headingRe.exec(md)) !== null) {
-    const title = match[1].replace(/\*\*/g, "").trim();
-    dishes.push({ title, start: match.index });
-  }
-  // 各料理の本文を切り出す
-  return dishes.map((d, i) => {
-    const end = i + 1 < dishes.length ? dishes[i + 1].start : md.length;
-    return { title: d.title, markdown: md.slice(d.start, end).trim() };
-  });
-}
-
 async function _showDishSelector() {
-  const dishes = _extractDishes(_lastMarkdown, _activeType);
+  const dishes = extractDishes(_lastMarkdown, _activeType);
   if (dishes.length <= 1) {
-    await _doSave([{ title: _extractTitle(_lastMarkdown), markdown: _lastMarkdown }]);
+    await _doSave([{ title: extractTitle(_lastMarkdown), markdown: _lastMarkdown }]);
     return;
   }
   const list = $("recipe-dish-list");
@@ -551,7 +546,7 @@ function _hideDishSelector() {
 
 async function _saveDishSelection() {
   const checkboxes = [...$("recipe-dish-list").querySelectorAll("input[type='checkbox']")];
-  const dishes = _extractDishes(_lastMarkdown, _activeType);
+  const dishes = extractDishes(_lastMarkdown, _activeType);
   const selected = checkboxes
     .map((cb, i) => ({ checked: cb.checked, dish: dishes[i] }))
     .filter((x) => x.checked && x.dish)
@@ -570,7 +565,7 @@ async function _doSave(dishes) {
   try {
     for (const d of dishes) {
       // 料理ごとの食材を抽出。見つからなければ期間の食材チップにフォールバック
-      const dishItems = _extractIngredients(d.markdown);
+      const dishItems = extractIngredients(d.markdown);
       await saveRecipe({
         title: d.title,
         markdown: d.markdown,
@@ -621,91 +616,23 @@ async function _attachStores(names) {
 // Markdown → HTML 変換（見出し・太字・番号リスト・箇条書き）。
 // <li> は必ず <ol>/<ul> で囲む（囲みなしだとブラウザでマーカーが表示されない）。
 // **難易度**: ★★☆ 行は専用バッジに変換する。
-function _markdownToHtml(md) {
-  const bold = (s) => s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  const lines = md.split("\n");
-  const out = [];
-  let listTag = ""; // 現在開いているリストタグ ("ol"|"ul"|"")
-
-  const closeList = () => { if (listTag) { out.push(`</${listTag}>`); listTag = ""; } };
-
-  for (const raw of lines) {
-    const line = escapeHtml(raw);
-    let m;
-    if ((m = line.match(/^## (.+)$/))) {
-      closeList();
-      out.push(`<h3>${bold(m[1])}</h3>`);
-    } else if ((m = line.match(/^### (.+)$/))) {
-      closeList();
-      out.push(`<h4>${bold(m[1])}</h4>`);
-    } else if ((m = line.match(/^(\d+)\. (.+)$/))) {
-      if (listTag !== "ol") { closeList(); out.push("<ol>"); listTag = "ol"; }
-      out.push(`<li>${bold(m[2])}</li>`);
-    } else if ((m = line.match(/^- (.+)$/))) {
-      if (listTag !== "ul") { closeList(); out.push("<ul>"); listTag = "ul"; }
-      out.push(`<li>${bold(m[1])}</li>`);
-    } else if ((m = line.match(/^\*\*難易度\*\*[：:]\s*(.+)$/))) {
-      // ★の数で色を変える
-      closeList();
-      const stars = m[1].trim();
-      const level = (stars.match(/★/g) || []).length;
-      const cls = level === 1 ? "diff-easy" : level === 2 ? "diff-mid" : "diff-hard";
-      out.push(`<div class="recipe-difficulty"><span class="diff-badge ${cls}">${stars}</span> 難易度</div>`);
-    } else if (line.trim()) {
-      closeList();
-      out.push(`<p>${bold(line)}</p>`);
-    } else {
-      closeList();
-    }
-  }
-  closeList();
-  return out.join("\n");
-}
-
-// Markdown から最初の ## 見出しをタイトルとして取り出す
-function _extractTitle(md) {
-  const m = md.match(/^##\s+(.+)$/m);
-  return m ? m[1].replace(/\*\*/g, "").trim() : "レシピ";
-}
-
-// Markdown の「**使う食材**:」行から食材名を抽出（量の表記は除去）
-function _extractIngredients(md) {
-  const items = [];
-  const rx = /\*\*使う食材\*\*[：:]\s*([^\n]+)/g;
-  let m;
-  while ((m = rx.exec(md)) !== null) {
-    m[1].split(/[、，,]/).forEach((raw) => {
-      const name = raw
-        .replace(/\s*[\d一二三四五六七八九十百]+\s*[gGkKmlg個本枚杯食片束パック袋缶大小さじtsp]+[程度くらい以上以下]*\s*/g, "")
-        .replace(/\*\*/g, "")
-        .trim();
-      if (name.length >= 1) items.push(name);
-    });
-  }
-  return [...new Set(items)];
-}
-
-function _setActiveTab(containerId, activeBtn) {
-  $(containerId).querySelectorAll(".recipe-tab").forEach((b) => b.classList.remove("active"));
+// タブ（.recipe-tab）とカード（.recipe-card）は見た目が違うだけで
+// 「同じコンテナ内で1つだけ active」という挙動は同一なので、選択子を引数にする。
+function _setActive(containerId, selector, activeBtn) {
+  $(containerId).querySelectorAll(selector).forEach((b) => b.classList.remove("active"));
   activeBtn.classList.add("active");
 }
 
-function _setActiveTabByValue(containerId, attr, value) {
-  $(containerId).querySelectorAll(".recipe-tab").forEach((b) => {
+function _setActiveByValue(containerId, selector, attr, value) {
+  $(containerId).querySelectorAll(selector).forEach((b) => {
     b.classList.toggle("active", b.getAttribute(attr) === value);
   });
 }
 
-function _setActiveCard(containerId, activeBtn) {
-  $(containerId).querySelectorAll(".recipe-card").forEach((b) => b.classList.remove("active"));
-  activeBtn.classList.add("active");
-}
-
-function _setActiveCardByValue(containerId, attr, value) {
-  $(containerId).querySelectorAll(".recipe-card").forEach((b) => {
-    b.classList.toggle("active", b.getAttribute(attr) === value);
-  });
-}
+const _setActiveTab        = (id, btn)        => _setActive(id, ".recipe-tab", btn);
+const _setActiveCard       = (id, btn)        => _setActive(id, ".recipe-card", btn);
+const _setActiveTabByValue = (id, attr, val)  => _setActiveByValue(id, ".recipe-tab", attr, val);
+const _setActiveCardByValue = (id, attr, val) => _setActiveByValue(id, ".recipe-card", attr, val);
 
 function _showStatus(type, text) {
   const s = $("recipe-status");
@@ -834,38 +761,10 @@ function _renderBudgetChips() {
 
 // ---- 朝・昼・夜を選ぶ --------------------------------------------------------
 
-const _MEAL_SLOTS = ["朝食", "昼食", "夕食"];
-const _MEAL_ICONS = { 朝食: "🌅", 昼食: "☀️", 夕食: "🌙" };
-// カレンダー保存時のスロットキー（昼食はカレンダーでは「お弁当」として保存）
-const _MEAL_SLOT_KEY = { 朝食: "朝食", 昼食: "お弁当", 夕食: "夕食" };
-
-// APIレスポンスのMarkdownを {朝食:[{title,markdown}], 昼食:[...], 夕食:[...]} に変換する。
-function _parseSelectResult(md) {
-  const result = {};
-  const sections = md.split(/^## /m).slice(1);
-  for (const section of sections) {
-    const nl = section.indexOf("\n");
-    if (nl === -1) continue;
-    const heading = section.slice(0, nl).trim();
-    const mealTime = _MEAL_SLOTS.find((m) => heading.includes(m));
-    if (!mealTime) continue;
-    const body = section.slice(nl);
-    const options = body.split(/^### /m).slice(1).map((opt) => {
-      const onl = opt.indexOf("\n");
-      const rawTitle = onl === -1 ? opt.trim() : opt.slice(0, onl).trim();
-      // ① ② ③ などの番号プレフィックスを除去
-      const title = rawTitle.replace(/^[①②③④⑤\d][.．\s]*/, "").trim();
-      return { title, markdown: opt.trim() };
-    }).filter((o) => o.title);
-    if (options.length) result[mealTime] = options;
-  }
-  return result;
-}
-
 // 3択カードをレンダリングする。
 function _renderSelectPicker() {
   const groups = $("recipe-select-groups");
-  groups.innerHTML = _MEAL_SLOTS.map((slot) => {
+  groups.innerHTML = MEAL_SLOTS.map((slot) => {
     const options = _selectResult[slot] || [];
     if (!options.length) return "";
     const icon = _MEAL_ICONS[slot];
@@ -903,7 +802,7 @@ async function _selectConfirmCalendar() {
   btn.disabled = true;
   btn.textContent = "保存中…";
   try {
-    for (const slot of _MEAL_SLOTS) {
+    for (const slot of MEAL_SLOTS) {
       const opts = _selectResult[slot];
       if (!opts?.length) continue;
       const chosen = opts[_selectChosen[slot] ?? 0];
@@ -926,14 +825,14 @@ async function _selectConfirmSave() {
   btn.textContent = "保存中…";
   try {
     let count = 0;
-    for (const slot of _MEAL_SLOTS) {
+    for (const slot of MEAL_SLOTS) {
       const opts = _selectResult[slot];
       if (!opts?.length) continue;
       const chosen = opts[_selectChosen[slot] ?? 0];
       await saveRecipe({
         title: chosen.title,
         markdown: chosen.markdown,
-        items: _extractIngredients(chosen.markdown).length ? _extractIngredients(chosen.markdown) : _lastItems,
+        items: extractIngredients(chosen.markdown).length ? extractIngredients(chosen.markdown) : _lastItems,
         period: _activePeriod,
         rtype: "meal",
         servings: _lastServings,
@@ -952,58 +851,18 @@ async function _selectConfirmSave() {
 
 // ---- 週間献立 → カレンダー --------------------------------------------------
 
-const _DAY_ORDER = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"];
-
-// 週間献立マークダウンを {date, 朝食, 昼食, 夕食}[] に変換する。
-// "## 月曜日" セクションごとに3食を抽出し、献立開始日を起点に日付を割り当てる。
-// 月曜日=day0, 火曜日=day1 … 日曜日=day6 として開始日からのオフセットにマップする。
-function _extractWeeklyMeals(md) {
-  const planStartStr = $("recipe-plan-start").value || _selectedDay || "";
-  const planStart = new Date(planStartStr + "T00:00:00");
-  const planEndStr = $("recipe-plan-end").value || "";
-  // 終了日が指定されていれば、開始日からの最大オフセット（日数-1）に制限する
-  const maxOffset = planEndStr
-    ? Math.max(0, Math.round((new Date(planEndStr) - planStart) / 86400000))
-    : 6;
-  const results = [];
-
-  const sections = md.split(/^## /m).slice(1);
-  for (const section of sections) {
-    const headingEnd = section.indexOf("\n");
-    if (headingEnd === -1) continue;
-    const dayName = section.slice(0, headingEnd).trim();
-    const dayIdx = _DAY_ORDER.indexOf(dayName);
-    if (dayIdx === -1 || dayIdx > maxOffset) continue;
-
-    const date = new Date(planStart);
-    date.setDate(planStart.getDate() + dayIdx);
-    const dateStr = dayKey(date);
-
-    const body = section.slice(headingEnd);
-    const breakfastM = body.match(/- \*\*朝食\*\*[：:]\s*(.+)/);
-    const lunchM     = body.match(/- \*\*昼食\*\*[：:]\s*(.+)/);
-    const dinnerM    = body.match(/^### 夕食[：:]\s*(.+)$/m);
-    // 夕食セクション全体（### 夕食: から末尾まで）をレシピとして保存
-    const dinnerSectionM = body.match(/### 夕食[：:][\s\S]*/);
-    const 夕食レシピ = dinnerSectionM ? dinnerSectionM[0].trim() : "";
-
-    results.push({
-      date: dateStr,
-      朝食:   breakfastM ? breakfastM[1].trim() : "",
-      お弁当: lunchM     ? lunchM[1].trim()     : "",
-      夕食:   dinnerM    ? dinnerM[1].trim()    : "",
-      夕食レシピ,
-    });
-  }
-  return results;
-}
-
 async function _exportToCalendar() {
   if (_activeType === "weekly") {
     const btn = $("recipe-calendar-btn");
     btn.disabled = true;
     try {
-      const meals = _extractWeeklyMeals(_lastMarkdown);
+      // 期間の読み取りは DOM 側の責務。パース自体は recipe-parse.js の
+      // 純粋関数に任せる（テストできるようにするため）。
+      const planStart = new Date(($("recipe-plan-start").value || _selectedDay || "") + "T00:00:00");
+      const meals = extractWeeklyMeals(_lastMarkdown, {
+        planStart,
+        maxOffset: maxOffsetFromRange(planStart, $("recipe-plan-end").value || ""),
+      });
       if (!meals.length) {
         showToast("献立情報を読み取れませんでした。週間献立を作り直してください。", "error");
         return;
@@ -1032,7 +891,7 @@ async function _saveMealSlot(slot) {
     $("recipe-post-actions").hidden = false;
     return;
   }
-  const title = _extractTitle(_lastMarkdown);
+  const title = extractTitle(_lastMarkdown);
   try {
     await saveMeal(_selectedDay, slot, title, _lastMarkdown);
     $("recipe-meal-slot-picker").hidden = true;
