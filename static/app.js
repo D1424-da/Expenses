@@ -22,7 +22,8 @@
 //   dom-utils.js       : DOM取得・表示整形・モーダル共通
 //   log.js             : デバッグログ
 
-import { CATEGORIES, OCR_API_BASE } from "./firebase-config.js";
+import { CATEGORIES } from "./firebase-config.js";
+import { apiJson } from "./api-client.js";
 import { log, logErr } from "./log.js";
 import { $, dayKey, monthKey, monthLabel, bindModalDismiss, openModal, closeModal } from "./dom-utils.js";
 import { state } from "./app-state.js";
@@ -83,27 +84,22 @@ async function _syncStripeSubscription(user) {
   if (_checkoutResult !== "success") return;
   try {
     const token = await user.getIdToken();
-    const res = await fetch(`${OCR_API_BASE}/api/stripe/sync`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({ email: user.email }),
+    const data = await apiJson("/api/stripe/sync", {
+      token, method: "POST", body: { email: user.email },
     });
-    if (res.ok) {
-      const data = await res.json();
-      log("Stripe 同期:", data.status);
-      // Checkout の URL パラメータは _checkoutResult 生成時に history.replaceState で
-      // 消しているため、リロードでは再発火しない。webhook 側の反映と二重にならない
-      // よう、購入の確定計測はここ（フロント）だけに置く。
-      if (
-        (data.status === "active" || data.status === "trialing") &&
-        typeof window.trackEvent === "function"
-      ) {
-        window.trackEvent("purchase", {
-          currency: "JPY",
-          value: PREMIUM_PLAN_JPY,
-          items: [{ item_name: "プレミアムプラン", price: PREMIUM_PLAN_JPY, quantity: 1 }],
-        });
-      }
+    log("Stripe 同期:", data.status);
+    // Checkout の URL パラメータは _checkoutResult 生成時に history.replaceState で
+    // 消しているため、リロードでは再発火しない。webhook 側の反映と二重にならない
+    // よう、購入の確定計測はここ（フロント）だけに置く。
+    if (
+      (data.status === "active" || data.status === "trialing") &&
+      typeof window.trackEvent === "function"
+    ) {
+      window.trackEvent("purchase", {
+        currency: "JPY",
+        value: PREMIUM_PLAN_JPY,
+        items: [{ item_name: "プレミアムプラン", price: PREMIUM_PLAN_JPY, quantity: 1 }],
+      });
     }
   } catch (e) {
     logErr("Stripe 同期エラー:", e.message);

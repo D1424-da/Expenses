@@ -5,7 +5,7 @@
 import {
   getDoc, onSnapshot, doc,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { OCR_API_BASE } from "./firebase-config.js";
+import { apiJson } from "./api-client.js";
 import { openModal, closeModal, $ } from "./dom-utils.js";
 import { log, logErr } from "./log.js";
 import { showError } from "./ui-feedback.js";
@@ -60,15 +60,9 @@ export async function ensureTrial() {
   if (!user) return;
   try {
     const token = await user.getIdToken();
-    const res = await fetch(`${OCR_API_BASE}/api/trial/ensure`, {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${token}` },
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.started && typeof window.trackEvent === "function") {
-        window.trackEvent("trial_start", { plan: "premium_trial" });
-      }
+    const data = await apiJson("/api/trial/ensure", { token, method: "POST" });
+    if (data.started && typeof window.trackEvent === "function") {
+      window.trackEvent("trial_start", { plan: "premium_trial" });
     }
   } catch (err) {
     logErr("トライアル開始エラー:", err.message);
@@ -166,15 +160,7 @@ async function _redeemBetaCode() {
     const user = _getUser();
     if (!user) throw new Error("ログインが必要です。");
     const token = await user.getIdToken();
-    const res = await fetch(`${OCR_API_BASE}/api/beta/redeem`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({ code }),
-    });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.detail || `HTTP ${res.status}`);
-    }
+    await apiJson("/api/beta/redeem", { token, method: "POST", body: { code } });
     msg.textContent = "✅ 招待コードが適用されました！プレミアム機能が使えます。";
     msg.style.color = "var(--c-ok, green)";
     msg.hidden = false;
@@ -198,15 +184,7 @@ export async function openPortal() {
   if (btn) { btn.disabled = true; btn.textContent = "接続中…"; }
   try {
     const token = await user.getIdToken();
-    const res = await fetch(`${OCR_API_BASE}/api/stripe/portal`, {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${token}` },
-    });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.detail || `HTTP ${res.status}`);
-    }
-    const { url } = await res.json();
+    const { url } = await apiJson("/api/stripe/portal", { token, method: "POST" });
     if (!url || !url.startsWith("https://")) throw new Error("無効なリダイレクト先");
     location.href = url;
   } catch (err) {
@@ -224,19 +202,9 @@ async function _startCheckout() {
   btn.textContent = "⏳ 移動中…";
   try {
     const token = await user.getIdToken();
-    const res = await fetch(`${OCR_API_BASE}/api/stripe/checkout`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-      body: JSON.stringify({ email: user.email }),
+    const { url } = await apiJson("/api/stripe/checkout", {
+      token, method: "POST", body: { email: user.email },
     });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.detail || `HTTP ${res.status}`);
-    }
-    const { url } = await res.json();
     if (!url || !url.startsWith("https://")) throw new Error("無効なリダイレクト先");
     location.href = url;
   } catch (err) {

@@ -138,6 +138,27 @@ URL を直接叩かれただけで発火してしまう。
 そちらに `login` を置くと毎回カウントされて水増しになる
 （`signInWithPopup` などの明示的なログイン操作の結果だけを見ること）。
 
+### バックエンド呼び出しは api-client.js を通す
+
+`static/api-client.js` の `apiJson()` / `apiFetch()` を使う。URL 組み立て・
+`Authorization` ヘッダ・FastAPI の `{"detail": "..."}` の取り出しが1か所に
+集まっている。`fetch(\`${OCR_API_BASE}/api/...\`)` を新しく書かないこと。
+
+- `apiJson()` … 失敗時は detail を message にして throw する
+- `apiFetch()` … Response を返す。JSON でない応答（画像）や、
+  throw ではなく画面表示でエラーを扱いたいときに使う
+
+トークンは呼び出し側が渡す。この中から現在のユーザーを参照しにいくと、
+どの認証状態で叩いたのかが呼び出し側から見えなくなる。
+
+**例外が2つある**（意図的に集約していない）。どちらも Render 無料枠の
+コールドスタート対策だが方式が違い、統合すると片方の挙動をもう片方に
+押し付けることになる:
+
+- `ocr-client.js` … `AbortController` で90秒打ち切り、固まったら
+  ブラウザ内 PaddleOCR にフォールバックする
+- `recipe-view.js` … 接続エラー時に15秒待って1回だけ再試行する
+
 ### AI 出力のパーサは recipe-parse.js に置く
 
 Gemini / Vertex が返す Markdown を正規表現で解釈するコードは、
