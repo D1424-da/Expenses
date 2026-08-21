@@ -1,0 +1,43 @@
+name: IndexNow
+
+# 記事を更新・統合したら、変わった URL だけを IndexNow に通知する。
+# 対応するのは Bing / Yandex / Naver で、**Google は IndexNow 非対応**。
+# Google 側のインデックスには影響しない。
+#
+# sitemap.xml が変わったときだけ走らせる。毎デプロイで全件送ると
+# 「更新した」という通知の意味が薄れるため、--changed で差分だけを送る。
+on:
+  push:
+    branches: [main]
+    paths:
+      - static/sitemap.xml
+  workflow_dispatch:
+    inputs:
+      all:
+        description: "sitemap の全URLを送る（通常は不要）"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    name: IndexNow に通知
+    runs-on: ubuntu-latest
+    steps:
+      # --changed は HEAD~1 の sitemap.xml と比較するため、
+      # 浅いクローン（既定 depth:1）だと比較対象が取れない。
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Submit URLs
+        run: |
+          if [ "${{ inputs.all }}" = "true" ]; then
+            python3 scripts/indexnow.py --all
+          else
+            python3 scripts/indexnow.py --changed
+          fi
