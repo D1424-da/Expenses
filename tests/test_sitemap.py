@@ -385,3 +385,36 @@ def test_canonical_urls_are_normalized():
             elif url.endswith("/blog/") or "//blog" in url.replace(BASE_URL, ""):
                 bad.append(f"{page.name}: 正規化されていない {url}")
     assert not bad, "canonical の不整合: " + "; ".join(bad[:10])
+
+
+# ---------------------------------------------------------------------------
+# IndexNow
+# ---------------------------------------------------------------------------
+
+def test_indexnow_key_file_is_valid():
+    """IndexNow の鍵ファイルが static/ にあり、名前と中身が一致している。
+
+    IndexNow は「鍵と同じ名前・同じ中身の .txt がサイトルートにあること」で
+    所有権を確認する。消したり中身を書き換えたりすると送信が 403 になるが、
+    通知が届かなくなるだけでサイトは正常に動くため、気づきにくい。
+
+    この鍵は公開前提の値で秘密ではない（知られても、そのドメインの URL を
+    送信できるだけ）。
+    """
+    import re as _re
+
+    keys = [
+        p for p in STATIC.glob("*.txt")
+        if _re.fullmatch(r"[a-zA-Z0-9-]{8,128}", p.stem) and p.stem != "robots"
+    ]
+    assert len(keys) == 1, f"IndexNow の鍵ファイルは1つであること: {[p.name for p in keys]}"
+    key = keys[0]
+    assert key.read_text(encoding="utf-8").strip() == key.stem, (
+        f"{key.name}: ファイル名と中身が一致していない（所有権確認に失敗する）"
+    )
+
+
+def test_indexnow_key_is_not_in_sitemap():
+    """鍵ファイルをサイトマップに載せない（クロールさせる意味がない）。"""
+    listed = [loc for loc in _locs() if loc.endswith(".txt")]
+    assert not listed, f".txt がサイトマップに載っている: {listed}"
