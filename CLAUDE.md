@@ -19,7 +19,8 @@ python3 -m pytest tests/ -q                # pytest（バックエンド）
 python3 -m pytest tests/test_parser.py -q  # 1ファイルだけ
 python3 -m pytest tests/ -k "rate_limit"   # 名前で絞り込み
 
-npm run test:rules                         # Firestore ルール（要 Firestore Emulator）
+# Firestore ルール（エミュレータは firestore と auth の両方が要る）
+firebase emulators:exec --only firestore,auth --project expenses-9af61 "npm run test:rules"
 npx playwright test                        # E2E（e2e/。通常はCIで動かさない）
 
 python3 build_blog.py                      # ブログ一覧・カテゴリ・sitemap.xml を再生成
@@ -30,7 +31,23 @@ python3 scripts/note_plan.py               # note の投稿順を再計算
 
 CI（`.github/workflows/test.yml`）は **PR 時のみ** pytest と vitest を実行する
 （main への push では走らない。Actions の無料枠を節約するため）。
-Firestore ルールのテストと E2E は CI に含まれていない。
+E2E は CI に含まれていない。
+
+### firestore.rules はテストを通さないとデプロイされない
+
+`firestore.rules` は**利用者同士がお互いの家計簿を読めないようにしている
+唯一の防壁**で、`main` への push で本番へ直行する。1行間違えると誰にも
+気づかれずにデータが露出しうるため、2段構えでゲートを置いている。
+
+- `test-rules.yml` … ルール関連ファイルを含む PR で走る（マージ前に検出）
+- `deploy-firestore-rules.yml` … デプロイ直前にも同じテストを通す
+
+**`--only firestore,auth` の auth を落とさないこと。**
+`tests-rules/auth-integration.test.js` が Auth エミュレータ（9099）を使うため、
+firestore だけだと ECONNREFUSED で17件が落ちる。
+
+`isOwner()` を `request.auth != null` に緩めるといった改変で、実際に
+テスト2件が落ちて停止することを確認済み。
 
 ## デプロイ
 
