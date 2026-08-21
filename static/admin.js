@@ -2,18 +2,18 @@
 //
 // CSP の script-src に 'unsafe-inline' が無いため、インライン script では
 // ブロックされる。必ず外部ファイルとして読み込むこと。
-// 画像は署名URLではなくバックエンド経由で取得するため、fetch に
-// Authorization ヘッダを付けて blob URL 化して表示する。
+// 画像は署名URLではなくバックエンド経由で取得するため、api-client.js の
+// apiFetch で認証付きに取得し、blob URL 化して表示する。
 
 import { auth, provider } from "./firebase-init.js";
-import { OCR_API_BASE } from "./firebase-config.js";
+import { apiFetch, errorDetail } from "./api-client.js";
 import { signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const $ = (id) => document.getElementById(id);
 const statusEl = $("status");
 
 /** 原寸画像をオーバーレイで拡大表示する（サムネイルでは文字が読めないため）。 */
-async function openViewer(url, filename, token) {
+async function openViewer(name, filename, token) {
   const overlay = $("viewer");
   const imgEl = $("viewer-img");
   const caption = $("viewer-caption");
@@ -23,7 +23,7 @@ async function openViewer(url, filename, token) {
   overlay.hidden = false;
 
   try {
-    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    const r = await apiFetch("/api/admin/receipts/download", { token, params: { name } });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const blob = await r.blob();
     // 前回のオブジェクトURLを解放してからdiff差し替え（開くたびにメモリが増えるのを防ぐ）
@@ -56,12 +56,9 @@ function fmtSize(bytes) {
 
 async function loadList(token) {
   statusEl.textContent = "";
-  const res = await fetch(`${OCR_API_BASE}/api/admin/receipts`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await apiFetch("/api/admin/receipts", { token });
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    statusEl.textContent = `エラー: ${res.status} ${body.detail ?? ""}`;
+    statusEl.textContent = `エラー: ${await errorDetail(res)}`;
     $("table").hidden = true;
     $("empty").hidden = true;
     return;
@@ -79,9 +76,7 @@ async function loadList(token) {
   for (const item of items) {
     const uid = item.name.split("/")[1] ?? "-";
     const filename = item.name.split("/").pop();
-    const dlUrl = `${OCR_API_BASE}/api/admin/receipts/download?name=${encodeURIComponent(item.name)}`;
     // 一覧では縮小版を使う（原寸を並べると1画面で十数MBの転送になる）
-    const thumbUrl = `${dlUrl}&w=200`;
 
     const tr = document.createElement("tr");
     const tdThumb = document.createElement("td");
@@ -91,12 +86,12 @@ async function loadList(token) {
     img.alt = filename;
     img.title = "クリックで拡大";
     // 画像取得も認証が要るため fetch → blob URL 化
-    fetch(thumbUrl, { headers: { Authorization: `Bearer ${token}` } })
+    apiFetch("/api/admin/receipts/download", { token, params: { name: item.name, w: 200 } })
       .then((r) => (r.ok ? r.blob() : null))
       .then((blob) => { if (blob) img.src = URL.createObjectURL(blob); })
       .catch(() => {});
     // クリックで原寸を拡大表示（サムネイルでは文字が読めないため）
-    img.onclick = () => openViewer(dlUrl, filename, token);
+    img.onclick = () => openViewer(item.name, filename, token);
     tdThumb.appendChild(img);
 
     const tdUid = document.createElement("td");
@@ -115,7 +110,7 @@ async function loadList(token) {
     a.href = "#";
     a.onclick = async (e) => {
       e.preventDefault();
-      const r = await fetch(dlUrl, { headers: { Authorization: `Bearer ${token}` } });
+      const r = await apiFetch("/api/admin/receipts/download", { token, params: { name: item.name } });
       if (!r.ok) { statusEl.textContent = "ダウンロードに失敗しました"; return; }
       const blob = await r.blob();
       const url = URL.createObjectURL(blob);
@@ -176,13 +171,12 @@ let _usersNextPageToken = null;
 
 async function loadUsers(token, { append = false } = {}) {
   $("users-status").textContent = "";
-  const url = new URL(`${OCR_API_BASE}/api/admin/users`);
-  if (append && _usersNextPageToken) url.searchParams.set("page_token", _usersNextPageToken);
-
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  const res = await apiFetch("/api/admin/users", {
+    token,
+    params: { page_token: append ? _usersNextPageToken : null },
+  });
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    $("users-status").textContent = `エラー: ${res.status} ${body.detail ?? ""}`;
+    $("users-status").textContent = `エラー: ${await errorDetail(res)}`;
     return;
   }
   const { items, nextPageToken } = await res.json();
