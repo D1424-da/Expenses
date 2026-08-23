@@ -224,6 +224,13 @@ rawText 20000字・amount 1億未満）は `static/expense-limits.js` に写し�
   （`blog.html`, `blog-p2〜6.html`）・カテゴリページ・`sitemap.xml` だけ。
   記事本体を一括で直すときは `scripts/fix_article_schema.py` のような
   専用スクリプトを書く。
+- **`build_blog.py` は不要になったページを削除する。** 記事を統合すると
+  ページネーションが減り（6→4）、記事が0本になったカテゴリも出る。
+  生成しなくなったページの実ファイルを消さないと、サイトマップにも
+  ナビにも載らないのに存在する孤立ページになり、Google が過去に取得した
+  URL としてクロールし続ける。実際に `blog-p5/p6.html` と
+  `blog/cat/recipe.html` が取り残された。`tests/test_sitemap.py` の
+  `test_no_orphan_generated_pages` が検出する。
 - 記事のメタデータは `static/blog/articles.json`。`noindex: true` の記事は
   サイトマップから除外されるが、**HTML には noindex を入れない**
   （統合先への canonical のみ。canonical と noindex の併用は Google が非推奨）。
