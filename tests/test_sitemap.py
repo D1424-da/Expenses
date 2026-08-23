@@ -418,3 +418,36 @@ def test_indexnow_key_is_not_in_sitemap():
     """鍵ファイルをサイトマップに載せない（クロールさせる意味がない）。"""
     listed = [loc for loc in _locs() if loc.endswith(".txt")]
     assert not listed, f".txt がサイトマップに載っている: {listed}"
+
+
+# ---------------------------------------------------------------------------
+# 孤立ページ
+# ---------------------------------------------------------------------------
+
+def test_no_orphan_generated_pages():
+    """生成されたページで、サイトマップに載っていないものが無い。
+
+    build_blog.py はページを生成するだけで、不要になったページを消していな
+    かった。記事統合でページ数が 6→4 に減ったとき blog-p5/p6.html が、
+    レシピカテゴリが空になったとき blog/cat/recipe.html が取り残された。
+
+    これらはサイトマップにもナビにも載らないのに実ファイルだけが残るため、
+    Google が過去に取得した URL としてクロールし続け、少ないクロール予算を
+    食う。どこからもリンクされていない孤立ページは品質評価上も好ましくない。
+    """
+    listed = {loc.replace(BASE_URL, "") for loc in _locs()}
+
+    orphans = []
+    for page in sorted(STATIC.glob("blog-p*.html")):
+        if f"/{page.name}" not in listed:
+            orphans.append(page.name)
+    cat_dir = STATIC / "blog" / "cat"
+    if cat_dir.is_dir():
+        for page in sorted(cat_dir.glob("*.html")):
+            if f"/blog/cat/{page.name}" not in listed:
+                orphans.append(f"blog/cat/{page.name}")
+
+    assert not orphans, (
+        "サイトマップに載っていない生成ページが残っている"
+        f"（build_blog.py を実行して削除する）: {orphans}"
+    )

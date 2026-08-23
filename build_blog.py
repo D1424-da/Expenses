@@ -295,9 +295,21 @@ for page in range(1, total_pages + 1):
 
 print(f"Generated {total_pages} index pages")
 
+# 記事を統合するとページ数が減る。生成しなくなったページネーションページを
+# 消さないと、サイトマップにもナビにも載らないのに実ファイルだけが残る。
+# Google が過去に取得した URL としてクロールし続け、予算を食う。
+# 実際に記事統合（123本→88本）でページ数が 6→4 に減り、
+# blog-p5.html / blog-p6.html が取り残された。
+for stale in sorted(STATIC.glob("blog-p*.html")):
+    n = int(stale.stem.removeprefix("blog-p"))
+    if n > total_pages:
+        stale.unlink()
+        print(f"  Removed (stale): {stale.name}")
+
 
 # ── B. Category Pages ──────────────────────────────────────────────────────
 cat_dir = STATIC / "blog" / "cat"
+generated_cats: set[str] = set()
 cat_dir.mkdir(exist_ok=True)
 
 for cat_name, slug in CATEGORY_SLUGS.items():
@@ -339,7 +351,17 @@ for cat_name, slug in CATEGORY_SLUGS.items():
 
     out_path = cat_dir / f"{slug}.html"
     out_path.write_text(html_out, encoding="utf-8")
+    generated_cats.add(slug)
     print(f"  Written: blog/cat/{slug}.html ({len(cat_arts)} articles)")
+
+# 記事が0本になったカテゴリはページを生成しない（cat_nav_html もリンクを出さない）。
+# ただし過去に生成した実ファイルが残ると、ページネーションと同じく
+# 「どこからもリンクされていないのに存在する」ページになる。
+# 実際に統合でレシピカテゴリが空になり、blog/cat/recipe.html が取り残された。
+for stale in sorted(cat_dir.glob("*.html")):
+    if stale.stem not in generated_cats:
+        stale.unlink()
+        print(f"  Removed (stale): blog/cat/{stale.name}")
 
 print("Generated category pages")
 
