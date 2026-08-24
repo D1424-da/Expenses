@@ -389,7 +389,8 @@
     "category": "アプリ活用",
     "emoji": "⚖️",
     "canonical": "https://get-tohon.online/blog/recipe-app-compare.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "saving-recipe-5family",
@@ -422,7 +423,8 @@
     "category": "アプリ活用",
     "emoji": "📉",
     "canonical": "https://get-tohon.online/blog/shopping-list-auto.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "reito-yasai-recipe",
@@ -513,7 +515,7 @@
     "emoji": "🧊",
     "canonical": "https://get-tohon.online/blog/fridge-ai-recipe.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "kyou-no-kondate",
@@ -569,7 +571,7 @@
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/food-cost-only-app.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "kondate-yasai-ittai",
@@ -591,7 +593,8 @@
     "category": "その他",
     "emoji": "🛒",
     "canonical": "https://get-tohon.online/blog/fridge-ai-recipe.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "matomegai-recipe-plan",
@@ -647,7 +650,8 @@
     "category": "アプリ活用",
     "emoji": "📸",
     "canonical": "https://get-tohon.online/blog/fridge-ai-recipe.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "excel-kakeibo-auto",
@@ -1020,7 +1024,8 @@
     "category": "レシピ",
     "emoji": "🍳",
     "canonical": "https://get-tohon.online/blog/weekly-meal-plan.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "receipt-ocr-how-it-works",
@@ -1225,7 +1230,7 @@
     "emoji": "📅",
     "canonical": "https://get-tohon.online/blog/weekly-meal-plan.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "login-free-kakeibo",
