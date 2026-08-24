@@ -1,5 +1,16 @@
 [
   {
+    "slug": "receipt-kakeibo-excel",
+    "url": "/blog/receipt-kakeibo-excel.html",
+    "canonical": "https://get-tohon.online/blog/receipt-kakeibo-excel.html",
+    "title": "レシート家計簿のデータをエクセルで集計する方法｜CSVの文字化けと品目行の扱い",
+    "date": "2026-08-24",
+    "category": "アプリ活用",
+    "emoji": "📊",
+    "excerpt": "レシートで記録した家計簿をエクセルで分析したいときの手順を解説します。CSVを開くと文字化けする原因、品目ごとに行が分かれるデータの合計を正しく出す方法、ピボットテーブルでの店別・品目別の集計まで。",
+    "noindex": false
+  },
+  {
     "slug": "receipt-ocr-accuracy",
     "url": "/blog/receipt-ocr-accuracy.html",
     "canonical": "https://get-tohon.online/blog/receipt-ocr-accuracy.html",
