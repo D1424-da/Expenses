@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="/redirect.js"></script>
+<!-- GA4 (Google Analytics) -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+<script src="/analytics.js"></script>
+<link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
+<link href="/manifest.json" rel="manifest"/>
+<link href="/tokens.css?v=20260808" rel="stylesheet"/>
+<link href="/blog-article.css?v=20260808" rel="stylesheet"/>
+<title>家計簿アプリに撮ったレシート画像はどこへ行くのか｜保存の有無と確認方法</title>
+<meta content="家計簿アプリで撮影したレシート画像がどこに保存され、誰が見られるのかを解説します。「サーバーに残る場合」と「残らない場合」の違い、プライバシーポリシーで確認すべき項目、カケイシピが画像を保存しない仕組みまで。" name="description"/>
+<link href="https://get-tohon.online/blog/kakeibo-receipt-security.html" rel="canonical"/>
+<meta content="article" property="og:type"/>
+<meta content="https://get-tohon.online/blog/kakeibo-receipt-security.html" property="og:url"/>
+<meta content="家計簿アプリに撮ったレシート画像はどこへ行くのか｜保存の有無と確認方法" property="og:title"/>
+<meta content="家計簿アプリで撮影したレシート画像がどこに保存され、誰が見られるのかを解説します。「サーバーに残る場合」と「残らない場合」の違い、プライバシーポリシーで確認すべき項目、カケイシピが画像を保存しない仕組みまで。" property="og:description"/>
+<meta content="https://get-tohon.online/ogp.png" property="og:image"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"家計簿アプリに撮ったレシート画像はどこへ行くのか｜保存の有無と確認方法","description":"家計簿アプリで撮影したレシート画像がどこに保存され、誰が見られるのかを解説します。「サーバーに残る場合」と「残らない場合」の違い、プライバシーポリシーで確認すべき項目、カケイシピが画像を保存しない仕組みまで。","datePublished":"2026-08-24","dateModified":"2026-08-24","url":"https://get-tohon.online/blog/kakeibo-receipt-security.html","author":{"@type":"Organization","name":"カケイシピ","url":"https://get-tohon.online/"},"publisher":{"@type":"Organization","name":"カケイシピ","url":"https://get-tohon.online/"},"isPartOf":{"@type":"Blog","name":"カケイシピ ブログ","url":"https://get-tohon.online/blog.html"},"image":"https://get-tohon.online/ogp.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://get-tohon.online/blog/kakeibo-receipt-security.html"},"inLanguage":"ja"}</script>
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://get-tohon.online/"},
+      {"@type": "ListItem", "position": 2, "name": "ブログ", "item": "https://get-tohon.online/blog.html"},
+      {"@type": "ListItem", "position": 3, "name": "家計簿アプリに撮ったレシート画像はどこへ行くのか｜保存の有無と確認方法", "item": "https://get-tohon.online/blog/kakeibo-receipt-security.html"}
+    ]
+  }
+  </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "家計簿アプリで撮ったレシート画像は保存されますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "アプリによって異なります。サーバーに保存して後から見返せる方式と、OCR処理後に破棄する方式があります。プライバシーポリシーで「画像」と検索すると確認できます。記載が無い場合は保存していると考えるのが安全です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "カケイシピはレシート画像を保存しますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "保存しません。OCR処理に使われたあと破棄され、家計簿に残るのは金額・店名・品目のテキストだけです。ストレージのセキュリティルールでブラウザからの読み書きを全面的に拒否しています。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "レシート画像が保存されないと確定申告で困りませんか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "経費精算や確定申告で証憑が必要な場合は、アプリの保存有無にかかわらず原本のレシートを別途保管してください。画像を保存するアプリでも、税務上の証憑として認められるかは別の要件があります。"
+      }
+    }
+  ]
+}
+</script>
+<style>.author-box{display:flex;gap:12px;align-items:flex-start;background:var(--green-pale,#edf6f0);border-radius:8px;padding:14px 16px;margin:20px 0}.author-icon{font-size:2rem;flex-shrink:0}.author-name{font-weight:700;font-size:.95rem;margin-bottom:4px}.author-bio{font-size:.85rem;color:var(--text-muted,#666);line-height:1.6}</style>
+</head>
+<body>
+<header class="bh">
+<a class="bh-logo" href="/">カケイシピ</a>
+<nav class="bh-nav">
+<a href="/blog.html">ブログ一覧</a>
+<a class="bh-cta" href="/login.html">無料で試す</a>
+</nav>
+</header>
+<div class="am-layout">
+<main class="am-wrap">
+<article class="am">
+<div class="am-eyebrow"><a class="am-cat" href="/blog.html">レシート入力・OCR</a></div>
+<h1 class="am-title">家計簿アプリに撮ったレシート画像はどこへ行くのか<br/>保存の有無と確認方法</h1>
+<div class="am"><span>2026年8月24日</span></div>
+<div class="am-reading-time">📖 約8分で読めます</div>
+<p class="am-lead">レシートには店名・購入品目・日時が写ります。家計簿アプリでレシートを撮影するとき、<strong>その画像がサーバーに保存されるのか、消えるのか</strong>は、アプリによって扱いが分かれます。この記事では両者の違いと、使っているアプリがどちらなのかを自分で確認する方法を整理します。</p>
+<div class="author-box">
+  <div class="author-icon">&#x1F4DD;</div>
+  <div class="author-info">
+    <div class="author-name">&#x30AB;&#x30B1;&#x30A4;&#x30B7;&#x30D4;&#x7DE8;&#x96C6;&#x90E8;</div>
+    <div class="author-bio">&#x98DF;&#x8CBB;&#x30FB;&#x5BB6;&#x8A08;&#x7BA1;&#x7406;&#x30FB;&#x7BC0;&#x7D04;&#x30EC;&#x30B7;&#x30D4;&#x3092;&#x5C02;&#x9580;&#x3068;&#x3059;&#x308B;&#x7DE8;&#x96C6;&#x30C1;&#x30FC;&#x30E0;&#x3002;&#x7DCF;&#x52D9;&#x7701;&#x5BB6;&#x8A08;&#x8ABF;&#x67FB;&#x306A;&#x3069;&#x306E;&#x516C;&#x7684;&#x30C7;&#x30FC;&#x30BF;&#x3068;&#x5B9F;&#x969B;&#x306E;&#x5BB6;&#x8A08;&#x7BA1;&#x7406;&#x4E8B;&#x4F8B;&#x3092;&#x3082;&#x3068;&#x306B;&#x3001;&#x5B9F;&#x8DF5;&#x7684;&#x306A;&#x7BC0;&#x7D04;&#x8853;&#x3092;&#x767A;&#x4FE1;&#x3057;&#x3066;&#x3044;&#x307E;&#x3059;&#x3002;</div>
+  </div>
+</div>
+<nav class="am-toc">
+<div class="am-toc-title">目次</div>
+<ol>
+<li><a href="#two-types">レシート画像の扱いは2種類に分かれる</a></li>
+<li><a href="#why-it-matters">レシート画像には何が写っているか</a></li>
+<li><a href="#how-to-check">使っているアプリがどちらか確認する方法</a></li>
+<li><a href="#third-party">読み取りに外部サービスを使っているか</a></li>
+<li><a href="#kakeishipi">カケイシピの場合</a></li>
+<li><a href="#faq">よくある質問</a></li>
+</ol>
+</nav>
+<section>
+<h2 id="two-types">レシート画像の扱いは2種類に分かれる</h2>
+<p>家計簿アプリがレシートを読み取るとき、内部では「画像を文字に変換する処理（OCR）」が動きます。このとき画像そのものをどう扱うかで、アプリは大きく2つに分かれます。</p>
+<table>
+<tr><th>方式</th><th>画像の行き先</th><th>後から見返せるか</th></tr>
+<tr><td>保存する</td><td>サーバーに残る</td><td>見返せる</td></tr>
+<tr><td>保存しない</td><td>読み取り後に破棄</td><td>見返せない</td></tr>
+</table>
+<p>どちらが優れているという話ではありません。<strong>目的が違います。</strong></p>
+<p>保存する方式は、後から「このレシート、何を買ったんだったか」と原本を確認できます。確定申告や経費精算で証憑を残したい場合は、この方式が向いています。</p>
+<p>保存しない方式は、見返せない代わりに<strong>画像が漏れるリスクそのものが無くなります</strong>。金額と品目のテキストだけが残るので、家計簿としての機能は変わりません。</p>
+</section>
+
+<section>
+<h2 id="why-it-matters">レシート画像には何が写っているか</h2>
+<p>「金額が分かるだけ」と思われがちですが、レシートには次の情報が含まれます。</p>
+<ul>
+<li><strong>店名・店舗名</strong> — 生活圏が特定できる</li>
+<li><strong>購入品目</strong> — 嗜好、家族構成、健康状態が推測できる</li>
+<li><strong>日時</strong> — 行動パターンが分かる</li>
+<li><strong>支払い方法</strong> — カード下4桁が印字されることもある</li>
+<li><strong>ポイントカード番号・会員番号</strong></li>
+</ul>
+<p>単体では大したことがなくても、<strong>数か月分が集まると生活の記録になります</strong>。だからこそ、画像がどこにあるのかを知っておく価値があります。</p>
+</section>
+
+<section>
+<h2 id="how-to-check">使っているアプリがどちらか確認する方法</h2>
+<p>アプリの説明文には書かれていないことが多いので、次の順で調べます。</p>
+<h3>1. プライバシーポリシーで「画像」を検索する</h3>
+<p>ブラウザの検索機能（Ctrl+F / スマホなら「ページ内を検索」）で「画像」「レシート」と検索します。次のような記述があれば保存する方式です。</p>
+<ul>
+<li>「アップロードされた画像を保存します」</li>
+<li>「サービス改善のために利用します」</li>
+<li>「保存期間は○年間」</li>
+</ul>
+<p>逆に「読み取り後に破棄」「保存しません」と明記されていれば、保存しない方式です。<strong>何も書かれていない場合は、保存していると考えるのが安全です。</strong></p>
+<h3>2. アプリ内で過去のレシート画像が見られるか試す</h3>
+<p>記録した支出をタップして、レシートの写真が表示されるなら保存されています。金額や品目のテキストだけが出る場合は、画像は残っていない可能性が高いです。</p>
+<h3>3. 退会時の扱いを確認する</h3>
+<p>プライバシーポリシーの「退会」「削除」の項目を見ます。「退会後○日で削除」と書かれていれば、その期間はサーバーに残ります。</p>
+</section>
+
+<section>
+<h2 id="third-party">読み取りに外部サービスを使っているか</h2>
+<p>もう一つ確認したいのが、<strong>OCR処理を自社でやっているか、外部のAIサービスに送っているか</strong>です。</p>
+<p>多くの家計簿アプリは、Google や Amazon などが提供するOCRサービスを利用しています。これ自体は一般的な作りで、精度の面ではむしろ有利です。ただし<strong>画像が第三者のサーバーを経由する</strong>ことは知っておいてよいでしょう。</p>
+<p>プライバシーポリシーに「第三者提供」「業務委託先」という項目があれば、そこに記載されています。</p>
+</section>
+
+<section>
+<h2 id="kakeishipi">カケイシピの場合</h2>
+<p>カケイシピは<strong>レシート画像を保存しない方式</strong>です。撮影した画像はOCR処理に使われたあと破棄され、家計簿に残るのは金額・店名・品目のテキストだけです。</p>
+<h3>技術的にどうなっているか</h3>
+<p>ストレージのセキュリティルールで、<strong>ブラウザからの読み書きを全面的に拒否</strong>しています。これは設定ではなくルールとして固定されており、仮に保存されたとしても利用者側からはアクセスできません。</p>
+<p>アプリ改善のために一時保存する機能自体は用意されていますが、<strong>既定では無効</strong>です。有効にした場合も、保存先には<strong>3日後に自動削除されるルール</strong>が設定されており、アプリのコード側に削除処理を持たせず、ストレージ側の仕組みで確実に消えるようにしています。</p>
+<h3>家計簿データの分離</h3>
+<p>レシート画像とは別に、記録した家計簿データについても、<strong>本人以外は読み書きできない</strong>ようルールで制限しています。この制限は、他人のデータにアクセスしようとするテストを自動で実行して、変更のたびに検証しています。</p>
+<div class="am-note">
+<p>なお、OCR処理には外部のAIサービス（Google の Gemini / Vertex AI / Vision API）を利用しています。画像はこれらのサービスに送信されます。通信が失敗した場合は、ブラウザ内で完結するOCRに切り替わります。</p>
+</div>
+</section>
+
+<section>
+<h2 id="faq">よくある質問</h2>
+<h3>レシート画像が保存されないと、後から確認できなくて困りませんか</h3>
+<p>家計簿としての用途であれば、金額・店名・品目のテキストが残っていれば足ります。ただし<strong>経費精算や確定申告で証憑が必要な場合は、原本のレシートを別途保管してください</strong>。画像を保存する家計簿アプリであっても、税務上の証憑として認められるかは別の要件があります。</p>
+<h3>保存する方式のアプリは危険ですか</h3>
+<p>いいえ。適切に管理されていれば問題ありません。重要なのは<strong>「どちらの方式かを知ったうえで選ぶ」</strong>ことです。見返したい人は保存する方式を、残したくない人は保存しない方式を選べばよいだけです。</p>
+<h3>クラウドに送らず、スマホの中だけで処理するアプリはありますか</h3>
+<p>あります。端末内で完結するOCRを使えば画像は外に出ませんが、一般にクラウド型より読み取り精度は落ちます。精度とプライバシーはトレードオフの関係にあります。</p>
+</section>
+<div class="am-summary">
+<h2 id="summary">まとめ</h2>
+<ul>
+<li><strong>レシート画像の扱いは「保存する」「保存しない」の2種類</strong>。優劣ではなく目的の違い</li>
+<li><strong>確認方法</strong>：プライバシーポリシーで「画像」を検索 → アプリ内で過去の画像が見られるか試す → 退会時の扱いを見る</li>
+<li><strong>記載が無い場合は保存していると考える</strong>のが安全</li>
+<li>経費精算・確定申告で使うなら、アプリの保存有無にかかわらず<strong>原本を保管する</strong></li>
+</ul>
+</div>
+<!-- related-articles -->
+<section class="am-related">
+  <h2 class="am-related-title">関連記事</h2>
+  <div class="rel-cards">
+    <a href="/blog/cookpad-vs-kakeishipi.html" class="rel-card">
+      <span class="rel-card-emoji">⚖️</span>
+      <span class="rel-card-body">
+        <span class="rel-card-title">クックパッドと家計簿アプリの使い分け｜節約レシピ管理を一本化する方法</span>
+        <span class="rel-card-excerpt">「クックパッドでレシピを探す」「別のアプリで食費を記録する」という二重管理に疲れていませんか。両者の役割の違いを理解し、…</span>
+      </span>
+    </a>
+    <a href="/blog/meal-plan-today.html" class="rel-card">
+      <span class="rel-card-emoji">🍽️</span>
+      <span class="rel-card-body">
+        <span class="rel-card-title">今日の献立をAIが自動決定｜「何を作ろう」の悩みをゼロにする方法</span>
+        <span class="rel-card-excerpt">「今日のご飯、何にしよう」と毎日悩むのは、実は大きなストレスです。献立を考える時間と労力は積み重なると相当な負担になりま…</span>
+      </span>
+    </a>
+    <a href="/blog/fridge-ai-recipe.html" class="rel-card">
+      <span class="rel-card-emoji">❄️</span>
+      <span class="rel-card-body">
+        <span class="rel-card-title">冷蔵庫管理アプリ＆レシピ無料ツール比較｜献立カレンダーも紹介</span>
+        <span class="rel-card-excerpt">冷蔵庫の食材を無駄なく使い切りたい、レシピは無料で十分使いたい、1週間の献立をカレンダー管理したい——そんな方向けに、冷…</span>
+      </span>
+    </a>
+  </div>
+</section>
+<nav class="am-pn" aria-label="前後の記事">
+  <a class="pn-item pn-prev" href="/blog/weekly-meal-plan.html"><span class="pn-dir">← 新しい記事</span><span class="pn-title">AIが食材から1週間の献立を自動提案！<br/>食費と時間を同時に節約する方法</span></a>
+  <a class="pn-item pn-next" href="/blog/simple-kakeibo-continue.html"><span class="pn-dir">古い記事 →</span><span class="pn-title">月次家計レビューの習慣化<br/>毎月30分で家計を改善し続ける方法</span></a>
+</nav>
+</article>
+</main>
+<aside class="am-sidebar">
+<div class="sb-cta">
+<p class="sb-cta-title">献立・レシピ・食費を<br/>まとめて管理しよう</p>
+<a class="sb-cta-btn" href="/login.html">無料で試す →</a>
+<p class="sb-cta-note">14日間無料・カード不要</p>
+</div>
+</aside>
+</div>
+
+
+
+
+<div class="am-cta-box">
+<p class="am-cta-title">レシピと食費を一緒に管理しよう</p>
+<p>カケイシピなら献立・レシピ・買い物リストをまとめて管理。14日間無料トライアル実施中！</p>
+<a class="am-cta-btn" href="/login.html">カケイシピを無料で試す →</a>
+<p class="am-cta-note">14日間無料・クレカ登録不要</p>
+</div>
+<footer class="bf">
+<div class="fl">
+<a href="/">ホーム</a>
+<a href="/blog.html">ブログ</a>
+<a href="/#pricing">料金プラン</a>
+<a href="/terms.html" rel="nofollow">利用規約</a>
+<a href="/privacy.html" rel="nofollow">プライバシーポリシー</a>
+<a href="/tokushoho.html">特定商取引法に基づく表記</a>
+<a href="/contact.html">お問い合わせ</a>
+</div>
+<p>© 2026 カケイシピ · AIレシート家計簿</p>
+</footer>
+<script src="/blog-cta.js"></script>
+<script type="module" src="/blog-ads.js"></script>
+</body>
+</html>

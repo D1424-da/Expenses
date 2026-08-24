@@ -1,5 +1,16 @@
 [
   {
+    "slug": "kakeibo-receipt-security",
+    "url": "/blog/kakeibo-receipt-security.html",
+    "canonical": "https://get-tohon.online/blog/kakeibo-receipt-security.html",
+    "title": "家計簿アプリに撮ったレシート画像はどこへ行くのか｜保存の有無と確認方法",
+    "date": "2026-08-24",
+    "category": "アプリ活用",
+    "emoji": "🔒",
+    "excerpt": "レシートには店名・購入品目・日時が写ります。家計簿アプリでレシートを撮影するとき、その画像がサーバーに保存されるのか消えるのかはアプリによって扱いが分かれます。両者の違いと、使っているアプリがどちらなのかを自分で確認する方法を整理します。",
+    "noindex": false
+  },
+  {
     "slug": "60dai-fuufu-shokuhi",
     "url": "/blog/60dai-fuufu-shokuhi.html",
     "title": "60代夫婦2人の食費平均と節約術｜定年後に月3〜4万円台で豊かに食べるコツ",
