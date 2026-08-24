@@ -1,5 +1,16 @@
 [
   {
+    "slug": "receipt-scan-vs-photo",
+    "url": "/blog/receipt-scan-vs-photo.html",
+    "canonical": "https://get-tohon.online/blog/receipt-scan-vs-photo.html",
+    "title": "レシートのスキャンと撮影は何が違うのか｜スキャナ画像を家計簿に取り込む方法",
+    "date": "2026-08-24",
+    "category": "アプリ活用",
+    "emoji": "🖨️",
+    "excerpt": "家計簿の「レシートスキャン」には、スマホで撮影することとスキャナで取り込むことの2つの意味があります。違いと、スキャナで取り込んだ画像を家計簿アプリに入れるときの注意点（PDFが使えない問題）を解説します。",
+    "noindex": false
+  },
+  {
     "slug": "receipt-kakeibo-excel",
     "url": "/blog/receipt-kakeibo-excel.html",
     "canonical": "https://get-tohon.online/blog/receipt-kakeibo-excel.html",
