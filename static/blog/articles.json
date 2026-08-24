@@ -1,5 +1,16 @@
 [
   {
+    "slug": "denshi-receipt-kakeibo",
+    "url": "/blog/denshi-receipt-kakeibo.html",
+    "canonical": "https://get-tohon.online/blog/denshi-receipt-kakeibo.html",
+    "title": "電子レシートとは｜家計簿の記録は紙より楽になるのか",
+    "date": "2026-08-24",
+    "category": "アプリ活用",
+    "emoji": "📱",
+    "excerpt": "電子レシートは紙の代わりに購入内容をデータで受け取る仕組みです。読み取りの誤りが起きない一方、店が対応していることと家計簿アプリと繋がっていることの両方が揃わないと楽になりません。何が変わるのかを整理します。",
+    "noindex": false
+  },
+  {
     "slug": "receipt-scan-vs-photo",
     "url": "/blog/receipt-scan-vs-photo.html",
     "canonical": "https://get-tohon.online/blog/receipt-scan-vs-photo.html",
