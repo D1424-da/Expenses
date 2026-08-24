@@ -41,7 +41,8 @@
     "category": "節約術",
     "emoji": "📱",
     "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "hitori-gurashi-setsuyaku-recipe-1week",
@@ -240,7 +241,8 @@
     "category": "家計管理",
     "emoji": "👨‍👩‍👧",
     "canonical": "https://get-tohon.online/blog/family-recipe-share.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "hambag-kondate",
@@ -297,7 +299,7 @@
     "emoji": "📝",
     "canonical": "https://get-tohon.online/blog/recipe-record-app.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "cheap-recipe-ideas",
@@ -475,7 +477,7 @@
     "emoji": "📋",
     "canonical": "https://get-tohon.online/blog/shopping-list-auto.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "jisui-savings",
@@ -699,7 +701,8 @@
     "category": "節約術",
     "emoji": "👫",
     "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "food-cost-savings-tips",
@@ -845,7 +848,7 @@
     "emoji": "⚖️",
     "canonical": "https://get-tohon.online/blog/kakeibo-app-compare.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "saving-recipe-week5000",
@@ -1043,7 +1046,8 @@
     "category": "献立・レシピ",
     "emoji": "🍼",
     "canonical": "https://get-tohon.online/blog/rinyushoku-kondate.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "todays-dinner-recipe",
@@ -1177,7 +1181,7 @@
     "emoji": "👨‍👩‍👦‍👦",
     "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "family-kakeibo",
@@ -1188,7 +1192,8 @@
     "category": "節約術",
     "emoji": "👨‍👩‍👧",
     "canonical": "https://get-tohon.online/blog/family-kakeibo.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "solo-food-cost",
