@@ -1,5 +1,60 @@
 [
   {
+    "slug": "denshi-receipt-kakeibo",
+    "url": "/blog/denshi-receipt-kakeibo.html",
+    "canonical": "https://get-tohon.online/blog/denshi-receipt-kakeibo.html",
+    "title": "電子レシートとは｜家計簿の記録は紙より楽になるのか",
+    "date": "2026-08-24",
+    "category": "アプリ活用",
+    "emoji": "📱",
+    "excerpt": "電子レシートは紙の代わりに購入内容をデータで受け取る仕組みです。読み取りの誤りが起きない一方、店が対応していることと家計簿アプリと繋がっていることの両方が揃わないと楽になりません。何が変わるのかを整理します。",
+    "noindex": false
+  },
+  {
+    "slug": "receipt-scan-vs-photo",
+    "url": "/blog/receipt-scan-vs-photo.html",
+    "canonical": "https://get-tohon.online/blog/receipt-scan-vs-photo.html",
+    "title": "レシートのスキャンと撮影は何が違うのか｜スキャナ画像を家計簿に取り込む方法",
+    "date": "2026-08-24",
+    "category": "アプリ活用",
+    "emoji": "🖨️",
+    "excerpt": "家計簿の「レシートスキャン」には、スマホで撮影することとスキャナで取り込むことの2つの意味があります。違いと、スキャナで取り込んだ画像を家計簿アプリに入れるときの注意点（PDFが使えない問題）を解説します。",
+    "noindex": false
+  },
+  {
+    "slug": "receipt-kakeibo-excel",
+    "url": "/blog/receipt-kakeibo-excel.html",
+    "canonical": "https://get-tohon.online/blog/receipt-kakeibo-excel.html",
+    "title": "レシート家計簿のデータをエクセルで集計する方法｜CSVの文字化けと品目行の扱い",
+    "date": "2026-08-24",
+    "category": "アプリ活用",
+    "emoji": "📊",
+    "excerpt": "レシートで記録した家計簿をエクセルで分析したいときの手順を解説します。CSVを開くと文字化けする原因、品目ごとに行が分かれるデータの合計を正しく出す方法、ピボットテーブルでの店別・品目別の集計まで。",
+    "noindex": false
+  },
+  {
+    "slug": "receipt-ocr-accuracy",
+    "url": "/blog/receipt-ocr-accuracy.html",
+    "canonical": "https://get-tohon.online/blog/receipt-ocr-accuracy.html",
+    "title": "レシート読み取りの精度は何で決まるか｜文字認識と意味の解釈という2つの工程",
+    "date": "2026-08-24",
+    "category": "アプリ活用",
+    "emoji": "🔍",
+    "excerpt": "家計簿アプリのレシート読み取りは「文字を読む」工程と「読んだ文字の意味を判断する」工程に分かれます。金額が10,000円になっていたという誤りは前者ではなく後者で起きています。精度を左右する要因を工程ごとに整理します。",
+    "noindex": false
+  },
+  {
+    "slug": "long-receipt-ocr",
+    "url": "/blog/long-receipt-ocr.html",
+    "canonical": "https://get-tohon.online/blog/long-receipt-ocr.html",
+    "title": "長いレシートが途中で切れる理由｜家計簿アプリで読み取れないときの対処",
+    "date": "2026-08-24",
+    "category": "アプリ活用",
+    "emoji": "🧾",
+    "excerpt": "レシートが長いほど家計簿アプリの読み取りで下の方の品目が抜けることがあります。原因はレシートの長さそのものではなく、送信前の画像縮小で1文字あたりの画素数が足りなくなることです。仕組みと、撮り方・分割での対処を整理します。",
+    "noindex": false
+  },
+  {
     "slug": "kakeibo-receipt-security",
     "url": "/blog/kakeibo-receipt-security.html",
     "canonical": "https://get-tohon.online/blog/kakeibo-receipt-security.html",
@@ -30,7 +85,8 @@
     "category": "節約術",
     "emoji": "📱",
     "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "hitori-gurashi-setsuyaku-recipe-1week",
@@ -74,7 +130,8 @@
     "category": "節約術",
     "emoji": "🏡",
     "canonical": "https://get-tohon.online/blog/futari-gurashi-shokuhi.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "supermarket-savings-guide",
@@ -118,7 +175,8 @@
     "category": "家計管理",
     "emoji": "💑",
     "canonical": "https://get-tohon.online/blog/couple-share-kakeibo.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "cookpad-vs-kakeishipi",
@@ -228,7 +286,8 @@
     "category": "家計管理",
     "emoji": "👨‍👩‍👧",
     "canonical": "https://get-tohon.online/blog/family-recipe-share.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "hambag-kondate",
@@ -273,7 +332,8 @@
     "category": "アプリ活用",
     "emoji": "❄️",
     "canonical": "https://get-tohon.online/blog/fridge-ai-recipe.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "recipe-record-app",
@@ -285,7 +345,7 @@
     "emoji": "📝",
     "canonical": "https://get-tohon.online/blog/recipe-record-app.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "cheap-recipe-ideas",
@@ -373,7 +433,8 @@
     "category": "アプリ活用",
     "emoji": "⚖️",
     "canonical": "https://get-tohon.online/blog/recipe-app-compare.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "saving-recipe-5family",
@@ -406,7 +467,8 @@
     "category": "アプリ活用",
     "emoji": "📉",
     "canonical": "https://get-tohon.online/blog/shopping-list-auto.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "reito-yasai-recipe",
@@ -463,7 +525,7 @@
     "emoji": "📋",
     "canonical": "https://get-tohon.online/blog/shopping-list-auto.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "jisui-savings",
@@ -497,7 +559,7 @@
     "emoji": "🧊",
     "canonical": "https://get-tohon.online/blog/fridge-ai-recipe.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "kyou-no-kondate",
@@ -553,7 +615,7 @@
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/food-cost-only-app.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "kondate-yasai-ittai",
@@ -575,7 +637,8 @@
     "category": "その他",
     "emoji": "🛒",
     "canonical": "https://get-tohon.online/blog/fridge-ai-recipe.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "matomegai-recipe-plan",
@@ -597,7 +660,8 @@
     "category": "アプリ活用",
     "emoji": "💻",
     "canonical": "https://get-tohon.online/blog/kakeibo-app-compare.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "quick-recipe",
@@ -630,7 +694,8 @@
     "category": "アプリ活用",
     "emoji": "📸",
     "canonical": "https://get-tohon.online/blog/fridge-ai-recipe.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "excel-kakeibo-auto",
@@ -687,7 +752,8 @@
     "category": "節約術",
     "emoji": "👫",
     "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "food-cost-savings-tips",
@@ -722,7 +788,7 @@
     "emoji": "✨",
     "canonical": "https://get-tohon.online/blog/simple-kakeibo-continue.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "beginner-3min-kakeibo",
@@ -799,7 +865,8 @@
     "category": "家計管理",
     "emoji": "🧾",
     "canonical": "https://get-tohon.online/blog/receipt-kakeibo-basics.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "shimowaji-reito",
@@ -833,7 +900,7 @@
     "emoji": "⚖️",
     "canonical": "https://get-tohon.online/blog/kakeibo-app-compare.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "saving-recipe-week5000",
@@ -921,7 +988,8 @@
     "category": "節約術",
     "emoji": "🛒",
     "canonical": "https://get-tohon.online/blog/supermarket-savings-guide.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "food-cost-cut-20000",
@@ -976,7 +1044,8 @@
     "category": "アプリ活用",
     "emoji": "🩺",
     "canonical": "https://get-tohon.online/blog/kenko-kondate-app.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "receipt-app-free",
@@ -987,7 +1056,8 @@
     "category": "アプリ活用",
     "emoji": "🧾",
     "canonical": "https://get-tohon.online/blog/receipt-app-free.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "ai-recipe-weekly-plan",
@@ -998,18 +1068,20 @@
     "category": "レシピ",
     "emoji": "🍳",
     "canonical": "https://get-tohon.online/blog/weekly-meal-plan.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "receipt-ocr-how-it-works",
     "url": "/blog/receipt-ocr-how-it-works.html",
-    "title": "レシートOCRの仕組みと活用法<br/>スキャンで家計簿を自動入力する方法",
+    "title": "レシートOCRとは｜写真を撮るだけで家計簿ができる仕組みと読み取れる項目",
     "date": "2026-06-17",
-    "excerpt": "「手入力が面倒で家計簿が続かない」という悩みを解決するのがレシートOCR機能です。レシートを撮影するだけで店名・金額・購入品目が自動入力される仕組みを解説します。カケイシピでは読み取ったレシートの商品リストからレシピを自動作成する機能と組み",
+    "excerpt": "レシートOCRの仕組みを、写真を撮ってから家計簿に記録されるまでの流れで解説します。金額・店名・日付・品目のうち何が確実に読み取れるのか、手書きや薄れたレシートなど読み取れないものは何かまで。",
     "category": "アプリ活用",
     "emoji": "📸",
     "canonical": "https://get-tohon.online/blog/receipt-ocr-how-it-works.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "household-review-monthly",
@@ -1031,7 +1103,8 @@
     "category": "献立・レシピ",
     "emoji": "🍼",
     "canonical": "https://get-tohon.online/blog/rinyushoku-kondate.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "todays-dinner-recipe",
@@ -1153,7 +1226,8 @@
     "category": "家計管理",
     "emoji": "📊",
     "canonical": "https://get-tohon.online/blog/spending-analysis.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "family4-food-cost",
@@ -1165,7 +1239,7 @@
     "emoji": "👨‍👩‍👦‍👦",
     "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "family-kakeibo",
@@ -1176,7 +1250,8 @@
     "category": "節約術",
     "emoji": "👨‍👩‍👧",
     "canonical": "https://get-tohon.online/blog/family-kakeibo.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "solo-food-cost",
@@ -1188,7 +1263,7 @@
     "emoji": "🏠",
     "canonical": "https://get-tohon.online/blog/solo-food-cost.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "weekly-meal-plan",
@@ -1200,7 +1275,7 @@
     "emoji": "📅",
     "canonical": "https://get-tohon.online/blog/weekly-meal-plan.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-24"
   },
   {
     "slug": "login-free-kakeibo",
@@ -1321,7 +1396,8 @@
     "category": "節約術",
     "emoji": "💰",
     "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "food-cost-reduce",
@@ -1453,7 +1529,8 @@
     "category": "その他",
     "emoji": "📝",
     "canonical": "https://get-tohon.online/blog/savings-recipe.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "solo-kondate",
@@ -1464,7 +1541,8 @@
     "category": "節約術",
     "emoji": "💰",
     "canonical": "https://get-tohon.online/blog/solo-food-cost.html",
-    "noindex": true
+    "noindex": true,
+    "updated": "2026-08-24"
   },
   {
     "slug": "supermarket-receipt-recipe",
@@ -1497,7 +1575,8 @@
     "category": "節約レシピ",
     "emoji": "🍱",
     "canonical": "https://get-tohon.online/blog/weekly-kondate-shopping.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "yuhan-kondate",

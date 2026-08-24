@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="/redirect.js"></script>
+<!-- GA4 (Google Analytics) -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+<script src="/analytics.js"></script>
+<link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
+<link href="/manifest.json" rel="manifest"/>
+<link href="/tokens.css?v=20260808" rel="stylesheet"/>
+<link href="/blog-article.css?v=20260808" rel="stylesheet"/>
+<title>レシート家計簿のデータをエクセルで集計する方法｜CSVの文字化けと品目行の扱い</title>
+<meta content="レシートで記録した家計簿をエクセルで分析したいときの手順を解説します。CSVを開くと文字化けする原因、品目ごとに行が分かれるデータの合計を正しく出す方法、ピボットテーブルでの集計まで。" name="description"/>
+<link href="https://get-tohon.online/blog/receipt-kakeibo-excel.html" rel="canonical"/>
+<meta content="article" property="og:type"/>
+<meta content="https://get-tohon.online/blog/receipt-kakeibo-excel.html" property="og:url"/>
+<meta content="レシート家計簿のデータをエクセルで集計する方法｜CSVの文字化けと品目行の扱い" property="og:title"/>
+<meta content="レシートで記録した家計簿をエクセルで分析したいときの手順を解説します。CSVを開くと文字化けする原因、品目ごとに行が分かれるデータの合計を正しく出す方法、ピボットテーブルでの集計まで。" property="og:description"/>
+<meta content="https://get-tohon.online/ogp.png" property="og:image"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"レシート家計簿のデータをエクセルで集計する方法｜CSVの文字化けと品目行の扱い","description":"レシートで記録した家計簿をエクセルで分析したいときの手順を解説します。CSVを開くと文字化けする原因、品目ごとに行が分かれるデータの合計を正しく出す方法、ピボットテーブルでの集計まで。","datePublished":"2026-08-24","dateModified":"2026-08-24","url":"https://get-tohon.online/blog/receipt-kakeibo-excel.html","author":{"@type":"Organization","name":"カケイシピ","url":"https://get-tohon.online/"},"publisher":{"@type":"Organization","name":"カケイシピ","url":"https://get-tohon.online/"},"isPartOf":{"@type":"Blog","name":"カケイシピ ブログ","url":"https://get-tohon.online/blog.html"},"image":"https://get-tohon.online/ogp.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://get-tohon.online/blog/receipt-kakeibo-excel.html"},"inLanguage":"ja"}</script>
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://get-tohon.online/"},
+      {"@type": "ListItem", "position": 2, "name": "ブログ", "item": "https://get-tohon.online/blog.html"},
+      {"@type": "ListItem", "position": 3, "name": "レシート家計簿のデータをエクセルで集計する方法｜CSVの文字化けと品目行の扱い", "item": "https://get-tohon.online/blog/receipt-kakeibo-excel.html"}
+    ]
+  }
+  </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "家計簿アプリから出したCSVがエクセルで文字化けするのはなぜですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "エクセルがファイルの文字コードをUTF-8と判別できず、Shift_JISとして開いているためです。ファイル先頭にBOMという印が入っていれば自動的にUTF-8と判別されます。BOMが無いファイルは、エクセルの「データ」タブからテキストとして読み込み、文字コードにUTF-8を指定すれば正しく開けます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "品目ごとに行が分かれているCSVで、合計金額を出すとどうなりますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "金額の列が品目の行すべてに入っていると、1回の買い物が品目の数だけ重複して合計されます。金額を先頭行にだけ入れて残りを空にしてあるデータなら、そのまま合計しても正しい金額になります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "エクセルの家計簿にレシートを取り込むことはできますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "エクセル単体ではレシートの読み取りはできません。読み取りに対応したアプリで記録してからCSVで書き出し、それをエクセルで開くという流れになります。"
+      }
+    }
+  ]
+}
+</script>
+<style>.author-box{display:flex;gap:12px;align-items:flex-start;background:var(--green-pale,#edf6f0);border-radius:8px;padding:14px 16px;margin:20px 0}.author-icon{font-size:2rem;flex-shrink:0}.author-name{font-weight:700;font-size:.95rem;margin-bottom:4px}.author-bio{font-size:.85rem;color:var(--text-muted,#666);line-height:1.6}</style>
+</head>
+<body>
+<header class="bh">
+<a class="bh-logo" href="/">カケイシピ</a>
+<nav class="bh-nav">
+<a href="/blog.html">ブログ一覧</a>
+<a class="bh-cta" href="/login.html">無料で試す</a>
+</nav>
+</header>
+<div class="am-layout">
+<main class="am-wrap">
+<article class="am">
+<div class="am-eyebrow"><a class="am-cat" href="/blog.html">レシート入力・OCR</a></div>
+<h1 class="am-title">レシート家計簿のデータをエクセルで集計する方法<br/>CSVの文字化けと品目行の扱い</h1>
+<div class="am"><span>2026年8月24日</span></div>
+<div class="am-reading-time">📖 約8分で読めます</div>
+<p class="am-lead">レシートで記録した家計簿を、<strong>エクセルで自由に集計したい</strong>という場面があります。ただしCSVをそのまま開くと文字化けしたり、品目ごとに行が分かれていて合計が合わなかったりします。原因と対処を順に説明します。</p>
+<div class="author-box">
+  <div class="author-icon">&#x1F4DD;</div>
+  <div class="author-info">
+    <div class="author-name">&#x30AB;&#x30B1;&#x30A4;&#x30B7;&#x30D4;&#x7DE8;&#x96C6;&#x90E8;</div>
+    <div class="author-bio">&#x98DF;&#x8CBB;&#x30FB;&#x5BB6;&#x8A08;&#x7BA1;&#x7406;&#x30FB;&#x7BC0;&#x7D04;&#x30EC;&#x30B7;&#x30D4;&#x3092;&#x5C02;&#x9580;&#x3068;&#x3059;&#x308B;&#x7DE8;&#x96C6;&#x30C1;&#x30FC;&#x30E0;&#x3002;&#x7DCF;&#x52D9;&#x7701;&#x5BB6;&#x8A08;&#x8ABF;&#x67FB;&#x306A;&#x3069;&#x306E;&#x516C;&#x7684;&#x30C7;&#x30FC;&#x30BF;&#x3068;&#x5B9F;&#x969B;&#x306E;&#x5BB6;&#x8A08;&#x7BA1;&#x7406;&#x4E8B;&#x4F8B;&#x3092;&#x3082;&#x3068;&#x306B;&#x3001;&#x5B9F;&#x8DF5;&#x7684;&#x306A;&#x7BC0;&#x7D04;&#x8853;&#x3092;&#x767A;&#x4FE1;&#x3057;&#x3066;&#x3044;&#x307E;&#x3059;&#x3002;</div>
+  </div>
+</div>
+<nav class="am-toc">
+<div class="am-toc-title">目次</div>
+<ol>
+<li><a href="#why">アプリで記録してエクセルで分析する、という分け方</a></li>
+<li><a href="#csv">CSVとは何か</a></li>
+<li><a href="#mojibake">文字化けする原因と直し方</a></li>
+<li><a href="#items">品目ごとに行が分かれるデータの扱い</a></li>
+<li><a href="#pivot">ピボットテーブルで集計する</a></li>
+<li><a href="#kakeishipi">カケイシピの場合</a></li>
+<li><a href="#faq">よくある質問</a></li>
+</ol>
+</nav>
+
+<section>
+<h2 id="why">アプリで記録してエクセルで分析する、という分け方</h2>
+<p>家計簿をエクセルで管理したい理由は、たいてい次のどれかです。</p>
+<ul>
+<li>自分の見たい形でグラフを作りたい</li>
+<li>複数年分をまとめて比べたい</li>
+<li>確定申告や経費精算のために表の形で残したい</li>
+<li>アプリの画面にない切り口（品目別・店別）で集計したい</li>
+</ul>
+<p>一方で、<strong>エクセル単体ではレシートの読み取りができません。</strong>入力はすべて手作業になります。</p>
+<p>そこで現実的なのが<strong>「記録はアプリ、分析はエクセル」という分け方</strong>です。レシートを撮って記録する部分だけアプリに任せ、貯まったデータをCSVで書き出してエクセルで開きます。</p>
+</section>
+
+<section>
+<h2 id="csv">CSVとは何か</h2>
+<p>CSV は「カンマで区切っただけのテキストファイル」です。表計算ソフトのファイル形式ではないので、<strong>特定のアプリに縛られません。</strong>エクセルでも Google スプレッドシートでも、Numbers でも開けます。</p>
+<p>中身はこのような単純な文字列です。</p>
+<pre><code>"日付","店名","金額","カテゴリ","品目名","品目価格"
+"2026-08-20","スーパーA","3280","食費","豚こま切れ","498"
+"2026-08-20","スーパーA","","食費","牛乳","215"</code></pre>
+<p>アプリの中にあるデータを外に持ち出せる形式なので、<strong>アプリを乗り換えるときにもデータが手元に残ります。</strong></p>
+</section>
+
+<section>
+<h2 id="mojibake">文字化けする原因と直し方</h2>
+<p>CSV をエクセルで開いたとき、日本語が「繧ｹ繝ｼ繝代・」のように壊れることがあります。<strong>これはファイルが壊れているのではなく、文字コードの判別に失敗しているだけです。</strong></p>
+<h3>なぜ起きるか</h3>
+<p>日本語を表す方式には主に UTF-8 と Shift_JIS の2種類があります。近年のアプリはほぼ UTF-8 で書き出しますが、<strong>エクセルは日本語版の既定で Shift_JIS として開こうとします。</strong>UTF-8 のファイルを Shift_JIS として解釈すると、文字が別の文字に化けます。</p>
+<h3>書き出す側で防ぐ方法</h3>
+<p>ファイルの先頭に <strong>BOM</strong> と呼ばれる短い印を入れておくと、エクセルが「これは UTF-8 だ」と判断して正しく開きます。目に見えない数バイトなので、他のソフトで開いても邪魔になりません。BOM 付きで書き出すアプリなら、ダブルクリックするだけで文字化けしません。</p>
+<h3>手元で直す方法</h3>
+<p>BOM が無いファイルを受け取った場合は、ダブルクリックせずに読み込みます。</p>
+<ol>
+<li>エクセルで空のブックを開く</li>
+<li>「データ」タブ →「テキストまたはCSVから」</li>
+<li>ファイルを選び、<strong>「元のファイル」で「65001: Unicode (UTF-8)」を指定</strong></li>
+<li>プレビューで日本語が正しく見えることを確認して読み込む</li>
+</ol>
+<p>Google スプレッドシートは UTF-8 を既定で扱うため、そのままインポートすれば化けません。<strong>エクセルで開けない場合の逃げ道</strong>として覚えておくと便利です。</p>
+</section>
+
+<section>
+<h2 id="items">品目ごとに行が分かれるデータの扱い</h2>
+<p>ここが最もつまずきやすい部分です。</p>
+<p>レシートには1回の買い物に複数の品目が含まれます。これを表にすると、<strong>1回の買い物が複数行になります。</strong></p>
+<table>
+<tr><th>日付</th><th>店名</th><th>金額</th><th>品目名</th><th>品目価格</th></tr>
+<tr><td>2026-08-20</td><td>スーパーA</td><td><strong>3280</strong></td><td>豚こま切れ</td><td>498</td></tr>
+<tr><td>2026-08-20</td><td>スーパーA</td><td>（空）</td><td>牛乳</td><td>215</td></tr>
+<tr><td>2026-08-20</td><td>スーパーA</td><td>（空）</td><td>トマト</td><td>158</td></tr>
+</table>
+<p><strong>金額の列が先頭行にだけ入り、残りが空になっている点に注目してください。</strong>これは手抜きではなく、意図的な形です。</p>
+<p>もし3行すべてに 3280 が入っていたら、金額の列を合計したときに <strong>3280 × 3 = 9,840円</strong> になってしまいます。20品目のレシートなら20倍です。先頭行にだけ入れておけば、そのまま <code>SUM</code> で合計しても正しい金額が出ます。</p>
+<div class="am-note">
+<p>逆に<strong>品目価格の列は全行に入っています。</strong>こちらを合計すると「品目の合計」になり、レシートの合計金額とは一致しません（値引き・ポイント利用・税の扱いで差が出ます）。用途に応じて、どちらの列を使うか決めてください。</p>
+</div>
+</section>
+
+<section>
+<h2 id="pivot">ピボットテーブルで集計する</h2>
+<p>エクセルに移す最大の利点がこれです。アプリの画面には無い切り口で集計できます。</p>
+<h3>店別の支出を出す</h3>
+<ol>
+<li>データ全体を選択 →「挿入」→「ピボットテーブル」</li>
+<li>行に<strong>「店名」</strong>、値に<strong>「金額」の合計</strong>を置く</li>
+</ol>
+<p>「どの店にいくら使っているか」が出ます。同じスーパーでも、まとめ買いの店と寄り道の店で金額が大きく違うことに気づけます。</p>
+<h3>品目別の支出を出す</h3>
+<p>行に<strong>「品目名」</strong>、値に<strong>「品目価格」の合計</strong>を置きます。3か月分ためると、<strong>何にお金を使っているかが品目の粒度で見えます。</strong>「牛乳に月3,000円」といった具体的な数字は、カテゴリ別のグラフからは出てきません。</p>
+<h3>月別の推移を出す</h3>
+<p>日付の列を選んで「グループ化」→「月」を指定すると、月単位でまとめられます。行に月、値に金額の合計を置けば推移表になります。</p>
+</section>
+
+<section>
+<h2 id="kakeishipi">カケイシピの場合</h2>
+<p>カケイシピは<strong>記録した全期間の支出をCSVで書き出せます</strong>（月を絞らず、これまでの全件です）。列は次の9つです。</p>
+<p>日付／店名／支店名／金額／カテゴリ／メモ／品目名／品目価格／OCRエンジン</p>
+<p>この記事で説明したとおり、<strong>BOM 付きで書き出しているのでエクセルでダブルクリックしても文字化けしません。</strong>品目は行を分けて出力し、金額は先頭行にだけ入れてあるので、そのまま合計しても二重計上になりません。</p>
+<p>店名と支店名を分けているのは、同じチェーンの別店舗を区別して集計できるようにするためです。ピボットテーブルで店名だけを使えばチェーン単位、支店名まで使えば店舗単位で見られます。</p>
+</section>
+
+<section>
+<h2 id="faq">よくある質問</h2>
+<h3>CSVを書き出したあと、アプリのデータは消えますか</h3>
+<p>消えません。書き出しはコピーを作る操作で、アプリ側のデータはそのまま残ります。何度書き出しても問題ありません。</p>
+<h3>エクセルで編集したデータをアプリに戻せますか</h3>
+<p>一般に、CSVの取り込みに対応している家計簿アプリは多くありません。<strong>エクセル側は分析用の写しと考えて、記録の正本はアプリ側に置く</strong>のが混乱しない使い方です。</p>
+<h3>スマホしか持っていない場合はどうすればよいですか</h3>
+<p>書き出したCSVをクラウドストレージやメールで送り、PCで開くことになります。スマホの表計算アプリでも開けますが、ピボットテーブルの操作は画面の広いPCのほうが快適です。</p>
+</section>
+<div class="am-summary">
+<h2 id="summary">まとめ</h2>
+<ul>
+<li>エクセル単体ではレシートを読み取れない。<strong>記録はアプリ、分析はエクセル</strong>と分けるのが現実的</li>
+<li>文字化けは<strong>文字コードの判別失敗</strong>。BOM付きなら起きず、無い場合は「データ」タブからUTF-8を指定して読み込む</li>
+<li>品目ごとに行が分かれるデータは、<strong>金額が先頭行にだけ入っているか</strong>を確認する。全行に入っていると合計が品目数倍になる</li>
+<li>ピボットテーブルで<strong>店別・品目別・月別</strong>の集計ができる。品目別はアプリの画面では見られない切り口</li>
+</ul>
+</div>
+<!-- related-articles -->
+
+
+
+<section class="am-related">
+  <h2 class="am-related-title">関連記事</h2>
+  <div class="rel-cards">
+    <a href="/blog/receipt-ocr-accuracy.html" class="rel-card">
+      <span class="rel-card-emoji">🔍</span>
+      <span class="rel-card-body">
+        <span class="rel-card-title">レシート読み取りの精度は何で決まるか｜文字認識と意味の解釈という2つの工程</span>
+        <span class="rel-card-excerpt">金額が10,000円になる誤りは文字認識ではなく、お預り金額を合計と判断した解釈の失敗です。精度を左右する要因を工程ごとに…</span>
+      </span>
+    </a>
+    <a href="/blog/long-receipt-ocr.html" class="rel-card">
+      <span class="rel-card-emoji">🧾</span>
+      <span class="rel-card-body">
+        <span class="rel-card-title">長いレシートが途中で切れる理由｜家計簿アプリで読み取れないときの対処</span>
+        <span class="rel-card-excerpt">切れる原因はレシートの長さではなく、送信前の画像縮小で1文字あたりの画素数が足りなくなること。撮り方と分割での対処を…</span>
+      </span>
+    </a>
+    <a href="/blog/kakeibo-receipt-security.html" class="rel-card">
+      <span class="rel-card-emoji">🔒</span>
+      <span class="rel-card-body">
+        <span class="rel-card-title">家計簿アプリに撮ったレシート画像はどこへ行くのか｜保存の有無と確認方法</span>
+        <span class="rel-card-excerpt">撮影したレシート画像がサーバーに保存されるのか、読み取り後に破棄されるのか。確認する方法を整理します。</span>
+      </span>
+    </a>
+  </div>
+</section>
+<nav class="am-pn" aria-label="前後の記事">
+  <a class="pn-item pn-next" href="/blog/receipt-ocr-accuracy.html"><span class="pn-dir">古い記事 →</span><span class="pn-title">レシート読み取りの精度は何で決まるか<br/>文字認識と意味の解釈という2つの工程</span></a>
+</nav>
+</article>
+</main>
+<aside class="am-sidebar">
+<div class="sb-cta">
+<p class="sb-cta-title">献立・レシピ・食費を<br/>まとめて管理しよう</p>
+<a class="sb-cta-btn" href="/login.html">無料で試す →</a>
+<p class="sb-cta-note">14日間無料・カード不要</p>
+</div>
+</aside>
+</div>
+
+
+
+
+<div class="am-cta-box">
+<p class="am-cta-title">レシピと食費を一緒に管理しよう</p>
+<p>カケイシピなら献立・レシピ・買い物リストをまとめて管理。14日間無料トライアル実施中！</p>
+<a class="am-cta-btn" href="/login.html">カケイシピを無料で試す →</a>
+<p class="am-cta-note">14日間無料・クレカ登録不要</p>
+</div>
+<footer class="bf">
+<div class="fl">
+<a href="/">ホーム</a>
+<a href="/blog.html">ブログ</a>
+<a href="/#pricing">料金プラン</a>
+<a href="/terms.html" rel="nofollow">利用規約</a>
+<a href="/privacy.html" rel="nofollow">プライバシーポリシー</a>
+<a href="/tokushoho.html">特定商取引法に基づく表記</a>
+<a href="/contact.html">お問い合わせ</a>
+</div>
+<p>© 2026 カケイシピ · AIレシート家計簿</p>
+</footer>
+<script src="/blog-cta.js"></script>
+<script type="module" src="/blog-ads.js"></script>
+</body>
+</html>

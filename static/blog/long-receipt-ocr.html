@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="/redirect.js"></script>
+<!-- GA4 (Google Analytics) -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
+<script src="/analytics.js"></script>
+<link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
+<link href="/manifest.json" rel="manifest"/>
+<link href="/tokens.css?v=20260808" rel="stylesheet"/>
+<link href="/blog-article.css?v=20260808" rel="stylesheet"/>
+<title>長いレシートが途中で切れる理由｜家計簿アプリで読み取れないときの対処</title>
+<meta content="レシートが長いほど家計簿アプリの読み取りが途中で止まったり、下の方の品目が抜けたりします。原因は文字の解像度で、レシートの長さそのものではありません。分割撮影・撮り方の見直しで改善する方法を解説します。" name="description"/>
+<link href="https://get-tohon.online/blog/long-receipt-ocr.html" rel="canonical"/>
+<meta content="article" property="og:type"/>
+<meta content="https://get-tohon.online/blog/long-receipt-ocr.html" property="og:url"/>
+<meta content="長いレシートが途中で切れる理由｜家計簿アプリで読み取れないときの対処" property="og:title"/>
+<meta content="レシートが長いほど家計簿アプリの読み取りが途中で止まったり、下の方の品目が抜けたりします。原因は文字の解像度で、レシートの長さそのものではありません。分割撮影・撮り方の見直しで改善する方法を解説します。" property="og:description"/>
+<meta content="https://get-tohon.online/ogp.png" property="og:image"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"長いレシートが途中で切れる理由｜家計簿アプリで読み取れないときの対処","description":"レシートが長いほど家計簿アプリの読み取りが途中で止まったり、下の方の品目が抜けたりします。原因は文字の解像度で、レシートの長さそのものではありません。分割撮影・撮り方の見直しで改善する方法を解説します。","datePublished":"2026-08-24","dateModified":"2026-08-24","url":"https://get-tohon.online/blog/long-receipt-ocr.html","author":{"@type":"Organization","name":"カケイシピ","url":"https://get-tohon.online/"},"publisher":{"@type":"Organization","name":"カケイシピ","url":"https://get-tohon.online/"},"isPartOf":{"@type":"Blog","name":"カケイシピ ブログ","url":"https://get-tohon.online/blog.html"},"image":"https://get-tohon.online/ogp.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://get-tohon.online/blog/long-receipt-ocr.html"},"inLanguage":"ja"}</script>
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://get-tohon.online/"},
+      {"@type": "ListItem", "position": 2, "name": "ブログ", "item": "https://get-tohon.online/blog.html"},
+      {"@type": "ListItem", "position": 3, "name": "長いレシートが途中で切れる理由｜家計簿アプリで読み取れないときの対処", "item": "https://get-tohon.online/blog/long-receipt-ocr.html"}
+    ]
+  }
+  </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "長いレシートはどこまで読み取れますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "長さの上限が決まっているわけではありません。多くのアプリは送信前に画像を縮小するため、レシートが長いほど1文字あたりの画素が減り、下の方から読み取り精度が落ちます。目安として品目20行を超えたあたりから抜けが出やすくなります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "長いレシートを分割して撮ってもいいですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "はい。上半分と下半分に分けて2回撮影し、2件の支出として記録するか、片方を読み取って品目を手で足す方法が確実です。分割するときは合計金額が印字された部分を必ずどちらかに含めてください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "合計金額だけ合っていれば品目が抜けても問題ありませんか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "家計簿として月々の支出を把握する目的なら合計が合っていれば足ります。品目別の内訳や食材の在庫管理に使う場合は、抜けた品目を手で追加する必要があります。"
+      }
+    }
+  ]
+}
+</script>
+<style>.author-box{display:flex;gap:12px;align-items:flex-start;background:var(--green-pale,#edf6f0);border-radius:8px;padding:14px 16px;margin:20px 0}.author-icon{font-size:2rem;flex-shrink:0}.author-name{font-weight:700;font-size:.95rem;margin-bottom:4px}.author-bio{font-size:.85rem;color:var(--text-muted,#666);line-height:1.6}</style>
+</head>
+<body>
+<header class="bh">
+<a class="bh-logo" href="/">カケイシピ</a>
+<nav class="bh-nav">
+<a href="/blog.html">ブログ一覧</a>
+<a class="bh-cta" href="/login.html">無料で試す</a>
+</nav>
+</header>
+<div class="am-layout">
+<main class="am-wrap">
+<article class="am">
+<div class="am-eyebrow"><a class="am-cat" href="/blog.html">レシート入力・OCR</a></div>
+<h1 class="am-title">長いレシートが途中で切れる理由<br/>家計簿アプリで読み取れないときの対処</h1>
+<div class="am"><span>2026年8月24日</span></div>
+<div class="am-reading-time">📖 約7分で読めます</div>
+<p class="am-lead">レシートが長いほど、家計簿アプリの読み取りで<strong>下の方の品目が抜ける</strong>ことがあります。原因はレシートの長さそのものではなく、送信前の画像縮小で1文字あたりの画素数が足りなくなることです。仕組みと、撮り方・分割での対処を整理します。</p>
+<div class="author-box">
+  <div class="author-icon">&#x1F4DD;</div>
+  <div class="author-info">
+    <div class="author-name">&#x30AB;&#x30B1;&#x30A4;&#x30B7;&#x30D4;&#x7DE8;&#x96C6;&#x90E8;</div>
+    <div class="author-bio">&#x98DF;&#x8CBB;&#x30FB;&#x5BB6;&#x8A08;&#x7BA1;&#x7406;&#x30FB;&#x7BC0;&#x7D04;&#x30EC;&#x30B7;&#x30D4;&#x3092;&#x5C02;&#x9580;&#x3068;&#x3059;&#x308B;&#x7DE8;&#x96C6;&#x30C1;&#x30FC;&#x30E0;&#x3002;&#x7DCF;&#x52D9;&#x7701;&#x5BB6;&#x8A08;&#x8ABF;&#x67FB;&#x306A;&#x3069;&#x306E;&#x516C;&#x7684;&#x30C7;&#x30FC;&#x30BF;&#x3068;&#x5B9F;&#x969B;&#x306E;&#x5BB6;&#x8A08;&#x7BA1;&#x7406;&#x4E8B;&#x4F8B;&#x3092;&#x3082;&#x3068;&#x306B;&#x3001;&#x5B9F;&#x8DF5;&#x7684;&#x306A;&#x7BC0;&#x7D04;&#x8853;&#x3092;&#x767A;&#x4FE1;&#x3057;&#x3066;&#x3044;&#x307E;&#x3059;&#x3002;</div>
+  </div>
+</div>
+<nav class="am-toc">
+<div class="am-toc-title">目次</div>
+<ol>
+<li><a href="#not-length">原因は「長さ」ではなく「1文字あたりの画素数」</a></li>
+<li><a href="#symptoms">「切れている」ときに実際に起きていること</a></li>
+<li><a href="#fix">読み取り精度を上げる撮り方</a></li>
+<li><a href="#split">それでも長い場合は分割して撮る</a></li>
+<li><a href="#check">読み取り後に必ず確認する場所</a></li>
+<li><a href="#kakeishipi">カケイシピの場合</a></li>
+<li><a href="#faq">よくある質問</a></li>
+</ol>
+</nav>
+
+<section>
+<h2 id="not-length">原因は「長さ」ではなく「1文字あたりの画素数」</h2>
+<p>レシートが長いと読み取りが途中で切れる——これは多くの家計簿アプリで起きます。ただし<strong>アプリが「長さの上限」で切っているわけではありません</strong>。</p>
+<p>理由は撮影と送信の仕組みにあります。スマホのカメラで撮った写真はそのままだと数MBあり、通信に時間がかかります。そのため多くのアプリは<strong>送信前に画像を縮小します</strong>。このとき縮小の基準になるのは「長辺の長さ」です。</p>
+<p>ここで何が起きるか。同じ縮小をかけても、レシートが長いほど<strong>1文字が占める画素数が小さくなります</strong>。</p>
+<table>
+<tr><th>レシートの長さ</th><th>写る文字の行数</th><th>1文字あたりの高さ</th></tr>
+<tr><td>短い（10品目）</td><td>約20行</td><td>大きい・読める</td></tr>
+<tr><td>長い（40品目）</td><td>約70行</td><td>小さい・つぶれる</td></tr>
+</table>
+<p>文字がつぶれると、OCR（画像を文字に変換する処理）は<strong>読めなかった行を静かに飛ばします</strong>。エラーにはならず、単に品目が少なく登録される。これが「途中で切れた」と感じる正体です。</p>
+<div class="am-note">
+<p>合計金額だけは正しく取れることが多いのも同じ理由です。合計は文字が大きく印字されているため、縮小されても読める画素数が残ります。</p>
+</div>
+</section>
+
+<section>
+<h2 id="symptoms">「切れている」ときに実際に起きていること</h2>
+<p>症状は3つに分かれます。どれが起きているかで対処が変わります。</p>
+<h3>1. 下の方の品目だけが抜ける</h3>
+<p>最も多いパターンです。上から順に読んでいって、文字がつぶれ始めたところから拾えなくなっています。<strong>合計金額は合っているのに品目数が足りない</strong>状態です。</p>
+<h3>2. 品目名が途中で途切れる・別の文字になる</h3>
+<p>「ﾄﾘﾑﾈ肉」が「ﾄﾘﾑ肉」になるような取り違えです。これも解像度不足で、読み取り自体は行われています。</p>
+<h3>3. 読み取り自体が失敗する・時間がかかって止まる</h3>
+<p>画像のファイルサイズが上限を超えている場合です。多くのアプリは1枚あたり数MB程度の上限を持っており、超えると送信の時点ではじかれます。この場合は<strong>品目が抜けるのではなくエラーになる</strong>ので区別できます。</p>
+</section>
+
+<section>
+<h2 id="fix">読み取り精度を上げる撮り方</h2>
+<p>効果が大きい順に並べます。</p>
+<h3>レシートを画面いっぱいに写す</h3>
+<p>机や床が大きく写り込んでいると、その分だけレシートの文字が小さくなります。<strong>余白は上下左右に少しあれば十分</strong>です。縦向きのレシートは、スマホも縦に構えます。</p>
+<h3>真上から撮る</h3>
+<p>斜めから撮ると、遠い側の文字が小さくなります。長いレシートでは手前と奥の差が大きく出るため、<strong>影が入らない範囲で真上から</strong>撮ってください。</p>
+<h3>まっすぐ伸ばす</h3>
+<p>丸まったレシートは、カーブした部分の文字が縦につぶれます。本などで押さえて平らにします。折り目がある場合は、折り目を境に分割撮影したほうが確実です。</p>
+<h3>影と光の反射を避ける</h3>
+<p>自分の影が落ちると、その部分だけ文字と背景のコントラストが下がります。窓際の自然光か、真上以外からの照明が向いています。感熱紙のレシートは<strong>照明が反射すると白飛びする</strong>ので、真正面の強い光は避けます。</p>
+</section>
+
+<section>
+<h2 id="split">それでも長い場合は分割して撮る</h2>
+<p>品目が30を超えるようなレシート（まとめ買い・月イチの買い出し）は、撮り方を工夫しても限界があります。<strong>2回に分けて撮るのが確実です。</strong></p>
+<ol>
+<li>レシートを上半分・下半分に分けて、それぞれ画面いっぱいに撮る</li>
+<li>2件の支出として記録する</li>
+<li>または片方を読み取って登録し、もう片方の品目を手で追加する</li>
+</ol>
+<p><strong>分割するときは、合計金額が印字された部分をどちらかに必ず含めてください。</strong>合計が無いと、金額の検算ができなくなります。</p>
+<p>2件に分けて登録した場合、月の合計は変わりません。品目別の内訳を見るときだけ、同じ買い物が2件に見える点に注意します。</p>
+</section>
+
+<section>
+<h2 id="check">読み取り後に必ず確認する場所</h2>
+<p>OCRは「読めなかった」ことを教えてくれません。登録前に次の2点だけ見れば、抜けはほぼ検出できます。</p>
+<ul>
+<li><strong>合計金額</strong> — レシートの印字と一致しているか</li>
+<li><strong>品目の数</strong> — レシートの行数とだいたい合っているか</li>
+</ul>
+<p>合計が合っていて品目が少ない場合は、上で説明した「下の方が抜けた」状態です。抜けた分を手で足すか、分割して撮り直します。</p>
+<p>逆に<strong>合計が合わない場合は、金額の桁を読み違えている</strong>可能性があります。この場合は品目を足すのではなく、撮り直したほうが早いです。</p>
+</section>
+
+<section>
+<h2 id="kakeishipi">カケイシピの場合</h2>
+<p>カケイシピも送信前に画像を縮小します（長辺1600px・JPEG）。<strong>この記事で説明した仕組みがそのまま当てはまる</strong>ので、長いレシートでは上のコツが有効です。1枚あたりの上限は8MBで、超えるとエラーメッセージが出ます。</p>
+<p>読み取った結果は登録前に画面で確認・編集できるので、抜けた品目はその場で追加できます。合計金額と品目数を見る習慣をつけておくと、後から家計簿を見直す手間が減ります。</p>
+<p>なお、読み取りに使ったレシート画像は保存されません。詳しくは<a href="/blog/kakeibo-receipt-security.html">家計簿アプリに撮ったレシート画像はどこへ行くのか</a>をご覧ください。</p>
+</section>
+
+<section>
+<h2 id="faq">よくある質問</h2>
+<h3>レシートの長さに上限はありますか</h3>
+<p>長さそのものの上限を設けているアプリは多くありません。実際に効いてくるのは<strong>画像のファイルサイズ上限</strong>と、縮小後に文字が読める画素数を保てるかどうかです。目安として品目20行を超えたあたりから抜けが出やすくなります。</p>
+<h3>スキャナで取り込めば解決しますか</h3>
+<p>解像度は上がりますが、アプリ側が送信前に縮小する点は変わりません。<strong>効くのは「レシートが画面に占める割合を上げる」ことなので、分割のほうが確実です。</strong></p>
+<h3>手入力に切り替えたほうが早いですか</h3>
+<p>品目が10件程度までなら読み取りのほうが速く、それを超えると分割撮影と手直しの手間が増えます。<strong>合計金額だけ記録して品目は入れない</strong>という割り切りも選択肢です。月々の支出を把握するだけなら合計で足ります。</p>
+</section>
+<div class="am-summary">
+<h2 id="summary">まとめ</h2>
+<ul>
+<li>切れる原因は<strong>レシートの長さではなく、縮小後の1文字あたりの画素数</strong></li>
+<li>OCRは読めなかった行を<strong>エラーにせず静かに飛ばす</strong>ので、合計は合うのに品目が足りなくなる</li>
+<li>対処は<strong>画面いっぱいに・真上から・平らに・影を避けて</strong>撮ること</li>
+<li>品目30超のレシートは<strong>上下に分けて2回撮る</strong>のが確実。合計金額の部分をどちらかに含める</li>
+<li>登録前に<strong>合計金額と品目数</strong>の2点だけ確認すれば、抜けはほぼ検出できる</li>
+</ul>
+</div>
+<!-- related-articles -->
+
+<section class="am-related">
+  <h2 class="am-related-title">関連記事</h2>
+  <div class="rel-cards">
+    <a href="/blog/kakeibo-receipt-security.html" class="rel-card">
+      <span class="rel-card-emoji">🔒</span>
+      <span class="rel-card-body">
+        <span class="rel-card-title">家計簿アプリに撮ったレシート画像はどこへ行くのか｜保存の有無と確認方法</span>
+        <span class="rel-card-excerpt">撮影したレシート画像がサーバーに保存されるのか、読み取り後に破棄されるのか。両者の違いと、使っているアプリがどちらか確認…</span>
+      </span>
+    </a>
+    <a href="/blog/receipt-ocr-how-it-works.html" class="rel-card">
+      <span class="rel-card-emoji">🔍</span>
+      <span class="rel-card-body">
+        <span class="rel-card-title">レシートOCRの仕組みと活用法｜スキャンで家計簿を自動入力する方法</span>
+        <span class="rel-card-excerpt">レシートを撮るだけで家計簿ができる仕組みを、画像処理から文字認識までの流れで解説します。</span>
+      </span>
+    </a>
+    <a href="/blog/receipt-kakeibo-basics.html" class="rel-card">
+      <span class="rel-card-emoji">🧾</span>
+      <span class="rel-card-body">
+        <span class="rel-card-title">レシートを撮るだけ！AI家計簿で始める「続けられる」節約習慣</span>
+        <span class="rel-card-excerpt">手入力が続かない人向けに、レシート撮影だけで家計簿を回す方法をまとめました。</span>
+      </span>
+    </a>
+  </div>
+</section>
+<nav class="am-pn" aria-label="前後の記事">
+  <a class="pn-item pn-next" href="/blog/kakeibo-receipt-security.html"><span class="pn-dir">古い記事 →</span><span class="pn-title">家計簿アプリに撮ったレシート画像はどこへ行くのか<br/>保存の有無と確認方法</span></a>
+</nav>
+</article>
+</main>
+<aside class="am-sidebar">
+<div class="sb-cta">
+<p class="sb-cta-title">献立・レシピ・食費を<br/>まとめて管理しよう</p>
+<a class="sb-cta-btn" href="/login.html">無料で試す →</a>
+<p class="sb-cta-note">14日間無料・カード不要</p>
+</div>
+</aside>
+</div>
+
+
+
+
+<div class="am-cta-box">
+<p class="am-cta-title">レシピと食費を一緒に管理しよう</p>
+<p>カケイシピなら献立・レシピ・買い物リストをまとめて管理。14日間無料トライアル実施中！</p>
+<a class="am-cta-btn" href="/login.html">カケイシピを無料で試す →</a>
+<p class="am-cta-note">14日間無料・クレカ登録不要</p>
+</div>
+<footer class="bf">
+<div class="fl">
+<a href="/">ホーム</a>
+<a href="/blog.html">ブログ</a>
+<a href="/#pricing">料金プラン</a>
+<a href="/terms.html" rel="nofollow">利用規約</a>
+<a href="/privacy.html" rel="nofollow">プライバシーポリシー</a>
+<a href="/tokushoho.html">特定商取引法に基づく表記</a>
+<a href="/contact.html">お問い合わせ</a>
+</div>
+<p>© 2026 カケイシピ · AIレシート家計簿</p>
+</footer>
+<script src="/blog-cta.js"></script>
+<script type="module" src="/blog-ads.js"></script>
+</body>
+</html>

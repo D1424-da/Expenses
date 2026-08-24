@@ -12,16 +12,16 @@
 <link href="/manifest.json" rel="manifest"/>
 <link href="/tokens.css?v=20260808" rel="stylesheet"/>
 <link href="/blog-article.css?v=20260808" rel="stylesheet"/>
-<title>レシートOCRの仕組みと活用法｜スキャンで家計簿を自動入力する方法</title>
-<meta content="レシートOCRの仕組みと家計簿への活用方法を解説。レシートを撮影するだけで自動入力される仕組み、精度向上のコツ、カケイシピのレシート読み取りからレシピ自動作成までを紹介。レシートOCRとは、レシートOCRの仕組みについても詳しく解説。カケイシピで試してみよう。" name="description"/>
+<title>レシートOCRとは｜写真を撮るだけで家計簿ができる仕組みと読み取れる項目</title>
+<meta content="レシートOCRの仕組みを、写真を撮ってから家計簿に記録されるまでの流れで解説します。金額・店名・日付・品目のうち何が確実に読み取れるのか、手書きや薄れたレシートなど読み取れないものは何かまで。" name="description"/>
 <link href="https://get-tohon.online/blog/receipt-ocr-how-it-works.html" rel="canonical"/>
 <meta content="article" property="og:type"/>
 <meta content="https://get-tohon.online/blog/receipt-ocr-how-it-works.html" property="og:url"/>
-<meta content="レシートOCRの仕組みと活用法｜スキャンで家計簿を自動入力する方法" property="og:title"/>
-<meta content="レシートOCRの仕組みと家計簿への活用方法を解説。レシートを撮影するだけで自動入力される仕組み、精度向上のコツ、カケイシピのレシート読み取りからレシピ自動作成までを紹介。レシートOCRとは、レシートOCRの仕組みについても詳しく解説。カケイシピで試してみよう。" property="og:description"/>
+<meta content="レシートOCRとは｜写真を撮るだけで家計簿ができる仕組みと読み取れる項目" property="og:title"/>
+<meta content="レシートOCRの仕組みを、写真を撮ってから家計簿に記録されるまでの流れで解説します。金額・店名・日付・品目のうち何が確実に読み取れるのか、手書きや薄れたレシートなど読み取れないものは何かまで。" property="og:description"/>
 <meta content="https://get-tohon.online/ogp.png" property="og:image"/>
 <meta content="summary_large_image" name="twitter:card"/>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"レシートOCRの仕組みと活用法｜スキャンで家計簿を自動入力する方法","description":"レシートOCRの仕組みと家計簿への活用方法を解説。レシートを撮影するだけで自動入力される仕組みと精度向上のコツ。","datePublished":"2026-06-17","dateModified":"2026-07-31","url":"https://get-tohon.online/blog/receipt-ocr-how-it-works.html","author":{"@type":"Organization","name":"カケイシピ","url":"https://get-tohon.online/"},"publisher":{"@type":"Organization","name":"カケイシピ","url":"https://get-tohon.online/"},"isPartOf":{"@type":"Blog","name":"カケイシピ ブログ","url":"https://get-tohon.online/blog.html"},"image":"https://get-tohon.online/ogp.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://get-tohon.online/blog/receipt-ocr-how-it-works.html"},"inLanguage":"ja"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"レシートOCRとは｜写真を撮るだけで家計簿ができる仕組みと読み取れる項目","description":"レシートOCRの仕組みを、写真を撮ってから家計簿に記録されるまでの流れで解説します。金額・店名・日付・品目のうち何が確実に読み取れるのか、手書きや薄れたレシートなど読み取れないものは何かまで。","datePublished":"2026-06-17","dateModified":"2026-08-24","url":"https://get-tohon.online/blog/receipt-ocr-how-it-works.html","author":{"@type":"Organization","name":"カケイシピ","url":"https://get-tohon.online/"},"publisher":{"@type":"Organization","name":"カケイシピ","url":"https://get-tohon.online/"},"isPartOf":{"@type":"Blog","name":"カケイシピ ブログ","url":"https://get-tohon.online/blog.html"},"image":"https://get-tohon.online/ogp.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://get-tohon.online/blog/receipt-ocr-how-it-works.html"},"inLanguage":"ja"}</script>
 <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -79,7 +79,7 @@
 <main class="am-wrap">
 <article class="am">
 <div class="am-eyebrow"><a class="am-cat" href="/blog.html">レシート入力・OCR</a></div>
-<h1 class="am-title">レシートOCRの仕組みと活用法<br/>スキャンで家計簿を自動入力する方法</h1>
+<h1 class="am-title">レシートOCRとは<br/>写真を撮るだけで家計簿ができる仕組みと読み取れる項目</h1>
 <div class="am"><span>2026年6月17日</span></div>
 <div class="am-reading-time">📖 約14分で読めます</div>
 <p class="am-lead">「手入力が面倒で家計簿が続かない」という悩みを解決するのがレシートOCR機能です。レシートを撮影するだけで店名・金額・購入品目が自動入力される仕組みを解説します。カケイシピでは読み取ったレシートの商品リストから<strong>レシピを自動作成</strong>する機能と組み合わせることで、記録から献立管理まで一気に完結します。</p>
@@ -97,7 +97,10 @@
 <li><a href="#how-it-works">レシートOCRの仕組み</a></li>
 <li><a href="#accuracy-tips">認識精度を上げる撮影のコツ</a></li>
 <li><a href="#tohon-feature">カケイシピのOCRからレシピ自動作成まで</a></li>
-<li><a href="#vs-manual">OCR vs 手入力</a></li>
+<li><a href="#vs-manual">OCR と手入力の使い分け</a></li>
+<li><a href="#what-is-read">写真から何が読み取られるのか</a></li>
+<li><a href="#limits">写真では読み取れないもの</a></li>
+<li><a href="#more">さらに詳しく知りたいとき</a></li>
 <li><a href="#summary">まとめ</a></li>
 </ol>
 </nav>
@@ -197,75 +200,47 @@
 <p>レシート撮影 → 自動入力 → レシピ提案まで、すべて無料。<br/>Googleアカウントで今すぐ試せます。</p>
 <a class="cta-btn" href="/login.html">無料で試してみる</a>
 </div>
-<h2 id="レシート管理で食費節約が加速する理由">レシート管理で食費節約が加速する理由</h2>
-<div class="card-grid">
-<div class="card"><div class="icon">📊</div><h3>「見えない出費」が可視化される</h3><p>毎日のレシートを記録することで「コンビニで何気なく使っている500円」「週3回のデリバリー代が月3万円になっている」という現実に気づけます。見えなければ改善できません。</p></div>
-<div class="card"><div class="icon">🔍</div><h3>食費の内訳が自動分析される</h3><p>スキャンしたレシートがAIで「食料品・外食・飲料・お菓子」などに自動分類されます。食費全体のうち何に使いすぎているかが一目でわかるため、改善すべき点が明確になります。</p></div>
-<div class="card"><div class="icon">📅</div><h3>月別・週別の推移がグラフで見える</h3><p>先月より食費が増えているのか減っているのか、グラフで直感的にわかります。増えている月は「何があったか」を振り返ることで、繰り返しを防ぐことができます。</p></div>
-</div>
-
-<h2 id="レシートをスキャンするだけで節約できる仕組み">レシートをスキャンするだけで節約できる仕組み</h2>
-<table class="tbl">
-<tr><th>アクション</th><th>起きること</th><th>節約への効果</th></tr>
-<tr><td>レシートをスキャン</td><td>品目・金額・店舗が自動記録される</td><td>記録の手間ゼロで続けやすい</td></tr>
-<tr><td>AI自動分類</td><td>食料品・外食・飲料などに自動仕分け</td><td>内訳が一目でわかる</td></tr>
-<tr><td>月次グラフ自動生成</td><td>食費の増減が視覚的に確認できる</td><td>使いすぎに早めに気づける</td></tr>
-<tr><td>予算アラート</td><td>設定した予算に近づくと通知</td><td>月末に後悔しなくなる</td></tr>
-<tr><td>食材データ活用</td><td>購入食材からレシピを自動提案</td><td>食材を使い切れてロスがゼロに</td></tr>
+<section>
+<h2 id="what-is-read">写真から何が読み取られるのか</h2>
+<p>「レシートを撮るだけ」と言われても、実際に何が記録されるのかは分かりにくいところです。読み取られる項目は次のとおりです。</p>
+<table>
+<tr><th>項目</th><th>読み取り元</th><th>確実さ</th></tr>
+<tr><td>金額（合計）</td><td>「合計」「お買上」などの行</td><td>高い</td></tr>
+<tr><td>店名</td><td>レシート上部</td><td>高い</td></tr>
+<tr><td>日付</td><td>レシート上部または下部</td><td>高い</td></tr>
+<tr><td>品目名・単価</td><td>明細行</td><td>店の書式による</td></tr>
+<tr><td>カテゴリ</td><td>店名からの推定</td><td>外れることがある</td></tr>
 </table>
+<p><strong>金額・店名・日付は文字が大きく位置も決まっているため安定して読めます。</strong>一方、品目とカテゴリは推定の要素が大きく、確認が必要な項目です。</p>
+<p>写真そのものは、読み取りが終われば役目を終えます。画像を保存するかどうかはアプリによって扱いが分かれるので、気になる場合は<a href="/blog/kakeibo-receipt-security.html">レシート画像はどこへ行くのか</a>を確認してください。</p>
+</section>
 
-<h2 id="レシートOCRと家計簿アプリの活用術">レシートOCRと家計簿アプリの活用術</h2>
-<p>レシートOCR（文字認識）技術を使った家計簿アプリが広く普及しています。カメラでレシートを撮影するだけで品目名・金額・日付が自動認識されるため、手入力の手間がゼロです。</p>
-<table class="tbl">
-<tr><th>機能</th><th>説明</th></tr>
-<tr><td>レシートOCR</td><td>カメラで撮影→テキスト自動認識→家計簿に記録</td></tr>
-<tr><td>品目自動分類</td><td>「もやし」→食費、「コカ・コーラ」→飲料費に自動仕分け</td></tr>
-<tr><td>月次レポート自動生成</td><td>月末に「今月の食費合計と内訳」をグラフで表示</td></tr>
-<tr><td>前月比較</td><td>「先月より食費が3,000円増えています」などと通知</td></tr>
-</table>
+<section>
+<h2 id="limits">写真では読み取れないもの</h2>
+<p>できないことを先に知っておくと、無駄な試行を減らせます。</p>
+<h3>手書きの領収書</h3>
+<p>文字の形が人によって違い、レイアウトも定型でないため、印字されたレシートより大きく精度が落ちます。手入力のほうが早い場合がほとんどです。</p>
+<h3>印字が消えたレシート</h3>
+<p>感熱紙は熱・光・摩擦で薄くなります。人の目で読めないほど薄れたものは、機械でも読めません。<strong>ためこまずに、買った日のうちに撮るのが最も効く対策です。</strong></p>
+<h3>長すぎるレシート</h3>
+<p>まとめ買いの長いレシートは、下のほうの品目が抜けることがあります。レシートの長さが原因ではなく、送信前の画像縮小で1文字あたりの画素数が足りなくなるためです。詳しくは<a href="/blog/long-receipt-ocr.html">長いレシートが途中で切れる理由</a>で説明しています。</p>
+<h3>クレジットカードの利用明細</h3>
+<p>読み取ること自体はできますが、品目が載っていないため「店名と金額だけ」の記録になります。品目まで残したい場合はレシートのほうを撮ってください。</p>
+</section>
 
-<h2 id="AI家計管理の最新トレンド">AI家計管理の最新トレンド</h2>
-<table class="tbl">
-<tr><th>AI機能</th><th>できること</th><th>節約への効果</th></tr>
-<tr><td>レシートOCR自動読取</td><td>カメラで撮影→全品目が自動入力</td><td>記録手間ゼロで継続率が上がる</td></tr>
-<tr><td>支出パターン分析</td><td>「毎月25日に外食が増える」などを検出</td><td>無意識の浪費習慣が明らかになる</td></tr>
-<tr><td>AIレシピ提案</td><td>冷蔵庫の食材から最適レシピを提案</td><td>食材ロスがゼロになり月3,000〜5,000円節約</td></tr>
-<tr><td>予算最適化提案</td><td>「来月は外食を週2回減らすと3万円節約できます」</td><td>具体的な行動提案で実行しやすい</td></tr>
-<tr><td>買い物リスト自動生成</td><td>献立から必要食材をリスト化</td><td>衝動買い防止・必要分だけ購入</td></tr>
-</table>
-
-<h2 id="AIアプリで食費節約に成功する3ステップ">AIアプリで食費節約に成功する3ステップ</h2>
-<div class="card-grid">
-<div class="card"><div class="icon">📊</div><h3>Step 1: 記録して現状を把握する</h3><p>まずは1ヶ月間、食費を全て記録します。レシートをスキャンするだけで自動集計されるため、手間はほぼゼロです。「月に何円使っているか」を知ることが節約の出発点になります。</p></div>
-<div class="card"><div class="icon">🎯</div><h3>Step 2: AIの提案を活用する</h3><p>アプリが「外食が多い週」や「食材ロスが増えている」などのパターンを自動検出して改善提案をしてくれます。その提案を1つ実践するだけで食費が自然と下がっていきます。</p></div>
-<div class="card"><div class="icon">🏆</div><h3>Step 3: 3ヶ月で習慣化する</h3><p>3ヶ月続けると、食費の傾向と改善パターンが見えてきます。AIが毎月の食費グラフを自動生成するため、進捗が可視化されモチベーションが維持できます。</p></div>
-</div>
-
-<h2 id="AIレシピアプリ活用による年間節約シミュレーション">AIレシピアプリ活用による年間節約シミュレーション</h2>
-<table class="tbl">
-<tr><th>節約施策</th><th>月の削減効果</th><th>年間節約額</th></tr>
-<tr><td>献立管理で食材ロスゼロ</td><td>3,000〜5,000円</td><td>36,000〜60,000円</td></tr>
-<tr><td>AIレシピで自炊率向上（外食減）</td><td>5,000〜15,000円</td><td>60,000〜180,000円</td></tr>
-<tr><td>予算管理で衝動買い防止</td><td>2,000〜5,000円</td><td>24,000〜60,000円</td></tr>
-<tr><td>合計節約効果</td><td>10,000〜25,000円/月</td><td>120,000〜300,000円/年</td></tr>
-</table>
-<h2 id="AIアプリに関するよくある疑問Q&A">AIアプリに関するよくある疑問Q&A</h2>
-<table class="tbl">
-<tr><th>疑問</th><th>回答</th></tr>
-<tr><td>AIが提案するレシピは本当に美味しい？</td><td>AIは数万件以上のレシピデータを学習しており、食材の相性・調理法・栄養バランスを考慮した提案をします。ただし味の好みは人それぞれなので、いくつか試して好みのものを保存しておくのがおすすめです</td></tr>
-<tr><td>個人情報が心配</td><td>信頼できるアプリは食材データ・食費データを暗号化して管理しています。口座情報や決済情報は連携しないため、食費の記録のみに限定すれば安全に使えます</td></tr>
-<tr><td>使いこなすまでが大変では？</td><td>最初はレシートスキャンと食費記録だけから始めましょう。慣れてきたらAIレシピ提案・献立管理へと段階的に機能を使い始めると挫折しません</td></tr>
-<tr><td>スマホが苦手でも使える？</td><td>現代のAI家計管理アプリは「撮る→記録完了」の2ステップで完結します。操作が難しい場合はチュートリアル動画を参考にしましょう</td></tr>
-</table>
-
-<h2 id="AIアプリ活用の実践チェックリスト">AIアプリ活用の実践チェックリスト</h2>
-<div class="card-grid">
-<div class="card"><div class="icon">✅</div><h3>レシートを毎回スキャンする</h3><p>買い物のたびにレシートをスキャンします。1ヶ月続けると食費の全体像が把握でき、改善すべきポイントが明確になります。</p></div>
-<div class="card"><div class="icon">✅</div><h3>月の食費予算をアプリに設定する</h3><p>月の食費予算を設定しておくと、予算に近づいたタイミングでアプリが通知してくれます。月末に後悔することがなくなります。</p></div>
-<div class="card"><div class="icon">✅</div><h3>週1回AIレシピ提案を活用する</h3><p>週に1回「冷蔵庫にある食材」を入力してAIにレシピを提案してもらいましょう。食材ロスが自然になくなり献立作りの時間も短縮されます。</p></div>
-</div>
+<section>
+<h2 id="more">さらに詳しく知りたいとき</h2>
+<p>レシートの読み取りについて、個別のテーマを掘り下げた記事があります。</p>
+<ul>
+<li><a href="/blog/receipt-ocr-accuracy.html">レシート読み取りの精度は何で決まるか</a> — 金額が10,000円になる誤りがなぜ起きるのか</li>
+<li><a href="/blog/long-receipt-ocr.html">長いレシートが途中で切れる理由</a> — 分割撮影のしかた</li>
+<li><a href="/blog/receipt-scan-vs-photo.html">レシートのスキャンと撮影は何が違うのか</a> — スキャナ画像を取り込むときのPDF問題</li>
+<li><a href="/blog/receipt-kakeibo-excel.html">レシート家計簿のデータをエクセルで集計する方法</a> — CSVの文字化けと品目行の扱い</li>
+<li><a href="/blog/kakeibo-receipt-security.html">レシート画像はどこへ行くのか</a> — 保存されるアプリとされないアプリの違い</li>
+</ul>
+</section>
 <div class="am-summary">
-<h2 id="what-is-ocr">まとめ</h2>
+<h2 id="summary">まとめ</h2>
 <ul>
 <li><strong>スーパー・コンビニのレシートがある場合</strong>：OCRで一括入力。撮影後は確認・修正のみ</li>
 <li><strong>現金払いでレシートなし</strong>：金額・店名・カテゴリを手動入力（3項目だけ）</li>

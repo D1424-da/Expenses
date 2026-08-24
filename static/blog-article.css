@@ -659,16 +659,6 @@ body {
 .demo-recipe-name { font-size: .82rem; font-weight: 700; color: var(--article-ink, #12200F); }
 
 /* ── VOICE / TESTIMONIAL ── */
-.voice {
-  background: var(--article-surface, #fff);
-  border: 1px solid var(--article-border, #D6E8DB);
-  border-radius: 10px;
-  padding: 20px 24px;
-  margin: 16px 0;
-  border-left: 4px solid var(--article-pale, #EDF6F0);
-}
-.voice-text { font-size: .9rem; color: var(--article-ink-sub, #3D5A3E); line-height: 1.8; font-style: italic; }
-.voice-attr { margin-top: 10px; font-size: .8rem; color: var(--article-ink-sub, #3D5A3E); font-style: normal; opacity: .7; }
 
 /* ── TIP LABEL (highlight-box内) ── */
 .tl { font-size: .72rem; font-weight: 700; color: var(--green-mid, #2D7D52); letter-spacing: .08em; margin-bottom: 6px; text-transform: uppercase; }

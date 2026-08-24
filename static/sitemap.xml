@@ -56,6 +56,36 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://get-tohon.online/blog/denshi-receipt-kakeibo.html</loc>
+    <lastmod>2026-08-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://get-tohon.online/blog/receipt-scan-vs-photo.html</loc>
+    <lastmod>2026-08-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://get-tohon.online/blog/receipt-kakeibo-excel.html</loc>
+    <lastmod>2026-08-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://get-tohon.online/blog/receipt-ocr-accuracy.html</loc>
+    <lastmod>2026-08-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://get-tohon.online/blog/long-receipt-ocr.html</loc>
+    <lastmod>2026-08-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://get-tohon.online/blog/kakeibo-receipt-security.html</loc>
     <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
@@ -81,7 +111,7 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/futari-gurashi-shokuhi.html</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -105,7 +135,7 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/couple-share-kakeibo.html</loc>
-    <lastmod>2026-08-02</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -141,7 +171,7 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/family-recipe-share.html</loc>
-    <lastmod>2026-07-25</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -165,7 +195,7 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/recipe-record-app.html</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -207,7 +237,7 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/recipe-app-compare.html</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -243,7 +273,7 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/shopping-list-auto.html</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -255,7 +285,7 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/fridge-ai-recipe.html</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -273,7 +303,7 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/food-cost-only-app.html</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -333,7 +363,7 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/simple-kakeibo-continue.html</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -357,7 +387,7 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/receipt-kakeibo-basics.html</loc>
-    <lastmod>2026-07-01</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -369,7 +399,7 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/kakeibo-app-compare.html</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -417,25 +447,25 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/kenko-kondate-app.html</loc>
-    <lastmod>2026-06-20</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://get-tohon.online/blog/receipt-app-free.html</loc>
-    <lastmod>2026-06-20</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://get-tohon.online/blog/receipt-ocr-how-it-works.html</loc>
-    <lastmod>2026-06-17</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://get-tohon.online/blog/rinyushoku-kondate.html</loc>
-    <lastmod>2026-06-09</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -459,31 +489,31 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/spending-analysis.html</loc>
-    <lastmod>2026-04-22</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://get-tohon.online/blog/family4-food-cost.html</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://get-tohon.online/blog/family-kakeibo.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://get-tohon.online/blog/solo-food-cost.html</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://get-tohon.online/blog/weekly-meal-plan.html</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -579,7 +609,7 @@
   </url>
   <url>
     <loc>https://get-tohon.online/blog/weekly-kondate-shopping.html</loc>
-    <lastmod>2026-01-01</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
