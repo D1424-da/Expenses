@@ -1063,13 +1063,14 @@
   {
     "slug": "receipt-ocr-how-it-works",
     "url": "/blog/receipt-ocr-how-it-works.html",
-    "title": "レシートOCRの仕組みと活用法<br/>スキャンで家計簿を自動入力する方法",
+    "title": "レシートOCRとは｜写真を撮るだけで家計簿ができる仕組みと読み取れる項目",
     "date": "2026-06-17",
-    "excerpt": "「手入力が面倒で家計簿が続かない」という悩みを解決するのがレシートOCR機能です。レシートを撮影するだけで店名・金額・購入品目が自動入力される仕組みを解説します。カケイシピでは読み取ったレシートの商品リストからレシピを自動作成する機能と組み",
+    "excerpt": "レシートOCRの仕組みを、写真を撮ってから家計簿に記録されるまでの流れで解説します。金額・店名・日付・品目のうち何が確実に読み取れるのか、手書きや薄れたレシートなど読み取れないものは何かまで。",
     "category": "アプリ活用",
     "emoji": "📸",
     "canonical": "https://get-tohon.online/blog/receipt-ocr-how-it-works.html",
-    "noindex": false
+    "noindex": false,
+    "updated": "2026-08-24"
   },
   {
     "slug": "household-review-monthly",
