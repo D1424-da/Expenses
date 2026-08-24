@@ -1,5 +1,16 @@
 [
   {
+    "slug": "receipt-ocr-accuracy",
+    "url": "/blog/receipt-ocr-accuracy.html",
+    "canonical": "https://get-tohon.online/blog/receipt-ocr-accuracy.html",
+    "title": "レシート読み取りの精度は何で決まるか｜文字認識と意味の解釈という2つの工程",
+    "date": "2026-08-24",
+    "category": "アプリ活用",
+    "emoji": "🔍",
+    "excerpt": "家計簿アプリのレシート読み取りは「文字を読む」工程と「読んだ文字の意味を判断する」工程に分かれます。金額が10,000円になっていたという誤りは前者ではなく後者で起きています。精度を左右する要因を工程ごとに整理します。",
+    "noindex": false
+  },
+  {
     "slug": "long-receipt-ocr",
     "url": "/blog/long-receipt-ocr.html",
     "canonical": "https://get-tohon.online/blog/long-receipt-ocr.html",
