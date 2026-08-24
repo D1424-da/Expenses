@@ -1,5 +1,16 @@
 [
   {
+    "slug": "long-receipt-ocr",
+    "url": "/blog/long-receipt-ocr.html",
+    "canonical": "https://get-tohon.online/blog/long-receipt-ocr.html",
+    "title": "長いレシートが途中で切れる理由｜家計簿アプリで読み取れないときの対処",
+    "date": "2026-08-24",
+    "category": "アプリ活用",
+    "emoji": "🧾",
+    "excerpt": "レシートが長いほど家計簿アプリの読み取りで下の方の品目が抜けることがあります。原因はレシートの長さそのものではなく、送信前の画像縮小で1文字あたりの画素数が足りなくなることです。仕組みと、撮り方・分割での対処を整理します。",
+    "noindex": false
+  },
+  {
     "slug": "kakeibo-receipt-security",
     "url": "/blog/kakeibo-receipt-security.html",
     "canonical": "https://get-tohon.online/blog/kakeibo-receipt-security.html",
