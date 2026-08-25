@@ -44,8 +44,11 @@ def test_lastmod_is_not_all_build_date():
         f"lastmod の {len(same_as_today)}/{len(mods)} 件がビルド日({today})と同じ。"
         "ファイルのタイムスタンプから算出していないか確認すること"
     )
-    # 日付が十分に分散していること
-    assert len(set(mods)) > 10, f"lastmod の種類が {len(set(mods))} 種類しかない"
+    # 日付が十分に分散していること。
+    # 2026-08 に量産判定への対処でサイトマップを105→24URLへ絞ったため、
+    # 「10種類以上」という絶対数では成立しなくなった。件数に対する割合で見る
+    # （全URLが同じ日付ならタイムスタンプ由来を疑う、という趣旨は変えない）。
+    assert len(set(mods)) >= 3, f"lastmod の種類が {len(set(mods))} 種類しかない"
 
 
 def test_lastmod_matches_articles_json():
@@ -244,7 +247,10 @@ def test_pagination_descriptions_are_distinct():
         m = re.search(r'name="description" content="([^"]*)"', head)
         assert m, f"{name} に description が無い"
         descs.append(m.group(1))
-    assert len(descs) >= 3
+    # 記事を絞った結果、一覧が1ページだけになることがある。
+    # そのときは比較する相手がいないので、重複の検査は行わない
+    # （description が存在することは上の assert で確認済み）。
+    assert descs, "ブログ一覧に description が無い"
     assert len(set(descs)) == len(descs), "ページネーションの description が重複している"
 
 
@@ -334,6 +340,8 @@ def test_high_priority_slugs_are_indexable():
             problems.append(f"{slug}: articles.json に無い")
         elif a.get("noindex"):
             problems.append(f"{slug}: noindex なのでサイトマップに載らない")
+        elif a.get("searchExclude"):
+            problems.append(f"{slug}: searchExclude なのでサイトマップに載らない")
     assert not problems, "HIGH_PRIORITY_SLUGS の不整合: " + "; ".join(problems)
 
 
@@ -451,3 +459,52 @@ def test_no_orphan_generated_pages():
         "サイトマップに載っていない生成ページが残っている"
         f"（build_blog.py を実行して削除する）: {orphans}"
     )
+
+
+def test_search_excluded_articles_have_noindex_meta():
+    """searchExclude の記事に meta robots noindex が入っている。
+
+    2026-08、Google のインデックス数が減り続けたため、量産された記事を
+    検索対象から外した（削除はせず、サイト内では読めるままにしてある）。
+    articles.json のフラグと記事HTMLの meta robots は
+    scripts/apply_search_exclude.py で同期するが、**片方だけ直すと
+    サイトマップから消えただけで noindex が入らない**という中途半端な
+    状態になり、Google からは今までどおり量産ページに見える。
+    """
+    import json as _json
+
+    data = _json.loads(
+        (STATIC / "blog" / "articles.json").read_text(encoding="utf-8")
+    )
+    problems = []
+    for a in data:
+        if a.get("noindex"):
+            # 統合済み。301 と canonical で処理するので noindex は入れない
+            # （canonical との併用は Google が非推奨）。
+            continue
+        f = STATIC / "blog" / f"{a['slug']}.html"
+        if not f.is_file():
+            continue
+        has = 'name="robots"' in f.read_text(encoding="utf-8").split("</head>")[0]
+        want = bool(a.get("searchExclude"))
+        if want and not has:
+            problems.append(f"{a['slug']}: searchExclude なのに meta robots が無い")
+        if not want and has:
+            problems.append(f"{a['slug']}: 検索対象なのに meta robots がある")
+    assert not problems, (
+        "articles.json と meta robots の不整合（scripts/apply_search_exclude.py を実行）:\n  "
+        + "\n  ".join(problems)
+    )
+
+
+def test_search_excluded_articles_are_not_in_sitemap():
+    """searchExclude の記事がサイトマップに残っていない。"""
+    import json as _json
+
+    data = _json.loads(
+        (STATIC / "blog" / "articles.json").read_text(encoding="utf-8")
+    )
+    excluded = {a["url"] for a in data if a.get("searchExclude")}
+    xml = (STATIC / "sitemap.xml").read_text(encoding="utf-8")
+    leaked = [u for u in excluded if f"<loc>{BASE_URL}{u}</loc>" in xml]
+    assert not leaked, f"searchExclude の記事がサイトマップに載っている: {leaked[:5]}"

@@ -125,6 +125,36 @@
         "type": 301
       },
       {
+        "source": "/blog-p2.html",
+        "destination": "/blog.html",
+        "type": 301
+      },
+      {
+        "source": "/blog-p3.html",
+        "destination": "/blog.html",
+        "type": 301
+      },
+      {
+        "source": "/blog-p4.html",
+        "destination": "/blog.html",
+        "type": 301
+      },
+      {
+        "source": "/blog-p5.html",
+        "destination": "/blog.html",
+        "type": 301
+      },
+      {
+        "source": "/blog-p6.html",
+        "destination": "/blog.html",
+        "type": 301
+      },
+      {
+        "source": "/blog/cat/other.html",
+        "destination": "/blog.html",
+        "type": 301
+      },
+      {
         "source": "/blog/",
         "destination": "/blog.html",
         "type": 301

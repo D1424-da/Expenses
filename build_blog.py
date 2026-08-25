@@ -40,8 +40,16 @@ NAV_CATEGORIES = [
 with open(ARTICLES_JSON, encoding="utf-8") as f:
     all_articles = json.load(f)
 
-# Only include indexable articles
-articles = [a for a in all_articles if not a["noindex"]]
+# 検索対象に残す記事だけを一覧・カテゴリ・サイトマップに載せる。
+#   noindex       … 統合で消えた記事（301 と canonical で処理済み）
+#   searchExclude … 公開したまま検索対象から外す記事
+#                   （scripts/apply_search_exclude.py が meta robots を入れる）
+# どちらもサイトマップと一覧から外す。記事HTML自体は消さないので、
+# 直接URLを開けば読めるし、フラグを戻せば元どおりになる。
+articles = [
+    a for a in all_articles
+    if not a["noindex"] and not a.get("searchExclude")
+]
 articles.sort(key=lambda a: a["date"], reverse=True)
 
 print(f"Total indexable articles: {len(articles)}")
@@ -414,36 +422,17 @@ for cat_name, slug in CATEGORY_SLUGS.items():
 #   2. サイト内から多くリンクされているハブ記事
 # 順位や内部リンク構造が変わったら見直すこと。
 HIGH_PRIORITY_SLUGS = {
-    # 検索で10位以内に入りクリックを獲得している記事
-    "recipe-app-compare",
+    # 検索対象に残した記事のうち、実績とハブ性で優先度を上げるもの。
+    #
+    # 2026-08、量産判定への対処で77記事を searchExclude にした際、ここに
+    # 書いていたスラッグの大半がサイトマップから外れた。優先度は
+    # サイトマップに載る記事にしか効かないので、外した記事は消す。
+    # tests/test_sitemap.py が noindex / searchExclude の混入を検出する。
     "family-recipe-share",
     "food-budget-app",
-    "receipt-kakeibo-basics",
-    "savings-life",
     "kakeibo-app-compare",
-    # サイト内から多くリンクされているハブ記事（被リンク20本以上）
-    "hambag-kondate",
-    "gyoumu-super-setsuyaku",
-    "cookpad-vs-kakeishipi",
-    # 統合の集約先（統合元の評価が集まる）
-    #
-    # 統合するとここに書いたスラッグが noindex 側に回ることがある。
-    # noindex の記事はそもそもサイトマップに載らないので、書いたつもりで
-    # 優先度が誰にも効いていない状態になる。統合したら必ず集約先へ
-    # 書き換えること（tests/test_sitemap.py が noindex 混入を検出する）。
-    "meal-plan-today",
-    "family4-food-cost",
-    "fridge-ai-recipe",
-    "solo-food-cost",
-    "savings-recipe",
-    "food-cost-savings-tips",
-    "supermarket-savings-guide",
-    "jitan-recipe",
-    "weekly-meal-plan",
-    "shopping-list-auto",
-    "bento-okazu-simple",
-    "excel-kakeibo-auto",
-    "simple-kakeibo-continue",
+    "receipt-kakeibo-basics",
+    "recipe-app-compare",
 }
 
 # lastmod は公開日ではなく更新日を優先する。記事を統合すると統合先の本文が
