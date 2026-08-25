@@ -1372,8 +1372,7 @@
     "category": "アプリ活用",
     "emoji": "🚫",
     "canonical": "https://get-tohon.online/blog/no-ads-kakeibo.html",
-    "noindex": false,
-    "searchExclude": true
+    "noindex": false
   },
   {
     "slug": "ai-cooking",
