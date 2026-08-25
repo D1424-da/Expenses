@@ -97,7 +97,8 @@
     "category": "節約レシピ",
     "emoji": "😪",
     "canonical": "https://get-tohon.online/blog/hitori-gurashi-setsuyaku-recipe-1week.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "gyoumu-super-setsuyaku",
@@ -108,7 +109,8 @@
     "category": "節約術",
     "emoji": "🏪",
     "canonical": "https://get-tohon.online/blog/gyoumu-super-setsuyaku.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "hitori-gurashi-ryouri-yasui",
@@ -119,7 +121,8 @@
     "category": "節約レシピ",
     "emoji": "🔪",
     "canonical": "https://get-tohon.online/blog/hitori-gurashi-ryouri-yasui.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "futari-gurashi-shokuhi",
@@ -131,7 +134,8 @@
     "emoji": "🏡",
     "canonical": "https://get-tohon.online/blog/futari-gurashi-shokuhi.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "supermarket-savings-guide",
@@ -142,7 +146,8 @@
     "category": "節約術",
     "emoji": "💰",
     "canonical": "https://get-tohon.online/blog/supermarket-savings-guide.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "shokuzai-tsukaikiru",
@@ -153,7 +158,8 @@
     "category": "節約レシピ",
     "emoji": "🥬",
     "canonical": "https://get-tohon.online/blog/shokuzai-tsukaikiru.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "gaishoku-recipe",
@@ -164,7 +170,8 @@
     "category": "節約レシピ",
     "emoji": "🍜",
     "canonical": "https://get-tohon.online/blog/gaishoku-recipe.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "couple-share-kakeibo",
@@ -176,7 +183,8 @@
     "emoji": "💑",
     "canonical": "https://get-tohon.online/blog/couple-share-kakeibo.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "cookpad-vs-kakeishipi",
@@ -187,7 +195,8 @@
     "category": "アプリ活用",
     "emoji": "⚖️",
     "canonical": "https://get-tohon.online/blog/cookpad-vs-kakeishipi.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "solo-cheap-recipe",
@@ -209,7 +218,8 @@
     "category": "節約術",
     "emoji": "🧊",
     "canonical": "https://get-tohon.online/blog/reizoko-kanri-setsuyaku.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "solo-jisui-menu",
@@ -220,7 +230,8 @@
     "category": "節約レシピ",
     "emoji": "🍱",
     "canonical": "https://get-tohon.online/blog/solo-jisui-menu.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "yuhan-setsuyaku-kondate",
@@ -231,7 +242,8 @@
     "category": "節約レシピ",
     "emoji": "🍚",
     "canonical": "https://get-tohon.online/blog/yuhan-setsuyaku-kondate.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "jisui-menu-weekly-plan",
@@ -242,7 +254,8 @@
     "category": "節約レシピ",
     "emoji": "🥢",
     "canonical": "https://get-tohon.online/blog/jisui-menu-weekly-plan.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "kondate-nayamu-idea",
@@ -298,7 +311,8 @@
     "category": "献立・レシピ",
     "emoji": "🍖",
     "canonical": "https://get-tohon.online/blog/hambag-kondate.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "meal-plan-today",
@@ -310,7 +324,8 @@
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/meal-plan-today.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-16",
+    "searchExclude": true
   },
   {
     "slug": "curry-kondate",
@@ -321,7 +336,8 @@
     "category": "献立・レシピ",
     "emoji": "🍛",
     "canonical": "https://get-tohon.online/blog/curry-kondate.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "fridge-recipe-app",
@@ -345,7 +361,8 @@
     "emoji": "📝",
     "canonical": "https://get-tohon.online/blog/recipe-record-app.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "cheap-recipe-ideas",
@@ -356,7 +373,8 @@
     "category": "節約術",
     "emoji": "🥗",
     "canonical": "https://get-tohon.online/blog/cheap-recipe-ideas.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "reito-udon-recipe",
@@ -367,7 +385,8 @@
     "category": "献立・レシピ",
     "emoji": "🍜",
     "canonical": "https://get-tohon.online/blog/reito-udon-recipe.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "mainichi-kondate-1week",
@@ -378,7 +397,8 @@
     "category": "献立・レシピ",
     "emoji": "📅",
     "canonical": "https://get-tohon.online/blog/mainichi-kondate-1week.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "recipe-memo-app",
@@ -400,7 +420,8 @@
     "category": "献立・レシピ",
     "emoji": "🥡",
     "canonical": "https://get-tohon.online/blog/oben-simple-hayai.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "asagohan-kondate",
@@ -411,7 +432,8 @@
     "category": "献立・レシピ",
     "emoji": "🌅",
     "canonical": "https://get-tohon.online/blog/asagohan-kondate.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "saving-recipe-2family",
@@ -422,7 +444,8 @@
     "category": "節約レシピ",
     "emoji": "👫",
     "canonical": "https://get-tohon.online/blog/saving-recipe-2family.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "recipe-app-compare",
@@ -445,7 +468,8 @@
     "category": "節約レシピ",
     "emoji": "🍱",
     "canonical": "https://get-tohon.online/blog/saving-recipe-5family.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "wagashi-kondate",
@@ -456,7 +480,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/wagashi-kondate.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "price-tracker-app",
@@ -479,7 +504,8 @@
     "category": "節約術",
     "emoji": "💰",
     "canonical": "https://get-tohon.online/blog/reito-yasai-recipe.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "kondatehyo-template",
@@ -501,7 +527,8 @@
     "category": "献立・レシピ",
     "emoji": "🍚",
     "canonical": "https://get-tohon.online/blog/yuhan-kondate-simple.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "bento-okazu-simple",
@@ -513,7 +540,8 @@
     "emoji": "🍱",
     "canonical": "https://get-tohon.online/blog/bento-okazu-simple.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-16",
+    "searchExclude": true
   },
   {
     "slug": "shopping-list-auto",
@@ -525,7 +553,8 @@
     "emoji": "📋",
     "canonical": "https://get-tohon.online/blog/shopping-list-auto.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "jisui-savings",
@@ -547,7 +576,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/jitan-recipe.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "fridge-ai-recipe",
@@ -559,7 +589,8 @@
     "emoji": "🧊",
     "canonical": "https://get-tohon.online/blog/fridge-ai-recipe.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "kyou-no-kondate",
@@ -570,7 +601,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/kyou-no-kondate.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "kondate-week-simple",
@@ -603,7 +635,8 @@
     "category": "アプリ活用",
     "emoji": "🌐",
     "canonical": "https://get-tohon.online/blog/web-kakeibo-free.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "food-cost-only-app",
@@ -615,7 +648,8 @@
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/food-cost-only-app.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "kondate-yasai-ittai",
@@ -626,7 +660,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/kondate-yasai-ittai.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "shopping-to-recipe",
@@ -649,7 +684,8 @@
     "category": "節約術",
     "emoji": "💰",
     "canonical": "https://get-tohon.online/blog/matomegai-recipe-plan.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "pc-kakeibo-browser",
@@ -683,7 +719,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/jitan-bento.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "receipt-to-recipe",
@@ -707,7 +744,8 @@
     "emoji": "📊",
     "canonical": "https://get-tohon.online/blog/excel-kakeibo-auto.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-16",
+    "searchExclude": true
   },
   {
     "slug": "saving-recipe-kosodates",
@@ -718,7 +756,8 @@
     "category": "節約レシピ",
     "emoji": "🍱",
     "canonical": "https://get-tohon.online/blog/saving-recipe-kosodates.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "savings-life",
@@ -730,7 +769,8 @@
     "emoji": "💡",
     "canonical": "https://get-tohon.online/blog/savings-life.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-16",
+    "searchExclude": true
   },
   {
     "slug": "chukka-kondate",
@@ -741,7 +781,8 @@
     "category": "献立・レシピ",
     "emoji": "🥢",
     "canonical": "https://get-tohon.online/blog/chukka-kondate.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "couple-food-cost",
@@ -765,7 +806,8 @@
     "emoji": "📉",
     "canonical": "https://get-tohon.online/blog/food-cost-savings-tips.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-16",
+    "searchExclude": true
   },
   {
     "slug": "kondate-1week-family4",
@@ -776,7 +818,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/kondate-1week-family4.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "simple-kakeibo-continue",
@@ -788,7 +831,8 @@
     "emoji": "✨",
     "canonical": "https://get-tohon.online/blog/simple-kakeibo-continue.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "beginner-3min-kakeibo",
@@ -810,7 +854,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/reizoko-seiri-recipe.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "savings-weekly-menu",
@@ -843,7 +888,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/tsukurioki-bento.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "koureisha-kondate",
@@ -854,7 +900,8 @@
     "category": "献立・レシピ",
     "emoji": "🍲",
     "canonical": "https://get-tohon.online/blog/koureisha-kondate.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "receipt-kakeibo-basics",
@@ -877,7 +924,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/shimowaji-reito.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "fridge-organize-savings",
@@ -911,7 +959,8 @@
     "category": "節約術",
     "emoji": "💰",
     "canonical": "https://get-tohon.online/blog/saving-recipe-week5000.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "windows-mac-kakeibo",
@@ -933,7 +982,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/sasami-bento.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "chikuwa-bento",
@@ -944,7 +994,8 @@
     "category": "献立・レシピ",
     "emoji": "🍢",
     "canonical": "https://get-tohon.online/blog/chikuwa-bento.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "kakeibo-food-tracking",
@@ -966,7 +1017,8 @@
     "category": "節約レシピ",
     "emoji": "🍱",
     "canonical": "https://get-tohon.online/blog/saving-recipe-couple.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "kazoku-yorokobu-recipe",
@@ -977,7 +1029,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/kazoku-yorokobu-recipe.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "shopping-savings-tips",
@@ -1011,7 +1064,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/niku-jaga-kondate.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "budget-category-tips",
@@ -1045,7 +1099,8 @@
     "emoji": "🩺",
     "canonical": "https://get-tohon.online/blog/kenko-kondate-app.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "receipt-app-free",
@@ -1057,7 +1112,8 @@
     "emoji": "🧾",
     "canonical": "https://get-tohon.online/blog/receipt-app-free.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "ai-recipe-weekly-plan",
@@ -1138,7 +1194,8 @@
     "emoji": "🥡",
     "canonical": "https://get-tohon.online/blog/tsukurioki-weekly-plan.html",
     "noindex": false,
-    "updated": "2026-08-16"
+    "updated": "2026-08-16",
+    "searchExclude": true
   },
   {
     "slug": "money-management",
@@ -1215,7 +1272,8 @@
     "category": "節約レシピ",
     "emoji": "💰",
     "canonical": "https://get-tohon.online/blog/savings-recipe.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "spending-analysis",
@@ -1227,7 +1285,8 @@
     "emoji": "📊",
     "canonical": "https://get-tohon.online/blog/spending-analysis.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "family4-food-cost",
@@ -1239,7 +1298,8 @@
     "emoji": "👨‍👩‍👦‍👦",
     "canonical": "https://get-tohon.online/blog/family4-food-cost.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "family-kakeibo",
@@ -1251,7 +1311,8 @@
     "emoji": "👨‍👩‍👧",
     "canonical": "https://get-tohon.online/blog/family-kakeibo.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "solo-food-cost",
@@ -1263,7 +1324,8 @@
     "emoji": "🏠",
     "canonical": "https://get-tohon.online/blog/solo-food-cost.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "weekly-meal-plan",
@@ -1275,7 +1337,8 @@
     "emoji": "📅",
     "canonical": "https://get-tohon.online/blog/weekly-meal-plan.html",
     "noindex": false,
-    "updated": "2026-08-24"
+    "updated": "2026-08-24",
+    "searchExclude": true
   },
   {
     "slug": "login-free-kakeibo",
@@ -1286,7 +1349,8 @@
     "category": "アプリ活用",
     "emoji": "🔓",
     "canonical": "https://get-tohon.online/blog/login-free-kakeibo.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "kakeibo-csv-graph",
@@ -1308,7 +1372,8 @@
     "category": "アプリ活用",
     "emoji": "🚫",
     "canonical": "https://get-tohon.online/blog/no-ads-kakeibo.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "ai-cooking",
@@ -1341,7 +1406,8 @@
     "category": "献立・レシピ",
     "emoji": "🥗",
     "canonical": "https://get-tohon.online/blog/diet-kondate-week.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "dinner-app",
@@ -1352,7 +1418,8 @@
     "category": "アプリ活用",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/dinner-app.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "easy-kondate",
@@ -1374,7 +1441,8 @@
     "category": "アプリ活用",
     "emoji": "📱",
     "canonical": "https://get-tohon.online/blog/excel-recipe-manage.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "family-dinner",
@@ -1385,7 +1453,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/family-dinner.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "family4-kondate-shopping",
@@ -1430,7 +1499,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/home-cooking-daily.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "monthly-kondate",
@@ -1441,7 +1511,8 @@
     "category": "節約術",
     "emoji": "💰",
     "canonical": "https://get-tohon.online/blog/monthly-kondate.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "protein-kondate-week",
@@ -1452,7 +1523,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/protein-kondate-week.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "recipe-manage-app",
@@ -1474,7 +1546,8 @@
     "category": "アプリ活用",
     "emoji": "📱",
     "canonical": "https://get-tohon.online/blog/recipe-smartphone-manage.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "saving-recipe-3family",
@@ -1485,7 +1558,8 @@
     "category": "その他",
     "emoji": "📝",
     "canonical": "https://get-tohon.online/blog/saving-recipe-3family.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "saving-recipe-4family-week",
@@ -1496,7 +1570,8 @@
     "category": "その他",
     "emoji": "📝",
     "canonical": "https://get-tohon.online/blog/saving-recipe-4family-week.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "saving-recipe-large-family",
@@ -1507,7 +1582,8 @@
     "category": "その他",
     "emoji": "📝",
     "canonical": "https://get-tohon.online/blog/saving-recipe-large-family.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "saving-recipe-main",
@@ -1553,7 +1629,8 @@
     "category": "献立・レシピ",
     "emoji": "🍽️",
     "canonical": "https://get-tohon.online/blog/supermarket-receipt-recipe.html",
-    "noindex": false
+    "noindex": false,
+    "searchExclude": true
   },
   {
     "slug": "tsukurioki-okazu",
