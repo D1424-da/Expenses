@@ -6,12 +6,14 @@ import {
   getDoc, onSnapshot, doc,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { apiJson } from "./api-client.js";
+import { shouldResync } from "./stripe-resync.js";
 import { openModal, closeModal, $ } from "./dom-utils.js";
 import { log, logErr } from "./log.js";
 import { showError } from "./ui-feedback.js";
 
 let _db, _getUser, _onSubChange;
 let _sub = null;         // キャッシュ済みサブスクリプション情報
+let _resyncTried = false; // 期限切れ間近の再取得を1セッション1回に抑える
 let _subLoaded = false;  // 初回スナップショット受信済みフラグ
 let _unsubSub = null;    // Firestore リスナーの解除関数
 
@@ -28,6 +30,29 @@ export function initBilling({ db, getUser, onSubChange }) {
   });
 }
 
+async function _resyncIfExpiring() {
+  if (_resyncTried) return;
+  if (!shouldResync(_sub, Date.now() / 1000)) return;
+
+  const user = _getUser?.();
+  if (!user) return;
+
+  // 失敗しても再試行しない。onSnapshot は書き込みのたびに発火するため、
+  // 再試行するとループになりうる。
+  _resyncTried = true;
+  try {
+    const token = await user.getIdToken();
+    const data = await apiJson("/api/stripe/sync", {
+      token, method: "POST", body: { email: user.email },
+    });
+    // 書き戻しは onSnapshot が拾うので、ここで _sub を触る必要はない。
+    log("課金状態を Stripe から再取得:", data.status);
+  } catch (err) {
+    // 背景での自己修復なので画面には出さない。出しても利用者は対処できない。
+    logErr("課金状態の再取得に失敗:", err.message);
+  }
+}
+
 // ログイン時に呼ぶ。Firestore のサブスクリプション状態をリアルタイムで購読する。
 export function startBillingSync() {
   const user = _getUser();
@@ -39,6 +64,7 @@ export function startBillingSync() {
     _sub = snap.exists() ? snap.data() : null;
     _subLoaded = true;
     log("課金状態更新:", _sub?.status ?? "無料");
+    _resyncIfExpiring();
     _updatePremiumBadge();
     // トライアル開始などでプレミアム状態が変わったら、利用状況バナーやゲートを即座に再反映する
     if (_onSubChange) _onSubChange();
