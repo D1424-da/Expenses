@@ -199,6 +199,29 @@ DOM に入る。
 前に呼ばれると undefined になって整形されない生の Markdown が出る、
 という沈黙する劣化が起きていた。
 
+### 課金状態は webhook だけに頼らない
+
+Firestore の `currentPeriodEnd` を更新できるのは、**決済直後の
+`/api/stripe/sync`** と **Stripe の webhook** の2つだけ。決済直後は
+`static/app.js` の `_syncStripeSubscription` が呼ぶので確実だが、
+**月次更新のときは利用者が居ないので webhook 頼み**になる。
+
+バックエンド（Render 無料プラン）は15分アイドルでスリープし、寝ている
+間に届いた webhook は初回タイムアウトする。届かないまま期限を過ぎると
+**支払っているのにプレミアムが切れる**。keep-alive を止めたので、
+この経路は塞いでおく必要がある。
+
+`static/stripe-resync.js` の `shouldResync()` が「期限の24時間前を
+切った、または過ぎている」ものを拾い、`stripe-billing.js` が次に
+アプリを開いたときに取り直す。**判定は `plan` で行わないこと** —
+サーバーの `_persist_subscription` は `merge=True` で書くため、
+トライアルから課金へ移行しても `plan:'trial'` が残る。plan で弾くと
+本当に守りたい利用者だけが漏れる。`stripeSubscriptionId` の有無で見る。
+`static/stripe-resync.test.js` がこの条件を固定している。
+
+再取得は1セッション1回に制限する。`onSnapshot` は書き込みのたびに
+発火するので、失敗時に再試行するとループになる。
+
 ### 利用者へのエラー表示は ui-feedback.js に集約する
 
 `alert()` は使わない（`static/ui-feedback.test.js` が再混入を検出する）。
@@ -420,9 +443,15 @@ CTAクリックは位置別に `cta_click` イベントを送る。計測は
 ログも残らないため、テストの失敗と紛らわしい。**全ワークフローが
 数秒で落ちていたら、まず課金枠を疑うこと。**
 
-keep-alive は「間隔を延ばす」ではなく「**時間帯を絞る**」で対処した。
-Render は15分アイドルでスリープするため、15分を超える間隔にすると
-毎回スリープ済みを起こすだけになり、目的を果たさない。
+**keep-alive は最終的に停止した**（`keep-alive.yml` は手動実行のみ）。
+`static/app.js` の初期化で `prewarmOcr()` が /api/health を叩き、
+アプリを開いた時点で起動が始まるため、keep-alive が守れるのは
+「開いた直後に即撮影する人」だけだった。費用に見合わない。
+
+なお「間隔を延ばす」だけでは意味がない。Render は15分アイドルで
+スリープするので、15分を超える間隔では毎回スリープ済みを起こすだけになる。
+24時間起こす必要が出たら、**Actions ではなく外部の無料監視サービス**
+（UptimeRobot・cron-job.org など）を使うこと。
 
 定期実行を足すときは **実行回数 × 1分** で見積もること。
 
