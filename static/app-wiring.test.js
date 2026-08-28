@@ -63,6 +63,32 @@ describe("app.js の依存結線", () => {
 });
 
 describe("予算の手がかり（T6）", () => {
+  const budget = readFileSync(new URL("./budget-view.js", import.meta.url), "utf8");
+  const css    = readFileSync(new URL("./style.css", import.meta.url), "utf8");
+
+  it("未設定のカテゴリは入力欄を出さず「予算なし」に畳む", () => {
+    // 空の入力欄が縦に並ぶだけだと、「何円入れればよいか」の手がかり
+    // （平均・先月）がその空欄の列に埋もれる。
+    expect(budget).toMatch(/budget-cat-empty/);
+    expect(budget).toMatch(/予算なし/);
+    expect(css, ".budget-cat-empty のスタイルが無い").toMatch(/\.budget-cat-empty\s*\{/);
+  });
+
+  it("畳んだ行はタップで入力欄に変わり、そのまま打てる", () => {
+    // focus を渡さないと、押したあとにもう一度タップさせることになる。
+    expect(budget).toMatch(/_showInput\(row, cat, 0, true\)/);
+  });
+
+  it("一括入力が畳まれた行も対象にする", () => {
+    // input だけを走査すると、「予算なし」に畳まれたカテゴリが
+    // 平均を入れる／先月と同じ から漏れる。行ごと差し替えること。
+    const i = budget.indexOf("data-fill");
+    const handler = budget.slice(i, budget.indexOf("_updateTotal();", i));
+    expect(handler, "一括入力が input だけを走査している")
+      .not.toMatch(/#budget-inputs input\[data-cat\]/);
+    expect(handler).toMatch(/\.budget-input-row/);
+  });
+
   it("initBudget に fetchHistory を渡している", () => {
     // 渡さないと案内ブロックと「平均 · 先月」の行が黙って出なくなる。
     // 予算設定自体は動くので、壊れたことに気づきにくい。
@@ -168,6 +194,23 @@ describe("レシピ提案の初期期間（T4）", () => {
       expect(call, "initialPeriod が week でない").toMatch(/initialPeriod:\s*"week"/);
     }
   });
+});
+
+describe("指で押す要素は 44px（T5 / T8）", () => {
+  const css = readFileSync(new URL("./style.css", import.meta.url), "utf8");
+
+  // 44px ルールは既に style.css にある。**半分だけ適用されている**のが
+  // これまでの壊れ方で、あとから足した押せる要素が抜けやすい。
+  for (const sel of [".shopping-del", ".cal-week-click"]) {
+    it(`${sel} が 44px を満たす`, () => {
+      const i = css.indexOf(sel);
+      expect(i, `${sel} のルールが無い`).toBeGreaterThan(-1);
+      // 宣言そのものか、44px を宣言する共通ルールの列挙に含まれること。
+      expect(css).toMatch(
+        new RegExp(`\\${sel}[^{]*\\{[^}]*min-(height|width):\\s*44px`),
+      );
+    });
+  }
 });
 
 describe("スマホの下部まわり", () => {

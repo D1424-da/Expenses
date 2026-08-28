@@ -1376,6 +1376,16 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 /* 手がかりの行を折り返して受けるため wrap する。 */
 .budget-input-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .budget-cat-label { width: 80px; flex-shrink: 0; font-size: 0.86rem; font-weight: 600; }
+.budget-cell { flex: 1; display: flex; min-width: 0; }
+/* 予算未設定のカテゴリ。空の入力欄を並べる代わりに1行に畳む。
+   押すと入力欄に変わるので、押せることが分かる字面にする。 */
+.budget-cat-empty {
+  flex: 1; min-height: 44px;
+  background: none; border: 1.5px dashed var(--border); border-radius: var(--r-input);
+  color: var(--muted); font-size: 0.86rem; font-family: inherit;
+  text-align: left; padding: 0 12px; cursor: pointer;
+}
+.budget-cat-empty:hover { border-color: var(--sage); color: var(--ink-2); }
 .budget-input-wrap { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--r-input); overflow: hidden; flex: 1; background: var(--card); }
 .budget-yen-prefix { padding: 0 8px; color: var(--muted); font-size: 0.9rem; }
 .budget-input-wrap input { border: none; border-radius: 0; padding: 9px 8px 9px 0; }
@@ -2404,12 +2414,15 @@ details[open] .recipe-advanced-toggle::after { content: "⌄"; }
 .recipe-tab,
 .expense-item .ei-actions button,
 .file-button,
-.email-text-btn {
+.email-text-btn,
+.shopping-del {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
+/* 買い物リストの削除。字は小さいままで当たり判定だけ 44px にする。 */
+.shopping-del { min-width: 44px; }
 /* チップの ✕ は 14px しかなく、隣の文字と押し間違えていた */
 .chip-remove {
   width: 32px;

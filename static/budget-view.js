@@ -114,32 +114,67 @@ async function _openSettings() {
 
   const inputs = $("budget-inputs");
   inputs.innerHTML = "";
-  for (const cat of _categories) {
-    const val = _budget[cat] || "";
-    const avg  = hist?.hasAverage ? hist.average[cat] : 0;
-    const last = hist?.hasLastMonth ? hist.lastMonth[cat] : 0;
-    const parts = [];
-    if (avg  > 0) parts.push(`平均 ${yen(avg)}`);
-    if (last > 0) parts.push(`先月 ${yen(last)}`);
-
-    const row = document.createElement("div");
-    row.className = "budget-input-row";
-    row.innerHTML = `
-      <label class="budget-cat-label">${escapeHtml(cat)}</label>
-      <div class="budget-input-wrap">
-        <span class="budget-yen-prefix">¥</span>
-        <input type="number" min="0" step="1000" inputmode="numeric"
-               data-cat="${escapeHtml(cat)}" value="${val}" placeholder="0（予算なし）" />
-      </div>
-      ${parts.length ? `<p class="budget-hint-line">${parts.join(" · ")}</p>` : ""}`;
-    inputs.appendChild(row);
-  }
+  for (const cat of _categories) inputs.appendChild(_row(cat, _budget[cat] || 0, hist));
 
   _renderSuggest(hist);
   _updateTotal();
   // 入力のたびに合計を出す。行ごとに listener を付けると再描画のたびに
   // 増えるので、コンテナ1つに委譲する。
   inputs.oninput = _updateTotal;
+}
+
+/** 1カテゴリの行。予算が入っていなければ入力欄を出さず「予算なし」にする。
+ *
+ * 空の入力欄が縦に並ぶだけの画面だと、「何円と入れればよいか」の手がかり
+ * （平均・先月）がその空欄の列に埋もれる。使っているカテゴリだけを
+ * 数字の並びとして見せ、残りは1行に畳む。
+ */
+function _row(cat, value, hist) {
+  const avg  = hist?.hasAverage ? hist.average[cat] : 0;
+  const last = hist?.hasLastMonth ? hist.lastMonth[cat] : 0;
+  const parts = [];
+  if (avg  > 0) parts.push(`平均 ${yen(avg)}`);
+  if (last > 0) parts.push(`先月 ${yen(last)}`);
+
+  const row = document.createElement("div");
+  row.className = "budget-input-row";
+  row.dataset.cat = cat;
+  row.innerHTML = `
+    <label class="budget-cat-label">${escapeHtml(cat)}</label>
+    <div class="budget-cell"></div>
+    ${parts.length ? `<p class="budget-hint-line">${parts.join(" · ")}</p>` : ""}`;
+  _setCell(row, cat, value);
+  return row;
+}
+
+/** 金額があれば入力欄、無ければ「予算なし」。value > 0 で切り替える。 */
+function _setCell(row, cat, value) {
+  if (Number(value) > 0) _showInput(row, cat, value, false);
+  else _showEmpty(row, cat);
+}
+
+function _showInput(row, cat, value, focus) {
+  const cell = row.querySelector(".budget-cell");
+  cell.innerHTML = `
+    <div class="budget-input-wrap">
+      <span class="budget-yen-prefix">¥</span>
+      <input type="number" min="0" step="1000" inputmode="numeric"
+             data-cat="${escapeHtml(cat)}" value="${Number(value) > 0 ? Number(value) : ""}"
+             placeholder="0" aria-label="${escapeHtml(cat)}の予算" />
+    </div>`;
+  const input = cell.querySelector("input");
+  // 入力欄に変えた直後は、そのまま数字を打てるようにする。
+  if (focus) input.focus();
+  return input;
+}
+
+function _showEmpty(row, cat) {
+  const cell = row.querySelector(".budget-cell");
+  cell.innerHTML = `<button type="button" class="budget-cat-empty">予算なし</button>`;
+  cell.querySelector("button").onclick = () => {
+    _showInput(row, cat, 0, true);
+    _updateTotal();
+  };
 }
 
 /** 上部の案内ブロック。根拠が足りないときは何も出さない。 */
@@ -171,9 +206,11 @@ function _renderSuggest(hist) {
   box.querySelectorAll("[data-fill]").forEach((btn) => {
     btn.onclick = () => {
       const src = btn.dataset.fill === "average" ? hist.average : hist.lastMonth;
-      document.querySelectorAll("#budget-inputs input[data-cat]").forEach((el) => {
-        const v = src[el.dataset.cat] || 0;
-        el.value = v > 0 ? String(v) : "";
+      // 「予算なし」に畳まれている行には input が無いので、値を書き込む
+      // のではなくセルごと差し替える。input だけを走査すると、畳まれた
+      // カテゴリが一括入力から漏れる。
+      document.querySelectorAll("#budget-inputs .budget-input-row").forEach((row) => {
+        _setCell(row, row.dataset.cat, src[row.dataset.cat] || 0);
       });
       _updateTotal();
     };
