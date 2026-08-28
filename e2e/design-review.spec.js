@@ -164,3 +164,56 @@ test.describe("ナビゲーションの現在地", () => {
     expect(Number(pcnav)).toBeGreaterThanOrEqual(700);
   });
 });
+
+test.describe("カレンダーの金額表示（T8）", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  /** カレンダーのマス目を手で組んで、幅だけを測る。 */
+  async function measure(page, amountText) {
+    await page.goto("/login.html");
+    return page.evaluate((amt) => {
+      const cal = document.getElementById("calendar");
+      cal.removeAttribute("hidden");
+      cal.closest("[hidden]")?.removeAttribute("hidden");
+      document.getElementById("app")?.removeAttribute("hidden");
+      cal.innerHTML =
+        '<div class="cal-grid">' +
+        ["日","月","火","水","木","金","土"]
+          .map((w) => `<div class="cal-dow">${w}</div>`).join("") +
+        Array.from({ length: 7 }, (_, i) =>
+          `<div class="cal-day cal-has" data-day="d${i}">` +
+          `<span class="cal-num">${i + 1}</span>` +
+          `<span class="cal-amt">${amt}</span></div>`).join("") +
+        '<div class="cal-week cal-week-click" data-week="0">' +
+        '<span class="cal-week-label">週計</span>' +
+        '<span class="cal-week-amt">¥123,456</span></div>' +
+        "</div>";
+      const el = cal.querySelector(".cal-amt");
+      const week = cal.querySelector(".cal-week");
+      return {
+        // scrollWidth > clientWidth なら省略記号で切れている
+        clipped: el.scrollWidth > el.clientWidth + 1,
+        weekClipped: week.scrollWidth > week.clientWidth + 1,
+        weekHeight: week.getBoundingClientRect().height,
+        columns: getComputedStyle(cal.querySelector(".cal-grid"))
+          .gridTemplateColumns.split(" ").length,
+      };
+    }, amountText);
+  }
+
+  test("375px 幅で5桁の金額が切れない", async ({ page }) => {
+    // 以前は週計を8列目に置いており、1マスが約36pxで「¥12,345」が
+    // 省略記号になっていた。7列にしたうえで、マス目からは通貨記号を
+    // 外している（週計の帯には「¥」が出るので単位は伝わる）。
+    const r = await measure(page, "12,345");
+    expect(r.clipped, "日別の金額が切れている").toBe(false);
+  });
+
+  test("週計は7列の外に出ている", async ({ page }) => {
+    const r = await measure(page, "1,000");
+    expect(r.columns, "グリッドが7列でない").toBe(7);
+    expect(r.weekClipped, "週計が切れている").toBe(false);
+    // タップ対象なので 44px を確保する
+    expect(r.weekHeight).toBeGreaterThanOrEqual(44);
+  });
+});

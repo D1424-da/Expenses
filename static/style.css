@@ -1036,7 +1036,10 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
    ============================================================ */
 .cal-hint { color: var(--muted); font-size: 0.75rem; }
 .calendar { width: 100%; }
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr) 1.2fr; gap: 3px; }
+/* 週計を8列目に置いていたが、375px 端末では1マスが約41pxしか取れず、
+   5桁の金額が省略記号で切れていた。7列にして週計は行の下の帯に出す
+   （calendar-view.js）。1マスは約48px確保できる。 */
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
 .cal-dow { text-align: center; font-size: 0.68rem; color: var(--muted); padding: 3px 0; font-weight: 700; letter-spacing: .02em; }
 .cal-dow.cal-week-h { color: var(--sage); }
 .cal-day {
@@ -1053,14 +1056,20 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .cal-num { font-size: 0.75rem; color: var(--muted); font-weight: 600; line-height: 1; }
 .cal-today .cal-num { color: var(--sage); font-weight: 800; }
 .cal-amt { font-size: 0.68rem; font-weight: 700; color: var(--sage); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+/* 週計の帯。7列すべてにまたがる。 */
 .cal-week {
-  display: flex; align-items: center; justify-content: flex-end;
-  min-height: 52px; padding: 4px 6px;
-  font-size: 0.72rem; font-weight: 700; color: var(--sage);
-  background: var(--stone); border-radius: 8px; text-align: right; font-variant-numeric: tabular-nums;
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  min-height: 28px; padding: 3px 8px; margin-bottom: 2px;
+  font-size: 0.78rem; font-weight: 700; color: var(--sage);
+  background: var(--stone); border-radius: 8px; font-variant-numeric: tabular-nums;
 }
-.cal-week-click { cursor: pointer; background: var(--sage-light); flex-direction: column; justify-content: center; gap: 1px; }
-.cal-week-click::after { content: "内訳▾"; font-size: 0.55rem; font-weight: 600; opacity: 0.75; }
+.cal-week-label { font-size: 0.68rem; font-weight: 600; opacity: 0.75; margin-right: auto; }
+.cal-week-amt { font-size: 0.85rem; }
+.cal-week-click { cursor: pointer; background: var(--sage-light); }
+/* タップ対象なので 44px を確保する（帯自体は薄いが押せる高さにする） */
+.cal-week-click { min-height: 44px; }
+.cal-week-click::after { content: "内訳▾"; font-size: 0.62rem; font-weight: 600; opacity: 0.75; }
 .cal-week-click:active { filter: brightness(0.95); }
 .cal-meal { font-size: 0.65rem; line-height: 1; margin-top: auto; }
 
@@ -1535,8 +1544,8 @@ a.pcnav-blog { margin-left: auto; color: var(--sage); }
   /* 店名/支店名 行だけ縦並びに（日付/金額は2列維持） */
   .row.row-store { flex-direction: column; }
   .cal-grid { gap: 2px; }
-  .cal-day, .cal-week { min-height: 44px; }
-  .cal-amt, .cal-week { font-size: 0.6rem; }
+  .cal-day { min-height: 44px; }
+  .cal-amt { font-size: 0.72rem; }
   .cal-day { padding: 2px; }
   /* モバイルでは保存レシピ・最安値・CSV・買い物をヘッダーから省略（ボトムナビ・PCナビ優先） */
   #saved-recipes-btn, #compare-btn, #export-btn, #shopping-btn { display: none; }
@@ -2196,10 +2205,11 @@ details[open] .recipe-advanced-toggle::before { content: "▼ "; }
    CALENDAR — 金額の省略対策（4c）
    390px 端末では1マス約41px しかなく「¥3,820」が切れていた。
    ============================================================ */
-.cal-amt { font-size: 0.66rem; letter-spacing: -0.02em; }
+.cal-amt { font-size: 0.72rem; letter-spacing: -0.01em; }
 @media (max-width: 400px) {
   .cal-grid { gap: 2px; }
-  .cal-day { padding: 3px; }
+  /* 内寸を 35px → 37px に広げて、5桁の金額に余裕を持たせる。 */
+  .cal-day { padding: 2px; }
 }
 
 /* 撮影ボタンを label から button に変えた（4a）。

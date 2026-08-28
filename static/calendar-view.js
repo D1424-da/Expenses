@@ -25,7 +25,7 @@ const _dayExpenseById = new Map();
 // 差分更新用の状態
 let _renderedMonth = null; // { year, month } — 最後に全再構築した月
 let _dayEls  = new Map(); // dateKey → { dayEl, amtEl, mealEl, lastAmt, lastMeal }
-let _weekEls = [];        // [{ el, lastTotal }] — 週計セルへの参照
+let _weekEls = [];        // [{ el, amtEl, lastTotal }] — 週計の帯への参照
 
 export function initCalendar({ onAddExpense, onEdit, onDelete, onInlineSave }) {
   _onAddExpense = onAddExpense;
@@ -53,6 +53,16 @@ export function initCalendar({ onAddExpense, onEdit, onDelete, onInlineSave }) {
     if (dayEl && !dayEl.hasAttribute("data-out")) _openDayModal(dayEl.dataset.day);
   });
 }
+
+/** カレンダーのマス目に出す金額。通貨記号は付けない。
+ *
+ * 375px 端末ではマスの内寸が35pxしかなく、「¥12,345」は41px必要で
+ * 省略記号に切れていた。記号を外すと35pxに収まる。マス目の数字はすべて
+ * 金額で、週計の帯には「¥」が出るので単位は伝わる。
+ * 金額そのものを丸める（3.8k のような表記）とレシート家計簿として
+ * 意味が変わるので、桁は落とさない。
+ */
+const _calAmt = (n) => Number(n || 0).toLocaleString("ja-JP");
 
 export function renderCalendar(expenses, month) {
   _expenses = expenses;
@@ -95,7 +105,6 @@ function _fullBuild(year, m) {
 
   let html = '<div class="cal-grid">';
   for (const w of WEEKDAYS) html += `<div class="cal-dow">${w}</div>`;
-  html += '<div class="cal-dow cal-week-h">週計</div>';
 
   const cursor = new Date(gridStart);
   for (let w = 0; w < weeks; w++) {
@@ -125,7 +134,7 @@ function _fullBuild(year, m) {
 
       rowHtml += `<div class="${cls}" data-day="${key}"${inMonth ? "" : " data-out"}>
           <span class="cal-num">${cursor.getDate()}</span>
-          ${amt > 0    ? `<span class="cal-amt">${yen(amt)}</span>`            : ""}
+          ${amt > 0    ? `<span class="cal-amt">${_calAmt(amt)}</span>`         : ""}
           ${hasMeal    ? `<span class="cal-meal" title="献立あり">🍽</span>` : ""}
         </div>`;
       cursor.setDate(cursor.getDate() + 1);
@@ -135,8 +144,13 @@ function _fullBuild(year, m) {
       start: weekStart, end: weekEnd,
       total: weekSum, byCat: categoryBreakdown(weekExpenses),
     });
+    // 週計は7列の中に入れない。8列目に置くと 375px 端末で1マスが約41pxになり、
+    // 5桁の金額が省略記号で切れていた。行の下に全幅の帯として置く。
     const weekCls = "cal-week" + (weekSum > 0 ? " cal-week-click" : "");
-    rowHtml += `<div class="${weekCls}" data-week="${w}">${weekSum > 0 ? yen(weekSum) : ""}</div>`;
+    rowHtml += `<div class="${weekCls}" data-week="${w}">`
+      + `<span class="cal-week-label">週計</span>`
+      + `<span class="cal-week-amt">${weekSum > 0 ? yen(weekSum) : ""}</span>`
+      + `</div>`;
     html += rowHtml;
   }
   html += "</div>";
@@ -155,7 +169,11 @@ function _fullBuild(year, m) {
     });
   });
   cal.querySelectorAll("[data-week]").forEach((el, idx) => {
-    _weekEls.push({ el, lastTotal: _weekBreakdowns[idx]?.total ?? 0 });
+    _weekEls.push({
+      el,
+      amtEl: el.querySelector(".cal-week-amt"),
+      lastTotal: _weekBreakdowns[idx]?.total ?? 0,
+    });
   });
 }
 
@@ -179,7 +197,7 @@ function _diffUpdate(year, m) {
           cell.amtEl.className = "cal-amt";
           cell.dayEl.appendChild(cell.amtEl);
         }
-        cell.amtEl.textContent = yen(newAmt);
+        cell.amtEl.textContent = _calAmt(newAmt);
       } else {
         cell.amtEl?.remove();
         cell.amtEl = null;
@@ -208,7 +226,8 @@ function _diffUpdate(year, m) {
     const newTotal = _weekBreakdowns[idx]?.total ?? 0;
     if (newTotal === cell.lastTotal) return;
     cell.lastTotal = newTotal;
-    cell.el.textContent = newTotal > 0 ? yen(newTotal) : "";
+    // el.textContent に直書きすると「週計」ラベルまで消える。
+    if (cell.amtEl) cell.amtEl.textContent = newTotal > 0 ? yen(newTotal) : "";
     cell.el.classList.toggle("cal-week-click", newTotal > 0);
   });
 }
