@@ -134,6 +134,9 @@
               <button id="trend-btn" class="summary-action-btn" title="月別グラフ">📈 グラフ</button>
             </div>
           </div>
+          <!-- 予算の残額。予算未設定のときは設定への導線に切り替わる
+               （summary.js が描画）。 -->
+          <div id="budget-remaining" class="budget-remaining"></div>
           <!-- 月切り替えナビ -->
           <div class="month-picker">
             <button id="prev-month" aria-label="前の月">‹</button>
@@ -179,7 +182,10 @@
       </section>
 
       <!-- 入力フォーム（OCR結果の確認・修正 / 手入力） -->
-      <section class="card form-card" id="form-card">
+      <!-- 既定では畳んでおく。7つの入力欄を常に開いておくと、
+           「今月の買い物」に届くまでの障害物になっていた。
+           展開するのは ①＋手で入力する ②OCRの読み取り完了 ③一覧からの編集。 -->
+      <section class="card form-card is-collapsed" id="form-card" hidden>
         <h2 id="form-title">手で入力する</h2>
         <p id="edit-banner" class="edit-banner" hidden></p>
         <form id="expense-form">
@@ -236,6 +242,7 @@
         </div>
         <p id="list-filter-count" class="list-filter-count" hidden></p>
         <div id="expense-list" class="expense-list"></div>
+        <button type="button" id="manual-entry-btn" class="manual-entry-btn">＋ 手で入力する</button>
         <div id="empty-msg" class="empty-state" hidden>
           <div class="empty-state-icon" aria-hidden="true">📸</div>
           <p class="empty-state-title">まだ記録がありません</p>

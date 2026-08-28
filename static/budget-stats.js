@@ -96,3 +96,42 @@ export function sumLimits(values) {
     return acc + (Number.isFinite(n) && n > 0 ? n : 0);
   }, 0);
 }
+
+
+/**
+ * 表示中の月の残り日数。当月でなければ null（過去・未来の月に「残り日数」は
+ * 意味がない）。
+ */
+export function daysLeftInMonth(now, month) {
+  if (now.getFullYear() !== month.getFullYear() || now.getMonth() !== month.getMonth()) {
+    return null;
+  }
+  const last = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  return last - now.getDate() + 1;   // 今日を含めた残り日数
+}
+
+/**
+ * 予算に対する残額。
+ *
+ * @param {Record<string, number>} limits カテゴリ別の予算
+ * @param {Array<{amount?: number}>} expenses 表示中の月の支出
+ * @returns {{ hasBudget: boolean, limit: number, spent: number,
+ *             remaining: number, over: boolean, pct: number }}
+ *   remaining は超過時も正の数（超過額）を返す。over で向きを判断する。
+ */
+export function budgetRemaining(limits, expenses) {
+  const limit = Object.values(limits || {})
+    .reduce((a, v) => a + (Number(v) > 0 ? Number(v) : 0), 0);
+  const spent = (expenses || [])
+    .reduce((a, e) => a + (Number(e?.amount) > 0 ? Number(e.amount) : 0), 0);
+  const diff = limit - spent;
+  return {
+    hasBudget: limit > 0,
+    limit,
+    spent,
+    remaining: Math.abs(diff),
+    over: diff < 0,
+    // バーは 100% で頭打ちにする。超過分まで伸ばすと枠からはみ出す。
+    pct: limit > 0 ? Math.min(100, (spent / limit) * 100) : 0,
+  };
+}

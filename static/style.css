@@ -1291,6 +1291,40 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
    ============================================================ */
 #budget-form { display: flex; flex-direction: column; gap: 12px; }
 /* ============================================================
+   SUMMARY — 予算の残額（T2-2）
+   これまで残額は予算モーダルを開かないと見えなかった。
+   サマリーは --sage-deep 背景なので、文字は白側で組む。
+   ============================================================ */
+.budget-remaining { margin-top: 10px; }
+.budget-remaining-bar {
+  height: 8px; border-radius: 100px; overflow: hidden;
+  background: rgba(255,255,255,0.22);
+}
+.budget-remaining-fill {
+  height: 100%; border-radius: 100px;
+  background: rgba(255,255,255,0.9);
+  transition: width .25s;
+}
+.budget-remaining-fill.over { background: var(--petal); }
+.budget-remaining-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px; margin-top: 6px;
+}
+.budget-remaining-text {
+  font-size: 0.92rem; font-weight: 700; color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.budget-remaining-text.over { color: var(--petal); }
+.budget-remaining-days { font-size: 0.76rem; color: rgba(255,255,255,0.78); }
+.budget-remaining-link {
+  min-height: 44px;
+  background: none; border: none; padding: 0;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.84rem; font-family: inherit;
+  text-decoration: underline; cursor: pointer;
+}
+
+/* ============================================================
    BUDGET — 手がかりの表示（T6）
    空欄が並ぶだけでは「何円と入れればよいか」の手がかりが無かった。
    過去の実績が十分にあるときだけ、平均と先月額を添える。
@@ -2331,3 +2365,23 @@ button.file-button {
   transition: filter .15s;
 }
 button.file-button.secondary { background: var(--sage-light); color: var(--sage); }
+
+
+/* ============================================================
+   FORM — 既定で畳む（T2-1）
+   7つの入力欄を常に開いておくと、サマリーから「今月の買い物」に
+   届くまでの障害物になっていた。
+   ============================================================ */
+.manual-entry-btn {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+  background: none;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--r-btn);
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+.manual-entry-btn:hover { border-color: var(--sage); color: var(--sage); }

@@ -4,7 +4,10 @@
 // 受け取る**。記録を始めたばかりの月は数日分しか無いこともあるので、
 // 月数が足りないときに出さない判定をここで固定する。
 import { describe, it, expect } from "vitest";
-import { summarizeHistory, targetMonthKeys, sumLimits } from "./budget-stats.js";
+import {
+  summarizeHistory, targetMonthKeys, sumLimits,
+  daysLeftInMonth, budgetRemaining,
+} from "./budget-stats.js";
 
 const NOW = new Date(2026, 7, 15); // 2026-08-15
 const e = (date, amount, category = "食費") => ({ date, amount, category });
@@ -117,5 +120,55 @@ describe("sumLimits", () => {
 
   it("空配列は 0", () => {
     expect(sumLimits([])).toBe(0);
+  });
+});
+
+describe("daysLeftInMonth", () => {
+  it("当月なら今日を含めた残り日数を返す", () => {
+    // 2026-08 は31日まで。8/15 なら 15〜31 で17日。
+    expect(daysLeftInMonth(new Date(2026, 7, 15), new Date(2026, 7, 1))).toBe(17);
+  });
+
+  it("月末は1日", () => {
+    expect(daysLeftInMonth(new Date(2026, 7, 31), new Date(2026, 7, 1))).toBe(1);
+  });
+
+  it("当月でなければ null（過去・未来に残り日数は無い）", () => {
+    expect(daysLeftInMonth(new Date(2026, 7, 15), new Date(2026, 6, 1))).toBeNull();
+    expect(daysLeftInMonth(new Date(2026, 7, 15), new Date(2026, 8, 1))).toBeNull();
+  });
+});
+
+describe("budgetRemaining", () => {
+  it("予算未設定なら hasBudget が false", () => {
+    expect(budgetRemaining({}, [{ amount: 1000 }]).hasBudget).toBe(false);
+    expect(budgetRemaining(null, []).hasBudget).toBe(false);
+  });
+
+  it("残額を返す", () => {
+    const r = budgetRemaining({ 食費: 30000, 日用品: 5000 }, [{ amount: 12000 }]);
+    expect(r.limit).toBe(35000);
+    expect(r.remaining).toBe(23000);
+    expect(r.over).toBe(false);
+  });
+
+  it("超過時は over が true で、超過額を返す", () => {
+    const r = budgetRemaining({ 食費: 10000 }, [{ amount: 13200 }]);
+    expect(r.over).toBe(true);
+    expect(r.remaining).toBe(3200);
+  });
+
+  it("バーは 100% で頭打ちにする", () => {
+    // 超過分まで伸ばすと枠からはみ出す。
+    expect(budgetRemaining({ 食費: 10000 }, [{ amount: 50000 }]).pct).toBe(100);
+  });
+
+  it("壊れた金額を無視する", () => {
+    const r = budgetRemaining(
+      { 食費: 10000, 日用品: "x", 外食: -1 },
+      [{ amount: 1000 }, { amount: "y" }, {}, null],
+    );
+    expect(r.limit).toBe(10000);
+    expect(r.spent).toBe(1000);
   });
 });

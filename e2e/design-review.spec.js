@@ -413,3 +413,51 @@ test.describe("アカウント設定（T7）", () => {
     await expect(page.locator("#account-plan-price")).toContainText("¥500");
   });
 });
+
+test.describe("ホーム画面の再構成（T2）", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("入力フォームが既定で畳まれている", async ({ page }) => {
+    // 7つの入力欄が常に開いていて、「今月の買い物」に届くまでの
+    // 障害物になっていた。
+    await page.goto("/login.html");
+    await expect(page.locator("#form-card")).toBeHidden();
+  });
+
+  test("一覧の下に「手で入力する」の入口がある", async ({ page }) => {
+    await page.goto("/login.html");
+    const r = await page.evaluate(() => {
+      const list = document.getElementById("expense-list");
+      const btn  = document.getElementById("manual-entry-btn");
+      return {
+        exists: !!btn,
+        afterList: !!(list.compareDocumentPosition(btn) &
+          Node.DOCUMENT_POSITION_FOLLOWING),
+      };
+    });
+    expect(r.exists, "手入力の入口が無い").toBe(true);
+    expect(r.afterList, "入口が一覧より前にある").toBe(true);
+  });
+
+  test("残額ブロックの器がサマリー内にある", async ({ page }) => {
+    await page.goto("/login.html");
+    const inSummary = await page.evaluate(() => {
+      const el = document.getElementById("budget-remaining");
+      return !!el && !!el.closest(".summary-hero");
+    });
+    expect(inSummary, "残額ブロックがサマリー内に無い").toBe(true);
+  });
+
+  test("残額の文字がサマリーの背景から読める", async ({ page }) => {
+    // サマリーは --sage-deep 背景。既定色のままだと読めない。
+    await page.goto("/login.html");
+    const color = await page.evaluate(() => {
+      document.getElementById("app")?.removeAttribute("hidden");
+      const el = document.getElementById("budget-remaining");
+      el.innerHTML = '<div class="budget-remaining-row">' +
+        '<span class="budget-remaining-text">予算まで あと ¥1</span></div>';
+      return getComputedStyle(el.querySelector(".budget-remaining-text")).color;
+    });
+    expect(color).toBe("rgb(255, 255, 255)");
+  });
+});

@@ -2,7 +2,8 @@
 import { state, expireAllExpensesCache } from "./app-state.js";
 import { $, yen, escapeHtml, monthKey, renderCatBars } from "./dom-utils.js";
 import { categoryBreakdown, buildPriceHistory, lowestPriceAlerts } from "./stats.js";
-import { renderBudgetBars } from "./budget-view.js";
+import { renderBudgetBars, getBudget } from "./budget-view.js";
+import { budgetRemaining, daysLeftInMonth } from "./budget-stats.js";
 import { renderUsageBar, checkGate } from "./stripe-billing.js";
 import { fetchAllExpenses } from "./firestore-data.js";
 
@@ -25,11 +26,44 @@ export function renderSummary() {
     ? `${state.currentExpenses.length}件の記録` : "記録なし";
   renderUsageBar(thisMonthCount());
 
+  _renderRemaining();
+
   const bars = $("category-bars");
   const usedBudget = renderBudgetBars(state.currentExpenses, bars);
   if (!usedBudget) renderCatBars(bars, categoryBreakdown(state.currentExpenses));
 
   _refreshAlerts();
+}
+
+/** 合計の下に「予算まで あと ¥○○」を出す。予算が無ければ設定への導線。 */
+function _renderRemaining() {
+  const el = $("budget-remaining");
+  if (!el) return;
+
+  const r = budgetRemaining(getBudget(), state.currentExpenses);
+  if (!r.hasBudget) {
+    // 予算モーダルを開かないと残りが見えない、という状態を解消するための
+    // ブロックなので、未設定のときは設定への入口を出す。
+    el.innerHTML =
+      '<button type="button" class="budget-remaining-link" id="budget-remaining-link">'
+      + "予算を決めると残りが見えます</button>";
+    el.querySelector("#budget-remaining-link").onclick = () => $("budget-btn").click();
+    return;
+  }
+
+  const days = daysLeftInMonth(new Date(), state.currentMonth);
+  const text = r.over
+    ? `予算を ${yen(r.remaining)} 超えています`
+    : `予算まで あと ${yen(r.remaining)}`;
+
+  el.innerHTML = `
+    <div class="budget-remaining-bar">
+      <div class="budget-remaining-fill${r.over ? " over" : ""}" style="width:${r.pct.toFixed(1)}%"></div>
+    </div>
+    <div class="budget-remaining-row">
+      <span class="budget-remaining-text${r.over ? " over" : ""}">${escapeHtml(text)}</span>
+      ${days !== null ? `<span class="budget-remaining-days">残り${days}日</span>` : ""}
+    </div>`;
 }
 
 async function _refreshAlerts() {
