@@ -196,6 +196,53 @@ describe("レシピ提案の初期期間（T4）", () => {
   });
 });
 
+describe("ナビの並びとラベル（T3）", () => {
+  const html = readFileSync(new URL("./login.html", import.meta.url), "utf8");
+
+  /** ナビの中から id と表示ラベルを出現順に拾う。 */
+  function items(startMark, endMark, idRe, labelCls) {
+    const seg = html.slice(html.indexOf(startMark), html.indexOf(endMark, html.indexOf(startMark)));
+    const out = [];
+    for (const m of seg.matchAll(new RegExp(`id="(${idRe})"`, "g"))) {
+      const after = seg.slice(m.index);
+      const label = after.match(new RegExp(`class="${labelCls}">([^<]+)<`));
+      out.push([m[1].replace(/^(pcnav|bnav)-/, ""), label ? label[1] : null]);
+    }
+    return out;
+  }
+
+  const pc  = items('class="pc-nav"', "</nav>", "pcnav-\\w+", "pcnav-label");
+  const bn  = items('class="bottom-nav"', "</nav>", "bnav-\\w+", "bnav-label");
+  const more = items('id="bnav-more-drawer"', "</nav>", "bnav-(saved|compare|budget|trend)", "bnav-more-label");
+
+  it("先頭4つが PC・スマホで同じ順・同じラベル", () => {
+    // 主機能のレシピ提案が PC で3番目・スマホで4番目に入れ替わっており、
+    // ラベルも「買い物リスト」「買い物」で揺れていた。
+    expect(bn.slice(0, 4)).toEqual(pc.slice(0, 4));
+  });
+
+  it("仕様どおり 買い物リスト → レシピ提案 の順", () => {
+    expect(pc.slice(0, 4).map((x) => x[1]))
+      .toEqual(["ホーム", "カレンダー", "買い物リスト", "レシピ提案"]);
+  });
+
+  it("スマホの5番目はもっと見る", () => {
+    expect(bn).toHaveLength(5);
+    expect(bn[4][1]).toBe("もっと見る");
+  });
+
+  it("もっと見るの4項目が PC ナビの続きと一致する", () => {
+    expect(more.map((x) => x[1])).toEqual(pc.slice(4, 8).map((x) => x[1]));
+  });
+
+  it("aria-current は初期状態でホームにだけ付く", () => {
+    // 切り替え時の付け替えは app.js。同時に2つ付くと読み上げが破綻する。
+    expect((html.match(/aria-current="page"/g) || [])).toHaveLength(2); // PC と スマホ の ホーム
+    expect(html).toMatch(/id="pcnav-home"[^>]*aria-current="page"/);
+    expect(html).toMatch(/id="bnav-home"[^>]*aria-current="page"/);
+  });
+});
+
 describe("指で押す要素は 44px（T5 / T8）", () => {
   const css = readFileSync(new URL("./style.css", import.meta.url), "utf8");
 
