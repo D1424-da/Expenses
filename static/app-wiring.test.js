@@ -243,6 +243,31 @@ describe("ナビの並びとラベル（T3）", () => {
   });
 });
 
+describe("モバイルの Google ログイン", () => {
+  const auth = readFileSync(new URL("./auth.js", import.meta.url), "utf8");
+  const cfg  = readFileSync(new URL("./firebase-config.js", import.meta.url), "utf8");
+
+  it("モバイルはポップアップを使わずリダイレクトで入る", () => {
+    // モバイル Safari はポップアップを「新しいタブ」で開くため、認証後に
+    // タブが閉じた時点で window.opener 経由の受け渡しが成立せず、
+    // **ログインが完了しないまま元の画面に戻る**。
+    expect(auth).toMatch(/const useRedirect = _isMobile;/);
+    expect(auth, "Safari だけポップアップに戻っている")
+      .not.toMatch(/useRedirect = _isMobile && !_isSafari/);
+  });
+
+  it("authDomain が同一オリジンである", () => {
+    // リダイレクト方式が成立する前提。*.firebaseapp.com に戻すと
+    // サードパーティ扱いになり、ITP でリダイレクト認証が失敗しうる。
+    expect(cfg).toMatch(/authDomain:\s*"get-tohon\.online"/);
+  });
+
+  it("モバイルのリダイレクト失敗を握りつぶさない", () => {
+    // 握ると「押しても何も起きない」に戻り、直した症状と区別がつかない。
+    expect(auth).toMatch(/if \(_isSafari && !_isMobile\) return;/);
+  });
+});
+
 describe("指で押す要素は 44px（T5 / T8）", () => {
   const css = readFileSync(new URL("./style.css", import.meta.url), "utf8");
 
