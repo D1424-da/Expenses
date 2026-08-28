@@ -399,12 +399,11 @@
         "source": "/blog/recipe-memo-app.html",
         "destination": "/blog/recipe-record-app.html",
         "type": 301
-      }
-    ],
-    "rewrites": [
+      },
       {
-        "source": "**",
-        "destination": "/login.html"
+        "source": "/app",
+        "destination": "/login.html",
+        "type": 301
       }
     ]
   },

@@ -11,9 +11,6 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="manifest.json" />
 
-  <!-- Google Search Console 所有権確認 -->
-  <meta name=google-site-verification=8_G9TeYLqQrvZRTtXOrlCEoyOcc_1PzWsxofIMvMaQ8/>
-
   <!-- ログイン画面はインデックス不要 -->
   <meta name="robots" content="noindex, nofollow" />
 
@@ -83,15 +80,15 @@
       <h1><a href="/" class="topbar-title-link" title="トップページへ戻る"><span class="topbar-title-icon">🏠</span>カケイシピ</a></h1>
       <div class="topbar-right">
         <!-- モバイルのみ表示（PCナビバーに同機能あり） -->
-        <button id="shopping-btn" class="topbar-btn topbar-btn--mobile-only" title="買い物リスト">
-          🛒<span id="shopping-badge" class="shopping-badge" hidden></span>
+        <button id="shopping-btn" class="topbar-btn topbar-btn--mobile-only" title="買い物リスト" aria-label="買い物リスト">
+          <span aria-hidden="true">🛒</span><span id="shopping-badge" class="shopping-badge" hidden></span>
         </button>
-        <button id="saved-recipes-btn" class="topbar-btn topbar-btn--mobile-only" title="保存済みレシピ">📚</button>
+        <button id="saved-recipes-btn" class="topbar-btn topbar-btn--mobile-only" title="保存済みレシピ" aria-label="保存済みレシピ"><span aria-hidden="true">📚</span></button>
         <!-- PC・モバイル共通 -->
         <!-- PCナビから参照されるため DOM に残す（表示はPCナビ側） -->
         <button id="compare-btn" class="topbar-btn topbar-btn--mobile-only" title="価格比較" aria-hidden="true" tabindex="-1" style="display:none">🔎</button>
         <a href="/blog.html" class="topbar-btn topbar-btn--blog topbar-btn--mobile-only topbar-btn--labeled" title="節約ブログ" target="_blank" rel="noopener"><span class="topbar-btn-icon">📖</span><span class="topbar-btn-label">ブログ</span></a>
-        <button id="export-btn" class="topbar-btn topbar-btn--pc-hidden" title="CSVでエクスポート">📥 CSV</button>
+        <button id="export-btn" class="topbar-btn topbar-btn--pc-hidden" title="CSVでエクスポート" aria-label="CSVでエクスポート"><span aria-hidden="true">📥</span> CSV</button>
         <!-- PRO会員：バッジ表示。無料会員：アップグレードCTAとして表示 -->
         <span id="premium-badge" class="premium-badge" hidden title="プレミアムプラン">✨ PRO</span>
         <button id="upgrade-cta-btn" class="topbar-btn topbar-btn--upgrade topbar-btn--mobile-only" title="プレミアムにアップグレード" hidden>✨ <span class="topbar-btn-label">アップグレード</span></button>
@@ -102,7 +99,7 @@
     <!-- PC専用ナビゲーションバー（モバイルでは非表示） -->
     <nav class="pc-nav" aria-label="メインナビゲーション">
       <div class="pc-nav-inner">
-        <button class="pc-nav-item" id="pcnav-home"><span class="pcnav-icon">🏠</span><span class="pcnav-label">ホーム</span></button>
+        <button class="pc-nav-item active" id="pcnav-home" aria-current="page"><span class="pcnav-icon">🏠</span><span class="pcnav-label">ホーム</span></button>
         <button class="pc-nav-item" id="pcnav-calendar"><span class="pcnav-icon">📅</span><span class="pcnav-label">カレンダー</span></button>
         <button class="pc-nav-item pcnav-accent" id="pcnav-recipe"><span class="pcnav-icon">🍳</span><span class="pcnav-label">レシピ提案</span></button>
         <div class="pcnav-divider"></div>
@@ -146,11 +143,6 @@
         <div class="summary-body">
           <div id="category-bars" class="category-bars"></div>
           <div id="lowest-alerts" class="lowest-alerts" hidden></div>
-          <!-- 無料プランの使用量バー -->
-          <div id="usage-bar" class="usage-bar" hidden>
-            <span class="usage-count"></span>
-            <button class="usage-upgrade" type="button" hidden>✨ もっと記録する</button>
-          </div>
         </div>
       </section>
 
@@ -167,15 +159,19 @@
       <section class="card capture">
         <h2>レシートで記録する</h2>
         <p class="hint">写真を1枚撮るだけ。金額と品目をAIが自動で読み取ります。</p>
+        <!-- label + hidden input だと、label はフォーカスを受けず hidden な input も
+             フォーカスを受けないため、アプリの中心操作にキーボードから到達できなかった。
+             button から input.click() を呼ぶ形にし、input は .visually-hidden で
+             支援技術には残したまま画面から隠す。 -->
         <div class="capture-buttons">
-          <label class="file-button cam-only">
-            📷 今すぐ撮影
-            <input id="camera-input" type="file" accept="image/*" capture="environment" hidden />
-          </label>
-          <label class="file-button secondary">
-            🖼️ 写真から選ぶ
-            <input id="file-input" type="file" accept="image/*" multiple hidden />
-          </label>
+          <button type="button" id="camera-btn" class="file-button cam-only">
+            <span aria-hidden="true">📷</span> 今すぐ撮影
+          </button>
+          <button type="button" id="pick-btn" class="file-button secondary">
+            <span aria-hidden="true">🖼️</span> 写真から選ぶ
+          </button>
+          <input id="camera-input" type="file" accept="image/*" capture="environment" class="visually-hidden" tabindex="-1" aria-hidden="true" />
+          <input id="file-input" type="file" accept="image/*" multiple class="visually-hidden" tabindex="-1" aria-hidden="true" />
         </div>
         <div id="ocr-status" class="status" role="status" aria-live="polite" hidden></div>
       </section>
@@ -554,18 +550,11 @@
           <button id="upgrade-close" aria-label="閉じる">✕</button>
         </div>
         <div class="upgrade-content">
-          <p class="upgrade-limit-msg">今月の無料記録（10件）に達しました。<br />プレミアムにすると、記録し放題になります。</p>
-          <div class="upgrade-plans">
-            <div class="upgrade-plan">
-              <div class="plan-name">無料プラン</div>
-              <ul class="plan-features">
-                <li>月10件まで記録</li>
-                <li>AI OCR・集計・カレンダー</li>
-              </ul>
-            </div>
+          <p class="upgrade-limit-msg">無料トライアルが終了しました。<br />引き続きご利用いただくには、プランへの登録が必要です。</p>
+          <div class="upgrade-plans" style="grid-template-columns:1fr">
             <div class="upgrade-plan upgrade-plan--featured">
               <div class="plan-badge">おすすめ</div>
-              <div class="plan-name">プレミアム <span class="plan-price">¥980<span class="plan-period">/月</span></span></div>
+              <div class="plan-name">カケイシピ プラン <span class="plan-price">¥500<span class="plan-period">/月</span></span></div>
               <ul class="plan-features">
                 <li>✅ 記録件数 <strong>無制限</strong></li>
                 <li>✅ AI レシートOCR</li>
@@ -603,9 +592,9 @@
           <!-- プラン状態 -->
           <div id="account-plan-free" class="account-plan-box account-plan-free">
             <div class="account-plan-label">現在のプラン</div>
-            <div class="account-plan-name">無料プラン</div>
-            <p class="account-plan-desc">月10件まで記録できます。</p>
-            <button id="account-upgrade-btn" class="primary account-action-btn" type="button">✨ プレミアムにアップグレード</button>
+            <div class="account-plan-name">プラン未登録</div>
+            <p class="account-plan-desc">無料トライアルは終了しています。</p>
+            <button id="account-upgrade-btn" class="primary account-action-btn" type="button">✨ プランに登録する</button>
           </div>
           <div id="account-plan-premium" class="account-plan-box account-plan-premium" hidden>
             <div class="account-plan-label">現在のプラン</div>
@@ -641,7 +630,7 @@
     </div>
 
     <nav class="bottom-nav" aria-label="メインナビゲーション">
-      <button class="bnav-item" id="bnav-home" aria-label="ホーム">
+      <button class="bnav-item active" id="bnav-home" aria-label="ホーム" aria-current="page">
         <span class="bnav-icon">🏠</span>
         <span class="bnav-label">ホーム</span>
       </button>

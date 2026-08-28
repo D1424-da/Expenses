@@ -118,7 +118,9 @@ def test_breadcrumb_urls_resolve():
 
     STATIC = BLOG.parent
     cfg = _json.loads((STATIC.parent / "firebase.json").read_text(encoding="utf-8"))
-    rewrites = {r["source"] for r in cfg["hosting"]["rewrites"]}
+    # ワイルドカード rewrite を撤去したので rewrites キー自体が無い。
+    # 未定義パスは 404 になるため、この検査はむしろ厳しくなった。
+    rewrites = {r["source"] for r in cfg["hosting"].get("rewrites", [])}
     redirected = {r["source"] for r in cfg["hosting"]["redirects"]}
     base = "https://get-tohon.online"
 

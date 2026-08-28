@@ -8,7 +8,6 @@
       <!-- GA4 (Google Analytics) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTNPDRH19H"></script>
   <script src="analytics.js"></script>
-  <link rel="preload" href="ogp.png" as="image" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="tokens.css" />
@@ -16,6 +15,9 @@
   <title>レシート家計簿アプリ カケイシピ｜撮るだけで食費記録、献立まで提案</title>
   <meta name="description" content="レシートを撮るだけで食費を自動記録できるレシート家計簿アプリ。店名・金額・品目まで読み取り、記録した食材からAIが今夜の献立を提案します。インストール不要・14日間無料・カード登録不要。" />
   <link rel="canonical" href="https://get-tohon.online/" />
+  <!-- Google Search Console 所有権確認。login.html にあったが noindex ページなうえ
+       属性の書式が壊れていた（引用符と content 属性が無く meta として機能しない）。 -->
+  <meta name="google-site-verification" content="8_G9TeYLqQrvZRTtXOrlCEoyOcc_1PzWsxofIMvMaQ8" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://get-tohon.online/" />
   <meta property="og:title" content="レシート家計簿アプリ カケイシピ｜撮るだけで食費記録" />
@@ -155,7 +157,7 @@
     <a class="header-nav-link" href="blog.html">ブログ</a>
   </nav>
   <div class="header-actions">
-    <a class="header-login-link" href="app">ログイン</a>
+    <a class="header-login-link" href="/login.html">ログイン</a>
     <a class="header-cta" href="login.html">無料で始める</a>
   </div>
 </header>
@@ -171,21 +173,17 @@
         記録した食材から、今夜の献立まで提案。<br />
         手入力が続かなかった人のための家計簿です。
       </p>
-      <!-- スマホ向けCTA（デフォルト） -->
+      <!-- CTA（全デバイス共通） -->
       <div class="hero-actions" id="hero-actions">
         <a class="btn-primary" href="/login.html">無料で試してみる →</a>
         <a class="btn-ghost" href="#features">機能を見る</a>
       </div>
       <p class="hero-note" id="hero-note">✓ Googleアカウントで即日登録 &nbsp;✓ 14日間無料 &nbsp;✓ クレカ登録不要</p>
-      <!-- PC向けCTA（JS切替） -->
-      <div class="hero-pc-note" id="hero-pc-note" style="display:none">
-        <span class="hero-pc-badge">📱 スマホ専用アプリ</span>
-        <p>レシート撮影機能はスマホでご利用ください。<br>まずはブログで節約術を読んでみませんか？</p>
-        <div class="hero-pc-actions">
-          <a class="btn-primary" href="/blog.html">節約ブログを読む →</a>
-          <a class="btn-ghost" href="#features">機能を見る</a>
-        </div>
-      </div>
+      <!-- 撮影がスマホ限定であることは注記として伝える。以前はPC幅のとき
+           JSでCTAごと「スマホ専用アプリ」に差し替えていたが、PCから来た人が
+           登録できなくなっていた（アプリ本体にはPC専用ナビが実装済みで、
+           同ページのFAQ構造化データにも「PCでも使えます」と書いてある）。 -->
+      <p class="hero-device-note" style="background:var(--green-light,#EAF3EE);border-radius:8px;padding:12px 14px;font-size:.85rem;line-height:1.7;color:var(--green-deep,#1E5C3A);margin-top:8px">💡 記録・予算・献立の確認はPCでもできます。<strong>レシート撮影だけ</strong>スマホからどうぞ。</p>
     </div>
     <div class="hero-visual" aria-hidden="true">
       <div class="phone-glow"></div>
@@ -437,80 +435,45 @@
       <p class="section-sub">レシート管理から献立作成まで、節約に役立つ情報をまとめました。</p>
     </div>
     <div class="features-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">
-      <a href="/blog/food-cost-savings-tips.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">食費節約</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">食費を月2万円削減した家計管理術</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">月2万円の食費削減を実現した具体的な方法と家計管理の習慣を解説。</p>
+      <a href="/blog/receipt-kakeibo-basics.html" class="blog-card">
+        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">家計管理</div>
+        <h3 style="font-size:1.02rem;color:var(--ink);line-height:1.5;margin-bottom:8px">レシートを撮るだけ！ AI家計簿で始める「続けられる」節約習慣</h3>
+        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">続けられる家計簿の始め方。AIがレシートを読み取るので、入力の手間で挫折しません。</p>
       </a>
       <a href="/blog/kakeibo-app-compare.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">アプリ比較</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">家計簿アプリ比較2026年版｜マネーフォワード・Zaim・カケイシピ</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">主要家計簿アプリを料金・機能・使いやすさで徹底比較。</p>
+        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">アプリ活用</div>
+        <h3 style="font-size:1.02rem;color:var(--ink);line-height:1.5;margin-bottom:8px">家計簿アプリ比較2026年版｜マネーフォワード・Zaim・Moneytree・カケイシピを徹底比較</h3>
+        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">マネーフォワード・Zaim・Moneytree・カケイシピを料金と機能で比較します。</p>
       </a>
-      <a href="/blog/fridge-ai-recipe.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">AIレシピ</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">冷蔵庫の残り食材からAIがレシピを自動提案</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">冷蔵庫の食材を入力するだけでAIが献立を提案。食品ロスと食費を同時に削減。</p>
+      <a href="/blog/food-budget-app.html" class="blog-card">
+        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">アプリ活用</div>
+        <h3 style="font-size:1.02rem;color:var(--ink);line-height:1.5;margin-bottom:8px">食費専用の家計管理アプリの選び方｜マネーフォワードとの違いを解説</h3>
+        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">総合型と食費特化型の違い。どちらを選ぶべきかの判断基準を解説します。</p>
       </a>
-      <a href="/blog/receipt-app-free.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">レシート管理</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">レシート読み取りアプリ無料おすすめ比較</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">無料で使えるレシート読み取りアプリを比較。OCR精度・機能・使いやすさで評価。</p>
+      <a href="/blog/receipt-ocr-accuracy.html" class="blog-card">
+        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">アプリ活用</div>
+        <h3 style="font-size:1.02rem;color:var(--ink);line-height:1.5;margin-bottom:8px">レシート読み取りの精度は何で決まるか｜文字認識と意味の解釈という2つの工程</h3>
+        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">読み取り精度は「文字を読む」と「意味を判断する」の2工程で決まります。</p>
       </a>
-      <a href="/blog/weekly-meal-plan.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">献立計画</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">AIで1週間分の献立を自動作成する方法</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">AIが栄養バランスと予算を考慮して1週間の献立を自動生成。買い物リストも同時作成。</p>
+      <a href="/blog/recipe-app-compare.html" class="blog-card">
+        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">アプリ活用</div>
+        <h3 style="font-size:1.02rem;color:var(--ink);line-height:1.5;margin-bottom:8px">レシピ自動生成アプリ比較2026年版 3つのタイプの違いを理解する</h3>
+        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">AIレシピアプリは入力方式で3つのタイプに分かれます。その違いを整理します。</p>
       </a>
-      <a href="/blog/savings-life.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">節約入門</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">節約生活の始め方｜挫折しない家計管理</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">食費・日用品・外食から優先順位をつける節約の始め方と継続のコツ。</p>
-      </a>
-      <a href="/blog/family4-food-cost.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">夫婦の食費</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">夫婦2人の食費平均と節約術｜共働き世帯の月3万円台</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">共働き夫婦の食費平均データと、月3万円台に抑える具体的な節約術。</p>
-      </a>
-      <a href="/blog/weekly-meal-plan.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">献立自動作成</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">一週間の献立をAIで自動作成する方法</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">毎日の「今日何作ろう」をAIが解決。手持ちの食材と予算から7日間の献立を作る方法。</p>
-      </a>
-      <a href="/blog/family4-food-cost.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">4人家族の食費</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">4人家族の食費平均と月3万円台に抑える方法</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">4人家族の食費の全国平均と、無理なく節約できる献立・買い物の工夫を解説。</p>
-      </a>
-      <a href="/blog/savings-recipe.html" class="blog-card">
+      <a href="/blog/weekly-kondate-shopping.html" class="blog-card">
         <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">節約レシピ</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">節約レシピの作り方｜食費を自然に減らす献立術</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">食費を自然に減らす節約レシピの選び方と、毎日続けられる献立の考え方。</p>
+        <h3 style="font-size:1.02rem;color:var(--ink);line-height:1.5;margin-bottom:8px">1週間献立まとめ買いで 食費を節約する方法 買い物リスト自動生成アプリ活用術</h3>
+        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">献立を決めてからまとめ買いする。買い物リストの自動生成まで含めた手順です。</p>
       </a>
-      <a href="/blog/oben-simple-hayai.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">時短お弁当</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">お弁当 簡単 早い！朝10分で作れる時短弁当30選</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">朝10分以内で完成する簡単お弁当レシピ。前日作り置き不要のおかず集。</p>
+      <a href="/blog/family-recipe-share.html" class="blog-card">
+        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">家計管理</div>
+        <h3 style="font-size:1.02rem;color:var(--ink);line-height:1.5;margin-bottom:8px">家族で献立を共有するアプリ｜夕飯の相談がいらない仕組みの作り方</h3>
+        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">「今日夕飯どうする？」のやり取りをなくす、家族での献立共有の仕組み。</p>
       </a>
-      <a href="/blog/solo-food-cost.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">一人暮らし食費</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">一人暮らしの食費平均と月2万円台に抑える節約術</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">総務省データで見る一人暮らしの食費平均と、無理なく続く節約術10選。</p>
-      </a>
-      <a href="/blog/family-recipe.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">家族レシピ</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">家族レシピ15選｜4人家族の節約夕飯・献立アイデア</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">1食400円以内で作れる4人家族向け節約レシピ。子どもが喜ぶ夕飯アイデア集。</p>
-      </a>
-      <a href="/blog/meal-plan-today.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">今日の夕飯</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">今日のレシピが3分で決まる方法｜冷蔵庫から献立を考える手順</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">「今日何作ろう」の悩みを解消。冷蔵庫の食材からAIが今夜のレシピを即提案。</p>
-      </a>
-      <a href="/blog/meal-plan-today.html" class="blog-card">
-        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">今夜の夕食</div>
-        <h3 style="font-size:.95rem;color:var(--ink);line-height:1.5;margin-bottom:8px">今夜の夕飯レシピ20選｜節約・簡単・子どもが喜ぶ献立</h3>
-        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">1食200円以内で作れる節約夕食レシピ20選。5分で献立が決まる方法も解説。</p>
+      <a href="/blog/kakeibo-receipt-security.html" class="blog-card">
+        <div style="font-size:.75rem;font-weight:700;color:var(--green-mid);margin-bottom:8px">アプリ活用</div>
+        <h3 style="font-size:1.02rem;color:var(--ink);line-height:1.5;margin-bottom:8px">家計簿アプリに撮ったレシート画像はどこへ行くのか｜保存の有無と確認方法</h3>
+        <p style="font-size:.8rem;color:var(--ink-sub);line-height:1.6">撮ったレシート画像は保存されるのか。アプリごとの扱いと確認方法を解説します。</p>
       </a>
     </div>
     <div style="text-align:center;margin-top:32px">
@@ -565,12 +528,5 @@
 </footer>
 
 <script src="/slider.js"></script>
-<script>
-(function(){
-  if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||window.innerWidth<769)return;
-  var a=document.getElementById('hero-actions'),n=document.getElementById('hero-note'),b=document.getElementById('hero-pc-note');
-  if(a&&b){a.style.display='none';if(n)n.style.display='none';b.style.display='block';}
-})();
-</script>
 </body>
 </html>

@@ -25,7 +25,7 @@
 import { CATEGORIES } from "./firebase-config.js";
 import { apiJson } from "./api-client.js";
 import { log, logErr } from "./log.js";
-import { $, dayKey, monthKey, monthLabel, bindModalDismiss, openModal, closeModal } from "./dom-utils.js";
+import { $, dayKey, monthKey, monthLabel, bindModalDismiss, openModal, closeModal, onModalChange } from "./dom-utils.js";
 import { state } from "./app-state.js";
 import { watchAuthState, auth, signOut } from "./auth.js";
 import { db } from "./firebase-init.js";
@@ -217,7 +217,6 @@ async function setupApp(user) {
     initShoppingList({ db, getUser: () => state.currentUser });
     initMealPlan({ db, getUser: () => state.currentUser });
     initBilling({ db, getUser: () => state.currentUser, onSubChange: () => renderSummary() });
-    $("usage-bar").querySelector(".usage-upgrade").onclick = () => openModal("upgrade-modal");
 
     // アカウントモーダル
     // アップグレードCTAボタン（無料ユーザーのみtopbarに表示）
@@ -254,8 +253,45 @@ async function setupApp(user) {
     $("camera-input").onchange       = handleFiles;
     $("skip-btn").onclick            = skipCurrent;
     $("fab-camera").onclick          = () => $("camera-input").click();
-    $("bnav-home").onclick           = () => window.scrollTo({ top: 0, behavior: "smooth" });
-    $("bnav-calendar").onclick       = () => $("calendar").scrollIntoView({ behavior: "smooth" });
+    // 撮影ボタンを <label> から <button> に変えたため、click を input に渡す。
+    // label のままだとフォーカスを受けられず、キーボードだけでアプリの
+    // 中心操作（撮影）に到達できなかった。
+    $("camera-btn").onclick          = () => $("camera-input").click();
+    $("pick-btn").onclick            = () => $("file-input").click();
+    // ---- ナビの現在地表示 ------------------------------------------------
+    // .bnav-item.active のスタイルは style.css にあったが、**.active を付ける
+    // 処理がどこにも無く**、視覚的にも読み上げ的にも現在地が出ていなかった
+    // （aria-current は bnav-home に静的に書かれたまま動かなかった）。
+    //
+    // ホーム／カレンダーは同じページ内の位置、買い物／レシピはモーダルなので、
+    // 「最後に選んだ場所」を現在地として扱い、モーダルを閉じたら直前の
+    // 位置（ホームまたはカレンダー）へ戻す。
+    const NAV_BY_MODAL = { "shopping-modal": "shopping", "recipe-modal": "recipe" };
+    let _sectionNav = "home";   // モーダルを閉じたときに戻る先
+
+    function _setActiveNav(key) {
+      for (const prefix of ["bnav", "pcnav"]) {
+        document.querySelectorAll(`[id^="${prefix}-"]`).forEach((el) => {
+          const on = el.id === `${prefix}-${key}`;
+          el.classList.toggle("active", on);
+          if (on) el.setAttribute("aria-current", "page");
+          else el.removeAttribute("aria-current");
+        });
+      }
+    }
+
+    function _goSection(key) { _sectionNav = key; _setActiveNav(key); }
+
+    // モーダルの開閉に追従する。対応するナビが無いモーダル
+    // （予算・グラフなど）は現在地を動かさない。
+    onModalChange((openId) => {
+      if (openId === null) _setActiveNav(_sectionNav);
+      else if (NAV_BY_MODAL[openId]) _setActiveNav(NAV_BY_MODAL[openId]);
+    });
+    _setActiveNav("home");
+
+    $("bnav-home").onclick           = () => { _goSection("home"); window.scrollTo({ top: 0, behavior: "smooth" }); };
+    $("bnav-calendar").onclick       = () => { _goSection("calendar"); $("calendar").scrollIntoView({ behavior: "smooth" }); };
     $("bnav-shopping").onclick       = () => $("shopping-btn").click();
     $("bnav-recipe").onclick         = () => openRecipeModal({
       selectedDay: dayKey(new Date()),
@@ -276,8 +312,8 @@ async function setupApp(user) {
     $("export-btn").onclick = exportCsv;
 
     // PC ナビ
-    $("pcnav-home").onclick     = () => window.scrollTo({ top: 0, behavior: "smooth" });
-    $("pcnav-calendar").onclick = () => $("calendar").scrollIntoView({ behavior: "smooth" });
+    $("pcnav-home").onclick     = () => { _goSection("home"); window.scrollTo({ top: 0, behavior: "smooth" }); };
+    $("pcnav-calendar").onclick = () => { _goSection("calendar"); $("calendar").scrollIntoView({ behavior: "smooth" }); };
     $("pcnav-recipe").onclick   = () => openRecipeModal({
       selectedDay: dayKey(new Date()),
       expenses:    state.currentExpenses,

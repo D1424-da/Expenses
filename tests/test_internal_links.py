@@ -61,11 +61,12 @@ def test_pages_exist():
 def test_no_link_falls_through_to_login():
     """実在しないパスへのリンクが無い。
 
-    firebase.json の "**" → /login.html により、存在しない URL は
-    noindex, nofollow の LP が返る。404 にならないぶん気づきにくい。
+    以前は firebase.json の "**" → /login.html により、存在しない URL でも
+    noindex の LP が 200 で返っていた（404 にならないぶん気づきにくかった）。
+    ワイルドカードを撤去したので、今は素直に 404 になる。
     """
     cfg = _config()
-    rewrites = {r["source"] for r in cfg["hosting"]["rewrites"]}
+    rewrites = {r["source"] for r in cfg["hosting"].get("rewrites", [])}
     redirects = {r["source"] for r in cfg["hosting"]["redirects"]}
 
     problems = []

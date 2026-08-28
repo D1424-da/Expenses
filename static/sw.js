@@ -1,6 +1,6 @@
 // Service Worker — アプリシェルをキャッシュしてオフライン対応。
 // 更新時は CACHE のバージョン番号を上げること。
-const CACHE = "receipt-v29";
+const CACHE = "receipt-v30";
 
 // キャッシュするローカル静的ファイル
 const STATIC_ASSETS = [
@@ -83,34 +83,33 @@ self.addEventListener("fetch", (e) => {
   // ナビゲーション（ページ遷移）はルートに応じて振り分ける
   if (e.request.mode === "navigate") {
     const path = url.pathname;
-    // LP・ブログはネットワークから取得（SSR不要だがキャッシュに乗せない）
-    if (path === "/" || path === "/index.html" || path === "/login.html" || path === "/lp" || path.startsWith("/blog") || path === "/terms.html" ||
-    path === "/privacy.html" ||
-    path === "/tokushoho.html" ||
-    path === "/contact.html" ||
-    path === "/admin.html") {
-      return; // ブラウザのデフォルト処理に委ねる
+    // アプリ本体はネットワーク優先＋オフライン時のみキャッシュ。
+    // STATIC_ASSETS に /login.html を載せていたのに、ここで早期 return して
+    // ブラウザ既定に委ねていたため参照する経路が無く、オフラインでは
+    // アプリが開けなかった（キャッシュしているのに使われていなかった）。
+    if (path === "/login.html") {
+      e.respondWith(
+        fetch(e.request)
+          .then((resp) => {
+            if (resp && resp.ok) {
+              const clone = resp.clone();
+              caches.open(CACHE).then((c) => c.put("/login.html", clone));
+            }
+            return resp;
+          })
+          .catch(() => caches.match("/login.html"))
+          .then((resp) => resp || OFFLINE_RESPONSE()),
+      );
+      return;
     }
-    // 拡張子を持つパスは実ファイル（/robots.txt, /sitemap.xml, /404.html,
-    // /ogp.png など）。SPAフォールバックの対象にすると login.html が返り、
-    // ブラウザで robots.txt を開くとLPが表示されてしまう（実際に起きた）。
-    // Googlebot は SW を実行しないためクロールには影響しないが、
-    // 内容の確認ができず、404ページも表示できなくなる。
-    if (/\.[a-z0-9]+$/i.test(path)) return;
-    // /app 等のSPAフォールバック先はネットワーク優先（常に最新のlogin.htmlを取得）。
-    // オフライン時のみキャッシュへフォールバックする。
-    e.respondWith(
-      fetch("/login.html")
-        .then((resp) => {
-          if (resp && resp.ok) {
-            const clone = resp.clone();
-            caches.open(CACHE).then((c) => c.put("/login.html", clone));
-          }
-          return resp;
-        })
-        .catch(() => caches.match("/login.html"))
-        .then((resp) => resp || OFFLINE_RESPONSE()),
-    );
+    // それ以外のナビゲーションはすべてブラウザ既定に委ねる。
+    // 以前は「許可リストに無いパスを login.html に差し替える」SPAフォールバックを
+    // 持っていたが、SPAルートは存在せず（全画面が login.html 上のモーダル）、
+    // 未知のURLに 200 を返して 404 を表示できなくしていた。
+    // 拡張子チェック（/robots.txt がLPになる不具合の回避）も、
+    // フォールバック自体が無くなったので不要になった。
+    // firebase.json のワイルドカード rewrite 撤去と対になる変更なので、
+    // 必ず同じデプロイに含めること。
     return;
   }
 

@@ -10,8 +10,17 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:8765",
     headless: true,
-    // プリインストール済み Chromium を使う
-    executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+    // プリインストール済み Chromium を使う。
+    //
+    // **executablePath は launchOptions の中に置くこと。** use 直下に書いても
+    // Playwright は認識せず、同梱の chromium_headless_shell（この環境には
+    // 入っていない）を探しに行って全ブラウザテストが数ミリ秒で落ちる。
+    // 失敗が速すぎるうえ「ページが開けない」風のエラーになるので、
+    // アプリ側の不具合と紛らわしい。
+    // パスはバージョン番号を含まない シンボリックリンク を使う（更新で番号が変わるため）。
+    launchOptions: {
+      executablePath: "/opt/pw-browsers/chromium",
+    },
     screenshot: "only-on-failure",
     video: "off",
     // Firebase の非同期処理を待つためタイムアウトを少し長めに
@@ -26,8 +35,7 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1280, height: 800 },
-        // プリインストール済み Chromium を明示的に指定（バージョン不一致を回避）
-        executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+        launchOptions: { executablePath: "/opt/pw-browsers/chromium" },
         channel: undefined,
       },
     },
@@ -36,7 +44,7 @@ export default defineConfig({
       name: "mobile-chrome",
       use: {
         ...devices["Pixel 5"],
-        executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+        launchOptions: { executablePath: "/opt/pw-browsers/chromium" },
         channel: undefined,
       },
     },
@@ -44,7 +52,7 @@ export default defineConfig({
     {
       name: "tablet-chrome",
       use: {
-        executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+        launchOptions: { executablePath: "/opt/pw-browsers/chromium" },
         channel: undefined,
         viewport: { width: 810, height: 1080 },
         userAgent:

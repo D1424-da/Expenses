@@ -38,10 +38,75 @@ const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select
 // モーダルを開いたトリガー要素を記憶する（閉じた後にフォーカスを戻すため）
 const _triggerMap = new Map();
 
+// モーダルを開いた回数のうち、こちらが history に積んだ数。
+// 直接 /login.html#recipe を開かれた場合など、自分が積んでいない履歴で
+// history.back() すると利用者をサイトの外へ送ってしまうため、
+// 「自分が積んだ分だけ戻す」ようにこの数を持つ。
+let _pushedCount = 0;
+
+/** URL に出すハッシュ。"recipe-modal" → "#recipe" */
+const _hashOf = (id) => "#" + id.replace(/-modal$/, "");
+
 export function openModal(id, trigger) {
+  _openModalDom(id, trigger);
+  // 端末の戻る操作でモーダルが閉じるようにする。以前は全画面が同じ URL の
+  // ままだったため、戻るを押すとモーダルではなくページごと離脱していた。
+  // リロードや共有のために URL も変えるが、復元は auth の完了後でないと
+  // できないので、ここでは行わない（app.js 側の責務）。
+  history.pushState({ modal: id }, "", _hashOf(id));
+  _pushedCount++;
+}
+
+export function closeModal(id) {
+  _closeModalDom(id);
+  // ✕・Esc・背景タップで閉じたときは履歴も1つ戻して、URL と表示を合わせる。
+  // popstate 由来の閉じ処理は _closeModalDom を直接呼ぶのでここを通らない
+  // （通ると back() が二重になる）。
+  if (_pushedCount > 0) {
+    _pushedCount--;
+    history.back();
+  }
+}
+
+// 戻る／進むに追従する。state に入っているモーダルだけを開いた状態にする。
+//
+// **読み込み時に window を触らないこと。** このモジュールは recipe-parse.js
+// などの純粋モジュールからも import されており、vitest（Node 環境）には
+// window が無い。素で呼ぶと import 時点で ReferenceError になり、
+// そのテストファイルが丸ごと読み込めなくなる（実際に31件が消えた）。
+if (typeof window !== "undefined") {
+  window.addEventListener("popstate", (e) => {
+    const wanted = e.state && e.state.modal;
+    document.querySelectorAll(".modal:not([hidden])").forEach((m) => {
+      if (m.id !== wanted) _closeModalDom(m.id);
+    });
+    if (wanted && $(wanted) && $(wanted).hidden) _openModalDom(wanted);
+    _pushedCount = wanted ? 1 : 0;
+  });
+}
+
+// モーダルの開閉を知りたい側（ナビの現在地表示など）に通知する。
+// dom-utils 自身はナビの都合を知らないので、購読の形にして app.js に委ねる。
+const _modalListeners = new Set();
+
+/** 開閉時に fn(openId | null) を呼ぶ。解除する関数を返す。 */
+export function onModalChange(fn) {
+  _modalListeners.add(fn);
+  return () => _modalListeners.delete(fn);
+}
+
+function _notifyModal(openId) {
+  for (const fn of _modalListeners) {
+    // 購読側の例外でモーダルの開閉自体を壊さない。
+    try { fn(openId); } catch (err) { console.error("onModalChange:", err); }
+  }
+}
+
+function _openModalDom(id, trigger) {
   const modal = $(id);
   modal.hidden = false;
   document.body.classList.add("modal-open");
+  _notifyModal(id);
   if (typeof window.trackPageview === "function") {
     window.trackPageview(`/app/${id}`, MODAL_TITLES[id] || id);
   }
@@ -55,7 +120,7 @@ export function openModal(id, trigger) {
   modal.addEventListener("keydown", modal._trapHandler);
 }
 
-export function closeModal(id) {
+function _closeModalDom(id) {
   const modal = $(id);
   if (modal._trapHandler) {
     modal.removeEventListener("keydown", modal._trapHandler);
@@ -69,6 +134,7 @@ export function closeModal(id) {
   const trigger = _triggerMap.get(id);
   if (trigger && typeof trigger.focus === "function") trigger.focus();
   _triggerMap.delete(id);
+  _notifyModal(null);
 }
 
 function _trapFocus(e, modal) {
