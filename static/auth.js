@@ -15,7 +15,8 @@ import { log, logErr } from "./log.js";
 const _ua           = navigator.userAgent;
 const _isInAppBrowser = /Line\/|FBAN|FBAV|Instagram|MicroMessenger/i.test(_ua);
 const _isMobile     = /Android|iPhone|iPad|iPod/i.test(_ua);
-// Safari は ITP でリダイレクト認証が失敗するため、ポップアップを使う。
+// Safari 判定。**ログイン方式の分岐には使わない**（下の useRedirect を参照）。
+// 残しているのは getRedirectResult のエラー抑制の条件だけ。
 // iOS Chrome は UA に "CriOS" を含み "chrome" は含まないため、明示的に除外する。
 const _isSafari     = /Safari/i.test(_ua) && !/Chrome|CriOS|Android/i.test(_ua);
 
@@ -48,7 +49,11 @@ getRedirectResult(auth).then((result) => {
 }).catch((err) => {
   if (err.code === "auth/credential-already-in-use") return;
   logErr("getRedirectResult エラー:", err.code, err.message);
-  if (_isSafari) return;
+  // デスクトップ Safari はポップアップで入るので、ここのエラーは
+  // 素通りのゴミ（前回の遷移の残骸）で、出すと誤解を招く。
+  // **モバイルはリダイレクトで入るので握りつぶさないこと** — 握ると
+  // 「押しても何も起きない」に戻り、今回直した症状と区別がつかなくなる。
+  if (_isSafari && !_isMobile) return;
   const el = $("login-error");
   el.textContent = "ログインに失敗しました: " + (err.code || err.message);
   el.hidden = false;
@@ -60,7 +65,21 @@ $("google-login").onclick = async () => {
   _googleLoginBusy = true;
   const btn = $("google-login");
   btn.disabled = true;
-  const useRedirect = _isMobile && !_isSafari;
+  // モバイルはすべてリダイレクト。
+  //
+  // 以前は iOS Safari だけポップアップにしていた（ITP でリダイレクト認証が
+  // 失敗するため）。しかしモバイル Safari はポップアップを「新しいタブ」で
+  // 開くため、認証後にタブが閉じた時点で window.opener 経由の受け渡しが
+  // 成立せず、**ログインが完了しないまま元の画面に戻る**症状が出ていた。
+  //
+  // ITP を理由にポップアップを選んでいた当時、authDomain は
+  // *.firebaseapp.com（サイトとは別オリジン）だった。5bd2938 で
+  // get-tohon.online に変えており、いまは同一オリジンなので
+  // サードパーティ制限を受けない。Android Chrome は元からこの経路で
+  // 動いており、/__/auth/handler が機能していることは確認済み。
+  //
+  // **authDomain を別オリジンに戻すときは、ここも一緒に見直すこと。**
+  const useRedirect = _isMobile;
   log("ログインボタン押下:", useRedirect ? "redirect" : "popup");
   $("login-error").hidden = true;
   try {
