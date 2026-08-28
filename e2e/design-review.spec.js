@@ -217,3 +217,56 @@ test.describe("カレンダーの金額表示（T8）", () => {
     expect(r.weekHeight).toBeGreaterThanOrEqual(44);
   });
 });
+
+test.describe("ナビゲーションの並び（T3）", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  async function labels(page, prefix) {
+    await page.goto("/login.html");
+    return page.$$eval(`[id^="${prefix}-"] .${prefix}-label`, (els) =>
+      els.map((el) => el.textContent.trim()),
+    );
+  }
+
+  test("PC とスマホで先頭5項目のラベルが一致する", async ({ page }) => {
+    // 以前は「買い物リスト」と「買い物」で揺れ、レシピ提案の位置も
+    // 3番目と4番目で入れ替わっていた。
+    const bnav  = await labels(page, "bnav");
+    const pcnav = await labels(page, "pcnav");
+    expect(bnav.slice(0, 4)).toEqual(pcnav.slice(0, 4));
+    expect(bnav[4]).toBe("もっと見る");
+  });
+
+  test("もっと見るの中身が PC ナビの残りと一致する", async ({ page }) => {
+    await page.goto("/login.html");
+    const drawer = await page.$$eval(
+      "#bnav-more-drawer .bnav-more-label",
+      (els) => els.map((el) => el.textContent.trim()),
+    );
+    const pcnav = await page.$$eval('[id^="pcnav-"] .pcnav-label', (els) =>
+      els.map((el) => el.textContent.trim()),
+    );
+    expect(drawer).toEqual(pcnav.slice(4));
+  });
+
+  test("320px でもボトムナビが横にはみ出さない", async ({ page }) => {
+    // 「買い物」→「買い物リスト」でラベルが長くなった。
+    await page.setViewportSize({ width: 320, height: 812 });
+    await page.goto("/login.html");
+    const r = await page.evaluate(() => {
+      document.getElementById("app")?.removeAttribute("hidden");
+      const nav = document.querySelector(".bottom-nav");
+      nav.removeAttribute("hidden");
+      return {
+        overflow: nav.scrollWidth > nav.clientWidth + 1,
+        minWidth: Math.min(
+          ...[...document.querySelectorAll(".bnav-item")].map(
+            (e) => e.getBoundingClientRect().width,
+          ),
+        ),
+      };
+    });
+    expect(r.overflow, "ボトムナビが横にはみ出している").toBe(false);
+    expect(r.minWidth).toBeGreaterThanOrEqual(44);
+  });
+});
