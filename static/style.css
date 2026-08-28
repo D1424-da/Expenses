@@ -221,7 +221,9 @@ body {
 main {
   max-width: 960px;
   margin: 0 auto;
-  padding: 14px 14px 90px; /* bottom: space for bottom nav */
+  /* 下部ナビ(56px)＋FAB(62px, ナビから14px上)の分を空ける。90px だと
+     「＋ 手で入力する」のような最下段のボタンが FAB の下に隠れていた。 */
+  padding: 14px 14px calc(148px + env(safe-area-inset-bottom, 0));
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -1553,6 +1555,21 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   padding: 20px 16px calc(16px + env(safe-area-inset-bottom, 0));
   box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
 }
+.bnav-more-head {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 28px; margin: -6px 0 10px;
+}
+.bnav-more-grabber {
+  width: 40px; height: 4px; border-radius: 2px; background: var(--border);
+}
+.bnav-more-close {
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px;          /* 指で押せる最小寸法 */
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; color: var(--muted);
+  font-size: 1.1rem; cursor: pointer;
+}
 .bnav-more-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -2240,6 +2257,32 @@ a.pcnav-top {
 .recipe-advanced-toggle::before { content: "▶ "; font-size: 0.7rem; }
 details[open] .recipe-advanced-toggle::before { content: "▼ "; }
 .recipe-advanced-body { padding: 12px 14px; border-top: 1px solid var(--border); }
+/* レシピ提案ウィザード — 3画面（何を使う → 何を作る → 結果） */
+.recipe-steps-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin: 2px 0 14px;
+}
+.recipe-steps-dots { display: flex; gap: 6px; flex: 1; }
+.recipe-steps-dots span {
+  height: 4px; flex: 1; border-radius: 2px; background: var(--border);
+  transition: background .15s;
+}
+.recipe-steps-dots span.done { background: var(--sage, var(--muted)); }
+.recipe-steps-count {
+  font-size: 0.75rem; font-weight: 700; color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.recipe-step-hint {
+  margin: 10px 0 0; font-size: 0.82rem; line-height: 1.5; color: var(--muted);
+}
+.recipe-nav {
+  display: flex; align-items: center; gap: 10px; margin-top: 14px;
+  padding-top: 12px; border-top: 1px solid var(--border);
+}
+/* 主ボタンを右端に置く。戻るが無い1画面目でも位置が動かないようにする。 */
+.recipe-nav #recipe-suggest-btn { margin-left: auto; min-width: 44%; }
+.recipe-nav #recipe-back-btn { flex: 0 0 auto; }
+
 #recipe-budget-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; margin-top: 8px; }
 
 /* 保存レシピ — カテゴリフィルター */

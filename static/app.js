@@ -306,9 +306,20 @@ async function setupApp(user) {
 
     // スマホ「もっと見る」ドロワー
     const _drawer = $("bnav-more-drawer");
-    const _closeDrawer = () => { _drawer.hidden = true; };
-    $("bnav-more").onclick        = () => { _drawer.hidden = false; };
+    const _closeDrawer = () => {
+      _drawer.hidden = true;
+      document.removeEventListener("keydown", _drawerKey);
+    };
+    // Esc でも閉じる。背景タップしか閉じ方が無いと、シートの上を押している
+    // 限り戻れず「閉じられない」という指摘になった。
+    const _drawerKey = (e) => { if (e.key === "Escape") _closeDrawer(); };
+    $("bnav-more").onclick = () => {
+      _drawer.hidden = false;
+      document.addEventListener("keydown", _drawerKey);
+      $("bnav-more-close").focus();
+    };
     $("bnav-more-overlay").onclick = _closeDrawer;
+    $("bnav-more-close").onclick   = _closeDrawer;
     $("bnav-saved").onclick       = () => { _closeDrawer(); $("saved-recipes-btn").click(); };
     $("bnav-compare").onclick     = () => { _closeDrawer(); $("compare-btn").click(); };
     $("bnav-budget").onclick      = () => { _closeDrawer(); $("budget-btn").click(); };
