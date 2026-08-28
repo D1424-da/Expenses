@@ -2,7 +2,7 @@
   "name": "カケイシピ",
   "short_name": "カケイシピ",
   "description": "レシートを撮るだけで家計簿を自動入力。AIが食材からレシピを自動提案する家計管理アプリ。",
-  "start_url": "/app",
+  "start_url": "/login.html",
   "display": "standalone",
   "background_color": "#F7FAF8",
   "theme_color": "#1E5C3A",

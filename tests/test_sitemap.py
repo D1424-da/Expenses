@@ -372,7 +372,7 @@ def test_blog_index_has_single_canonical_url():
 
     # redirects は rewrites より先に評価される。両方に同じ source を
     # 書くと rewrite が到達しない死に設定になるので持たせない。
-    rewrite_sources = {r["source"] for r in cfg["hosting"]["rewrites"]}
+    rewrite_sources = {r["source"] for r in cfg["hosting"].get("rewrites", [])}
     assert not (rewrite_sources & set(by_source)), (
         f"redirects と rewrites が重複: {sorted(rewrite_sources & set(by_source))}"
     )
