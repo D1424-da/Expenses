@@ -301,7 +301,7 @@ async function setupApp(user) {
     $("bnav-recipe").onclick         = () => openRecipeModal({
       selectedDay: dayKey(new Date()),
       expenses:    state.currentExpenses,
-      initialPeriod: "month",
+      initialPeriod: "week",
     });
 
     // スマホ「もっと見る」ドロワー
@@ -333,7 +333,7 @@ async function setupApp(user) {
     $("pcnav-recipe").onclick   = () => openRecipeModal({
       selectedDay: dayKey(new Date()),
       expenses:    state.currentExpenses,
-      initialPeriod: "month",
+      initialPeriod: "week",
     });
     $("pcnav-shopping").onclick = () => $("shopping-btn").click();
     $("pcnav-saved").onclick    = () => $("saved-recipes-btn").click();

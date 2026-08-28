@@ -13,7 +13,7 @@ import { addItemsToList } from "./shopping-list.js";
 import { saveMealPlan, saveMeal } from "./meal-plan.js";
 import { showError, showToast } from "./ui-feedback.js";
 import {
-  RECIPE_STEPS, stepMeta, canAdvance, nextStep, prevStep,
+  RECIPE_STEPS, INPUT_STEPS, stepMeta, canAdvance, nextStep, prevStep,
 } from "./recipe-steps.js";
 
 let _getToken;
@@ -26,6 +26,9 @@ let _selectedDay = null;
 // ウィザードの現在地。判定は recipe-steps.js（純粋関数）に置いてある。
 let _step = RECIPE_STEPS[0];
 let _busy = false;
+// チップから外した食材。期間を変えても選び直しをやり直させないため、
+// 「選んだもの」ではなく「外したもの」を覚える。
+let _excluded = new Set();
 let _expenses    = [];
 let _periodFrom  = "";   // "YYYY-MM-DD" 食材購入期間：開始
 let _periodTo    = "";   // "YYYY-MM-DD" 食材購入期間：終了
@@ -106,6 +109,14 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget, db, getUser 
   $("recipe-back-btn").onclick    = () => _goStep(prevStep(_step));
   // 人数は入力のたびに次へボタンの可否が変わる。
   $("recipe-servings").addEventListener("input", _renderStep);
+  // ± での増減。スマホで数値キーボードを出さずに直せるようにする。
+  const _bumpServings = (delta) => {
+    const el = $("recipe-servings");
+    el.value = Math.max(1, Math.min(20, (Number(el.value) || 2) + delta));
+    _renderStep();
+  };
+  $("recipe-servings-minus").onclick = () => _bumpServings(-1);
+  $("recipe-servings-plus").onclick  = () => _bumpServings(+1);
 
   // 家族構成トグル
   $("family-toggle").onclick = () => {
@@ -126,6 +137,9 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget, db, getUser 
       $("recipe-period-section").hidden = _budgetMode;
       $("recipe-budget-section").hidden = !_budgetMode;
       if (_budgetMode) _renderBudgetIngredients(); else _renderIngredients();
+      // 選んだ時点で次へ進む。カードを押したあとに「次へ」も押させると、
+      // 同じ判断を2回させることになる。
+      if (_step === "mode") _goStep(nextStep(_step));
     };
   });
   // 期間タブ（ショートカット — 日付入力を自動設定する）
@@ -238,7 +252,9 @@ export function initRecipe({ getToken, fetchAllExpenses, getBudget, db, getUser 
  * @param {Array}    opts.expenses       - 当月全支出（Firestore購読済み）
  * @param {string}  [opts.initialPeriod] - "day"|"week"|"month"（デフォルト "day"）
  */
-export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }) {
+// initialPeriod の既定は "week"。"day" だと、その日に買い物をしていない人には
+// 品目が0件の画面が出て、いきなり行き止まりになる。
+export function openRecipeModal({ selectedDay, expenses, initialPeriod = "week" }) {
   _expensesCache = null; // 月移動後の古いキャッシュを破棄
   _selectedDay = selectedDay;
   _expenses = expenses || [];
@@ -295,6 +311,7 @@ export function openRecipeModal({ selectedDay, expenses, initialPeriod = "day" }
 
   _updateFamilyToggleLabel(); // まずキャッシュ値で即表示
   _restoreFamily().then(_updateFamilyToggleLabel); // Firestore値で確定後に再表示
+  _excluded = new Set();
   _renderIngredients();
   _busy = false;
   _goStep(RECIPE_STEPS[0]);
@@ -367,6 +384,7 @@ function _stepState() {
   return {
     budgetMode: _budgetMode,
     ingredientCount: _chipCount(),
+    selectedCount: _budgetMode ? _budgetSelectedItems.length : _selectedIngredientNames().length,
     budgetSelectedCount: _budgetSelectedItems.length,
     servings: $("recipe-servings").value,
     planRangeError: (_activeType === "weekly" && !$("recipe-plan-range-error").hidden)
@@ -383,9 +401,14 @@ function _renderStep() {
   document.querySelectorAll("#recipe-modal .recipe-step").forEach((el) => {
     el.hidden = el.dataset.step !== _step;
   });
-  $("recipe-steps-count").textContent = meta.progress;
-  $("recipe-steps-dots").innerHTML = RECIPE_STEPS
-    .map((_, i) => `<span class="${i <= meta.index ? "done" : ""}"></span>`).join("");
+  // 見出しは段階名にする。どの画面に居るのかがヘッダーだけで分かる。
+  $("recipe-modal-title").textContent = meta.index === 0 ? `🍳 ${meta.title}` : meta.title;
+  $("recipe-steps-bar").hidden = meta.progress === null;
+  if (meta.progress) {
+    $("recipe-steps-count").textContent = meta.progress;
+    $("recipe-steps-dots").innerHTML = RECIPE_STEPS.slice(0, INPUT_STEPS)
+      .map((_, i) => `<span class="${i <= meta.index ? "done" : ""}"></span>`).join("");
+  }
   $("recipe-back-btn").hidden = !meta.canBack;
 
   const next = $("recipe-suggest-btn");
@@ -460,13 +483,31 @@ function _renderIngredients() {
   if (unique.length === 0) {
     chips.innerHTML = `<span class="recipe-empty-hint">この期間に明細品目がありません。期間を変更するか、「＋ 明細を追加」でレシートに品目を登録してください。</span>`;
   } else {
-    chips.innerHTML = unique.map((n) => `<span class="recipe-chip">${escapeHtml(n)}</span>`).join("");
+    // タップで外せる。既定は全選択（従来どおり全部を材料として送る）。
+    chips.innerHTML = unique.map((n) => {
+      const off = _excluded.has(n);
+      return `<button type="button" class="recipe-chip${off ? " off" : ""}" data-name="${escapeHtml(n)}" aria-pressed="${off ? "false" : "true"}">${escapeHtml(n)}<span class="chip-check" aria-hidden="true">${off ? "＋" : "✓"}</span></button>`;
+    }).join("");
+    chips.querySelectorAll(".recipe-chip").forEach((el) => {
+      el.onclick = () => {
+        const name = el.dataset.name;
+        if (_excluded.has(name)) _excluded.delete(name); else _excluded.add(name);
+        _renderIngredients();
+      };
+    });
   }
   const label = _periodFrom === _periodTo ? _periodFrom : `${_periodFrom}〜${_periodTo}`;
-  $("recipe-modal-title").textContent = `🍳 レシピ提案（${label}）`;
+  const picked = unique.filter((n) => !_excluded.has(n)).length;
+  $("recipe-period-label").textContent = `${label} · ${picked}品`;
   $("recipe-result").hidden = true;
   $("recipe-status").hidden = true;
-  _renderStep();   // 食材が0件かどうかで「次へ」の可否が変わる
+  _renderStep();   // 選んだ食材が0件かどうかで「次へ」の可否が変わる
+}
+
+// いま選ばれている（外していない）食材の名前。
+function _selectedIngredientNames() {
+  return [...$("recipe-ingredients").querySelectorAll(".recipe-chip:not(.off)")]
+    .map((el) => el.dataset.name).filter(Boolean);
 }
 
 function _itemsForPeriod() {
@@ -491,12 +532,11 @@ async function _suggest() {
     _showStepError($("recipe-plan-range-error").textContent);
     return;
   }
-  const chipContainer = _budgetMode
-    ? ($("recipe-budget-chips") || $("recipe-ingredients"))
-    : $("recipe-ingredients");
-  const items = [...chipContainer.querySelectorAll(".recipe-chip")]
-    .map((el) => el.dataset.name || el.textContent.trim())
-    .filter(Boolean);
+  // 外したチップは送らない。表示と送信がずれると「選んだのに使われない」。
+  const items = _budgetMode
+    ? [...($("recipe-budget-chips") || $("recipe-ingredients")).querySelectorAll(".recipe-chip")]
+        .map((el) => el.dataset.name || el.textContent.trim()).filter(Boolean)
+    : _selectedIngredientNames();
   if (!items.length) {
     _showStepError(_budgetMode
       ? "食材が見つかりません。予算を設定するか、レシートを登録してください。"
@@ -741,8 +781,7 @@ async function _renderBudgetIngredients() {
   chips.innerHTML = `<span class="recipe-empty-hint">💰 予算内の食材を計算中…</span>`;
   $("recipe-budget-status").textContent = "";
   $("recipe-budget-total").textContent  = "";
-  const _budgetPeriodLabel = _periodFrom === _periodTo ? _periodFrom : `${_periodFrom}〜${_periodTo}`;
-  $("recipe-modal-title").textContent = `🍳 レシピ提案（予算モード・${_budgetPeriodLabel}）`;
+  // 期間は下の「◯◯の食費残り」に出るので、見出しには重ねない。
 
   const budget = _getBudget?.() || {};
   const foodBudget = budget["食費"] || 0;

@@ -2254,34 +2254,78 @@ a.pcnav-top {
   background: var(--stone);
 }
 .recipe-advanced-toggle::-webkit-details-marker { display: none; }
-.recipe-advanced-toggle::before { content: "▶ "; font-size: 0.7rem; }
-details[open] .recipe-advanced-toggle::before { content: "▼ "; }
 .recipe-advanced-body { padding: 12px 14px; border-top: 1px solid var(--border); }
-/* レシピ提案ウィザード — 3画面（何を使う → 何を作る → 結果） */
-.recipe-steps-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; margin: 2px 0 14px;
+/* レシピ提案ウィザード — 入力3画面 ＋ 結果 */
+.recipe-head { position: relative; }
+/* 戻るはヘッダー左の「‹」。下部に置くと主ボタンと並んで押し間違えやすい。 */
+.recipe-head-back {
+  width: 32px; height: 32px; flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer;
+  font-size: 1.6rem; line-height: 1; color: var(--ink);
 }
-.recipe-steps-dots { display: flex; gap: 6px; flex: 1; }
+.recipe-steps-bar {
+  display: flex; flex-direction: column; gap: 6px; margin: 2px 0 16px;
+}
+.recipe-steps-count {
+  font-size: 0.72rem; font-weight: 700; color: var(--muted);
+  letter-spacing: 0.08em; font-variant-numeric: tabular-nums;
+}
+.recipe-steps-dots { display: flex; gap: 4px; }
 .recipe-steps-dots span {
-  height: 4px; flex: 1; border-radius: 2px; background: var(--border);
+  height: 3px; flex: 1; border-radius: 2px; background: var(--border);
   transition: background .15s;
 }
 .recipe-steps-dots span.done { background: var(--sage, var(--muted)); }
-.recipe-steps-count {
-  font-size: 0.75rem; font-weight: 700; color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
 .recipe-step-hint {
   margin: 10px 0 0; font-size: 0.82rem; line-height: 1.5; color: var(--muted);
 }
-.recipe-nav {
-  display: flex; align-items: center; gap: 10px; margin-top: 14px;
-  padding-top: 12px; border-top: 1px solid var(--border);
+.recipe-nav { margin-top: 16px; }
+/* 主ボタンは幅いっぱい。片手で親指が届く位置に大きく置く。 */
+.recipe-nav #recipe-suggest-btn { width: 100%; min-height: 48px; }
+
+/* 人数のステッパー */
+.recipe-servings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-top: 10px;
+  border: 1.5px solid var(--border); border-radius: 12px; padding: 6px 6px 6px 14px;
 }
-/* 主ボタンを右端に置く。戻るが無い1画面目でも位置が動かないようにする。 */
-.recipe-nav #recipe-suggest-btn { margin-left: auto; min-width: 44%; }
-.recipe-nav #recipe-back-btn { flex: 0 0 auto; }
+.recipe-servings-label { font-size: 0.88rem; color: var(--ink); }
+.recipe-stepper { display: flex; align-items: center; gap: 2px; }
+.recipe-stepper button {
+  width: 40px; height: 40px;          /* 指で押せる寸法 */
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer;
+  font-size: 1.1rem; color: var(--sage, var(--ink));
+}
+.recipe-stepper button:disabled { color: var(--border); cursor: default; }
+.recipe-stepper input {
+  /* 16px を下回ると iOS Safari がフォーカス時にページを自動拡大する。 */
+  width: 34px; border: none; background: none; text-align: right;
+  font-size: 1rem; font-weight: 700; color: var(--ink);
+  font-variant-numeric: tabular-nums; padding: 0;
+}
+/* 数値入力の増減矢印はステッパーと二重になるので消す。 */
+.recipe-stepper input::-webkit-outer-spin-button,
+.recipe-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.recipe-stepper input { -moz-appearance: textfield; appearance: textfield; }
+.recipe-stepper-unit { font-size: 0.82rem; color: var(--muted); }
+
+/* 食材チップは選び直せる。外したものは薄く出して、消えたと誤解させない。 */
+#recipe-ingredients .recipe-chip {
+  cursor: pointer; user-select: none; font-family: inherit;
+  display: inline-flex; align-items: center;
+  min-height: 32px; padding: 4px 11px;   /* 指で押せる高さを確保する */
+}
+#recipe-ingredients .recipe-chip.off { background: var(--stone); color: var(--muted); }
+
+#recipe-ingredients .recipe-chip .chip-check { margin-left: 4px; font-size: 0.75rem; }
+
+/* こだわり設定は1行のまとまりとして見せる */
+.recipe-advanced-toggle { display: flex; align-items: center; justify-content: space-between; }
+.recipe-advanced-toggle::before { content: none; }
+.recipe-advanced-toggle::after { content: "›"; font-size: 1.1rem; color: var(--muted); }
+details[open] .recipe-advanced-toggle::after { content: "⌄"; }
 
 #recipe-budget-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; margin-top: 8px; }
 
