@@ -123,3 +123,44 @@ test.describe("LP（index.html）", () => {
     expect(content).toBeTruthy();
   });
 });
+
+test.describe("ナビゲーションの現在地", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  /** 認証前はアプリシェルが hidden なので、ログイン後の状態を再現する。 */
+  async function showApp(page) {
+    await page.goto("/login.html");
+    await page.evaluate(() => {
+      document.querySelectorAll("[hidden]").forEach((el) => {
+        if (el.id === "app" || el.closest("#app")) el.removeAttribute("hidden");
+      });
+    });
+  }
+
+  test("aria-current が付いた項目はちょうど1つ", async ({ page }) => {
+    // 以前は bnav-home に静的に書かれたままで、どのタブへ移動しても
+    // 「ホーム」のままだった。
+    await showApp(page);
+    const items = await page.$$eval(
+      '[id^="bnav-"][aria-current], [id^="pcnav-"][aria-current]',
+      (els) => els.map((el) => el.id),
+    );
+    // ボトムナビと PC ナビでそれぞれ1つ（初期値はホーム）
+    expect(items.sort()).toEqual(["bnav-home", "pcnav-home"]);
+  });
+
+  test("現在地のスタイルが定義されている", async ({ page }) => {
+    // .active を付ける処理を足しても、スタイルが無ければ見た目は変わらない。
+    await showApp(page);
+    const bnav = await page.$eval("#bnav-home", (el) => {
+      el.classList.add("active");
+      return getComputedStyle(el).color;
+    });
+    const pcnav = await page.$eval("#pcnav-home", (el) => {
+      el.classList.add("active");
+      return getComputedStyle(el).fontWeight;
+    });
+    expect(bnav).not.toBe("");
+    expect(Number(pcnav)).toBeGreaterThanOrEqual(700);
+  });
+});

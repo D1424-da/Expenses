@@ -1510,6 +1510,13 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   transition: color .13s, background .13s;
 }
 .pc-nav-item:hover { color: var(--sage); background: var(--sage-light); }
+/* 現在地。ボトムナビには .active のスタイルがあったのに PC ナビには無く、
+   どちらも .active を付ける処理自体が存在しなかった（app.js で対応）。 */
+.pc-nav-item.active {
+  color: var(--sage);
+  background: var(--sage-light);
+  font-weight: 700;
+}
 .pc-nav-item.pcnav-accent {
   color: var(--sage);
   background: var(--sage-light);

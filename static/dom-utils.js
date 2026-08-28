@@ -85,10 +85,28 @@ if (typeof window !== "undefined") {
   });
 }
 
+// モーダルの開閉を知りたい側（ナビの現在地表示など）に通知する。
+// dom-utils 自身はナビの都合を知らないので、購読の形にして app.js に委ねる。
+const _modalListeners = new Set();
+
+/** 開閉時に fn(openId | null) を呼ぶ。解除する関数を返す。 */
+export function onModalChange(fn) {
+  _modalListeners.add(fn);
+  return () => _modalListeners.delete(fn);
+}
+
+function _notifyModal(openId) {
+  for (const fn of _modalListeners) {
+    // 購読側の例外でモーダルの開閉自体を壊さない。
+    try { fn(openId); } catch (err) { console.error("onModalChange:", err); }
+  }
+}
+
 function _openModalDom(id, trigger) {
   const modal = $(id);
   modal.hidden = false;
   document.body.classList.add("modal-open");
+  _notifyModal(id);
   if (typeof window.trackPageview === "function") {
     window.trackPageview(`/app/${id}`, MODAL_TITLES[id] || id);
   }
@@ -116,6 +134,7 @@ function _closeModalDom(id) {
   const trigger = _triggerMap.get(id);
   if (trigger && typeof trigger.focus === "function") trigger.focus();
   _triggerMap.delete(id);
+  _notifyModal(null);
 }
 
 function _trapFocus(e, modal) {
