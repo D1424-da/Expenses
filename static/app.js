@@ -116,10 +116,23 @@ function _renderMonth() {
   }
 }
 
+/** 月が変わったら予算を読み直してサマリーを描き直す。
+ *
+ * 予算は `settings/budget_{monthKey}` に月ごとに保存されている。読み直さないと
+ * サマリーの「予算まで あと ¥○○」とカテゴリバーが**前の月の予算のまま**残り、
+ * 支出だけが切り替わった残額を見せることになる。予算モーダル側は
+ * `_openSettings()` が毎回読み直しているので、ずれるのはホーム画面だけだった。
+ */
+async function _reloadBudgetForMonth() {
+  await loadBudget();
+  renderSummary();
+}
+
 function _shiftMonth(delta) {
   state.currentMonth.setMonth(state.currentMonth.getMonth() + delta);
   _renderMonth();
   subscribeMonth(_onSnapshotUpdate);
+  _reloadBudgetForMonth();
 }
 
 function _jumpToMonthOf(dateStr) {
@@ -128,6 +141,7 @@ function _jumpToMonthOf(dateStr) {
     state.currentMonth = target;
     _renderMonth();
     subscribeMonth(_onSnapshotUpdate);
+    _reloadBudgetForMonth();
   }
 }
 
@@ -251,6 +265,7 @@ async function setupApp(user) {
       state.currentMonth = new Date();
       _renderMonth();
       subscribeMonth(_onSnapshotUpdate);
+      _reloadBudgetForMonth();
     });
     $("file-input").onchange         = handleFiles;
     $("camera-input").onchange       = handleFiles;
