@@ -270,3 +270,29 @@ test.describe("ナビゲーションの並び（T3）", () => {
     expect(r.minWidth).toBeGreaterThanOrEqual(44);
   });
 });
+
+test.describe("モバイルでの重複表示", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("買い物リスト・保存レシピがヘッダとボトムナビで二重に出ない", async ({ page }) => {
+    // ヘッダの 🛒 と 📚 は PC ナビ用の中継役として置かれていたが、
+    // モバイルでも表示されており、ボトムナビの同じ項目と二重になっていた。
+    await page.goto("/login.html");
+    await page.evaluate(() => {
+      document.querySelectorAll("[hidden]").forEach((el) => {
+        if (el.id === "app" || el.closest("#app")) el.removeAttribute("hidden");
+      });
+    });
+    for (const id of ["shopping-btn", "saved-recipes-btn"]) {
+      await expect(page.locator(`#${id}`), `#${id} が画面に出ている`).toBeHidden();
+    }
+    // ボトムナビ側は出ている
+    await expect(page.locator("#bnav-shopping")).toBeVisible();
+  });
+
+  test("未購入件数のバッジがボトムナビ側にある", async ({ page }) => {
+    // ヘッダを隠したことでバッジが見えなくなると、買い忘れに気づけない。
+    await page.goto("/login.html");
+    await expect(page.locator("#bnav-shopping .shopping-badge")).toHaveCount(1);
+  });
+});

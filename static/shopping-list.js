@@ -144,11 +144,13 @@ async function _persist(items) {
 
 function _updateBadge() {
   const count = _items.filter((it) => !it.done).length;
-  const badge = $("shopping-badge");
-  badge.hidden = count === 0;
-  badge.textContent = count > 9 ? "9+" : String(count);
-  const badgePc = $("shopping-badge-pc");
-  if (badgePc) { badgePc.hidden = count === 0; badgePc.textContent = count > 9 ? "9+" : String(count); }
+  const text  = count > 9 ? "9+" : String(count);
+  // バッジはヘッダ・PCナビ・ボトムナビの3か所にある。個別に取ると
+  // 増やしたときに更新漏れが起きるので、クラスでまとめて更新する。
+  document.querySelectorAll(".shopping-badge").forEach((el) => {
+    el.hidden = count === 0;
+    el.textContent = text;
+  });
 }
 
 function _ref() {

@@ -210,6 +210,10 @@ body {
   padding: 0 3px;
   border: 2px solid var(--card);
 }
+/* ボトムナビの「買い物リスト」に付くバッジ。項目全体が position:relative
+   なので、既定の top/right だとマスの角に飛んでしまう。アイコンの右上に置く。 */
+#shopping-badge-bnav { top: 4px; right: calc(50% - 20px); }
+
 
 /* ============================================================
    MAIN LAYOUT

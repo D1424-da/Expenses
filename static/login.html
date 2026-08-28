@@ -79,11 +79,13 @@
     <header class="topbar">
       <h1><a href="/" class="topbar-title-link" title="トップページへ戻る"><span class="topbar-title-icon">🏠</span>カケイシピ</a></h1>
       <div class="topbar-right">
-        <!-- モバイルのみ表示（PCナビバーに同機能あり） -->
-        <button id="shopping-btn" class="topbar-btn topbar-btn--mobile-only" title="買い物リスト" aria-label="買い物リスト">
+        <!-- ボトムナビ・PCナビから click() で参照されるため DOM に残すが、
+             画面には出さない。以前はモバイルで表示しており、ボトムナビの
+             「買い物リスト」とヘッダの 🛒 が二重に並んでいた（保存レシピも同様）。 -->
+        <button id="shopping-btn" class="topbar-btn" title="買い物リスト" aria-hidden="true" tabindex="-1" style="display:none">
           <span aria-hidden="true">🛒</span><span id="shopping-badge" class="shopping-badge" hidden></span>
         </button>
-        <button id="saved-recipes-btn" class="topbar-btn topbar-btn--mobile-only" title="保存済みレシピ" aria-label="保存済みレシピ"><span aria-hidden="true">📚</span></button>
+        <button id="saved-recipes-btn" class="topbar-btn" title="保存済みレシピ" aria-hidden="true" tabindex="-1" style="display:none"><span aria-hidden="true">📚</span></button>
         <!-- PC・モバイル共通 -->
         <!-- PCナビから参照されるため DOM に残す（表示はPCナビ側） -->
         <button id="compare-btn" class="topbar-btn topbar-btn--mobile-only" title="価格比較" aria-hidden="true" tabindex="-1" style="display:none">🔎</button>
@@ -645,6 +647,7 @@
       <button class="bnav-item" id="bnav-shopping" aria-label="買い物リスト">
         <span class="bnav-icon">🛒</span>
         <span class="bnav-label">買い物リスト</span>
+        <span class="shopping-badge" id="shopping-badge-bnav" hidden></span>
       </button>
       <button class="bnav-item" id="bnav-more" aria-label="もっと見る">
         <span class="bnav-icon">⋯</span>
