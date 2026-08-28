@@ -61,3 +61,14 @@ describe("app.js の依存結線", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("予算の手がかり（T6）", () => {
+  it("initBudget に fetchHistory を渡している", () => {
+    // 渡さないと案内ブロックと「平均 · 先月」の行が黙って出なくなる。
+    // 予算設定自体は動くので、壊れたことに気づきにくい。
+    const args = initArgs("initBudget");
+    expect(args, "initBudget( の呼び出しが見つからない").not.toBeNull();
+    expect(args).toMatch(/\bfetchHistory\s*[,:]/);
+    expect(args).not.toMatch(/\bfetchHistory:\s*null\b/);
+  });
+});

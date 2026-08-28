@@ -3,6 +3,9 @@ import {
   doc, setDoc, onSnapshot,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { $, escapeHtml, openModal, closeModal } from "./dom-utils.js";
+import {
+  splitShoppingItems, summaryLabel, MOVE_DELAY_MS,
+} from "./shopping-order.js";
 import { dbBase } from "./db-paths.js";
 import { log, logErr } from "./log.js";
 import { showError } from "./ui-feedback.js";
@@ -10,6 +13,9 @@ import { showError } from "./ui-feedback.js";
 let _db, _getUser;
 let _items = [];   // [{ id, name, done }]
 let _unsub = null; // Firestore のリスナー
+// チェック直後に元の位置へ留めている品目: id → { prevDone, timer }
+// 即座に並び替えると、押し間違えたときに何が動いたのか分からない。
+const _pending = new Map();
 
 export function initShoppingList({ db, getUser }) {
   _db = db;
@@ -17,7 +23,6 @@ export function initShoppingList({ db, getUser }) {
   $("shopping-close").onclick       = () => closeModal("shopping-modal");
   $("shopping-btn").onclick         = _open;
   $("shopping-add-form").onsubmit   = _handleAdd;
-  $("shopping-clear-done").onclick  = _clearDone;
 }
 
 // ログイン後に呼ぶ。ログアウト時は stopSync() で止める。
@@ -30,7 +35,7 @@ export function startSync() {
     (snap) => {
       _items = snap.exists() ? (snap.data().items || []) : [];
       _updateBadge();
-      if (!$("shopping-modal").hidden) _render();
+      _renderIfOpen();
     },
     (err) => logErr("買い物リスト購読エラー:", err.message, err),
   );
@@ -38,6 +43,9 @@ export function startSync() {
 
 export function stopSync() {
   if (_unsub) { _unsub(); _unsub = null; }
+  // 保留中のタイマーが残ると、ログアウト後に描画を試みて落ちる。
+  for (const { timer } of _pending.values()) clearTimeout(timer);
+  _pending.clear();
   _items = [];
   _updateBadge();
 }
@@ -67,46 +75,49 @@ function _open() {
 function _render() {
   const listEl  = $("shopping-items");
   const emptyEl = $("shopping-empty");
+  const countEl = $("shopping-count");
   listEl.innerHTML = "";
 
-  if (!_items.length) { emptyEl.hidden = false; return; }
+  const { pendingItems, doneItems, remaining, doneCount } =
+    splitShoppingItems(_items, _pending);
+
+  if (countEl) {
+    countEl.textContent = remaining + doneCount > 0
+      ? summaryLabel(remaining, doneCount) : "";
+  }
+
+  if (!remaining && !doneCount) { emptyEl.hidden = false; return; }
   emptyEl.hidden = true;
 
-  // 店舗別にグループ化（未完了→完了の順、店舗なしは最後）
-  const groups = new Map();
-  const sorted = [..._items].sort((a, b) => Number(a.done) - Number(b.done));
-  for (const item of sorted) {
-    const key = item.store || "";
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(item);
-  }
-  // 店舗あり → 名前順 → 店舗なし
-  const storeKeys = [...groups.keys()].sort((a, b) => {
-    if (!a) return 1; if (!b) return -1;
-    return a.localeCompare(b, "ja");
-  });
-
-  for (const storeKey of storeKeys) {
-    // 店舗ヘッダー
+  for (const { store, items } of pendingItems) {
     const header = document.createElement("div");
     header.className = "shopping-store-header";
-    header.textContent = storeKey ? `🏪 ${storeKey}` : "🛒 店舗未設定";
+    header.textContent = store ? `🏪 ${store}` : "🛒 店舗未設定";
     listEl.appendChild(header);
-
-    for (const item of groups.get(storeKey)) {
-      const row = document.createElement("div");
-      row.className = "shopping-item" + (item.done ? " done" : "");
-      row.innerHTML = `
-        <label class="shopping-check">
-          <input type="checkbox" ${item.done ? "checked" : ""} />
-          <span class="shopping-check-name">${escapeHtml(item.name)}</span>
-        </label>
-        <button class="shopping-del" aria-label="削除" type="button">✕</button>`;
-      row.querySelector("input").onchange   = () => _toggle(item.id);
-      row.querySelector(".shopping-del").onclick = () => _remove(item.id);
-      listEl.appendChild(row);
-    }
+    for (const item of items) listEl.appendChild(_row(item));
   }
+
+  if (doneItems.length) {
+    const divider = document.createElement("div");
+    divider.className = "shopping-done-divider";
+    divider.textContent = `カゴに入れた ${doneItems.length}点`;
+    listEl.appendChild(divider);
+    for (const item of doneItems) listEl.appendChild(_row(item));
+  }
+}
+
+function _row(item) {
+  const row = document.createElement("div");
+  row.className = "shopping-item" + (item.done ? " done" : "");
+  row.innerHTML = `
+    <label class="shopping-check">
+      <input type="checkbox" ${item.done ? "checked" : ""} />
+      <span class="shopping-check-name">${escapeHtml(item.name)}</span>
+    </label>
+    <button class="shopping-del" aria-label="${escapeHtml(item.name)}を削除" type="button">✕</button>`;
+  row.querySelector("input").onchange       = () => _toggle(item.id, item.done);
+  row.querySelector(".shopping-del").onclick = () => _remove(item.id);
+  return row;
 }
 
 async function _handleAdd(e) {
@@ -118,16 +129,25 @@ async function _handleAdd(e) {
   await _persist([...(_items || []), { id: _uid(), name, done: false }]);
 }
 
-async function _toggle(id) {
+async function _toggle(id, prevDone) {
+  // 位置は MOVE_DELAY_MS のあいだ据え置く。押し間違いに気づく猶予。
+  const old = _pending.get(id);
+  if (old) clearTimeout(old.timer);
+  _pending.set(id, {
+    prevDone: old ? old.prevDone : Boolean(prevDone),
+    timer: setTimeout(() => { _pending.delete(id); _renderIfOpen(); }, MOVE_DELAY_MS),
+  });
   await _persist(_items.map((it) => it.id === id ? { ...it, done: !it.done } : it));
 }
 
-async function _remove(id) {
-  await _persist(_items.filter((it) => it.id !== id));
+function _renderIfOpen() {
+  if (!$("shopping-modal").hidden) _render();
 }
 
-async function _clearDone() {
-  await _persist(_items.filter((it) => !it.done));
+async function _remove(id) {
+  const p = _pending.get(id);
+  if (p) { clearTimeout(p.timer); _pending.delete(id); }
+  await _persist(_items.filter((it) => it.id !== id));
 }
 
 async function _persist(items) {
@@ -144,11 +164,13 @@ async function _persist(items) {
 
 function _updateBadge() {
   const count = _items.filter((it) => !it.done).length;
-  const badge = $("shopping-badge");
-  badge.hidden = count === 0;
-  badge.textContent = count > 9 ? "9+" : String(count);
-  const badgePc = $("shopping-badge-pc");
-  if (badgePc) { badgePc.hidden = count === 0; badgePc.textContent = count > 9 ? "9+" : String(count); }
+  const text  = count > 9 ? "9+" : String(count);
+  // バッジはヘッダ・PCナビ・ボトムナビの3か所にある。個別に取ると
+  // 増やしたときに更新漏れが起きるので、クラスでまとめて更新する。
+  document.querySelectorAll(".shopping-badge").forEach((el) => {
+    el.hidden = count === 0;
+    el.textContent = text;
+  });
 }
 
 function _ref() {

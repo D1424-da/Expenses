@@ -36,7 +36,7 @@ import {
 import { renderSummary, thisMonthCount } from "./summary.js";
 import { handleFiles, advanceQueue, skipCurrent, prewarmOcr } from "./ocr-queue.js";
 import { exportCsv } from "./csv-export.js";
-import { initForm, fillForm, resetForm, editExpense, deleteExpense, inlineSave } from "./expense-form.js";
+import { initForm, fillForm, resetForm, editExpense, deleteExpense, inlineSave, openForm } from "./expense-form.js";
 import { renderList, setFilter, resetList } from "./list-view.js";
 import { initCalendar, renderCalendar, maybeRefreshDayModal, updateMealPlans } from "./calendar-view.js";
 import { initCompare } from "./compare-view.js";
@@ -211,6 +211,9 @@ async function setupApp(user) {
       categories:       CATEGORIES,
       onUpdated:        renderSummary,
       getCurrentMonth:  () => state.currentMonth,
+      // 予算の手がかり（過去3か月の平均・先月）の材料。
+      // 渡さないと案内ブロックと平均の表示が黙って出なくなる。
+      fetchHistory:     fetchAllExpenses,
     });
     initTrend({ fetchMonthExpenses });
     initSavedRecipes({ db, getUser: () => state.currentUser });
@@ -256,6 +259,8 @@ async function setupApp(user) {
     // 撮影ボタンを <label> から <button> に変えたため、click を input に渡す。
     // label のままだとフォーカスを受けられず、キーボードだけでアプリの
     // 中心操作（撮影）に到達できなかった。
+    // 一覧の下端から手入力を開く（T2-1）。既定ではフォームを畳んでいる。
+    $("manual-entry-btn").onclick    = () => openForm({ focus: true });
     $("camera-btn").onclick          = () => $("camera-input").click();
     $("pick-btn").onclick            = () => $("file-input").click();
     // ---- ナビの現在地表示 ------------------------------------------------

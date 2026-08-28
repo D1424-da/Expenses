@@ -7,6 +7,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { apiJson } from "./api-client.js";
 import { shouldResync } from "./stripe-resync.js";
+import { planSummary } from "./plan-label.js";
 import { openModal, closeModal, $ } from "./dom-utils.js";
 import { log, logErr } from "./log.js";
 import { showError } from "./ui-feedback.js";
@@ -103,18 +104,14 @@ export function stopBillingSync() {
 }
 
 // サブスク解約済み（期間終了後に無料プランへ戻る）なら期限の表示文字列を返す。有効期限なしなら null。
+/** アカウント画面に出す月額（表示用）。static/index.html の表示価格と揃える。 */
+export const PLAN_PRICE_JPY = 500;
+
 export function premiumExpiryLabel() {
-  const end = _sub?.currentPeriodEnd;
-  if (typeof end !== "number" || end <= 0) return null;
-  const d = new Date(end * 1000);
-  const dateStr = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
-  if (_sub?.plan === "trial") {
-    return `${dateStr}まで無料トライアル中（以降は有料プランへの登録が必要です）`;
-  }
-  if (_sub?.cancelAtPeriodEnd) {
-    return `${dateStr}まで利用可能（解約手続き済み）`;
-  }
-  return null;
+  // 判定は plan-label.js の純粋関数に置いてある（テストで固定するため）。
+  // 以前は通常の課金中に null を返しており、**次回の請求日がどこにも
+  // 出ていなかった**。
+  return planSummary(_sub, Date.now() / 1000, PLAN_PRICE_JPY).text;
 }
 
 // サブスクリプションが有効かどうかを返す。

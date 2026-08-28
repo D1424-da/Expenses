@@ -38,6 +38,29 @@ export function initForm(ctx) {
   };
 }
 
+
+/** フォームを開く。既定では畳んでいる（T2-1）。
+ *
+ * scrollIntoView は使わない。モーダルが開いている状態や position:sticky の
+ * ヘッダーがあると、目的の要素が固定要素の裏に隠れることがあるため、
+ * 位置を自分で計算して window.scrollTo する。
+ */
+export function openForm({ focus = false } = {}) {
+  const card = $("form-card");
+  card.hidden = false;
+  card.classList.remove("is-collapsed");
+  const top = card.getBoundingClientRect().top + window.scrollY - 12;
+  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  if (focus) $("f-amount")?.focus();
+}
+
+/** フォームを畳む。保存・キャンセルの後に呼ぶ。 */
+export function collapseForm() {
+  const card = $("form-card");
+  card.hidden = true;
+  card.classList.add("is-collapsed");
+}
+
 // OCR結果をフォームに流し込む。編集モードを解除してから埋める。
 export function fillForm(data, previewUrl) {
   setFormMode("add");
@@ -54,6 +77,7 @@ export function fillForm(data, previewUrl) {
   $("f-engine").value = data.engine || "";
   _renderItems(data.items || []);
   _showPreview(previewUrl);
+  openForm();
 }
 
 export function resetForm() {
@@ -69,6 +93,9 @@ export function resetForm() {
   _updateItemsCount();
   $("f-date").value = todayStr();
   setFormMode("add");
+  // 保存後・クリア・OCRのスキップはすべてここを通る。畳む処理をここに置けば、
+  // 経路ごとに書かなくて済む（fillForm は直後に openForm を呼ぶ）。
+  collapseForm();
 }
 
 export function editExpense(e) {
@@ -84,7 +111,7 @@ export function editExpense(e) {
   _showPreview(null);
   setFormMode("edit", e);
   closeModal("day-modal");
-  $("form-card").scrollIntoView({ behavior: "smooth" });
+  openForm();
 }
 
 export async function deleteExpense(id) {

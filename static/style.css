@@ -210,6 +210,10 @@ body {
   padding: 0 3px;
   border: 2px solid var(--card);
 }
+/* ボトムナビの「買い物リスト」に付くバッジ。項目全体が position:relative
+   なので、既定の top/right だとマスの角に飛んでしまう。アイコンの右上に置く。 */
+#shopping-badge-bnav { top: 4px; right: calc(50% - 20px); }
+
 
 /* ============================================================
    MAIN LAYOUT
@@ -1286,8 +1290,89 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
    BUDGET
    ============================================================ */
 #budget-form { display: flex; flex-direction: column; gap: 12px; }
+/* ============================================================
+   SUMMARY — 予算の残額（T2-2）
+   これまで残額は予算モーダルを開かないと見えなかった。
+   サマリーは --sage-deep 背景なので、文字は白側で組む。
+   ============================================================ */
+.budget-remaining { margin-top: 10px; }
+.budget-remaining-bar {
+  height: 8px; border-radius: 100px; overflow: hidden;
+  background: rgba(255,255,255,0.22);
+}
+.budget-remaining-fill {
+  height: 100%; border-radius: 100px;
+  background: rgba(255,255,255,0.9);
+  transition: width .25s;
+}
+.budget-remaining-fill.over { background: var(--petal); }
+.budget-remaining-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px; margin-top: 6px;
+}
+.budget-remaining-text {
+  font-size: 0.92rem; font-weight: 700; color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.budget-remaining-text.over { color: var(--petal); }
+.budget-remaining-days { font-size: 0.76rem; color: rgba(255,255,255,0.78); }
+.budget-remaining-link {
+  min-height: 44px;
+  background: none; border: none; padding: 0;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.84rem; font-family: inherit;
+  text-decoration: underline; cursor: pointer;
+}
+
+/* ============================================================
+   BUDGET — 手がかりの表示（T6）
+   空欄が並ぶだけでは「何円と入れればよいか」の手がかりが無かった。
+   過去の実績が十分にあるときだけ、平均と先月額を添える。
+   ============================================================ */
+.budget-suggest {
+  background: var(--sage-light);
+  border-radius: var(--r-card-sm);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.budget-suggest-lead { font-size: 0.88rem; line-height: 1.6; margin-bottom: 10px; }
+.budget-suggest-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.budget-suggest-btn {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid var(--sage);
+  border-radius: var(--r-btn);
+  background: var(--card);
+  color: var(--sage);
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+.budget-suggest-btn:active { filter: brightness(0.96); }
+/* 入力欄の下に置く 手がかり。行は縦積みになる。 */
+.budget-hint-line {
+  width: 100%;
+  margin: 2px 0 0 90px;
+  font-size: 0.74rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.budget-total-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 14px 0 12px;
+  padding-top: 12px;
+  border-top: 1.5px solid var(--border);
+}
+.budget-total-label { font-size: 0.88rem; font-weight: 600; color: var(--ink-2); }
+.budget-total-amt {
+  font-size: 1.1rem; font-weight: 800; color: var(--sage);
+  font-variant-numeric: tabular-nums;
+}
+
 .budget-inputs { display: flex; flex-direction: column; gap: 10px; }
-.budget-input-row { display: flex; align-items: center; gap: 10px; }
+/* 手がかりの行を折り返して受けるため wrap する。 */
+.budget-input-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .budget-cat-label { width: 80px; flex-shrink: 0; font-size: 0.86rem; font-weight: 600; }
 .budget-input-wrap { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--r-input); overflow: hidden; flex: 1; background: var(--card); }
 .budget-yen-prefix { padding: 0 8px; color: var(--muted); font-size: 0.9rem; }
@@ -1346,9 +1431,39 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 /* ============================================================
    SHOPPING LIST
    ============================================================ */
-.shopping-add-form { display: flex; gap: 8px; margin-bottom: 14px; }
-.shopping-add-form input { flex: 1; }
-.shopping-add-form button { flex-shrink: 0; padding: 11px 18px; }
+/* 追加欄はモーダル下端に固定する。店頭で片手で持つ画面なので、
+   リストが伸びるほど上端の入力欄は親指から遠くなっていた。 */
+.shopping-add-form {
+  position: sticky; bottom: 0; z-index: 1;
+  display: flex; gap: 8px; align-items: center;
+  padding: 10px 0 2px;
+  margin-top: 10px;
+  background: var(--card);
+  border-top: 1.5px solid var(--border);
+}
+.shopping-add-form input { flex: 1; border-radius: 100px; padding-left: 14px; }
+.shopping-add-btn {
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  border: none; border-radius: 50%;
+  background: var(--sage); color: #fff;
+  font-size: 1.3rem; line-height: 1; font-family: inherit;
+  cursor: pointer;
+}
+.shopping-add-btn:active { filter: brightness(0.95); }
+
+/* 残り点数。操作した手応えとして、位置の移動より先に更新する。 */
+.shopping-count {
+  font-size: 0.82rem; font-weight: 600; color: var(--ink-2);
+  margin-bottom: 8px;
+}
+/* 未完了と完了済みの区切り */
+.shopping-done-divider {
+  font-size: 0.76rem; font-weight: 600; color: var(--muted);
+  margin-top: 14px; padding: 6px 2px 4px;
+  border-top: 1px dashed var(--border);
+}
+
 .shopping-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
 .shopping-store-header {
   font-size: 0.78rem; font-weight: 700; color: var(--sage);
@@ -1370,7 +1485,6 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .shopping-check-store { font-size: 0.75rem; color: var(--muted); }
 .shopping-del { background: none; border: none; color: var(--muted); font-size: 0.9rem; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
 .shopping-del:hover { color: var(--danger); }
-.shopping-clear-btn { width: 100%; background: none; border: 1.5px solid var(--border); color: var(--muted); font-size: 0.83rem; padding: 10px; margin-top: 4px; border-radius: var(--r-btn); }
 
 /* ============================================================
    BOTTOM NAV (mobile only)
@@ -1965,12 +2079,42 @@ a.pcnav-blog { margin-left: auto; color: var(--sage); }
   color: var(--ink-2);
   border: 1px solid var(--border);
 }
-.account-action-btn--logout {
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  margin-top: 4px;
+/* ログアウトは解約と結果が大きく違うので、同じ見た目で隣り合わせにしない。
+   区切り線で離し、ボタンではなく文字リンクに落とす。 */
+.account-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 22px 0 12px;
 }
+.account-logout-link {
+  display: block;
+  width: 100%;
+  min-height: 44px;      /* 押しにくくはしない */
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-family: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.account-logout-link:hover { color: var(--ink-2); }
+
+/* プラン枠の金額と状態 */
+.account-plan-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+}
+.account-plan-state {
+  font-size: 0.72rem; font-weight: 700; color: var(--sage);
+  background: var(--sage-light); border-radius: 100px; padding: 3px 10px;
+}
+.account-plan-price {
+  font-size: 1.24rem; font-weight: 800; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin: 2px 0 6px;
+}
+.account-plan-price span { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
 
 /* アカウントボタン（topbar） */
 .topbar-btn--account {
@@ -2221,3 +2365,23 @@ button.file-button {
   transition: filter .15s;
 }
 button.file-button.secondary { background: var(--sage-light); color: var(--sage); }
+
+
+/* ============================================================
+   FORM — 既定で畳む（T2-1）
+   7つの入力欄を常に開いておくと、サマリーから「今月の買い物」に
+   届くまでの障害物になっていた。
+   ============================================================ */
+.manual-entry-btn {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+  background: none;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--r-btn);
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+.manual-entry-btn:hover { border-color: var(--sage); color: var(--sage); }

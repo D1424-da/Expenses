@@ -79,11 +79,13 @@
     <header class="topbar">
       <h1><a href="/" class="topbar-title-link" title="トップページへ戻る"><span class="topbar-title-icon">🏠</span>カケイシピ</a></h1>
       <div class="topbar-right">
-        <!-- モバイルのみ表示（PCナビバーに同機能あり） -->
-        <button id="shopping-btn" class="topbar-btn topbar-btn--mobile-only" title="買い物リスト" aria-label="買い物リスト">
+        <!-- ボトムナビ・PCナビから click() で参照されるため DOM に残すが、
+             画面には出さない。以前はモバイルで表示しており、ボトムナビの
+             「買い物リスト」とヘッダの 🛒 が二重に並んでいた（保存レシピも同様）。 -->
+        <button id="shopping-btn" class="topbar-btn" title="買い物リスト" aria-hidden="true" tabindex="-1" style="display:none">
           <span aria-hidden="true">🛒</span><span id="shopping-badge" class="shopping-badge" hidden></span>
         </button>
-        <button id="saved-recipes-btn" class="topbar-btn topbar-btn--mobile-only" title="保存済みレシピ" aria-label="保存済みレシピ"><span aria-hidden="true">📚</span></button>
+        <button id="saved-recipes-btn" class="topbar-btn" title="保存済みレシピ" aria-hidden="true" tabindex="-1" style="display:none"><span aria-hidden="true">📚</span></button>
         <!-- PC・モバイル共通 -->
         <!-- PCナビから参照されるため DOM に残す（表示はPCナビ側） -->
         <button id="compare-btn" class="topbar-btn topbar-btn--mobile-only" title="価格比較" aria-hidden="true" tabindex="-1" style="display:none">🔎</button>
@@ -132,6 +134,9 @@
               <button id="trend-btn" class="summary-action-btn" title="月別グラフ">📈 グラフ</button>
             </div>
           </div>
+          <!-- 予算の残額。予算未設定のときは設定への導線に切り替わる
+               （summary.js が描画）。 -->
+          <div id="budget-remaining" class="budget-remaining"></div>
           <!-- 月切り替えナビ -->
           <div class="month-picker">
             <button id="prev-month" aria-label="前の月">‹</button>
@@ -177,7 +182,10 @@
       </section>
 
       <!-- 入力フォーム（OCR結果の確認・修正 / 手入力） -->
-      <section class="card form-card" id="form-card">
+      <!-- 既定では畳んでおく。7つの入力欄を常に開いておくと、
+           「今月の買い物」に届くまでの障害物になっていた。
+           展開するのは ①＋手で入力する ②OCRの読み取り完了 ③一覧からの編集。 -->
+      <section class="card form-card is-collapsed" id="form-card" hidden>
         <h2 id="form-title">手で入力する</h2>
         <p id="edit-banner" class="edit-banner" hidden></p>
         <form id="expense-form">
@@ -234,6 +242,7 @@
         </div>
         <p id="list-filter-count" class="list-filter-count" hidden></p>
         <div id="expense-list" class="expense-list"></div>
+        <button type="button" id="manual-entry-btn" class="manual-entry-btn">＋ 手で入力する</button>
         <div id="empty-msg" class="empty-state" hidden>
           <div class="empty-state-icon" aria-hidden="true">📸</div>
           <p class="empty-state-title">まだ記録がありません</p>
@@ -470,8 +479,14 @@
           <button id="budget-close" aria-label="閉じる">✕</button>
         </div>
         <p class="hint">カテゴリごとに月の目標金額を設定します。0 または空欄は「予算なし」です。</p>
+        <!-- 過去の実績が十分にあるときだけ出る手がかり（budget-view.js が描画） -->
+        <div id="budget-suggest" class="budget-suggest" hidden></div>
         <form id="budget-form">
           <div id="budget-inputs" class="budget-inputs"></div>
+          <div class="budget-total-row">
+            <span class="budget-total-label">合計</span>
+            <span id="budget-total" class="budget-total-amt">¥0</span>
+          </div>
           <button type="submit" class="primary">保存する</button>
         </form>
       </div>
@@ -531,13 +546,15 @@
           <h2>🛒 買い物リスト</h2>
           <button id="shopping-close" aria-label="閉じる">✕</button>
         </div>
-        <form id="shopping-add-form" class="shopping-add-form">
-          <input id="shopping-add-input" type="text" placeholder="食材・商品を追加…" autocomplete="off" aria-label="買い物リストに追加する品名" />
-          <button type="submit" class="primary">追加</button>
-        </form>
+        <p id="shopping-count" class="shopping-count" aria-live="polite"></p>
         <div id="shopping-items" class="shopping-items"></div>
         <p id="shopping-empty" class="empty" hidden>リストはまだ空です。</p>
-        <button id="shopping-clear-done" class="shopping-clear-btn" type="button">完了済みを削除</button>
+        <!-- 追加欄は下端に固定する。店頭で片手で持つ画面なので、
+             リストが伸びるほど上端の入力欄は親指から遠くなる。 -->
+        <form id="shopping-add-form" class="shopping-add-form">
+          <input id="shopping-add-input" type="text" placeholder="食材・商品を追加…" autocomplete="off" aria-label="買い物リストに追加する品名" />
+          <button type="submit" class="shopping-add-btn" aria-label="追加する">＋</button>
+        </form>
       </div>
     </div>
 
@@ -597,8 +614,12 @@
             <button id="account-upgrade-btn" class="primary account-action-btn" type="button">✨ プランに登録する</button>
           </div>
           <div id="account-plan-premium" class="account-plan-box account-plan-premium" hidden>
-            <div class="account-plan-label">現在のプラン</div>
-            <div class="account-plan-name">✨ プレミアムプラン</div>
+            <div class="account-plan-head">
+              <span class="account-plan-label">現在のプラン</span>
+              <span class="account-plan-state">利用中</span>
+            </div>
+            <div class="account-plan-name">カケイシピ プラン</div>
+            <div id="account-plan-price" class="account-plan-price">¥500 <span>/月（税込）</span></div>
             <p class="account-plan-desc">記録件数無制限・すべての機能が使えます。</p>
             <p id="account-plan-expiry" class="account-plan-expiry" hidden></p>
             <div id="account-portal-wrap">
@@ -606,8 +627,10 @@
               <p class="account-portal-hint">Stripe の管理ページへ移動します。解約・領収書の確認ができます。</p>
             </div>
           </div>
-          <!-- ログアウト -->
-          <button id="logout" class="account-action-btn account-action-btn--logout" type="button">ログアウト</button>
+          <!-- ログアウトは解約と結果が大きく違う。同じ見た目で隣り合わせに
+               しない（区切り線で離し、文字リンクに落とす）。 -->
+          <hr class="account-divider" />
+          <button id="logout" class="account-logout-link" type="button">ログアウト</button>
         </div>
       </div>
     </div>
@@ -638,13 +661,14 @@
         <span class="bnav-icon">📅</span>
         <span class="bnav-label">カレンダー</span>
       </button>
-      <button class="bnav-item" id="bnav-shopping" aria-label="買い物リスト">
-        <span class="bnav-icon">🛒</span>
-        <span class="bnav-label">買い物</span>
-      </button>
       <button class="bnav-item" id="bnav-recipe" aria-label="レシピを提案">
         <span class="bnav-icon">🍳</span>
         <span class="bnav-label">レシピ提案</span>
+      </button>
+      <button class="bnav-item" id="bnav-shopping" aria-label="買い物リスト">
+        <span class="bnav-icon">🛒</span>
+        <span class="bnav-label">買い物リスト</span>
+        <span class="shopping-badge" id="shopping-badge-bnav" hidden></span>
       </button>
       <button class="bnav-item" id="bnav-more" aria-label="もっと見る">
         <span class="bnav-icon">⋯</span>

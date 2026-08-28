@@ -217,3 +217,247 @@ test.describe("カレンダーの金額表示（T8）", () => {
     expect(r.weekHeight).toBeGreaterThanOrEqual(44);
   });
 });
+
+test.describe("ナビゲーションの並び（T3）", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  async function labels(page, prefix) {
+    await page.goto("/login.html");
+    return page.$$eval(`[id^="${prefix}-"] .${prefix}-label`, (els) =>
+      els.map((el) => el.textContent.trim()),
+    );
+  }
+
+  test("PC とスマホで先頭5項目のラベルが一致する", async ({ page }) => {
+    // 以前は「買い物リスト」と「買い物」で揺れ、レシピ提案の位置も
+    // 3番目と4番目で入れ替わっていた。
+    const bnav  = await labels(page, "bnav");
+    const pcnav = await labels(page, "pcnav");
+    expect(bnav.slice(0, 4)).toEqual(pcnav.slice(0, 4));
+    expect(bnav[4]).toBe("もっと見る");
+  });
+
+  test("もっと見るの中身が PC ナビの残りと一致する", async ({ page }) => {
+    await page.goto("/login.html");
+    const drawer = await page.$$eval(
+      "#bnav-more-drawer .bnav-more-label",
+      (els) => els.map((el) => el.textContent.trim()),
+    );
+    const pcnav = await page.$$eval('[id^="pcnav-"] .pcnav-label', (els) =>
+      els.map((el) => el.textContent.trim()),
+    );
+    expect(drawer).toEqual(pcnav.slice(4));
+  });
+
+  test("320px でもボトムナビが横にはみ出さない", async ({ page }) => {
+    // 「買い物」→「買い物リスト」でラベルが長くなった。
+    await page.setViewportSize({ width: 320, height: 812 });
+    await page.goto("/login.html");
+    const r = await page.evaluate(() => {
+      document.getElementById("app")?.removeAttribute("hidden");
+      const nav = document.querySelector(".bottom-nav");
+      nav.removeAttribute("hidden");
+      return {
+        overflow: nav.scrollWidth > nav.clientWidth + 1,
+        minWidth: Math.min(
+          ...[...document.querySelectorAll(".bnav-item")].map(
+            (e) => e.getBoundingClientRect().width,
+          ),
+        ),
+      };
+    });
+    expect(r.overflow, "ボトムナビが横にはみ出している").toBe(false);
+    expect(r.minWidth).toBeGreaterThanOrEqual(44);
+  });
+});
+
+test.describe("モバイルでの重複表示", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("買い物リスト・保存レシピがヘッダとボトムナビで二重に出ない", async ({ page }) => {
+    // ヘッダの 🛒 と 📚 は PC ナビ用の中継役として置かれていたが、
+    // モバイルでも表示されており、ボトムナビの同じ項目と二重になっていた。
+    await page.goto("/login.html");
+    await page.evaluate(() => {
+      document.querySelectorAll("[hidden]").forEach((el) => {
+        if (el.id === "app" || el.closest("#app")) el.removeAttribute("hidden");
+      });
+    });
+    for (const id of ["shopping-btn", "saved-recipes-btn"]) {
+      await expect(page.locator(`#${id}`), `#${id} が画面に出ている`).toBeHidden();
+    }
+    // ボトムナビ側は出ている
+    await expect(page.locator("#bnav-shopping")).toBeVisible();
+  });
+
+  test("未購入件数のバッジがボトムナビ側にある", async ({ page }) => {
+    // ヘッダを隠したことでバッジが見えなくなると、買い忘れに気づけない。
+    await page.goto("/login.html");
+    await expect(page.locator("#bnav-shopping .shopping-badge")).toHaveCount(1);
+  });
+});
+
+test.describe("予算設定の手がかり（T6）", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("案内ブロックの器と合計行が用意されている", async ({ page }) => {
+    await page.goto("/login.html");
+    // 案内ブロックは実績が足りないと出ないので、初期状態では hidden
+    await expect(page.locator("#budget-suggest")).toHaveCount(1);
+    await expect(page.locator("#budget-suggest")).toBeHidden();
+    await expect(page.locator("#budget-total")).toHaveCount(1);
+  });
+
+  test("案内ボタンのタップ領域が 44px 以上ある", async ({ page }) => {
+    await page.goto("/login.html");
+    const h = await page.evaluate(() => {
+      // モーダルは #app の中にあり、#app が hidden のままだと
+      // 中の要素は高さ0になる。
+      document.getElementById("app")?.removeAttribute("hidden");
+      const box = document.getElementById("budget-suggest");
+      box.hidden = false;
+      box.innerHTML =
+        '<p class="budget-suggest-lead">x</p>' +
+        '<div class="budget-suggest-actions">' +
+        '<button type="button" class="budget-suggest-btn">平均を入れる</button></div>';
+      document.getElementById("budget-modal").hidden = false;
+      return document
+        .querySelector(".budget-suggest-btn")
+        .getBoundingClientRect().height;
+    });
+    expect(h).toBeGreaterThanOrEqual(44);
+  });
+});
+
+test.describe("買い物リスト（T5）", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("追加欄がリストより下にあり、下端に固定される", async ({ page }) => {
+    // 以前は上端にあり、リストが伸びるほど親指から遠くなっていた。
+    await page.goto("/login.html");
+    const r = await page.evaluate(() => {
+      const list = document.getElementById("shopping-items");
+      const form = document.getElementById("shopping-add-form");
+      return {
+        formAfterList: !!(list.compareDocumentPosition(form) &
+          Node.DOCUMENT_POSITION_FOLLOWING),
+        position: getComputedStyle(form).position,
+      };
+    });
+    expect(r.formAfterList, "追加欄がリストより前にある").toBe(true);
+    expect(r.position).toBe("sticky");
+  });
+
+  test("追加ボタンのタップ領域が 44px 以上ある", async ({ page }) => {
+    await page.goto("/login.html");
+    const size = await page.evaluate(() => {
+      document.getElementById("app")?.removeAttribute("hidden");
+      document.getElementById("shopping-modal").hidden = false;
+      const b = document.querySelector(".shopping-add-btn").getBoundingClientRect();
+      return { w: b.width, h: b.height };
+    });
+    expect(size.w).toBeGreaterThanOrEqual(44);
+    expect(size.h).toBeGreaterThanOrEqual(44);
+  });
+
+  test("一括削除の操作が存在しない", async ({ page }) => {
+    // 破壊的な操作に確認も取り消しも無かったため撤去した。
+    // チェックを外せば戻る形にしている。
+    await page.goto("/login.html");
+    await expect(page.locator("#shopping-clear-done")).toHaveCount(0);
+  });
+
+  test("残り点数の表示欄がある", async ({ page }) => {
+    await page.goto("/login.html");
+    await expect(page.locator("#shopping-count")).toHaveCount(1);
+  });
+});
+
+test.describe("アカウント設定（T7）", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  async function openAccount(page) {
+    await page.goto("/login.html");
+    await page.evaluate(() => {
+      document.getElementById("app")?.removeAttribute("hidden");
+      document.getElementById("account-modal").hidden = false;
+      document.getElementById("account-plan-premium").hidden = false;
+    });
+  }
+
+  test("ログアウトと解約が視覚的に分かれている", async ({ page }) => {
+    // 以前は同じ見た目のボタンが隣り合っており、押し間違いの結果が
+    // 大きく違うのに区別が付かなかった。
+    await openAccount(page);
+    const r = await page.evaluate(() => {
+      const logout = document.getElementById("logout");
+      const portal = document.getElementById("account-portal-btn");
+      const lb = logout.getBoundingClientRect();
+      const pb = portal.getBoundingClientRect();
+      return {
+        gap: lb.top - pb.bottom,
+        hasDivider: !!document.querySelector(".account-divider"),
+        logoutIsLink: logout.classList.contains("account-logout-link"),
+        logoutHeight: lb.height,
+      };
+    });
+    expect(r.hasDivider, "区切り線が無い").toBe(true);
+    expect(r.logoutIsLink, "ログアウトが従来のボタンのまま").toBe(true);
+    expect(r.gap, "解約とログアウトが近すぎる").toBeGreaterThan(24);
+    // 押しにくくはしない
+    expect(r.logoutHeight).toBeGreaterThanOrEqual(44);
+  });
+
+  test("プラン枠に月額が出ている", async ({ page }) => {
+    await openAccount(page);
+    await expect(page.locator("#account-plan-price")).toContainText("¥500");
+  });
+});
+
+test.describe("ホーム画面の再構成（T2）", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("入力フォームが既定で畳まれている", async ({ page }) => {
+    // 7つの入力欄が常に開いていて、「今月の買い物」に届くまでの
+    // 障害物になっていた。
+    await page.goto("/login.html");
+    await expect(page.locator("#form-card")).toBeHidden();
+  });
+
+  test("一覧の下に「手で入力する」の入口がある", async ({ page }) => {
+    await page.goto("/login.html");
+    const r = await page.evaluate(() => {
+      const list = document.getElementById("expense-list");
+      const btn  = document.getElementById("manual-entry-btn");
+      return {
+        exists: !!btn,
+        afterList: !!(list.compareDocumentPosition(btn) &
+          Node.DOCUMENT_POSITION_FOLLOWING),
+      };
+    });
+    expect(r.exists, "手入力の入口が無い").toBe(true);
+    expect(r.afterList, "入口が一覧より前にある").toBe(true);
+  });
+
+  test("残額ブロックの器がサマリー内にある", async ({ page }) => {
+    await page.goto("/login.html");
+    const inSummary = await page.evaluate(() => {
+      const el = document.getElementById("budget-remaining");
+      return !!el && !!el.closest(".summary-hero");
+    });
+    expect(inSummary, "残額ブロックがサマリー内に無い").toBe(true);
+  });
+
+  test("残額の文字がサマリーの背景から読める", async ({ page }) => {
+    // サマリーは --sage-deep 背景。既定色のままだと読めない。
+    await page.goto("/login.html");
+    const color = await page.evaluate(() => {
+      document.getElementById("app")?.removeAttribute("hidden");
+      const el = document.getElementById("budget-remaining");
+      el.innerHTML = '<div class="budget-remaining-row">' +
+        '<span class="budget-remaining-text">予算まで あと ¥1</span></div>';
+      return getComputedStyle(el.querySelector(".budget-remaining-text")).color;
+    });
+    expect(color).toBe("rgb(255, 255, 255)");
+  });
+});
