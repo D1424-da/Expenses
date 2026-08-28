@@ -65,6 +65,26 @@ describe("purchase イベント", () => {
     expect(tracked).not.toBeNull();
     expect(tracked[1]).toBe(displayed[1]);
   });
+
+  it("価格が login.html のアップグレードモーダルとも一致する", () => {
+    // 検査対象が index.html だけだったため、アップグレードモーダルの表示だけが
+    // ¥980 のまま取り残されていた（LP・GA4 は ¥500）。利用者は決済の直前に
+    // 倍の金額を見ることになる。表示価格を持つ3か所をまとめて固定する。
+    const login = read("login.html");
+    const shown = login.match(/class="plan-price">¥([\d,]+)/);
+    const tracked = app.match(/PREMIUM_PLAN_JPY\s*=\s*(\d+)/);
+    expect(shown).not.toBeNull();
+    expect(tracked).not.toBeNull();
+    expect(shown[1].replace(/,/g, "")).toBe(tracked[1]);
+  });
+
+  it("廃止した無料枠（月10件）の文言が残っていない", () => {
+    // stripe-billing.js は 14日間トライアル制で、checkGate は件数を見ない。
+    // 文言だけ残ると「10件に達しました」と誤った理由が表示される。
+    for (const name of ["login.html", "tokushoho.html"]) {
+      expect(read(name), `${name} に月10件の記述が残っている`).not.toMatch(/月\s*10\s*件/);
+    }
+  });
 });
 
 describe("trial_start イベント", () => {

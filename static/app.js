@@ -217,7 +217,6 @@ async function setupApp(user) {
     initShoppingList({ db, getUser: () => state.currentUser });
     initMealPlan({ db, getUser: () => state.currentUser });
     initBilling({ db, getUser: () => state.currentUser, onSubChange: () => renderSummary() });
-    $("usage-bar").querySelector(".usage-upgrade").onclick = () => openModal("upgrade-modal");
 
     // アカウントモーダル
     // アップグレードCTAボタン（無料ユーザーのみtopbarに表示）
@@ -254,6 +253,11 @@ async function setupApp(user) {
     $("camera-input").onchange       = handleFiles;
     $("skip-btn").onclick            = skipCurrent;
     $("fab-camera").onclick          = () => $("camera-input").click();
+    // 撮影ボタンを <label> から <button> に変えたため、click を input に渡す。
+    // label のままだとフォーカスを受けられず、キーボードだけでアプリの
+    // 中心操作（撮影）に到達できなかった。
+    $("camera-btn").onclick          = () => $("camera-input").click();
+    $("pick-btn").onclick            = () => $("file-input").click();
     $("bnav-home").onclick           = () => window.scrollTo({ top: 0, behavior: "smooth" });
     $("bnav-calendar").onclick       = () => $("calendar").scrollIntoView({ behavior: "smooth" });
     $("bnav-shopping").onclick       = () => $("shopping-btn").click();
