@@ -78,6 +78,23 @@ describe("purchase イベント", () => {
     expect(shown[1].replace(/,/g, "")).toBe(tracked[1]);
   });
 
+  it("価格がアカウント画面・stripe-billing.js とも一致する", () => {
+    // T7 でアカウント画面に月額を出したため、表示価格を持つ場所が
+    // index.html / login.html のアップグレード / login.html のアカウント /
+    // app.js / stripe-billing.js の5か所になった。
+    // **1つだけ古い金額が残ると、決済の前後で違う額を見せることになる。**
+    const login   = read("login.html");
+    const billing = read("stripe-billing.js");
+    const tracked = app.match(/PREMIUM_PLAN_JPY\s*=\s*(\d+)/);
+    const account = login.match(/id="account-plan-price"[^>]*>¥([\d,]+)/);
+    const planConst = billing.match(/PLAN_PRICE_JPY\s*=\s*(\d+)/);
+    expect(tracked).not.toBeNull();
+    expect(account, "アカウント画面に月額の表示が無い").not.toBeNull();
+    expect(planConst, "stripe-billing.js に PLAN_PRICE_JPY が無い").not.toBeNull();
+    expect(account[1].replace(/,/g, "")).toBe(tracked[1]);
+    expect(planConst[1]).toBe(tracked[1]);
+  });
+
   it("廃止した無料枠（月10件）の文言が残っていない", () => {
     // stripe-billing.js は 14日間トライアル制で、checkGate は件数を見ない。
     // 文言だけ残ると「10件に達しました」と誤った理由が表示される。

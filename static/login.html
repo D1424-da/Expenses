@@ -607,8 +607,12 @@
             <button id="account-upgrade-btn" class="primary account-action-btn" type="button">✨ プランに登録する</button>
           </div>
           <div id="account-plan-premium" class="account-plan-box account-plan-premium" hidden>
-            <div class="account-plan-label">現在のプラン</div>
-            <div class="account-plan-name">✨ プレミアムプラン</div>
+            <div class="account-plan-head">
+              <span class="account-plan-label">現在のプラン</span>
+              <span class="account-plan-state">利用中</span>
+            </div>
+            <div class="account-plan-name">カケイシピ プラン</div>
+            <div id="account-plan-price" class="account-plan-price">¥500 <span>/月（税込）</span></div>
             <p class="account-plan-desc">記録件数無制限・すべての機能が使えます。</p>
             <p id="account-plan-expiry" class="account-plan-expiry" hidden></p>
             <div id="account-portal-wrap">
@@ -616,8 +620,10 @@
               <p class="account-portal-hint">Stripe の管理ページへ移動します。解約・領収書の確認ができます。</p>
             </div>
           </div>
-          <!-- ログアウト -->
-          <button id="logout" class="account-action-btn account-action-btn--logout" type="button">ログアウト</button>
+          <!-- ログアウトは解約と結果が大きく違う。同じ見た目で隣り合わせに
+               しない（区切り線で離し、文字リンクに落とす）。 -->
+          <hr class="account-divider" />
+          <button id="logout" class="account-logout-link" type="button">ログアウト</button>
         </div>
       </div>
     </div>

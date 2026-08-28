@@ -372,3 +372,44 @@ test.describe("買い物リスト（T5）", () => {
     await expect(page.locator("#shopping-count")).toHaveCount(1);
   });
 });
+
+test.describe("アカウント設定（T7）", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  async function openAccount(page) {
+    await page.goto("/login.html");
+    await page.evaluate(() => {
+      document.getElementById("app")?.removeAttribute("hidden");
+      document.getElementById("account-modal").hidden = false;
+      document.getElementById("account-plan-premium").hidden = false;
+    });
+  }
+
+  test("ログアウトと解約が視覚的に分かれている", async ({ page }) => {
+    // 以前は同じ見た目のボタンが隣り合っており、押し間違いの結果が
+    // 大きく違うのに区別が付かなかった。
+    await openAccount(page);
+    const r = await page.evaluate(() => {
+      const logout = document.getElementById("logout");
+      const portal = document.getElementById("account-portal-btn");
+      const lb = logout.getBoundingClientRect();
+      const pb = portal.getBoundingClientRect();
+      return {
+        gap: lb.top - pb.bottom,
+        hasDivider: !!document.querySelector(".account-divider"),
+        logoutIsLink: logout.classList.contains("account-logout-link"),
+        logoutHeight: lb.height,
+      };
+    });
+    expect(r.hasDivider, "区切り線が無い").toBe(true);
+    expect(r.logoutIsLink, "ログアウトが従来のボタンのまま").toBe(true);
+    expect(r.gap, "解約とログアウトが近すぎる").toBeGreaterThan(24);
+    // 押しにくくはしない
+    expect(r.logoutHeight).toBeGreaterThanOrEqual(44);
+  });
+
+  test("プラン枠に月額が出ている", async ({ page }) => {
+    await openAccount(page);
+    await expect(page.locator("#account-plan-price")).toContainText("¥500");
+  });
+});

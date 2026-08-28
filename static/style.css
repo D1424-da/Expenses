@@ -2045,12 +2045,42 @@ a.pcnav-blog { margin-left: auto; color: var(--sage); }
   color: var(--ink-2);
   border: 1px solid var(--border);
 }
-.account-action-btn--logout {
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  margin-top: 4px;
+/* ログアウトは解約と結果が大きく違うので、同じ見た目で隣り合わせにしない。
+   区切り線で離し、ボタンではなく文字リンクに落とす。 */
+.account-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 22px 0 12px;
 }
+.account-logout-link {
+  display: block;
+  width: 100%;
+  min-height: 44px;      /* 押しにくくはしない */
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-family: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.account-logout-link:hover { color: var(--ink-2); }
+
+/* プラン枠の金額と状態 */
+.account-plan-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+}
+.account-plan-state {
+  font-size: 0.72rem; font-weight: 700; color: var(--sage);
+  background: var(--sage-light); border-radius: 100px; padding: 3px 10px;
+}
+.account-plan-price {
+  font-size: 1.24rem; font-weight: 800; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin: 2px 0 6px;
+}
+.account-plan-price span { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
 
 /* アカウントボタン（topbar） */
 .topbar-btn--account {
