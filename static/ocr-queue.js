@@ -6,7 +6,7 @@ import { log, logErr } from "./log.js";
 import { requestBackendOcr, preprocessImage, runClientOcr, prewarmOcr } from "./ocr-client.js";
 import { parseReceipt } from "./parser.js";
 import { TRUSTED_ENGINES, normalizeWithHistory } from "./history.js";
-import { fillForm, resetForm } from "./expense-form.js";
+import { fillForm, resetForm, openForm } from "./expense-form.js";
 import { fetchAllExpenses } from "./firestore-data.js";
 
 export { prewarmOcr };
@@ -106,7 +106,12 @@ async function _ocrAndShow(file) {
         + (ocrTotal > 1 ? "（保存すると次の画像へ進みます）" : "")
       : `✅ ${_queuePrefix()}読み取りました。内容を確認して保存してください。`
         + (ocrTotal > 1 ? "（保存すると次の画像へ進みます）" : "");
-    $("form-card").scrollIntoView({ behavior: "smooth" });
+    // 状態表示（#ocr-status）はフォームより上にあり、簡易読み取りの注意文で
+    // 3行に伸びる。fillForm 内の openForm() はその前に位置を計算しているので、
+    // 文言が確定したここで開き直して位置を取り直す。
+    // scrollIntoView は使わない — sticky なヘッダーの裏にフォームの先頭が
+    // 隠れる（expense-form.js の openForm がその理由で window.scrollTo を使う）。
+    openForm();
   } catch (err) {
     logErr("OCRエラー:", err.message || err, err);
     status.className = "status error";

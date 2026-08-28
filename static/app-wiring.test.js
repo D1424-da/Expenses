@@ -63,6 +63,32 @@ describe("app.js の依存結線", () => {
 });
 
 describe("予算の手がかり（T6）", () => {
+  const budget = readFileSync(new URL("./budget-view.js", import.meta.url), "utf8");
+  const css    = readFileSync(new URL("./style.css", import.meta.url), "utf8");
+
+  it("未設定のカテゴリは入力欄を出さず「予算なし」に畳む", () => {
+    // 空の入力欄が縦に並ぶだけだと、「何円入れればよいか」の手がかり
+    // （平均・先月）がその空欄の列に埋もれる。
+    expect(budget).toMatch(/budget-cat-empty/);
+    expect(budget).toMatch(/予算なし/);
+    expect(css, ".budget-cat-empty のスタイルが無い").toMatch(/\.budget-cat-empty\s*\{/);
+  });
+
+  it("畳んだ行はタップで入力欄に変わり、そのまま打てる", () => {
+    // focus を渡さないと、押したあとにもう一度タップさせることになる。
+    expect(budget).toMatch(/_showInput\(row, cat, 0, true\)/);
+  });
+
+  it("一括入力が畳まれた行も対象にする", () => {
+    // input だけを走査すると、「予算なし」に畳まれたカテゴリが
+    // 平均を入れる／先月と同じ から漏れる。行ごと差し替えること。
+    const i = budget.indexOf("data-fill");
+    const handler = budget.slice(i, budget.indexOf("_updateTotal();", i));
+    expect(handler, "一括入力が input だけを走査している")
+      .not.toMatch(/#budget-inputs input\[data-cat\]/);
+    expect(handler).toMatch(/\.budget-input-row/);
+  });
+
   it("initBudget に fetchHistory を渡している", () => {
     // 渡さないと案内ブロックと「平均 · 先月」の行が黙って出なくなる。
     // 予算設定自体は動くので、壊れたことに気づきにくい。
@@ -103,6 +129,135 @@ describe("レシピ提案ウィザード（T4）", () => {
     // _suggest を直接ぶら下げると、1画面目からAPIを叩いてしまう。
     expect(view).toMatch(/\$\("recipe-suggest-btn"\)\.onclick\s*=\s*_onNext/);
   });
+});
+
+describe("ホームの残額表示（T2-2）", () => {
+  // サマリーの「予算まで あと ¥○○」とカテゴリバーは getBudget() の値で描く。
+  // 予算は settings/budget_{monthKey} に月ごとに保存されているので、月を
+  // 動かしたら読み直さないと**前の月の予算に対する残額**を見せてしまう。
+  // 支出だけが切り替わるので、数字が動いている分だけ気づきにくい。
+
+  it("月を動かす経路がすべて予算を読み直す", () => {
+    // state.currentMonth を書き換えている箇所（代入と setMonth）を全部拾う。
+    const writes = [...appSrc.matchAll(/state\.currentMonth(?:\s*=|\.setMonth\()[^\n]*/g)];
+    expect(writes.length, "月を書き換える箇所が見つからない").toBeGreaterThanOrEqual(3);
+
+    const offenders = [];
+    for (const m of writes) {
+      // 書き換えを囲むブロックの終わり（行頭が } または }) の行）までを見る。
+      // 固定幅で切ると次の関数まで覗いてしまい、読み直しの有無を取り違える。
+      const rest  = appSrc.slice(m.index);
+      const end   = rest.search(/\n\s*\}\)?;?\s*(\n|$)/);
+      const block = end === -1 ? rest : rest.slice(0, end);
+      if (!/_reloadBudgetForMonth\(\)/.test(block)) offenders.push(m[0].trim());
+    }
+    expect(offenders, "月を動かした後に _reloadBudgetForMonth() が無い").toEqual([]);
+  });
+
+  it("読み直しは予算の再取得とサマリーの再描画を両方行う", () => {
+    const i = appSrc.indexOf("async function _reloadBudgetForMonth");
+    expect(i, "_reloadBudgetForMonth が無い").toBeGreaterThan(-1);
+    const body = appSrc.slice(i, i + 300);
+    expect(body).toMatch(/await loadBudget\(\)/);
+    expect(body).toMatch(/renderSummary\(\)/);
+  });
+});
+
+describe("フォームへのスクロール（T2-1）", () => {
+  const ocr = readFileSync(new URL("./ocr-queue.js", import.meta.url), "utf8");
+  const form = readFileSync(new URL("./expense-form.js", import.meta.url), "utf8");
+
+  it("openForm は window.scrollTo で位置を合わせる", () => {
+    // scrollIntoView だと sticky なヘッダーの裏にフォームの先頭が隠れる。
+    expect(form).toMatch(/window\.scrollTo\(/);
+    // 「使わない」と書いた説明のコメントは残るので、呼び出しの形だけを見る。
+    expect(form).not.toMatch(/\.scrollIntoView\(/);
+  });
+
+  it("OCR完了後のスクロールも openForm を通す", () => {
+    // #ocr-status はフォームより上にあり、簡易読み取りの注意文で3行に伸びる。
+    // fillForm 内の openForm() はその前に位置を計算しているため、文言が
+    // 確定したあとに開き直す必要がある。ここで scrollIntoView に戻すと
+    // ヘッダーの裏に隠れる不具合が復活する。
+    expect(ocr).toMatch(/openForm\(\)/);
+    expect(ocr).not.toMatch(/form-card"\)\.scrollIntoView/);
+  });
+});
+
+describe("レシピ提案の初期期間（T4）", () => {
+  it("提案モーダルは「今週」で開く", () => {
+    // 未選択だと「選ばないと進めない」状態になり、2タップで提案まで
+    // 届かない。「今月」だと献立に使うには古い食材まで候補に混ざる。
+    const opens = [...appSrc.matchAll(/openRecipeModal\(\{[\s\S]*?\}\)/g)].map((m) => m[0]);
+    expect(opens.length, "openRecipeModal の呼び出しが見つからない").toBeGreaterThan(0);
+    for (const call of opens) {
+      expect(call, "initialPeriod が week でない").toMatch(/initialPeriod:\s*"week"/);
+    }
+  });
+});
+
+describe("ナビの並びとラベル（T3）", () => {
+  const html = readFileSync(new URL("./login.html", import.meta.url), "utf8");
+
+  /** ナビの中から id と表示ラベルを出現順に拾う。 */
+  function items(startMark, endMark, idRe, labelCls) {
+    const seg = html.slice(html.indexOf(startMark), html.indexOf(endMark, html.indexOf(startMark)));
+    const out = [];
+    for (const m of seg.matchAll(new RegExp(`id="(${idRe})"`, "g"))) {
+      const after = seg.slice(m.index);
+      const label = after.match(new RegExp(`class="${labelCls}">([^<]+)<`));
+      out.push([m[1].replace(/^(pcnav|bnav)-/, ""), label ? label[1] : null]);
+    }
+    return out;
+  }
+
+  const pc  = items('class="pc-nav"', "</nav>", "pcnav-\\w+", "pcnav-label");
+  const bn  = items('class="bottom-nav"', "</nav>", "bnav-\\w+", "bnav-label");
+  const more = items('id="bnav-more-drawer"', "</nav>", "bnav-(saved|compare|budget|trend)", "bnav-more-label");
+
+  it("先頭4つが PC・スマホで同じ順・同じラベル", () => {
+    // 主機能のレシピ提案が PC で3番目・スマホで4番目に入れ替わっており、
+    // ラベルも「買い物リスト」「買い物」で揺れていた。
+    expect(bn.slice(0, 4)).toEqual(pc.slice(0, 4));
+  });
+
+  it("仕様どおり 買い物リスト → レシピ提案 の順", () => {
+    expect(pc.slice(0, 4).map((x) => x[1]))
+      .toEqual(["ホーム", "カレンダー", "買い物リスト", "レシピ提案"]);
+  });
+
+  it("スマホの5番目はもっと見る", () => {
+    expect(bn).toHaveLength(5);
+    expect(bn[4][1]).toBe("もっと見る");
+  });
+
+  it("もっと見るの4項目が PC ナビの続きと一致する", () => {
+    expect(more.map((x) => x[1])).toEqual(pc.slice(4, 8).map((x) => x[1]));
+  });
+
+  it("aria-current は初期状態でホームにだけ付く", () => {
+    // 切り替え時の付け替えは app.js。同時に2つ付くと読み上げが破綻する。
+    expect((html.match(/aria-current="page"/g) || [])).toHaveLength(2); // PC と スマホ の ホーム
+    expect(html).toMatch(/id="pcnav-home"[^>]*aria-current="page"/);
+    expect(html).toMatch(/id="bnav-home"[^>]*aria-current="page"/);
+  });
+});
+
+describe("指で押す要素は 44px（T5 / T8）", () => {
+  const css = readFileSync(new URL("./style.css", import.meta.url), "utf8");
+
+  // 44px ルールは既に style.css にある。**半分だけ適用されている**のが
+  // これまでの壊れ方で、あとから足した押せる要素が抜けやすい。
+  for (const sel of [".shopping-del", ".cal-week-click"]) {
+    it(`${sel} が 44px を満たす`, () => {
+      const i = css.indexOf(sel);
+      expect(i, `${sel} のルールが無い`).toBeGreaterThan(-1);
+      // 宣言そのものか、44px を宣言する共通ルールの列挙に含まれること。
+      expect(css).toMatch(
+        new RegExp(`\\${sel}[^{]*\\{[^}]*min-(height|width):\\s*44px`),
+      );
+    });
+  }
 });
 
 describe("スマホの下部まわり", () => {
