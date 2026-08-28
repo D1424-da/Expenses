@@ -328,3 +328,47 @@ test.describe("予算設定の手がかり（T6）", () => {
     expect(h).toBeGreaterThanOrEqual(44);
   });
 });
+
+test.describe("買い物リスト（T5）", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("追加欄がリストより下にあり、下端に固定される", async ({ page }) => {
+    // 以前は上端にあり、リストが伸びるほど親指から遠くなっていた。
+    await page.goto("/login.html");
+    const r = await page.evaluate(() => {
+      const list = document.getElementById("shopping-items");
+      const form = document.getElementById("shopping-add-form");
+      return {
+        formAfterList: !!(list.compareDocumentPosition(form) &
+          Node.DOCUMENT_POSITION_FOLLOWING),
+        position: getComputedStyle(form).position,
+      };
+    });
+    expect(r.formAfterList, "追加欄がリストより前にある").toBe(true);
+    expect(r.position).toBe("sticky");
+  });
+
+  test("追加ボタンのタップ領域が 44px 以上ある", async ({ page }) => {
+    await page.goto("/login.html");
+    const size = await page.evaluate(() => {
+      document.getElementById("app")?.removeAttribute("hidden");
+      document.getElementById("shopping-modal").hidden = false;
+      const b = document.querySelector(".shopping-add-btn").getBoundingClientRect();
+      return { w: b.width, h: b.height };
+    });
+    expect(size.w).toBeGreaterThanOrEqual(44);
+    expect(size.h).toBeGreaterThanOrEqual(44);
+  });
+
+  test("一括削除の操作が存在しない", async ({ page }) => {
+    // 破壊的な操作に確認も取り消しも無かったため撤去した。
+    // チェックを外せば戻る形にしている。
+    await page.goto("/login.html");
+    await expect(page.locator("#shopping-clear-done")).toHaveCount(0);
+  });
+
+  test("残り点数の表示欄がある", async ({ page }) => {
+    await page.goto("/login.html");
+    await expect(page.locator("#shopping-count")).toHaveCount(1);
+  });
+});

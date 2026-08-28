@@ -539,13 +539,15 @@
           <h2>🛒 買い物リスト</h2>
           <button id="shopping-close" aria-label="閉じる">✕</button>
         </div>
-        <form id="shopping-add-form" class="shopping-add-form">
-          <input id="shopping-add-input" type="text" placeholder="食材・商品を追加…" autocomplete="off" aria-label="買い物リストに追加する品名" />
-          <button type="submit" class="primary">追加</button>
-        </form>
+        <p id="shopping-count" class="shopping-count" aria-live="polite"></p>
         <div id="shopping-items" class="shopping-items"></div>
         <p id="shopping-empty" class="empty" hidden>リストはまだ空です。</p>
-        <button id="shopping-clear-done" class="shopping-clear-btn" type="button">完了済みを削除</button>
+        <!-- 追加欄は下端に固定する。店頭で片手で持つ画面なので、
+             リストが伸びるほど上端の入力欄は親指から遠くなる。 -->
+        <form id="shopping-add-form" class="shopping-add-form">
+          <input id="shopping-add-input" type="text" placeholder="食材・商品を追加…" autocomplete="off" aria-label="買い物リストに追加する品名" />
+          <button type="submit" class="shopping-add-btn" aria-label="追加する">＋</button>
+        </form>
       </div>
     </div>
 

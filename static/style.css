@@ -1397,9 +1397,39 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 /* ============================================================
    SHOPPING LIST
    ============================================================ */
-.shopping-add-form { display: flex; gap: 8px; margin-bottom: 14px; }
-.shopping-add-form input { flex: 1; }
-.shopping-add-form button { flex-shrink: 0; padding: 11px 18px; }
+/* 追加欄はモーダル下端に固定する。店頭で片手で持つ画面なので、
+   リストが伸びるほど上端の入力欄は親指から遠くなっていた。 */
+.shopping-add-form {
+  position: sticky; bottom: 0; z-index: 1;
+  display: flex; gap: 8px; align-items: center;
+  padding: 10px 0 2px;
+  margin-top: 10px;
+  background: var(--card);
+  border-top: 1.5px solid var(--border);
+}
+.shopping-add-form input { flex: 1; border-radius: 100px; padding-left: 14px; }
+.shopping-add-btn {
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  border: none; border-radius: 50%;
+  background: var(--sage); color: #fff;
+  font-size: 1.3rem; line-height: 1; font-family: inherit;
+  cursor: pointer;
+}
+.shopping-add-btn:active { filter: brightness(0.95); }
+
+/* 残り点数。操作した手応えとして、位置の移動より先に更新する。 */
+.shopping-count {
+  font-size: 0.82rem; font-weight: 600; color: var(--ink-2);
+  margin-bottom: 8px;
+}
+/* 未完了と完了済みの区切り */
+.shopping-done-divider {
+  font-size: 0.76rem; font-weight: 600; color: var(--muted);
+  margin-top: 14px; padding: 6px 2px 4px;
+  border-top: 1px dashed var(--border);
+}
+
 .shopping-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
 .shopping-store-header {
   font-size: 0.78rem; font-weight: 700; color: var(--sage);
@@ -1421,7 +1451,6 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 .shopping-check-store { font-size: 0.75rem; color: var(--muted); }
 .shopping-del { background: none; border: none; color: var(--muted); font-size: 0.9rem; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
 .shopping-del:hover { color: var(--danger); }
-.shopping-clear-btn { width: 100%; background: none; border: 1.5px solid var(--border); color: var(--muted); font-size: 0.83rem; padding: 10px; margin-top: 4px; border-radius: var(--r-btn); }
 
 /* ============================================================
    BOTTOM NAV (mobile only)
