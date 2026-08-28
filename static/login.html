@@ -302,7 +302,13 @@
           <h2 id="recipe-modal-title">🍳 レシピを提案</h2>
           <button id="recipe-close" aria-label="閉じる">✕</button>
         </div>
+        <!-- 進捗（いま何段目か）。3画面に分けたので現在地を必ず示す。 -->
+        <div class="recipe-steps-bar">
+          <span class="recipe-steps-dots" id="recipe-steps-dots" aria-hidden="true"></span>
+          <span class="recipe-steps-count" id="recipe-steps-count">1 / 3</span>
+        </div>
 
+        <div class="recipe-step" data-step="ingredients">
         <!-- Step 1: 食材の選び方 -->
         <div class="recipe-wizard-step">
           <div class="recipe-step-label">① 食材の選び方</div>
@@ -346,7 +352,10 @@
           <div id="recipe-budget-chips" class="recipe-ingredients"></div>
         </div>
 
-        <!-- Step 3: 何を作る？ -->
+        </div><!-- /step ingredients -->
+
+        <div class="recipe-step" data-step="options" hidden>
+        <!-- Step 2: 何を作る？ -->
         <div class="recipe-wizard-step">
           <div class="recipe-step-label">③ 何を作る？</div>
           <div class="recipe-card-group" id="recipe-type-tabs" role="group" aria-label="レシピ種類">
@@ -382,7 +391,6 @@
             <input type="number" id="recipe-servings" value="2" min="1" max="20" inputmode="numeric" />
             人前
           </label>
-          <button id="recipe-suggest-btn" type="button" class="primary">レシピを提案する →</button>
         </div>
 
         <!-- こだわり設定（折りたたみ） -->
@@ -420,6 +428,9 @@
           </div>
         </details>
 
+        </div><!-- /step options -->
+
+        <div class="recipe-step" data-step="result" hidden>
         <div id="recipe-status" class="status" role="status" aria-live="polite" hidden></div>
         <div id="recipe-result" class="recipe-result" hidden></div>
         <div id="recipe-post-actions" class="recipe-post-actions" hidden>
@@ -453,6 +464,14 @@
             <button id="recipe-dish-cancel-btn" type="button" class="btn-ghost">キャンセル</button>
             <button id="recipe-dish-save-btn" type="button" class="btn-primary">保存する</button>
           </div>
+        </div>
+        </div><!-- /step result -->
+
+        <!-- 段階の移動。進めない理由は黙って disabled にせず文言で出す。 -->
+        <p id="recipe-step-hint" class="recipe-step-hint" role="status" aria-live="polite" hidden></p>
+        <div class="recipe-nav">
+          <button id="recipe-back-btn" type="button" class="btn-ghost" hidden>← 戻る</button>
+          <button id="recipe-suggest-btn" type="button" class="primary">次へ →</button>
         </div>
       </div>
     </div>
@@ -642,7 +661,13 @@
     <!-- スマホ「もっと見る」ドロワー -->
     <div id="bnav-more-drawer" class="bnav-more-drawer" hidden>
       <div class="bnav-more-overlay" id="bnav-more-overlay"></div>
-      <div class="bnav-more-sheet">
+      <div class="bnav-more-sheet" role="dialog" aria-modal="true" aria-label="もっと見る">
+        <!-- 背景タップ以外にも閉じ方を用意する。シートだけを出していた頃は
+             「どこを押せば戻れるのか分からない」という指摘があった。 -->
+        <div class="bnav-more-head">
+          <span class="bnav-more-grabber" aria-hidden="true"></span>
+          <button type="button" id="bnav-more-close" class="bnav-more-close" aria-label="閉じる">✕</button>
+        </div>
         <div class="bnav-more-grid">
           <button class="bnav-more-item" id="bnav-saved"><span class="bnav-more-icon">📚</span><span class="bnav-more-label">保存レシピ</span></button>
           <button class="bnav-more-item" id="bnav-compare"><span class="bnav-more-icon">🔎</span><span class="bnav-more-label">価格比較</span></button>

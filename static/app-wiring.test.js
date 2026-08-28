@@ -72,3 +72,58 @@ describe("予算の手がかり（T6）", () => {
     expect(args).not.toMatch(/\bfetchHistory:\s*null\b/);
   });
 });
+
+describe("レシピ提案ウィザード（T4）", () => {
+  const html = readFileSync(new URL("./login.html", import.meta.url), "utf8");
+  const view = readFileSync(new URL("./recipe-view.js", import.meta.url), "utf8");
+
+  it("提案モーダルが3つの画面に分かれている", () => {
+    const steps = [...html.matchAll(/class="recipe-step"\s+data-step="(\w+)"/g)]
+      .map((m) => m[1]);
+    expect(steps).toEqual(["ingredients", "options", "result"]);
+  });
+
+  it("段階の移動に必要な要素が揃っている", () => {
+    // どれか1つでも欠けると、押しても進まない・現在地が出ないという
+    // 「動くけれど進めない」壊れ方になる。
+    for (const id of ["recipe-back-btn", "recipe-suggest-btn",
+                      "recipe-step-hint", "recipe-steps-dots", "recipe-steps-count"]) {
+      expect(html, `#${id} が無い`).toContain(`id="${id}"`);
+    }
+  });
+
+  it("判定は recipe-steps.js に置いてある", () => {
+    // recipe-view.js の中で条件を書き直すとテストできなくなる。
+    expect(view).toMatch(/from "\.\/recipe-steps\.js"/);
+    expect(view).toMatch(/canAdvance\(/);
+  });
+
+  it("提案ボタンは段階の振り分けを通す", () => {
+    // _suggest を直接ぶら下げると、1画面目からAPIを叩いてしまう。
+    expect(view).toMatch(/\$\("recipe-suggest-btn"\)\.onclick\s*=\s*_onNext/);
+  });
+});
+
+describe("スマホの下部まわり", () => {
+  const html = readFileSync(new URL("./login.html", import.meta.url), "utf8");
+  const css  = readFileSync(new URL("./style.css", import.meta.url), "utf8");
+  const app  = readFileSync(new URL("./app.js", import.meta.url), "utf8");
+
+  it("もっと見るドロワーに閉じるボタンがある", () => {
+    // 背景タップしか閉じ方が無いと、シートの上を押している限り戻れない。
+    expect(html).toContain('id="bnav-more-close"');
+    expect(app).toMatch(/\$\("bnav-more-close"\)\.onclick/);
+  });
+
+  it("ドロワーは Esc でも閉じる", () => {
+    expect(app).toMatch(/Escape/);
+  });
+
+  it("本文下の余白が FAB の高さを超えている", () => {
+    // 下部ナビ56px + FAB62px + 間隔14px = 132px。ここが足りないと
+    // 「＋ 手で入力する」など最下段のボタンが FAB の下に隠れる。
+    const m = css.match(/main \{[\s\S]*?padding: 14px 14px calc\((\d+)px/);
+    expect(m, "main の padding-bottom が読めない").not.toBeNull();
+    expect(Number(m[1])).toBeGreaterThanOrEqual(132);
+  });
+});
