@@ -298,20 +298,21 @@
     <!-- レシピ提案モーダル（ウィザード形式） -->
     <div id="recipe-modal" class="modal" hidden>
       <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="recipe-modal-title">
-        <div class="modal-head">
+        <div class="modal-head recipe-head">
+          <button id="recipe-back-btn" class="recipe-head-back" aria-label="前の画面へ戻る" hidden>‹</button>
           <h2 id="recipe-modal-title">🍳 レシピを提案</h2>
           <button id="recipe-close" aria-label="閉じる">✕</button>
         </div>
-        <!-- 進捗（いま何段目か）。3画面に分けたので現在地を必ず示す。 -->
-        <div class="recipe-steps-bar">
+        <!-- 進捗（いま何段目か）。画面を分けたので現在地を必ず示す。 -->
+        <div class="recipe-steps-bar" id="recipe-steps-bar">
+          <span class="recipe-steps-count" id="recipe-steps-count">STEP 1 / 3</span>
           <span class="recipe-steps-dots" id="recipe-steps-dots" aria-hidden="true"></span>
-          <span class="recipe-steps-count" id="recipe-steps-count">1 / 3</span>
         </div>
 
-        <div class="recipe-step" data-step="ingredients">
-        <!-- Step 1: 食材の選び方 -->
+        <!-- STEP 1: 食材はどこから選ぶ？ -->
+        <div class="recipe-step" data-step="mode">
         <div class="recipe-wizard-step">
-          <div class="recipe-step-label">① 食材の選び方</div>
+          <div class="recipe-step-label">食材はどこから選ぶ？</div>
           <div class="recipe-card-group" id="recipe-mode-tabs" role="group" aria-label="食材選択モード">
             <button class="recipe-card active" data-mode="history">
               <span class="recipe-card-icon">🛒</span>
@@ -326,9 +327,12 @@
           </div>
         </div>
 
-        <!-- Step 2a: 期間（購入履歴モード） -->
+        </div><!-- /step mode -->
+
+        <!-- STEP 2: いつの食材を使う？ -->
+        <div class="recipe-step" data-step="ingredients" hidden>
         <div id="recipe-period-section" class="recipe-wizard-step">
-          <div class="recipe-step-label" id="recipe-period-label">② いつの食材を使う？</div>
+          <div class="recipe-step-label" id="recipe-period-label">期間</div>
           <div class="recipe-tabs" id="recipe-period-tabs" role="group" aria-label="期間ショートカット">
             <button class="recipe-tab" data-period="day">今日</button>
             <button class="recipe-tab" data-period="week">今週</button>
@@ -344,7 +348,7 @@
 
         <!-- Step 2b: 予算（予算モード） -->
         <div id="recipe-budget-section" class="recipe-wizard-step" hidden>
-          <div class="recipe-step-label">② 食費の残り予算から提案</div>
+          <div class="recipe-step-label">食費の残り予算から提案</div>
           <div id="recipe-budget-info" class="recipe-budget-info">
             <span id="recipe-budget-status"></span>
             <span id="recipe-budget-total"></span>
@@ -354,10 +358,10 @@
 
         </div><!-- /step ingredients -->
 
+        <!-- STEP 3: 何を作る？ -->
         <div class="recipe-step" data-step="options" hidden>
-        <!-- Step 2: 何を作る？ -->
         <div class="recipe-wizard-step">
-          <div class="recipe-step-label">③ 何を作る？</div>
+          <div class="recipe-step-label">つくるもの</div>
           <div class="recipe-card-group" id="recipe-type-tabs" role="group" aria-label="レシピ種類">
             <button class="recipe-card active" data-rtype="meal">
               <span class="recipe-card-icon">🍽</span>
@@ -386,11 +390,16 @@
         </div>
 
         <!-- 人数 + 提案ボタン -->
+        <!-- 人数。スマホで数値キーボードを出さずに直せるよう ± を置く。 -->
         <div class="recipe-servings-row">
-          <label>人数
-            <input type="number" id="recipe-servings" value="2" min="1" max="20" inputmode="numeric" />
-            人前
-          </label>
+          <span class="recipe-servings-label" id="recipe-servings-label">人数</span>
+          <div class="recipe-stepper">
+            <button type="button" id="recipe-servings-minus" aria-label="人数を減らす">−</button>
+            <input type="number" id="recipe-servings" value="2" min="1" max="20"
+                   inputmode="numeric" aria-labelledby="recipe-servings-label" />
+            <span class="recipe-stepper-unit">人前</span>
+            <button type="button" id="recipe-servings-plus" aria-label="人数を増やす">＋</button>
+          </div>
         </div>
 
         <!-- こだわり設定（折りたたみ） -->
@@ -470,7 +479,6 @@
         <!-- 段階の移動。進めない理由は黙って disabled にせず文言で出す。 -->
         <p id="recipe-step-hint" class="recipe-step-hint" role="status" aria-live="polite" hidden></p>
         <div class="recipe-nav">
-          <button id="recipe-back-btn" type="button" class="btn-ghost" hidden>← 戻る</button>
           <button id="recipe-suggest-btn" type="button" class="primary">次へ →</button>
         </div>
       </div>

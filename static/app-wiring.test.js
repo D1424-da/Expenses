@@ -77,17 +77,18 @@ describe("レシピ提案ウィザード（T4）", () => {
   const html = readFileSync(new URL("./login.html", import.meta.url), "utf8");
   const view = readFileSync(new URL("./recipe-view.js", import.meta.url), "utf8");
 
-  it("提案モーダルが3つの画面に分かれている", () => {
+  it("提案モーダルが4つの画面に分かれている", () => {
     const steps = [...html.matchAll(/class="recipe-step"\s+data-step="(\w+)"/g)]
       .map((m) => m[1]);
-    expect(steps).toEqual(["ingredients", "options", "result"]);
+    expect(steps).toEqual(["mode", "ingredients", "options", "result"]);
   });
 
   it("段階の移動に必要な要素が揃っている", () => {
     // どれか1つでも欠けると、押しても進まない・現在地が出ないという
     // 「動くけれど進めない」壊れ方になる。
-    for (const id of ["recipe-back-btn", "recipe-suggest-btn",
-                      "recipe-step-hint", "recipe-steps-dots", "recipe-steps-count"]) {
+    for (const id of ["recipe-back-btn", "recipe-suggest-btn", "recipe-step-hint",
+                      "recipe-steps-dots", "recipe-steps-count", "recipe-steps-bar",
+                      "recipe-servings-minus", "recipe-servings-plus"]) {
       expect(html, `#${id} が無い`).toContain(`id="${id}"`);
     }
   });

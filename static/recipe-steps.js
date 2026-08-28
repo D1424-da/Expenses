@@ -14,13 +14,20 @@
 // 次へ進めるかをここで決める。**進めない理由を必ず文言で返す**こと —
 // ボタンを黙って disabled にすると、利用者は何が足りないのか分からない。
 
-/** 画面の順序。並びを変えると戻る／進むの向きが変わる。 */
-export const RECIPE_STEPS = ["ingredients", "options", "result"];
+/**
+ * 画面の順序。結果は「提案したあとの画面」なので進捗の分母には数えない
+ * （STEP 1〜3 のあとに結果が出る、という見え方にする）。
+ */
+export const RECIPE_STEPS = ["mode", "ingredients", "options", "result"];
+
+/** 進捗表示の分母。結果画面を除いた入力の段数。 */
+export const INPUT_STEPS = RECIPE_STEPS.length - 1;
 
 const _META = {
-  ingredients: { title: "何を使う？", nextLabel: "次へ →" },
-  options:     { title: "何を作る？", nextLabel: "レシピを提案する →" },
-  result:      { title: "提案結果",   nextLabel: null },
+  mode:        { title: "レシピを提案",     nextLabel: "次へ →" },
+  ingredients: { title: "いつの食材を使う？", nextLabel: "次へ →" },
+  options:     { title: "何を作る？",       nextLabel: "レシピを提案する" },
+  result:      { title: "提案結果",         nextLabel: null },
 };
 
 /** 段階の位置（0始まり）。未知の値は 0 として扱う。 */
@@ -37,12 +44,15 @@ export function stepIndex(step) {
 export function stepMeta(step) {
   const index = stepIndex(step);
   const key   = RECIPE_STEPS[index];
+  const isResult = key === "result";
   return {
     title: _META[key].title,
     nextLabel: _META[key].nextLabel,
-    progress: `${index + 1} / ${RECIPE_STEPS.length}`,
+    // 結果画面には進捗を出さない（入力の段数に含まれないため）。
+    progress: isResult ? null : `STEP ${index + 1} / ${INPUT_STEPS}`,
     canBack: index > 0,
     index,
+    isResult,
   };
 }
 
@@ -60,15 +70,21 @@ export function canAdvance(step, state) {
   if (s.busy) return { ok: false, reason: "提案中です。しばらくお待ちください。" };
 
   const key = RECIPE_STEPS[stepIndex(step)];
+  // 食材の選び方はどちらかが必ず選ばれている（既定は購入履歴）。
+  if (key === "mode") return { ok: true, reason: null };
   if (key === "ingredients") {
     if (s.budgetMode) {
       return Number(s.budgetSelectedCount) > 0
         ? { ok: true, reason: null }
         : { ok: false, reason: "買う食材を1つ以上選んでください。" };
     }
-    return Number(s.ingredientCount) > 0
+    if (Number(s.ingredientCount) === 0) {
+      return { ok: false, reason: "この期間に品目がありません。期間を変えるか、レシートに明細を追加してください。" };
+    }
+    // チップは1つずつ外せる。全部外すと何を材料にすればよいか決まらない。
+    return Number(s.selectedCount) > 0
       ? { ok: true, reason: null }
-      : { ok: false, reason: "この期間に品目がありません。期間を変えるか、レシートに明細を追加してください。" };
+      : { ok: false, reason: "使う食材を1つ以上選んでください。" };
   }
   if (key === "options") {
     if (s.planRangeError) return { ok: false, reason: s.planRangeError };
