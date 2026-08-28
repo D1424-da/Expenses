@@ -296,3 +296,35 @@ test.describe("モバイルでの重複表示", () => {
     await expect(page.locator("#bnav-shopping .shopping-badge")).toHaveCount(1);
   });
 });
+
+test.describe("予算設定の手がかり（T6）", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("案内ブロックの器と合計行が用意されている", async ({ page }) => {
+    await page.goto("/login.html");
+    // 案内ブロックは実績が足りないと出ないので、初期状態では hidden
+    await expect(page.locator("#budget-suggest")).toHaveCount(1);
+    await expect(page.locator("#budget-suggest")).toBeHidden();
+    await expect(page.locator("#budget-total")).toHaveCount(1);
+  });
+
+  test("案内ボタンのタップ領域が 44px 以上ある", async ({ page }) => {
+    await page.goto("/login.html");
+    const h = await page.evaluate(() => {
+      // モーダルは #app の中にあり、#app が hidden のままだと
+      // 中の要素は高さ0になる。
+      document.getElementById("app")?.removeAttribute("hidden");
+      const box = document.getElementById("budget-suggest");
+      box.hidden = false;
+      box.innerHTML =
+        '<p class="budget-suggest-lead">x</p>' +
+        '<div class="budget-suggest-actions">' +
+        '<button type="button" class="budget-suggest-btn">平均を入れる</button></div>';
+      document.getElementById("budget-modal").hidden = false;
+      return document
+        .querySelector(".budget-suggest-btn")
+        .getBoundingClientRect().height;
+    });
+    expect(h).toBeGreaterThanOrEqual(44);
+  });
+});

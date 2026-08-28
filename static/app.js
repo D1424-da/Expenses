@@ -211,6 +211,9 @@ async function setupApp(user) {
       categories:       CATEGORIES,
       onUpdated:        renderSummary,
       getCurrentMonth:  () => state.currentMonth,
+      // 予算の手がかり（過去3か月の平均・先月）の材料。
+      // 渡さないと案内ブロックと平均の表示が黙って出なくなる。
+      fetchHistory:     fetchAllExpenses,
     });
     initTrend({ fetchMonthExpenses });
     initSavedRecipes({ db, getUser: () => state.currentUser });

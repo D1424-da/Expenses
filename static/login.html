@@ -472,8 +472,14 @@
           <button id="budget-close" aria-label="閉じる">✕</button>
         </div>
         <p class="hint">カテゴリごとに月の目標金額を設定します。0 または空欄は「予算なし」です。</p>
+        <!-- 過去の実績が十分にあるときだけ出る手がかり（budget-view.js が描画） -->
+        <div id="budget-suggest" class="budget-suggest" hidden></div>
         <form id="budget-form">
           <div id="budget-inputs" class="budget-inputs"></div>
+          <div class="budget-total-row">
+            <span class="budget-total-label">合計</span>
+            <span id="budget-total" class="budget-total-amt">¥0</span>
+          </div>
           <button type="submit" class="primary">保存する</button>
         </form>
       </div>

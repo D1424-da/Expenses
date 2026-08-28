@@ -1290,8 +1290,55 @@ button:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
    BUDGET
    ============================================================ */
 #budget-form { display: flex; flex-direction: column; gap: 12px; }
+/* ============================================================
+   BUDGET — 手がかりの表示（T6）
+   空欄が並ぶだけでは「何円と入れればよいか」の手がかりが無かった。
+   過去の実績が十分にあるときだけ、平均と先月額を添える。
+   ============================================================ */
+.budget-suggest {
+  background: var(--sage-light);
+  border-radius: var(--r-card-sm);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.budget-suggest-lead { font-size: 0.88rem; line-height: 1.6; margin-bottom: 10px; }
+.budget-suggest-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.budget-suggest-btn {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid var(--sage);
+  border-radius: var(--r-btn);
+  background: var(--card);
+  color: var(--sage);
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+.budget-suggest-btn:active { filter: brightness(0.96); }
+/* 入力欄の下に置く 手がかり。行は縦積みになる。 */
+.budget-hint-line {
+  width: 100%;
+  margin: 2px 0 0 90px;
+  font-size: 0.74rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.budget-total-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 14px 0 12px;
+  padding-top: 12px;
+  border-top: 1.5px solid var(--border);
+}
+.budget-total-label { font-size: 0.88rem; font-weight: 600; color: var(--ink-2); }
+.budget-total-amt {
+  font-size: 1.1rem; font-weight: 800; color: var(--sage);
+  font-variant-numeric: tabular-nums;
+}
+
 .budget-inputs { display: flex; flex-direction: column; gap: 10px; }
-.budget-input-row { display: flex; align-items: center; gap: 10px; }
+/* 手がかりの行を折り返して受けるため wrap する。 */
+.budget-input-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .budget-cat-label { width: 80px; flex-shrink: 0; font-size: 0.86rem; font-weight: 600; }
 .budget-input-wrap { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--r-input); overflow: hidden; flex: 1; background: var(--card); }
 .budget-yen-prefix { padding: 0 8px; color: var(--muted); font-size: 0.9rem; }
