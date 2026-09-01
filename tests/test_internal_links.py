@@ -113,3 +113,91 @@ def test_category_nav_only_links_generated_pages():
     assert not problems, "生成されていないカテゴリページへのリンク: " + "; ".join(
         sorted(set(problems))[:10]
     )
+
+
+# ── 検索対象に残した記事どうしの繋がり ──────────────────────────────
+#
+# 2026-09、Search Console の内部リンクレポートで、**Google が把握している
+# リンクの行き先がトップページ1つだけ**（48本）だった。約100ページある
+# サイトで、ブログの記事同士の繋がりが存在しないように見えていた。
+#
+# 同時期の「クロール済み - インデックス未登録」84件を分類すると、本当の
+# 問題は3件だけで（残りは301の残骸と、noindex 適用前のクロール）、その3件
+# `family-recipe-share` / `food-budget-app` / `kakeibo-app-compare` は
+# **そろって「他の残した記事からリンクを受けていない」側**にいた。
+# 着手前は、被リンク0本が8本・発リンク0本が9本あった。
+#
+# noindex にした76本からリンクを張っても持続しない（Google は長期の
+# noindex ページのクロール頻度を落とす）。**効くのは Google が見続ける
+# ページ＝検索対象に残した記事どうしのリンク。**
+
+
+def _kept_slugs() -> set[str]:
+    """検索対象に残っている記事のスラッグ。
+
+    noindex（統合済み）と searchExclude（公開したまま検索対象外）を除く。
+    build_blog.py の絞り込みと同じ条件にしてある。
+    """
+    arts = json.loads((STATIC / "blog" / "articles.json").read_text(encoding="utf-8"))
+    if isinstance(arts, dict):
+        arts = arts.get("articles", arts)
+    redirected = {
+        re.sub(r"^.*/blog/", "", r["source"]).replace(".html", "")
+        for r in _config()["hosting"].get("redirects", [])
+        if r.get("type") == 301 and "/blog/" in r.get("source", "")
+    }
+    return {
+        a["slug"] for a in arts
+        if a.get("slug") and not a.get("noindex") and not a.get("searchExclude")
+        and a["slug"] not in redirected
+    }
+
+
+def _kept_link_graph() -> tuple[dict[str, set[str]], dict[str, set[str]]]:
+    """残した記事どうしのリンクを (発, 被) で返す。"""
+    kept = _kept_slugs()
+    out: dict[str, set[str]] = {s: set() for s in kept}
+    inb: dict[str, set[str]] = {s: set() for s in kept}
+    for slug in kept:
+        html = (STATIC / "blog" / f"{slug}.html").read_text(encoding="utf-8")
+        for target in re.findall(r"/blog/([a-z0-9-]+)\.html", html):
+            if target in kept and target != slug:
+                out[slug].add(target)
+                inb[target].add(slug)
+    return out, inb
+
+
+def test_kept_articles_are_not_link_islands():
+    """残した記事は、どれも他の残した記事から辿れること。
+
+    被リンクが0だと、Google から見て blog.html 経由の1本しか入り口が無い。
+    落ちた3件はいずれもこの状態だった。
+    """
+    _, inbound = _kept_link_graph()
+    orphans = sorted(s for s, srcs in inbound.items() if not srcs)
+    assert not orphans, (
+        "他の『検索対象に残した記事』から1本もリンクされていない: " + ", ".join(orphans)
+    )
+
+
+def test_kept_articles_link_out_to_each_other():
+    """残した記事から、他の残した記事へ少なくとも1本出ていること。
+
+    発リンクが無い記事は行き止まりで、クローラをそこで止める。
+    """
+    outbound, _ = _kept_link_graph()
+    dead_ends = sorted(s for s, tgts in outbound.items() if not tgts)
+    assert not dead_ends, (
+        "他の『検索対象に残した記事』へ1本もリンクしていない: " + ", ".join(dead_ends)
+    )
+
+
+def test_kept_article_links_point_at_real_files():
+    """束の中のリンク先が実在すること（統合で消えた記事を指していない）。"""
+    outbound, _ = _kept_link_graph()
+    missing = {
+        f"{src} → {tgt}"
+        for src, tgts in outbound.items() for tgt in tgts
+        if not (STATIC / "blog" / f"{tgt}.html").exists()
+    }
+    assert not missing, "リンク先のファイルが無い: " + ", ".join(sorted(missing))
