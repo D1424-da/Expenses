@@ -13,8 +13,9 @@ import math
 from pathlib import Path
 from datetime import datetime, timezone
 
-BLOG_DIR = Path("/home/user/Expenses/static/blog")
-STATIC = Path("/home/user/Expenses/static")
+# 絶対パスを埋め込むと書いた本人の1台以外では落ちる（build_blog.py と同じ）。
+STATIC = Path(__file__).resolve().parent / "static"
+BLOG_DIR = STATIC / "blog"
 BASE_URL = "https://get-tohon.online"
 
 def reading_time(html_text):

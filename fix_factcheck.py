@@ -6,7 +6,8 @@
 import re
 from pathlib import Path
 
-BLOG_DIR = Path("/home/user/Expenses/static/blog")
+# 絶対パスを埋め込むと書いた本人の1台以外では落ちる（build_blog.py と同じ）。
+BLOG_DIR = Path(__file__).resolve().parent / "static" / "blog"
 
 # ---------- 修正ルール ----------
 # (パターン, 置換後, 説明)

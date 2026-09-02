@@ -7,7 +7,8 @@ import json
 import re
 from pathlib import Path
 
-STATIC = Path("/home/user/Expenses/static")
+# 絶対パスを埋め込むと書いた本人の1台以外では落ちる（build_blog.py と同じ）。
+STATIC = Path(__file__).resolve().parent / "static"
 BLOG_DIR = STATIC / "blog"
 BASE_URL = "https://get-tohon.online"
 

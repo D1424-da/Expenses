@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Build paginated blog index pages, category pages, and sitemap.
-Reads /home/user/Expenses/static/blog/articles.json as single source of truth.
+Reads static/blog/articles.json as single source of truth.
 """
 import json
 import math
@@ -10,7 +10,10 @@ from pathlib import Path
 from datetime import datetime
 
 # ── Config ────────────────────────────────────────────────────────────────
-STATIC = Path("/home/user/Expenses/static")
+# パスはこのファイルの位置から解決する。絶対パスを埋め込むと、書いた本人の
+# 1台以外では FileNotFoundError で落ちる（CLAUDE.md のコマンド一覧に
+# 載っているのに CI でも手元でも実行できない状態だった）。
+STATIC = Path(__file__).resolve().parent / "static"
 ARTICLES_JSON = STATIC / "blog" / "articles.json"
 ARTICLES_PER_PAGE = 24
 BASE_URL = "https://get-tohon.online"

@@ -341,6 +341,27 @@ rawText 20000字・amount 1億未満）は `static/expense-limits.js` に写し�
   `tests/test_sitemap.py` / `tests/test_article_schema.py` /
   `tests/test_article_titles.py` / `static/blog-ads.test.js`
 
+### スクリプトのパスは `__file__` から解決する
+
+`build_blog.py` は `STATIC = Path("/home/user/Expenses/static")` と絶対パスを
+埋め込んでいた。**`CLAUDE.md` のコマンド一覧に載っているのに、書いた本人の
+1台以外では `FileNotFoundError` で落ちる**状態だった。`test.yml` は pytest と
+vitest しか回さないので CI でも走らず、2026-09-02 にデプロイ前の検証で
+実行するまで誰も気づかなかった。同じ埋め込みが `fix_article_ids.py` /
+`add_related_nav.py` / `fix_factcheck.py` にもあった。
+
+```python
+STATIC = Path(__file__).resolve().parent / "static"
+```
+
+**相対パス（`Path("static")`）も不可。** CLAUDE.md は cwd を指定せずに
+コマンドを載せているので、リポジトリ外から呼ぶと落ちる。
+
+`tests/test_script_paths.py` が3つを固定する——個人のホームを指す絶対パスが
+無いこと、`build_blog.py` が cwd に依存せず走ること、そして
+**生成物が最新であること**（`articles.json` を触って `build_blog.py` を
+流し忘れると、一覧・カテゴリ・サイトマップが実態とずれる）。
+
 ### 記事は「とは・違い・仕組み」型で書く。「〜選」型を増やさない
 
 同じ人が同じ時期に取得したドメイン（`tohon`、登記簿・地積測量図の
