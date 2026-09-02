@@ -42,6 +42,20 @@ def test_python_sources_exist():
     assert len(_py_sources()) > 10
 
 
+def _cited(line: str, match: str) -> bool:
+    """その行で、バッククォートに囲まれた引用として現れているか。
+
+    直した経緯を docstring に残すと、**説明が検査に引っかかる**。
+    実際にこのファイルの docstring で落ちた（コミットして追跡された
+    瞬間に `git ls-files` に入り、自分を検査対象にした）。
+
+    Python にバッククォートの構文は無いので、囲まれていれば必ず説明。
+    逆に**素で書かれた絶対パスは囲まれないので止まる** —
+    `scripts/scan_secrets.py` の `_cited_in_docs()` と同じ考え方。
+    """
+    return any(match in m.group(1) for m in re.finditer(r"`([^`]*)`", line))
+
+
 def test_no_hardcoded_home_paths():
     """個人のホームディレクトリを指す絶対パスを埋め込まない。
 
@@ -51,12 +65,30 @@ def test_no_hardcoded_home_paths():
     for path in _py_sources():
         for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             if line.lstrip().startswith("#"):
-                continue                      # 説明のための引用は対象外
-            if ABSOLUTE_HOME.search(line):
+                continue                      # 行コメントでの説明は対象外
+            m = ABSOLUTE_HOME.search(line)
+            if m and not _cited(line, m.group(0)):
                 offenders.append(f"{path.relative_to(ROOT)}:{n}")
     assert not offenders, (
         "個人のホームを指す絶対パスが埋め込まれている: " + ", ".join(offenders)
     )
+
+
+def test_citation_rule_still_catches_real_code(tmp_path: Path):
+    """引用の除外が、素で書かれた絶対パスまで通してしまわないこと。
+
+    ここが緩むと検査が形だけになる。
+    """
+    # 連結で組み立てる。リテラルとして1行に書くと、**この検体自身が
+    # test_no_hardcoded_home_paths に引っかかる**（実際に落ちた）。
+    # 検査対象の形をテストに書く以上、この回避は避けられない
+    # （tests/test_scan_secrets.py の _synth() と同じ事情）。
+    bad = 'STATIC = Path("' + '/home/' + 'user/Expenses/static")'
+    m = ABSOLUTE_HOME.search(bad)
+    assert m is not None
+    assert not _cited(bad, m.group(0)), "素のコードを引用と誤判定している"
+    quoted = f"`{bad}` と書いていた"
+    assert _cited(quoted, ABSOLUTE_HOME.search(quoted).group(0))
 
 
 @pytest.mark.parametrize("script", ["build_blog.py", "add_related_nav.py",
