@@ -124,3 +124,47 @@ def test_見つからないときも限界を明示する():
         cwd=root, capture_output=True, text=True,
     )
     assert "見つけられない" in r.stdout
+
+
+# ── 2026-09-02 に実地で見つかった2つの欠陥 ────────────────────────────
+#
+# マージ前の検査で、この2つのために **正しい変更が NG になった**。
+# 落ちる検査は無効化されるので、静かにすることも要件のうち。
+
+
+class Test_非ASCIIのファイル名:
+    """git は非ASCII名を引用符つき・8進エスケープで書く。
+
+    素朴に `+++ b/` の6文字を落とす実装だと path が取れず、
+    **ALLOW（パスで判定する）が黙って効かなくなる。**
+    このリポジトリは docs/ を日本語名にしているので必ず通る経路。
+    """
+
+    def test_引用符つきの日本語パスを復元する(self):
+        line = r'+++ "b/docs/\344\275\234\346\245\255\345\202\231\345\277\230\351\214\262.md"'
+        assert ss._diff_path(line) == "docs/作業備忘録.md"
+
+    def test_ふつうのパスはそのまま(self):
+        assert ss._diff_path("+++ b/static/app.js") == "static/app.js"
+
+    def test_日本語パスでも_ALLOW_が効く(self):
+        # path が "?" のままだと、この判定に到達できない。
+        line = r'+++ "b/static/firebase-config.js"'
+        assert ss._diff_path(line) == "static/firebase-config.js"
+        assert ss.scan_line(ss._diff_path(line), f'  apiKey: "{FAKE_GOOGLE}",') == []
+
+
+class Test_ドキュメントによる形の引用:
+    """検査の説明そのものが秘密鍵のヘッダ表記を含み、自分の説明で NG になった。"""
+
+    def test_mdのバッククォート内の引用は通す(self):
+        line = "`AKIA` / `xox[baprs]-` / `-----BEGIN PRIVATE KEY-----` / 資格情報つきの"
+        assert ss.scan_line("docs/memo.md", line) == []
+
+    def test_mdでも素で貼られていれば止める(self):
+        assert ss.scan_line("docs/memo.md", "-----BEGIN PRIVATE KEY-----") != []
+
+    def test_md以外では引用でも止める(self):
+        # コードにバッククォートで囲んで書く動機が無いので、緩めない。
+        line = "// `-----BEGIN PRIVATE KEY-----`"
+        assert ss.scan_line("static/app.js", line) != []

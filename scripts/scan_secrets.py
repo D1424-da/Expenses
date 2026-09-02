@@ -73,6 +73,21 @@ PLACEHOLDERS = re.compile(
     r"changeme|test[-_]?key|fake"
 )
 
+def _diff_path(line: str) -> str:
+    """diff の `+++` 行からファイルパスを取り出す。
+
+    **非ASCIIのファイル名は git が引用符つき・8進エスケープで書く。**
+    素朴に先頭6文字を落とす実装だと path が取れず、下の ALLOW
+    （パスで判定する）が黙って効かなくなる。このリポジトリは日本語の
+    ファイル名を使うので、必ず通る経路。
+    """
+    body = line[4:]
+    if body.startswith('"') and body.endswith('"'):
+        raw = body[1:-1].encode("latin-1", "backslashreplace")
+        body = raw.decode("unicode_escape").encode("latin-1", "replace").decode("utf-8", "replace")
+    return body[2:] if body.startswith("b/") else body
+
+
 # 公開前提の値。ここだけは通す（理由は上の docstring）。
 ALLOW = [
     # Firebase の apiKey は隠せないし隠す必要もない。
@@ -103,6 +118,22 @@ def _allowed(path: str, line: str) -> bool:
     return any(p.search(path) and l.search(line) for p, l in ALLOW)
 
 
+def _cited_in_docs(path: str, line: str, value: str) -> bool:
+    """ドキュメントが検査対象の「形」を引用している箇所か。
+
+    この検査の説明そのものが秘密鍵のヘッダ表記などを含むため、放っておくと
+    **自分の説明で NG になる**。落ちる検査は無効化されるので、静かに
+    することも要件のうち。
+
+    通すのは `.md` の中で、**バッククォートで囲まれている**表記だけ。
+    値が素で貼られていれば囲まれていないので止まる。
+    **裏を返すと、バッククォートで囲んで貼られた本物は見逃す。**
+    """
+    if not path.endswith(".md"):
+        return False
+    return any(value in m.group(1) for m in re.finditer(r"`([^`]*)`", line))
+
+
 def scan_line(path: str, line: str) -> list[tuple[str, str]]:
     """1行を照合して [(種類, マスク済みの手がかり)] を返す。"""
     if PLACEHOLDERS.search(line) or _allowed(path, line):
@@ -110,7 +141,7 @@ def scan_line(path: str, line: str) -> list[tuple[str, str]]:
     out = []
     for kind, pat in PATTERNS:
         m = pat.search(line)
-        if m:
+        if m and not _cited_in_docs(path, line, m.group(0)):
             out.append((kind, _mask(m.group(0))))
     return out
 
@@ -144,8 +175,8 @@ def scan_diff(rev_range: str) -> list[Finding]:
     out = _git("diff", "--unified=0", "--no-color", rev_range)
     found, path = [], "?"
     for line in out.splitlines():
-        if line.startswith("+++ b/"):
-            path = line[6:]
+        if line.startswith("+++ "):
+            path = _diff_path(line)
         elif line.startswith("+") and not line.startswith("+++"):
             for kind, hint in scan_line(path, line[1:]):
                 found.append(Finding(path, kind, hint))
@@ -159,8 +190,8 @@ def scan_history(ref: str = "HEAD") -> list[Finding]:
         out = _git("show", "--unified=0", "--no-color", "--format=", sha)
         path = "?"
         for line in out.splitlines():
-            if line.startswith("+++ b/"):
-                path = line[6:]
+            if line.startswith("+++ "):
+                path = _diff_path(line)
             elif line.startswith("+") and not line.startswith("+++"):
                 for kind, hint in scan_line(path, line[1:]):
                     found.append(Finding(f"{sha[:8]}:{path}", kind, hint))
