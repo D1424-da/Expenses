@@ -546,20 +546,29 @@ CTAクリックは位置別に `cta_click` イベントを送る。計測は
 （`script-src` / `img-src` / `connect-src` / `frame-src`）への追加が必須。
 インライン `<script>` は動かないので、外部ファイルに切り出す。
 
-### Service Worker のフォールバック
+### 未定義URLは 404 を返す（フォールバックは撤去済み）
 
-`static/sw.js` は、許可リストに無いナビゲーションを `/login.html` に
-差し替える（SPA ルート用）。**拡張子を持つパスは除外している** ——
-これが無いと `/robots.txt` をブラウザで開いたときに LP が表示される。
-`static/sw-routing.test.js` が守っている。
+以前は2段構えで未定義URLに `login.html` を返していた。
+
+- `firebase.json` の `"**" → /login.html` rewrite
+- `static/sw.js` の「許可リストに無いナビゲーションを差し替える」処理
+
+SPA ルートは実在せず（全画面が `login.html` 上のモーダル）、**存在しない
+URL に 200 を返して 404 を表示できなくしていた**。実際 Bing は
+`savings-recipe-tips-pro.html` という**リポジトリに一度も存在しない
+スラッグ**を 200 として登録している（2026-08-24 クロール）。2026-08-28 に
+両方を撤去したので、いまは `static/404.html` が返る。
+
+**この2つは対になっている。片方だけ戻さないこと** — rewrite を戻すと
+SW が素通しした未定義URLに Hosting が 200 を返し、SW を戻すと
+`/robots.txt` をブラウザで開いたときに LP が表示される。
+`static/sw-routing.test.js` が SW 側を守っている。
+
 `sw.js` を変更したら `CACHE` のバージョン番号を上げること。
 
-### Firebase Hosting の rewrite
-
-`firebase.json` の `"**" → /login.html` により、**未定義のパスはすべて
-login.html を返す**。存在しない URL が LP として表示されるため、
-`login.html` 自身に `noindex, nofollow` を入れてゴミURLのインデックスを
-防いでいる。この noindex ページを sitemap に載せてはいけない。
+`login.html` の `noindex, nofollow` は残す。ゴミURLのフォールバック先では
+なくなったが、LP 自体を検索対象にしない方針は変えていない。この noindex
+ページを sitemap に載せてはいけない。
 
 ### アフィリエイト広告
 
@@ -610,7 +619,7 @@ login.html を返す**。存在しない URL が LP として表示されるた�
 
 ## このファイルの更新
 
-**最終更新: 2026-08-24**
+**最終更新: 2026-09-03**
 
 このファイルは「README を読んでも分からない、事故につながる決まりごと」を
 集めたもの。放っておくと実態とずれて、かえって誤った判断を招く。
