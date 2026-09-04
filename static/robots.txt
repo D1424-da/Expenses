@@ -5,8 +5,10 @@ Allow: /
 # /app.js と /app-state.js までブロックしていた。
 # Google は CSS/JS のブロックを明示的に非推奨としている（ページを
 # レンダリングできず、モバイル対応やコンテンツの評価を誤る）。
-# そもそも /app というページは存在せず（未定義パスは firebase.json の
-# rewrites で login.html に流れる）、このルール自体が不要だった。
+# そもそも /app というページは存在せず、このルール自体が不要だった。
+# （2026-08-28 に未定義URLは 404 を返すようにしたので、いまは
+#   /app にアクセスすると 404.html が返る。以前はワイルドカード
+#   rewrite で login.html が 200 で返っていた。）
 #
 # インデックスさせたくないページは robots.txt ではなく noindex で制御している:
 #   login.html … <meta name="robots" content="noindex, nofollow">
